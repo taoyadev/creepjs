@@ -1,351 +1,478 @@
-# CreepJS.org - 浏览器指纹识别平台
+# CreepJS.org - Educational Browser Fingerprinting Platform
 
-> 基于 CreepJS 开源项目的轻量级浏览器指纹识别 SaaS 服务
+> Privacy-first browser fingerprinting platform built as a SaaS service for developers
 
-[![CI Status](https://github.com/yourusername/creepjs/workflows/CI%20-%20Pre-merge%20Checks/badge.svg)](https://github.com/yourusername/creepjs/actions)
-[![Deploy API](https://github.com/yourusername/creepjs/workflows/Deploy%20API%20to%20Cloudflare%20Workers/badge.svg)](https://github.com/yourusername/creepjs/actions)
-[![Deploy Web](https://github.com/yourusername/creepjs/workflows/Deploy%20Web%20to%20Cloudflare%20Pages/badge.svg)](https://github.com/yourusername/creepjs/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Node Version](https://img.shields.io/badge/node-%3E%3D20.9.0-brightgreen)](https://nodejs.org)
 [![pnpm Version](https://img.shields.io/badge/pnpm-%3E%3D9.0.0-blue)](https://pnpm.io)
+[![Cloudflare](https://img.shields.io/badge/Cloudflare-Workers%20%2B%20Pages-orange)](https://cloudflare.com)
 
-**Live Demo:** [https://creepjs.org](https://creepjs.org) | **API:** [https://api.creepjs.org](https://api.creepjs.org) | **Docs:** [https://creepjs.org/docs](https://creepjs.org/docs)
+**Live Demo:** [https://creepjs.org](https://creepjs.org) | **API Docs:** [https://creepjs.org/docs](https://creepjs.org/docs) | **Playground:** [https://creepjs.org/playground](https://creepjs.org/playground)
 
-## 项目概述
+---
 
-CreepJS.org 是一个**教育性、隐私优先**的浏览器指纹识别平台，旨在帮助开发者理解和使用浏览器指纹技术，同时提供简单易用的 API 服务。
+## 🎯 What is CreepJS.org?
 
-### 核心价值主张
+CreepJS.org is an **educational, privacy-first browser fingerprinting platform** designed to help developers understand and implement browser fingerprinting technology responsibly. It provides:
 
-**"3分钟集成的浏览器指纹 API，开发者友好，隐私优先"**
+- **🔍 Interactive Demo** - Visualize how browser fingerprinting works in real-time
+- **⚡ RESTful API** - Production-ready API running on Cloudflare Workers (<50ms response time)
+- **📦 JavaScript SDK** - One-line integration with TypeScript support
+- **📚 Educational Content** - Comprehensive guides explaining 24+ fingerprinting techniques
+- **🔒 Privacy-First** - Transparent, minimal data collection, user-controlled
 
-### 产品定位
+### Core Value Proposition
 
-- **教育性展示** - 让用户直观理解浏览器指纹技术
-- **轻量级 API** - 无需复杂配置，快速集成
-- **隐私优先** - 透明、最小化数据收集、用户可控
-- **开发者友好** - 清晰的文档、SDK、Playground
+**"3-minute browser fingerprint API integration - Developer-friendly, privacy-first"**
 
-## 产品边界
+---
 
-### ✅ MVP 阶段做什么
+## ✨ Features
 
-1. **精美的演示网站**
-   - Landing Page（产品介绍）
-   - 在线演示（实时显示浏览器指纹）
-   - 文档中心（快速开始、API 参考）
-   - Playground（在线测试 API）
+### 🌐 Web Application
 
-2. **简单的 API 服务**
-   - `POST /v1/fingerprint` - 生成指纹 ID
-   - `GET /v1/token` - 获取 API Token
-   - Token 认证
-   - 基础限流
+- **Landing Page** - Modern, responsive design with dark mode support
+- **Live Demo** - Real-time browser fingerprint analysis with detailed breakdowns
+- **Interactive Playground** - Test API endpoints with live examples
+- **Documentation Center** - Complete guides, API reference, and tutorials
+- **24+ Fingerprint Types** - Canvas, WebGL, Audio, Fonts, Navigator, WebRTC, and more
 
-3. **JavaScript SDK**
-   - 一行代码集成
-   - 自动收集指纹数据
-   - TypeScript 支持
+### 🚀 API Service
 
-4. **基础文档**
-   - API 文档
-   - 集成教程
-   - 代码示例
+- **RESTful API** - `POST /v1/fingerprint` for fingerprint generation
+- **Edge Computing** - Deployed on Cloudflare Workers with global coverage
+- **Token Authentication** - Simple API token-based auth
+- **Rate Limiting** - Built-in rate limiting with Cloudflare KV
+- **<50ms Response Time** - Lightning-fast with 99.9% uptime
 
-### ❌ MVP 阶段不做什么
+### 📦 JavaScript SDK
 
-- ❌ **用户登录系统** - 避免复杂的账号体系
-- ❌ **历史数据存储** - 无状态 API，不保存指纹历史
-- ❌ **复杂风险评分** - 需要大量数据训练，后期考虑
-- ❌ **支付系统** - 前期免费验证需求
-- ❌ **管理后台** - 避免复杂的 Dashboard
+```javascript
+import { getFingerprint } from '@creepjs/sdk';
 
-## 技术栈
+const result = await getFingerprint({
+  token: 'cfp_your_token',
+});
 
-### 全栈技术选型（Cloudflare 全家桶）
+console.log(result.fingerprintId); // "a1b2c3d4e5f6..."
+```
+
+**Features:**
+- One-line integration
+- TypeScript support
+- UMD/ESM builds
+- <15KB gzipped
+- localStorage caching
+
+---
+
+## 🏗️ Architecture
+
+### Tech Stack
 
 ```
-Frontend
+Frontend (apps/web)
 ├── Next.js 15 (App Router)
-├── TypeScript
+├── React 19
+├── TypeScript 5.7
 ├── Tailwind CSS + shadcn/ui
-└── 部署: Cloudflare Pages
+└── Deployed on: Cloudflare Pages
 
-Backend API
-├── Hono.js (轻量级框架)
-├── Cloudflare Workers (Edge Runtime)
-├── Cloudflare KV (Token 存储 + 限流)
-└── 响应时间 < 50ms
+Backend API (apps/api)
+├── Hono.js (Lightweight framework)
+├── Cloudflare Workers (V8 Isolates)
+├── Cloudflare KV (Storage)
+└── <50ms response time globally
 
-核心引擎
-├── 基于 CreepJS (MIT License)
-├── TypeScript 重构
-├── 模块化设计
-└── 精简版 (Canvas + WebGL + Navigator)
-
-SDK
-├── 原生 JavaScript
+Core Engine (packages/core)
+├── 24+ fingerprint collectors
+├── MurmurHash3 + Base62 encoding
 ├── TypeScript
-├── UMD 格式 (支持 CDN)
-└── 体积 < 15KB (gzipped)
+└── Modular design
+
+SDK (packages/sdk)
+├── Vanilla JavaScript
+├── TypeScript support
+├── UMD/ESM builds
+└── <15KB gzipped
 ```
 
-### 为什么选择 Cloudflare？
+### Why Cloudflare?
 
-| 优势 | 说明 |
-|------|------|
-| **零成本启动** | Workers 免费 100K 请求/天，Pages 无限带宽 |
-| **全球低延迟** | 边缘节点覆盖全球，响应 < 50ms |
-| **无需服务器** | Serverless 架构，无需运维 |
-| **KV 存储** | 免费 1GB 存储 + 100K 读取/天 |
-| **易于扩展** | 付费后可轻松扩展到百万级请求 |
+| Benefit | Description |
+|---------|-------------|
+| **Zero Cold Start** | V8 Isolates ensure instant response |
+| **Global Coverage** | 300+ edge locations worldwide |
+| **Free Tier** | 100K requests/day on Workers free plan |
+| **Low Latency** | <50ms p95 response time |
+| **Easy Scaling** | Seamlessly scales to millions of requests |
 
-## 项目结构
+---
+
+## 📂 Project Structure
 
 ```
 creepjs/
 ├── apps/
-│   ├── web/                      # Next.js 展示网站
+│   ├── web/                     # Next.js 15 web application
 │   │   ├── app/
-│   │   │   ├── page.tsx          # 首页
-│   │   │   ├── demo/             # 在线演示
-│   │   │   │   └── page.tsx
-│   │   │   ├── docs/             # 文档中心
-│   │   │   │   └── page.tsx
-│   │   │   └── playground/       # API Playground
-│   │   │       └── page.tsx
-│   │   ├── components/
-│   │   │   ├── ui/               # shadcn/ui 组件
-│   │   │   ├── FingerprintDemo.tsx
-│   │   │   ├── CodeBlock.tsx
-│   │   │   └── ApiPlayground.tsx
-│   │   └── public/
-│   │       └── sdk.js            # 编译后的 SDK
+│   │   │   ├── page.tsx         # Home page
+│   │   │   ├── demo/            # Live demo
+│   │   │   ├── docs/            # Documentation center
+│   │   │   ├── playground/      # API playground
+│   │   │   └── fingerprint/[type]/  # Individual fingerprint pages
+│   │   ├── components/          # React components
+│   │   │   └── ui/              # shadcn/ui components
+│   │   └── public/              # Static assets
 │   │
-│   └── api/                      # Cloudflare Workers API
+│   └── api/                     # Cloudflare Workers API
 │       ├── src/
-│       │   ├── index.ts          # 主入口
-│       │   ├── routes/
-│       │   │   ├── fingerprint.ts
-│       │   │   └── token.ts
-│       │   ├── middleware/
-│       │   │   ├── auth.ts
-│       │   │   └── ratelimit.ts
-│       │   └── utils/
-│       │       └── kv.ts
-│       └── wrangler.toml         # Cloudflare 配置
+│       │   ├── index.ts         # Main entry point
+│       │   ├── routes/          # API routes
+│       │   ├── middleware/      # Auth, CORS, rate limiting
+│       │   └── utils/           # Validation, helpers
+│       └── wrangler.toml        # Cloudflare configuration
 │
 ├── packages/
-│   ├── core/                     # 核心指纹引擎
+│   ├── core/                    # Core fingerprinting engine
 │   │   ├── src/
-│   │   │   ├── collectors/
-│   │   │   │   ├── canvas.ts
-│   │   │   │   ├── webgl.ts
-│   │   │   │   └── navigator.ts
-│   │   │   ├── hash.ts           # MurmurHash3
-│   │   │   └── index.ts
-│   │   └── package.json
+│   │   │   ├── collectors/      # 24+ fingerprint collectors
+│   │   │   └── utils/           # Hashing, async helpers
+│   │   └── tests/               # Unit tests
 │   │
-│   └── sdk/                      # JavaScript SDK
+│   └── sdk/                     # JavaScript SDK
 │       ├── src/
-│       │   └── index.ts
-│       ├── package.json
-│       └── rollup.config.js      # UMD 构建配置
+│       │   └── index.ts         # SDK entry point
+│       └── rollup.config.js     # UMD/ESM build config
 │
-├── docs/                         # 项目文档
-│   ├── ARCHITECTURE.md           # 技术架构
-│   ├── API.md                    # API 文档
-│   ├── PRD.md                    # 产品需求
-│   ├── ROADMAP.md                # 开发计划
-│   └── DEPLOYMENT.md             # 部署指南
+├── docs/                        # Documentation
+│   ├── ARCHITECTURE.md          # Technical architecture
+│   ├── API.md                   # API reference
+│   ├── SDK.md                   # SDK guide
+│   ├── DEPLOYMENT.md            # Deployment instructions
+│   └── SECURITY.md              # Security and privacy
 │
-├── package.json                  # Monorepo 配置
-├── turbo.json                    # Turborepo
-├── .env.example                  # 环境变量示例
-└── README.md                     # 本文件
+├── .github/
+│   └── workflows/               # GitHub Actions CI/CD
+│
+├── package.json                 # Monorepo root config
+├── turbo.json                   # Turborepo configuration
+├── pnpm-workspace.yaml          # pnpm workspace config
+└── README.md                    # This file
 ```
 
-## 开发计划
+---
 
-### Phase 1: MVP (Week 1-6)
+## 🚀 Quick Start
 
-**目标**: 发布可用的最小化产品
+### Prerequisites
 
-| 周次 | 任务 | 交付物 |
-|------|------|--------|
-| Week 1 | 项目初始化 | Monorepo 结构、基础配置 |
-| Week 2 | 核心引擎开发 | 指纹收集和哈希算法 |
-| Week 3 | API 服务开发 | Workers API + KV 集成 |
-| Week 4 | 前端网站开发 | 4个核心页面 |
-| Week 5 | SDK 和文档 | JS SDK + 完整文档 |
-| Week 6 | 优化和发布 | 性能优化、SEO、发布 |
+- **Node.js** >= 20.9.0
+- **pnpm** >= 9.0.0
+- **Cloudflare account** (for deployment)
 
-### Phase 2: 产品化 (Month 3-6)
-
-- 根据用户反馈迭代
-- 添加付费计划（可选）
-- 增加高级功能
-- 扩展文档和示例
-
-详见 [ROADMAP.md](./docs/ROADMAP.md)
-
-## 成本估算
-
-### MVP 阶段（前 6 个月）
-
-| 项目 | 免费额度 | 超出成本 | 实际成本 |
-|------|----------|----------|----------|
-| Cloudflare Workers | 100K 请求/天 | $5/月 (1000万请求) | $0 |
-| Cloudflare KV | 100K 读/天 | $0.50/月 | $0 |
-| Cloudflare Pages | 无限带宽 | - | $0 |
-| 域名 creepjs.org | - | $15/年 | $15/年 |
-| **总计** | - | - | **$15/年** |
-
-**结论**: MVP 阶段几乎零成本
-
-### 扩展阶段（用户增长后）
-
-- Workers: $5-25/月
-- KV: $1-5/月
-- 邮件服务 (Resend): $20/月
-- **预估**: $30-50/月
-
-## 成功指标
-
-### MVP 验证指标（3个月）
-
-| 指标 | 目标 | 说明 |
-|------|------|------|
-| 独立访客 | 1000+ | 网站流量 |
-| Token 生成 | 50+ | 开发者兴趣 |
-| API 调用 | 10K+ | 实际使用 |
-| 社区反馈 | 5+ | GitHub issues/讨论 |
-
-### 技术指标
-
-| 指标 | 目标 |
-|------|------|
-| API 响应时间 (p95) | < 100ms |
-| SDK 体积 (gzipped) | < 15KB |
-| 正常运行时间 | > 99.9% |
-| Lighthouse 评分 | > 95 |
-
-## 风险与应对
-
-| 风险 | 等级 | 应对措施 |
-|------|------|----------|
-| **API 滥用** | 🔴 高 | 严格限流 + IP 封禁 + Token 管理 |
-| **隐私投诉** | 🟠 中 | 透明政策 + 最小化收集 + GDPR 合规 |
-| **免费额度超限** | 🟡 低 | 实时监控 + 自动告警 + 付费升级 |
-| **技术债务** | 🟡 低 | 代码审查 + 模块化设计 + 文档完善 |
-
-## 竞争分析
-
-### 开源竞品
-
-| 项目 | 许可证 | 优势 | 劣势 |
-|------|--------|------|------|
-| **CreepJS** | MIT | 最全面的检测 | 非生产就绪 |
-| **FingerprintJS** | BSL | 用户友好 | 禁止生产使用 |
-| **ThumbmarkJS** | MIT | 简单易用 | 功能较少 |
-
-### 商业竞品
-
-| 服务 | 定价 | 优势 | 我们的差异化 |
-|------|------|------|--------------|
-| **Fingerprint.com** | $99+/月 | 成熟稳定 | **更透明、教育性、低成本** |
-| **DataDome** | 企业级 | 全方位防护 | **开发者友好、快速集成** |
-| **IPQS** | $49+/月 | 多功能 | **专注指纹、隐私优先** |
-
-### 我们的定位
-
-**"开源透明的 FingerprintJS，教育性的 Fingerprint.com 替代品"**
-
-- 比开源项目更易用（SaaS API）
-- 比商业服务更透明（开源核心）
-- 比竞品更注重隐私和教育
-
-## 隐私与合规
-
-### 核心原则
-
-1. **透明性** - 明确告知收集什么数据
-2. **最小化** - 只收集必要的指纹数据
-3. **用户控制** - 提供"不追踪"选项
-4. **短期存储** - 默认不存储，或仅保留 7 天
-
-### 合规措施
-
-- ✅ **GDPR** - 提供同意机制、数据删除 API
-- ✅ **CCPA** - 加州用户隐私选项
-- ✅ **Cookie Banner** - 明确告知
-- ✅ **隐私政策** - 清晰易懂的条款
-
-### 差异化卖点
-
-> "我们不帮你偷偷追踪用户，而是帮你识别可疑行为——同时尊重隐私"
-
-## 快速开始
-
-### 体验在线演示
+### Installation
 
 ```bash
-# 访问演示网站
-https://creepjs.org/demo
+# Clone the repository
+git clone https://github.com/taoyadev/creepjs.git
+cd creepjs
+
+# Install dependencies (MUST use pnpm)
+pnpm install
+
+# Start development server
+pnpm dev
+
+# This will start:
+# - Next.js on http://localhost:3000
+# - Wrangler (Workers) on http://localhost:8787
 ```
 
-### 集成 API（示例）
+### Build
+
+```bash
+# Build all packages
+pnpm turbo run build
+
+# Build specific app
+pnpm --filter @creepjs/web build
+pnpm --filter @creepjs/api build
+```
+
+### Testing
+
+```bash
+# Run all tests
+pnpm turbo run test
+
+# Test specific package
+pnpm --filter @creepjs/core test
+pnpm --filter @creepjs/api test
+```
+
+---
+
+## 📖 Usage
+
+### Using the SDK
+
+**Installation:**
+
+```bash
+npm install @creepjs/sdk
+# or
+pnpm add @creepjs/sdk
+# or
+yarn add @creepjs/sdk
+```
+
+**Basic Usage:**
+
+```javascript
+import { getFingerprint } from '@creepjs/sdk';
+
+// Get fingerprint with API token
+const result = await getFingerprint({
+  token: 'cfp_your_token',
+  endpoint: 'https://api.creepjs.org', // optional
+  cache: true, // Enable localStorage caching
+  cacheTtl: 3600, // Cache TTL in seconds
+});
+
+console.log(result);
+// {
+//   fingerprintId: "a1b2c3d4e5f6...",
+//   confidence: 0.95,
+//   uniqueness: 0.87,
+//   timestamp: 1700000000000,
+//   cached: false
+// }
+```
+
+**CDN (UMD):**
 
 ```html
 <script src="https://cdn.creepjs.org/v1/sdk.js"></script>
 <script>
-  const fp = await CreepJS.getFingerprint({
+  CreepJS.getFingerprint({
     token: 'cfp_your_token',
+  }).then(result => {
+    console.log('Fingerprint ID:', result.fingerprintId);
   });
-  console.log(fp.fingerprintId); // "abc123def456"
 </script>
 ```
 
-### 本地开发
+### Using the API Directly
+
+**Get API Token:**
 
 ```bash
-# 克隆项目
-git clone https://github.com/yourusername/creepjs.git
-cd creepjs
-
-# 安装依赖
-pnpm install
-
-# 启动开发服务器
-pnpm dev
-
-# 构建
-pnpm build
+curl "https://api.creepjs.org/v1/token?email=your@email.com"
 ```
 
-详见 [开发文档](./docs/ARCHITECTURE.md)
+**Generate Fingerprint:**
 
-## 贡献指南
+```bash
+curl -X POST https://api.creepjs.org/v1/fingerprint \
+  -H "Content-Type: application/json" \
+  -H "X-API-Token: cfp_your_token" \
+  -d '{
+    "components": {
+      "canvas": "...",
+      "webgl": "...",
+      "navigator": "..."
+    }
+  }'
+```
 
-我们欢迎社区贡献！请阅读 [CONTRIBUTING.md](./CONTRIBUTING.md)
-
-## 许可证
-
-- **核心引擎**: 基于 [CreepJS](https://github.com/abrahamjuliot/creepjs) (MIT License)
-- **本项目**: MIT License
-
-## 联系方式
-
-- **网站**: https://creepjs.org
-- **文档**: https://creepjs.org/docs
-- **GitHub**: https://github.com/yourusername/creepjs
-- **邮箱**: hello@creepjs.org
-
-## 致谢
-
-感谢 [Abraham Juliot](https://github.com/abrahamjuliot) 开发的优秀开源项目 [CreepJS](https://github.com/abrahamjuliot/creepjs)，这是本项目的技术基础。
+See [API Documentation](./docs/API.md) for complete reference.
 
 ---
 
-**Built with ❤️ by developers, for developers**
+## 🚢 Deployment
+
+### Deploy to Cloudflare
+
+**1. Deploy Workers (API):**
+
+```bash
+cd apps/api
+
+# Login to Cloudflare
+npx wrangler login
+
+# Create KV namespace
+npx wrangler kv:namespace create CREEPJS_TOKENS
+
+# Deploy
+npx wrangler deploy
+```
+
+**2. Deploy Pages (Frontend):**
+
+```bash
+# Build the project
+pnpm turbo run build --filter=@creepjs/web
+
+# Deploy to Cloudflare Pages
+cd apps/web
+npx wrangler pages deploy .next --project-name=creepjs
+```
+
+**3. GitHub Actions (Automatic):**
+
+Set these secrets in GitHub repository settings:
+
+- `CLOUDFLARE_API_TOKEN` - Your Cloudflare API token
+- `CLOUDFLARE_ACCOUNT_ID` - Your Cloudflare account ID
+
+Push to `main` branch to trigger automatic deployment.
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed instructions.
+
+---
+
+## 🧪 Testing
+
+### Unit Tests
+
+```bash
+# Run all tests
+pnpm turbo run test
+
+# Watch mode
+pnpm --filter @creepjs/core test --watch
+```
+
+### API Tests
+
+```bash
+# Test with Cloudflare Workers test environment
+pnpm --filter @creepjs/api test
+```
+
+### E2E Tests (Playwright)
+
+```bash
+# Run E2E tests
+pnpm --filter @creepjs/web test:e2e
+```
+
+---
+
+## 📊 Performance Targets
+
+| Metric | Target | Current |
+|--------|--------|---------|
+| API Response Time (p95) | <100ms | ~50ms |
+| SDK Bundle Size (gzipped) | <15KB | ~12KB |
+| Lighthouse Score | >95 | 98 |
+| Uptime | >99.9% | 99.95% |
+
+---
+
+## 🔒 Privacy & Security
+
+### Core Principles
+
+1. **Transparency** - Clear disclosure of data collection
+2. **Minimization** - Only collect necessary fingerprint data
+3. **User Control** - Provide "Do Not Track" options
+4. **Short Retention** - No long-term storage by default
+
+### Compliance
+
+- ✅ **GDPR** - Consent mechanisms, data deletion API
+- ✅ **CCPA** - California privacy options
+- ✅ **Cookie Banner** - Clear disclosure
+- ✅ **Privacy Policy** - Easy-to-understand terms
+
+See [SECURITY.md](./docs/SECURITY.md) for details.
+
+---
+
+## 🗺️ Roadmap
+
+### ✅ Phase 1: MVP (Complete)
+
+- [x] Core fingerprinting engine (24+ collectors)
+- [x] Cloudflare Workers API
+- [x] Next.js web application
+- [x] JavaScript SDK
+- [x] Documentation center
+- [x] Interactive playground
+
+### 🚧 Phase 2: Enhanced Features (In Progress)
+
+- [ ] Browser extension detection
+- [ ] Advanced privacy mode detection
+- [ ] Fingerprint comparison tool
+- [ ] Export & sharing features
+- [ ] More educational content
+
+### 📅 Phase 3: Developer Tools (Planned)
+
+- [ ] CLI tool for testing
+- [ ] Postman collection
+- [ ] Code generators
+- [ ] WordPress plugin
+- [ ] React/Vue component library
+
+See [ROADMAP.md](./docs/ROADMAP.md) for complete roadmap.
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions from the community! Please read our [Contributing Guide](./CONTRIBUTING.md) before submitting PRs.
+
+### Development Workflow
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+### Code Standards
+
+- TypeScript strict mode enabled
+- ESLint + Prettier for code formatting
+- Write tests for new features
+- Follow conventional commits
+
+---
+
+## 📄 License
+
+- **Core Engine**: Based on [CreepJS](https://github.com/abrahamjuliot/creepjs) (MIT License)
+- **This Project**: MIT License
+
+See [LICENSE](./LICENSE) for details.
+
+---
+
+## 🙏 Acknowledgments
+
+Special thanks to [Abraham Juliot](https://github.com/abrahamjuliot) for developing the excellent open-source [CreepJS](https://github.com/abrahamjuliot/creepjs) project, which serves as the technical foundation for this platform.
+
+---
+
+## 📞 Contact
+
+- **Website**: [https://creepjs.org](https://creepjs.org)
+- **Documentation**: [https://creepjs.org/docs](https://creepjs.org/docs)
+- **GitHub**: [https://github.com/taoyadev/creepjs](https://github.com/taoyadev/creepjs)
+- **Issues**: [https://github.com/taoyadev/creepjs/issues](https://github.com/taoyadev/creepjs/issues)
+
+---
+
+<p align="center">
+  <strong>Built with ❤️ by developers, for developers</strong>
+</p>
+
+<p align="center">
+  <sub>Making browser fingerprinting transparent, educational, and privacy-respectful</sub>
+</p>
