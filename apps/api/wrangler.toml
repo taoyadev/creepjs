@@ -1,0 +1,21 @@
+name = "creepjs-api"
+main = "src/index.ts"
+compatibility_date = "2024-12-30"
+compatibility_flags = ["nodejs_compat"]
+
+[env.production]
+workers_dev = false
+route = "api.creepjs.org/*"
+
+[[kv_namespaces]]
+binding = "TOKENS"
+id = "YOUR_KV_NAMESPACE_ID"
+
+[[kv_namespaces]]
+binding = "RATE_LIMIT"
+id = "YOUR_RATE_LIMIT_KV_ID"
+
+[vars]
+ENVIRONMENT = "production"
+CORS_ORIGIN = "*"
+RATE_LIMIT_PER_DAY = "1000"
