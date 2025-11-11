@@ -51,7 +51,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [progress, setProgress] = useState<CollectionProgress>({ current: 0, total: 24, currentCollector: '' });
+  const [progress, setProgress] = useState<CollectionProgress>({ current: 0, total: 55, currentCollector: '' });
 
   useEffect(() => {
     let cancelled = false;
@@ -61,16 +61,35 @@ export default function Home() {
 
       setLoading(true);
       setError(null);
-      setProgress({ current: 0, total: 24, currentCollector: 'Initializing...' });
+      setProgress({ current: 0, total: 55, currentCollector: 'Initializing...' });
 
       try {
         // Simulate progress updates for better UX
         const collectors = [
-          'Canvas', 'WebGL', 'Navigator', 'Screen', 'Fonts', 'Timezone',
-          'Audio', 'Media Devices', 'Emoji', 'Speech Voices', 'SVG', 'Math',
-          'CSS Styles', 'Text Metrics', 'HTML Element', 'Console Errors', 'DOM Rect',
-          'MIME Types', 'Anti-Fingerprint', 'Content Window', 'CSS Media',
-          'Lies Detection', 'WebRTC', 'Service Worker'
+          // Graphics (5)
+          'Canvas', 'WebGL', 'Emoji Rendering', 'SVG Rendering', 'Text Metrics',
+          // Hardware (11)
+          'Screen', 'Screen Frame', 'Screen Resolution', 'Color Depth', 'Color Gamut',
+          'Hardware Concurrency', 'Device Memory', 'Media Devices', 'Touch Support',
+          'Monochrome Display', 'HDR Support',
+          // Browser (16)
+          'Navigator', 'Browser Vendor', 'Plugins', 'PDF Viewer', 'Cookies Enabled',
+          'IndexedDB', 'Local Storage', 'Session Storage', 'Open Database',
+          'CSS Styles', 'HTML Element', 'DOM Rectangle', 'MIME Types',
+          'Content Window', 'CSS Media Queries', 'Vendor Flavors',
+          // System (11)
+          'Fonts', 'Font Preferences', 'Timezone', 'Languages', 'Platform',
+          'Date/Time Locale', 'CPU Architecture', 'CPU Class', 'OS CPU',
+          'Math Precision', 'Console Errors',
+          // Audio (2)
+          'Audio Context', 'Speech Voices',
+          // Accessibility (5)
+          'Reduced Motion', 'Reduced Transparency', 'Inverted Colors',
+          'Forced Colors', 'Contrast Preference',
+          // Privacy (3)
+          'Anti-Fingerprinting', 'Private Click Measurement', 'Lies Detection',
+          // Network (2)
+          'WebRTC', 'Service Worker'
         ];
 
         // Start collecting data in background
@@ -87,8 +106,8 @@ export default function Home() {
             })
         ]);
 
-        // Update progress incrementally with slower timing
-        const stepTime = 200; // 200ms per step = 4.8 seconds total
+        // Update progress incrementally with optimized timing
+        const stepTime = 120; // 120ms per step = 6.6 seconds total for 55 collectors
 
         for (let i = 0; i < collectors.length; i++) {
           if (cancelled) return;
