@@ -1,6 +1,6 @@
-# API 接口文档
+# API Reference
 
-## 基础信息
+## Basic Information
 
 ### Base URL
 
@@ -9,7 +9,7 @@ Production: https://api.creepjs.org
 Development: http://localhost:8787
 ```
 
-**可选字段（高级采集器）**:
+**Optional Fields (Advanced Collectors)**:
 
 - `domBlockers.detected: string[]`
 - `fontPreferences.serif|sansSerif|monospace: string`
@@ -23,56 +23,56 @@ Development: http://localhost:8787
 - `audioBaseLatency.{supported,baseLatency,outputLatency,sampleRate}`
 - `applePay.{isSupported,canMakePayments,supportedVersions}`
 
-### 认证方式
+### Authentication
 
-所有需要认证的端点都需要在请求头中包含 API Token：
+All authenticated endpoints require an API Token in the request header:
 
 ```http
 X-API-Token: cfp_your_token_here
 ```
 
-### 响应格式
+### Response Format
 
-所有响应均为 JSON 格式，包含标准结构：
+All responses are in JSON format with a standard structure:
 
 ```typescript
-// 成功响应
+// Success Response
 {
   "data": { ... },
   "timestamp": 1704816000000
 }
 
-// 错误响应
+// Error Response
 {
   "error": "Error message",
   "code": "ERROR_CODE",
-  "details": { ... }  // 可选
+  "details": { ... }  // Optional
 }
 ```
 
-### HTTP 状态码
+### HTTP Status Codes
 
-| 状态码 | 说明 |
-|--------|------|
-| 200 | 成功 |
-| 400 | 请求参数错误 |
-| 401 | 未授权（Token 无效或缺失） |
-| 429 | 请求过于频繁（超出限流） |
-| 500 | 服务器内部错误 |
+| Status Code | Description |
+|-------------|-------------|
+| 200 | Success |
+| 400 | Bad Request (Invalid parameters) |
+| 401 | Unauthorized (Invalid or missing token) |
+| 429 | Too Many Requests (Rate limit exceeded) |
+| 500 | Internal Server Error |
 
-## 端点详情
+## Endpoint Details
 
-### 1. 生成指纹
+### 1. Generate Fingerprint
 
-生成浏览器唯一指纹 ID。
+Generate a unique browser fingerprint ID.
 
-**端点**: `POST /v1/fingerprint`
+**Endpoint**: `POST /v1/fingerprint`
 
-**认证**: 需要
+**Authentication**: Required
 
-**限流**: 1000 次/天/token
+**Rate Limit**: 1000 requests/day/token
 
-#### 请求
+#### Request
 
 **Headers**:
 ```http
@@ -84,20 +84,20 @@ X-API-Token: cfp_your_token_here
 ```typescript
 {
   "components": {
-    "canvas"?: string,           // Canvas 指纹 (DataURL)
-    "webgl"?: WebGLInfo,         // WebGL 信息
-    "navigator"?: NavigatorInfo, // Navigator 属性
-    "screen"?: ScreenInfo,       // 屏幕信息
-    "fonts"?: string[]           // 已安装字体列表
+    "canvas"?: string,           // Canvas fingerprint (DataURL)
+    "webgl"?: WebGLInfo,         // WebGL information
+    "navigator"?: NavigatorInfo, // Navigator properties
+    "screen"?: ScreenInfo,       // Screen information
+    "fonts"?: string[]           // Installed fonts list
   },
   "metadata"?: {
-    "timestamp"?: number,        // 客户端时间戳
+    "timestamp"?: number,        // Client timestamp
     "userAgent"?: string         // User Agent
   }
 }
 ```
 
-**TypeScript 类型定义**:
+**TypeScript Type Definitions**:
 
 ```typescript
 interface FingerprintRequest {
@@ -137,9 +137,9 @@ interface FingerprintRequest {
 }
 ```
 
-#### 响应
+#### Response
 
-**成功 (200)**:
+**Success (200)**:
 
 ```json
 {
@@ -160,17 +160,17 @@ interface FingerprintRequest {
 }
 ```
 
-**响应字段说明**:
+**Response Field Descriptions**:
 
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| `fingerprintId` | string | 唯一指纹 ID (12-16 字符) |
-| `confidence` | number | 置信度 (0-1)，表示成功采集的比例 |
-| `timestamp` | number | 服务器时间戳 (毫秒) |
-| `collectors` | object | 每个采集器的 `status/duration/value/error`，用于 UI 透明展示 |
-| `timings` | object | 采集器耗时（毫秒），包含 `total` |
+| Field | Type | Description |
+|-------|------|-------------|
+| `fingerprintId` | string | Unique fingerprint ID (12-16 characters) |
+| `confidence` | number | Confidence score (0-1), representing successful collection ratio |
+| `timestamp` | number | Server timestamp (milliseconds) |
+| `collectors` | object | Each collector's `status/duration/value/error` for UI transparency |
+| `timings` | object | Collector execution times (ms), includes `total` |
 
-**错误响应示例**:
+**Error Response Examples**:
 
 ```json
 // 400 Bad Request
@@ -199,7 +199,7 @@ interface FingerprintRequest {
 }
 ```
 
-#### 示例代码
+#### Example Code
 
 **cURL**:
 ```bash
@@ -266,32 +266,32 @@ print(data['fingerprintId'])  # 3mK9vN2Lx8pQ
 
 ---
 
-### 2. 获取 API Token
+### 2. Get API Token
 
-生成新的 API Token 用于认证。
+Generate a new API Token for authentication.
 
-**端点**: `GET /v1/token`
+**Endpoint**: `GET /v1/token`
 
-**认证**: 不需要
+**Authentication**: Not required
 
-**限流**: 10 次/天/IP
+**Rate Limit**: 10 requests/day/IP
 
-#### 请求
+#### Request
 
 **Query Parameters**:
 
-| 参数 | 类型 | 必填 | 说明 |
-|------|------|------|------|
-| `email` | string | 是 | 有效的邮箱地址 |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `email` | string | Yes | Valid email address |
 
-**示例**:
+**Example**:
 ```http
 GET /v1/token?email=user@example.com
 ```
 
-#### 响应
+#### Response
 
-**成功 (200)**:
+**Success (200)**:
 
 ```json
 {
@@ -301,15 +301,15 @@ GET /v1/token?email=user@example.com
 }
 ```
 
-**响应字段说明**:
+**Response Field Descriptions**:
 
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| `token` | string | API Token (以 `cfp_` 开头) |
-| `quota` | string | 每日配额限制 |
-| `expiresAt` | string \| null | 过期时间 (ISO 8601)，null 表示永不过期 |
+| Field | Type | Description |
+|-------|------|-------------|
+| `token` | string | API Token (starts with `cfp_`) |
+| `quota` | string | Daily quota limit |
+| `expiresAt` | string \| null | Expiration time (ISO 8601), null means never expires |
 
-**错误响应示例**:
+**Error Response Examples**:
 
 ```json
 // 400 Bad Request
@@ -326,7 +326,7 @@ GET /v1/token?email=user@example.com
 }
 ```
 
-#### 示例代码
+#### Example Code
 
 **cURL**:
 ```bash
@@ -343,17 +343,17 @@ console.log(data.token); // "cfp_a1b2c3d4e5f6g7h8"
 
 ---
 
-### 3. 健康检查
+### 3. Health Check
 
-检查 API 服务状态。
+Check API service status.
 
-**端点**: `GET /`
+**Endpoint**: `GET /`
 
-**认证**: 不需要
+**Authentication**: Not required
 
-**限流**: 无
+**Rate Limit**: None
 
-#### 响应
+#### Response
 
 ```json
 {
@@ -365,18 +365,18 @@ console.log(data.token); // "cfp_a1b2c3d4e5f6g7h8"
 
 ---
 
-## 限流规则
+## Rate Limiting
 
-### 免费版
+### Free Tier
 
-| 端点 | 限制 | 窗口期 |
-|------|------|--------|
-| `POST /v1/fingerprint` | 1000 次 | 24 小时 |
-| `GET /v1/token` | 10 次 | 24 小时 (按 IP) |
+| Endpoint | Limit | Window |
+|----------|-------|--------|
+| `POST /v1/fingerprint` | 1000 requests | 24 hours |
+| `GET /v1/token` | 10 requests | 24 hours (per IP) |
 
-### 响应头
+### Response Headers
 
-所有受限流保护的端点都会返回以下响应头：
+All rate-limited endpoints return the following headers:
 
 ```http
 X-RateLimit-Limit: 1000
@@ -384,32 +384,32 @@ X-RateLimit-Remaining: 857
 X-RateLimit-Reset: 1704902400000
 ```
 
-| Header | 说明 |
-|--------|------|
-| `X-RateLimit-Limit` | 配额总量 |
-| `X-RateLimit-Remaining` | 剩余配额 |
-| `X-RateLimit-Reset` | 重置时间戳 (毫秒) |
+| Header | Description |
+|--------|-------------|
+| `X-RateLimit-Limit` | Total quota |
+| `X-RateLimit-Remaining` | Remaining quota |
+| `X-RateLimit-Reset` | Reset timestamp (milliseconds) |
 
 ---
 
-## 错误代码
+## Error Codes
 
-| 错误代码 | HTTP 状态 | 说明 |
-|----------|-----------|------|
-| `INVALID_REQUEST` | 400 | 请求体格式错误 |
-| `INVALID_EMAIL` | 400 | 无效的邮箱格式 |
-| `MISSING_TOKEN` | 401 | 缺少 API Token |
-| `INVALID_TOKEN` | 401 | Token 无效或已过期 |
-| `RATE_LIMIT_EXCEEDED` | 429 | 超出限流配额 |
-| `INTERNAL_ERROR` | 500 | 服务器内部错误 |
+| Error Code | HTTP Status | Description |
+|------------|-------------|-------------|
+| `INVALID_REQUEST` | 400 | Invalid request body format |
+| `INVALID_EMAIL` | 400 | Invalid email format |
+| `MISSING_TOKEN` | 401 | Missing API Token |
+| `INVALID_TOKEN` | 401 | Token is invalid or expired |
+| `RATE_LIMIT_EXCEEDED` | 429 | Rate limit quota exceeded |
+| `INTERNAL_ERROR` | 500 | Internal server error |
 
 ---
 
-## SDK 使用（推荐）
+## SDK Usage (Recommended)
 
-与其直接调用 API，我们更推荐使用官方 SDK：
+Instead of calling the API directly, we recommend using the official SDK:
 
-### 安装
+### Installation
 
 **NPM**:
 ```bash
@@ -421,7 +421,7 @@ npm install @creepjs/sdk
 <script src="https://cdn.creepjs.org/v1/sdk.js"></script>
 ```
 
-### 基础用法
+### Basic Usage
 
 ```javascript
 // ES Modules
@@ -436,7 +436,7 @@ console.log(fp.confidence);     // 0.95
 console.log(fp.cached);         // false
 ```
 
-**UMD (浏览器)**:
+**UMD (Browser)**:
 ```html
 <script src="https://cdn.creepjs.org/v1/sdk.js"></script>
 <script>
@@ -448,70 +448,70 @@ console.log(fp.cached);         // false
 </script>
 ```
 
-### 高级配置
+### Advanced Configuration
 
 ```javascript
 import { CreepJS } from '@creepjs/sdk';
 
 const client = new CreepJS({
   token: 'cfp_your_token_here',
-  endpoint: 'https://api.creepjs.org', // 自定义端点
-  cache: true,                          // 启用缓存 (默认)
-  cacheTtl: 3600,                       // 缓存时间 (秒)
+  endpoint: 'https://api.creepjs.org', // Custom endpoint
+  cache: true,                          // Enable caching (default)
+  cacheTtl: 3600,                       // Cache TTL (seconds)
 });
 
 const fp = await client.getFingerprint();
 ```
 
-### SDK 配置选项
+### SDK Configuration Options
 
-| 选项 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
-| `token` | string | - | API Token (必填) |
-| `endpoint` | string | `https://api.creepjs.org` | API 端点 |
-| `cache` | boolean | `true` | 是否启用 LocalStorage 缓存 |
-| `cacheTtl` | number | `3600` | 缓存有效期 (秒) |
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `token` | string | - | API Token (required) |
+| `endpoint` | string | `https://api.creepjs.org` | API endpoint |
+| `cache` | boolean | `true` | Enable LocalStorage caching |
+| `cacheTtl` | number | `3600` | Cache TTL (seconds) |
 
 ---
 
-## 最佳实践
+## Best Practices
 
-### 1. 缓存指纹结果
+### 1. Cache Fingerprint Results
 
 ```javascript
-// ✅ 推荐：使用 SDK 自带缓存
+// ✅ Recommended: Use SDK's built-in caching
 const fp = await getFingerprint({
   token: 'cfp_xxx',
-  cache: true,      // 默认开启
-  cacheTtl: 3600,   // 1 小时
+  cache: true,      // Enabled by default
+  cacheTtl: 3600,   // 1 hour
 });
 
-// ❌ 不推荐：每次页面加载都请求
+// ❌ Not recommended: Request on every page load
 window.addEventListener('load', async () => {
   await getFingerprint({ token: 'cfp_xxx', cache: false });
 });
 ```
 
-### 2. 错误处理
+### 2. Error Handling
 
 ```javascript
 try {
   const fp = await getFingerprint({ token: 'cfp_xxx' });
 } catch (error) {
   if (error.code === 'RATE_LIMIT_EXCEEDED') {
-    console.error('请求过于频繁，请稍后再试');
+    console.error('Too many requests, please try again later');
   } else if (error.code === 'INVALID_TOKEN') {
-    console.error('Token 无效，请检查配置');
+    console.error('Invalid token, please check configuration');
   } else {
-    console.error('未知错误:', error.message);
+    console.error('Unknown error:', error.message);
   }
 }
 ```
 
-### 3. 只收集必要数据
+### 3. Collect Only Necessary Data
 
 ```javascript
-// ✅ 推荐：只收集核心指纹数据
+// ✅ Recommended: Collect only core fingerprint data
 const components = {
   canvas: collectCanvasFingerprint(),
   webgl: collectWebGLFingerprint(),
@@ -522,100 +522,100 @@ const components = {
   },
 };
 
-// ❌ 不推荐：收集过多隐私信息
+// ❌ Not recommended: Collect excessive privacy-sensitive information
 const components = {
-  // 避免收集地理位置、摄像头等敏感权限
+  // Avoid collecting geolocation, camera, etc.
 };
 ```
 
-### 4. 尊重用户隐私
+### 4. Respect User Privacy
 
 ```javascript
-// 检查 DNT (Do Not Track)
+// Check DNT (Do Not Track)
 if (navigator.doNotTrack === '1') {
-  console.log('用户不希望被追踪');
-  // 跳过指纹采集
+  console.log('User prefers not to be tracked');
+  // Skip fingerprint collection
 }
 ```
 
 ---
 
-## 性能基准
+## Performance Benchmarks
 
-| 指标 | 目标值 |
-|------|--------|
-| API 响应时间 (p50) | < 50ms |
-| API 响应时间 (p95) | < 100ms |
-| API 响应时间 (p99) | < 200ms |
-| SDK 体积 (gzipped) | < 15KB |
-| SDK 初始化时间 | < 10ms |
-| 指纹采集时间 | < 100ms |
+| Metric | Target |
+|--------|--------|
+| API Response Time (p50) | < 50ms |
+| API Response Time (p95) | < 100ms |
+| API Response Time (p99) | < 200ms |
+| SDK Bundle Size (gzipped) | < 15KB |
+| SDK Initialization Time | < 10ms |
+| Fingerprint Collection Time | < 100ms |
 
 ---
 
-## 常见问题 (FAQ)
+## Frequently Asked Questions (FAQ)
 
-### Q: 指纹 ID 会变化吗？
+### Q: Will the fingerprint ID change?
 
-**A**: 在以下情况下可能会变化：
-- 用户更换浏览器
-- 用户更换设备
-- 用户清除浏览器数据
-- 浏览器更新导致渲染变化
-- 用户安装/卸载字体
+**A**: The ID may change in the following scenarios:
+- User switches browsers
+- User switches devices
+- User clears browser data
+- Browser updates cause rendering changes
+- User installs/uninstalls fonts
 
-通常情况下，同一设备同一浏览器的指纹 ID 会保持稳定。
+Under normal circumstances, the fingerprint ID remains stable for the same device and browser.
 
-### Q: 如何提高指纹的唯一性？
+### Q: How to improve fingerprint uniqueness?
 
-**A**: 收集更多维度的数据：
+**A**: Collect more dimensions of data:
 ```javascript
 const components = {
   canvas: collectCanvasFingerprint(),
   webgl: collectWebGLFingerprint(),
   navigator: collectNavigatorInfo(),
   screen: collectScreenInfo(),
-  fonts: collectInstalledFonts(),  // 增加字体检测
+  fonts: collectInstalledFonts(),  // Add font detection
 };
 ```
 
-### Q: 是否符合 GDPR 要求？
+### Q: Is this GDPR compliant?
 
-**A**: 我们提供隐私友好的选项：
-1. 明确告知用户正在收集指纹
-2. 提供退出选项 (尊重 DNT)
-3. 不持久化存储原始指纹数据
-4. 提供数据删除机制
+**A**: We provide privacy-friendly options:
+1. Clearly inform users about fingerprint collection
+2. Provide opt-out options (respect DNT)
+3. Don't persistently store raw fingerprint data
+4. Provide data deletion mechanisms
 
-具体合规要求请咨询法律顾问。
+For specific compliance requirements, please consult legal counsel.
 
-### Q: 免费配额不够用怎么办？
+### Q: What if the free quota is insufficient?
 
-**A**: MVP 阶段免费配额为 1000 次/天。如需更多配额，请联系我们升级计划（后续功能）。
+**A**: The MVP free quota is 1000 requests/day. For higher quotas, please contact us for upgrade plans (future feature).
 
-### Q: 是否支持服务端调用？
+### Q: Does it support server-side calls?
 
-**A**: 支持，但请注意：
-- 服务端无法收集浏览器指纹数据（Canvas/WebGL 等）
-- 需要客户端先收集数据，然后传递给服务端
-- 服务端可以调用 API 进行指纹生成
+**A**: Yes, but please note:
+- Servers cannot collect browser fingerprint data (Canvas/WebGL, etc.)
+- Client must collect data first, then pass to server
+- Server can call API for fingerprint generation
 
 ---
 
-## 更新日志
+## Changelog
 
 ### v1.0.0 (2025-01-09)
 
-- 🎉 初始版本发布
-- ✅ 支持基础指纹生成
-- ✅ Token 认证
-- ✅ 限流保护
+- 🎉 Initial release
+- ✅ Basic fingerprint generation support
+- ✅ Token authentication
+- ✅ Rate limiting protection
 - ✅ JavaScript SDK
 
 ---
 
-## 支持与反馈
+## Support & Feedback
 
-- **文档**: https://creepjs.org/docs
-- **GitHub**: https://github.com/yourusername/creepjs/issues
-- **邮箱**: support@creepjs.org
+- **Documentation**: https://creepjs.org/docs
+- **GitHub**: https://github.com/taoyadev/creepjs/issues
+- **Email**: support@creepjs.org

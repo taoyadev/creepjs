@@ -1,676 +1,624 @@
-# 部署指南
+# CreepJS Deployment Guide
 
-本文档详细说明如何将 CreepJS.org 部署到生产环境。
-
----
-
-## 概览
-
-### 部署架构
-
-```
-creepjs.org (Web)          →  Cloudflare Pages
-api.creepjs.org (API)      →  Cloudflare Workers
-cdn.creepjs.org (SDK)      →  Cloudflare Pages
-```
-
-### 成本估算
-
-| 服务 | 免费额度 | 付费价格 |
-|------|----------|----------|
-| Cloudflare Pages | 无限 | $0 |
-| Cloudflare Workers | 100K 请求/天 | $5/月 (1000万请求) |
-| Cloudflare KV | 100K 读/天 | $0.50/GB |
-| 域名 | - | ~$15/年 |
+Complete guide for deploying CreepJS.org to production with automated CI/CD pipelines, infrastructure scripts, and monitoring.
 
 ---
 
-## 前提条件
+## Table of Contents
 
-### 1. 账号准备
-
-- ✅ **Cloudflare 账号** - [注册](https://dash.cloudflare.com/sign-up)
-- ✅ **GitHub 账号** - 用于代码托管
-- ✅ **域名** - creepjs.org (需购买)
-
-### 2. 开发工具
-
-```bash
-# Node.js (v18+)
-node --version
-
-# pnpm
-npm install -g pnpm
-
-# Wrangler CLI (Cloudflare Workers CLI)
-npm install -g wrangler
-```
-
-### 3. 环境变量
-
-创建 `.env.example`:
-
-```bash
-# Cloudflare
-CLOUDFLARE_ACCOUNT_ID=your_account_id
-CLOUDFLARE_API_TOKEN=your_api_token
-
-# KV Namespace IDs
-KV_NAMESPACE_ID=your_kv_namespace_id
-
-# (可选) 邮件服务
-RESEND_API_KEY=your_resend_api_key
-```
+- [Quick Start](#quick-start)
+- [Architecture Overview](#architecture-overview)
+- [Prerequisites](#prerequisites)
+- [Initial Setup](#initial-setup)
+- [Automated Deployment](#automated-deployment)
+- [Manual Deployment](#manual-deployment)
+- [Post-Deployment](#post-deployment)
+- [Monitoring & Analytics](#monitoring--analytics)
+- [Troubleshooting](#troubleshooting)
 
 ---
 
-## 部署步骤
+## Quick Start
 
-### Step 1: 域名配置
-
-#### 1.1 添加域名到 Cloudflare
-
-1. 登录 [Cloudflare Dashboard](https://dash.cloudflare.com)
-2. 点击 "Add a Site"
-3. 输入域名 `creepjs.org`
-4. 选择免费计划 (Free)
-5. 复制 Cloudflare 提供的 Nameservers
-
-#### 1.2 修改域名 DNS
-
-在域名注册商处修改 DNS 服务器为 Cloudflare 提供的地址，例如：
-```
-ada.ns.cloudflare.com
-kyle.ns.cloudflare.com
-```
-
-等待 DNS 传播（通常 5-30 分钟）。
-
-#### 1.3 配置 SSL
-
-1. 在 Cloudflare Dashboard → SSL/TLS
-2. 选择 **Full (strict)**
-3. 启用 **Always Use HTTPS**
-4. 启用 **Automatic HTTPS Rewrites**
-
----
-
-### Step 2: 部署 API 服务 (Cloudflare Workers)
-
-#### 2.1 创建 KV Namespace
+**For first-time deployment:**
 
 ```bash
-# 生产环境
-wrangler kv:namespace create "CREEPJS_KV"
+# 1. Clone and install dependencies
+git clone <repository-url>
+cd creepjs
+pnpm install
 
-# 预览环境（可选）
-wrangler kv:namespace create "CREEPJS_KV" --preview
-```
+# 2. Configure GitHub Secrets (see .github/SECRETS.md)
+# - CLOUDFLARE_API_TOKEN
+# - CLOUDFLARE_ACCOUNT_ID
 
-记录输出的 `id`，例如：
-```
-{ binding = "CREEPJS_KV", id = "abc123def456..." }
-```
+# 3. Setup KV namespaces
+./scripts/setup-kv.sh production
 
-#### 2.2 配置 wrangler.toml
+# 4. Configure secrets (optional)
+./scripts/setup-secrets.sh production
 
-编辑 `apps/api/wrangler.toml`:
-
-```toml
-name = "creepjs-api"
-main = "src/index.ts"
-compatibility_date = "2025-01-09"
-node_compat = true
-
-# 账号信息
-account_id = "your_account_id"  # 从 Dashboard 获取
-
-# Workers 设置
-workers_dev = false  # 禁用 workers.dev 子域名
-
-# 自定义域名
-routes = [
-  { pattern = "api.creepjs.org/*", zone_name = "creepjs.org" }
-]
-
-# KV Namespace
-[[kv_namespaces]]
-binding = "KV"
-id = "abc123def456..."  # 替换为实际 ID
-
-# 环境变量 (可选)
-[vars]
-ENVIRONMENT = "production"
-
-# 秘密环境变量（使用 wrangler secret put）
-# RESEND_API_KEY = "..."
-```
-
-#### 2.3 设置秘密环境变量
-
-```bash
-cd apps/api
-
-# 设置邮件 API key（如需要）
-wrangler secret put RESEND_API_KEY
-# 提示输入时粘贴 API key
-
-# 验证
-wrangler secret list
-```
-
-#### 2.4 部署
-
-```bash
-cd apps/api
-
-# 构建
-pnpm build
-
-# 部署到生产环境
-wrangler deploy
-
-# 输出示例:
-# Total Upload: 125.45 KiB / gzip: 42.18 KiB
-# Uploaded creepjs-api (2.34 sec)
-# Published creepjs-api (0.28 sec)
-#   https://api.creepjs.org
-```
-
-#### 2.5 验证部署
-
-```bash
-# 测试健康检查
-curl https://api.creepjs.org
-
-# 预期输出:
-# {"status":"ok","version":"1.0.0","timestamp":1704816000000}
-```
-
----
-
-### Step 3: 部署前端网站 (Cloudflare Pages)
-
-#### 3.1 连接 GitHub
-
-1. 登录 [Cloudflare Dashboard](https://dash.cloudflare.com)
-2. 进入 **Pages**
-3. 点击 **Create a project**
-4. 选择 **Connect to Git**
-5. 授权 GitHub
-6. 选择 `creepjs` 仓库
-
-#### 3.2 配置构建设置
-
-**Framework preset**: Next.js
-
-**Build settings**:
-```
-Build command:    cd apps/web && pnpm build
-Build output dir: apps/web/.next
-Root directory:   /
-Node version:     18
-```
-
-**Environment variables**:
-```
-NEXT_PUBLIC_API_URL=https://api.creepjs.org
-NODE_VERSION=18
-```
-
-#### 3.3 配置自定义域名
-
-1. 部署完成后，进入 Pages 项目
-2. **Custom domains** → **Set up a custom domain**
-3. 输入 `creepjs.org`
-4. Cloudflare 会自动配置 DNS 记录
-5. 重复步骤添加 `www.creepjs.org` (可选)
-
-#### 3.4 触发部署
-
-推送代码到 GitHub main 分支即可自动部署：
-
-```bash
-git add .
-git commit -m "Initial deployment"
+# 5. Push to main branch - CI/CD handles the rest!
 git push origin main
 ```
 
-Cloudflare Pages 会自动检测并部署，通常 2-5 分钟完成。
-
-#### 3.5 验证部署
-
-访问 https://creepjs.org 检查网站是否正常。
+**Automatic deployment via GitHub Actions:**
+- API deploys to Cloudflare Workers at `api.creepjs.org`
+- Web deploys to Cloudflare Pages at `creepjs.org`
+- Health checks run automatically
+- Automatic rollback on failure
 
 ---
 
-### Step 4: 部署 SDK (CDN)
+## Architecture Overview
 
-#### 4.1 构建 SDK
+### Deployment Stack
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  GitHub Actions CI/CD                                       │
+│  ├─ Pre-merge checks (lint, test, typecheck, build)        │
+│  ├─ API deployment (Cloudflare Workers)                    │
+│  ├─ Web deployment (Cloudflare Pages)                      │
+│  └─ Health checks & rollback                               │
+└─────────────────────────────────────────────────────────────┘
+         │                          │
+         ▼                          ▼
+┌──────────────────┐      ┌──────────────────┐
+│ Cloudflare       │      │ Cloudflare       │
+│ Workers          │      │ Pages            │
+│                  │      │                  │
+│ api.creepjs.org  │      │ creepjs.org      │
+│                  │      │                  │
+│ ├─ Hono.js API   │      │ ├─ Next.js 15    │
+│ ├─ KV Storage    │      │ ├─ SEO/metadata  │
+│ └─ Rate Limiting │      │ └─ Analytics     │
+└──────────────────┘      └──────────────────┘
+```
+
+### Services & URLs
+
+| Service | URL | Technology |
+|---------|-----|------------|
+| Web App | https://creepjs.org | Next.js 15 (App Router) + Cloudflare Pages |
+| API | https://api.creepjs.org | Hono.js + Cloudflare Workers |
+| Tokens Storage | KV Namespace | Cloudflare Workers KV |
+| Rate Limiting | KV Namespace | Cloudflare Workers KV |
+| Analytics | Built-in | Cloudflare Web Analytics |
+
+### Cost Estimate
+
+| Service | Free Tier | Paid (if needed) |
+|---------|-----------|------------------|
+| Cloudflare Workers | 100K requests/day | $5/month (10M requests) |
+| Cloudflare Pages | Unlimited | $0 |
+| Cloudflare KV | 100K reads/day, 1K writes/day | $0.50/GB stored |
+| GitHub Actions | 2,000 minutes/month | $0.008/minute |
+
+---
+
+## Prerequisites
+
+### 1. Required Accounts
+
+- ✅ [Cloudflare Account](https://dash.cloudflare.com/sign-up) (Free tier sufficient)
+- ✅ [GitHub Account](https://github.com/join) (for CI/CD)
+- ✅ Domain name (e.g., `creepjs.org`)
+
+### 2. Development Tools
 
 ```bash
-cd packages/sdk
-pnpm build
+# Node.js 20.9.0+
+node --version  # Should be >= 20.9.0
 
-# 输出到 dist/
-# - dist/creepjs.js (UMD)
-# - dist/creepjs.min.js (压缩版)
-# - dist/creepjs.esm.js (ES Module)
+# pnpm 9+
+npm install -g pnpm@latest
+pnpm --version
+
+# Wrangler CLI (Cloudflare Workers)
+npm install -g wrangler
+wrangler --version
+
+# Git
+git --version
 ```
 
-#### 4.2 选项 A: 通过 Pages 部署
+### 3. Domain Setup
 
-将 SDK 文件复制到 `apps/web/public/sdk/`:
+1. Add domain to Cloudflare:
+   - Go to [Cloudflare Dashboard](https://dash.cloudflare.com)
+   - Add site → Enter your domain
+   - Update nameservers at your registrar
+   - Wait for DNS propagation (5-30 minutes)
+
+2. Configure SSL/TLS:
+   - SSL/TLS → **Full (strict)**
+   - Enable **Always Use HTTPS**
+   - Enable **Automatic HTTPS Rewrites**
+
+---
+
+## Initial Setup
+
+### Step 1: Clone & Install
 
 ```bash
-mkdir -p apps/web/public/sdk
-cp packages/sdk/dist/* apps/web/public/sdk/
+git clone <repository-url>
+cd creepjs
+pnpm install
 ```
 
-然后通过 Next.js 静态文件服务访问：
-```
-https://creepjs.org/sdk/creepjs.min.js
-```
-
-#### 4.3 选项 B: 独立 CDN (推荐)
-
-创建独立的 Pages 项目用于 CDN：
-
-1. 创建 `cdn/` 目录
-2. 将 SDK 文件放入 `cdn/v1/`
-3. 创建 Pages 项目指向 `cdn/` 目录
-4. 配置域名 `cdn.creepjs.org`
-
-最终 URL:
-```
-https://cdn.creepjs.org/v1/sdk.js
-```
-
----
-
-### Step 5: DNS 配置总结
-
-完整的 DNS 记录：
-
-| 类型 | 名称 | 目标 | 代理 |
-|------|------|------|------|
-| A | @ | (Cloudflare Pages IP) | ✅ Proxied |
-| CNAME | www | creepjs.org | ✅ Proxied |
-| CNAME | api | (Workers 自动) | ✅ Proxied |
-| CNAME | cdn | (Pages 自动) | ✅ Proxied |
-
----
-
-## 环境管理
-
-### 多环境策略
-
-#### 开发环境 (dev)
+### Step 2: Environment Configuration
 
 ```bash
-# 本地开发
-pnpm dev
+# Copy example files
+cp .env.example .env.local
+cp apps/web/.env.example apps/web/.env.local
+cp apps/api/.dev.vars.example apps/api/.dev.vars
 
-# API: http://localhost:8787
-# Web: http://localhost:3000
+# Update values in .env.local files
+# See individual .env.example files for details
 ```
 
-#### 预览环境 (preview)
+**Required environment variables:**
+- `NEXT_PUBLIC_API_URL` - API base URL
+- `NEXT_PUBLIC_SITE_URL` - Site URL for SEO
+- `IPINFO_TOKEN` - IPInfo.io API token (for /api/my-ip route)
 
-- **API**: Workers 分支部署
-- **Web**: Pages 预览部署（每个 PR 自动创建）
+**Optional variables:**
+- `NEXT_PUBLIC_CF_ANALYTICS_TOKEN` - Cloudflare Web Analytics token
+- `NEXT_PUBLIC_DEBUG_ANALYTICS` - Enable analytics debugging
 
-访问 URL:
-```
-https://abc123.creepjs-api.workers.dev
-https://abc123.creepjs.pages.dev
-```
+### Step 3: GitHub Secrets Configuration
 
-#### 生产环境 (production)
+See detailed instructions in `.github/SECRETS.md`
 
-- **API**: `api.creepjs.org`
-- **Web**: `creepjs.org`
+**Required secrets:**
+```bash
+# In GitHub repository: Settings → Secrets → Actions
 
----
-
-## 持续集成/部署 (CI/CD)
-
-### GitHub Actions 配置
-
-创建 `.github/workflows/deploy.yml`:
-
-```yaml
-name: Deploy
-
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-
-jobs:
-  # API 部署
-  deploy-api:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 8
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 18
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Build API
-        run: pnpm --filter @creepjs/api build
-
-      - name: Deploy to Cloudflare Workers
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: apps/api
-          command: deploy
-
-  # 前端部署（Pages 自动处理）
-  # SDK 构建
-  build-sdk:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 8
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 18
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Build SDK
-        run: pnpm --filter @creepjs/sdk build
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: sdk
-          path: packages/sdk/dist
+CLOUDFLARE_API_TOKEN=<your_cloudflare_api_token>
+CLOUDFLARE_ACCOUNT_ID=<your_cloudflare_account_id>
 ```
 
-### GitHub Secrets 配置
+**How to obtain:**
 
-在 GitHub 仓库 Settings → Secrets 添加：
+1. **CLOUDFLARE_API_TOKEN**:
+   - Dashboard → My Profile → API Tokens
+   - Create Token → Edit Cloudflare Workers template
+   - Permissions: Workers Scripts (Edit), Pages (Edit), KV Storage (Edit)
 
-- `CLOUDFLARE_API_TOKEN`: Cloudflare API Token
-- `CLOUDFLARE_ACCOUNT_ID`: Account ID
+2. **CLOUDFLARE_ACCOUNT_ID**:
+   - Dashboard → Select your domain
+   - Copy Account ID from right sidebar
 
----
+### Step 4: KV Namespace Setup
 
-## 监控与维护
-
-### 1. Cloudflare Analytics
-
-访问 [Cloudflare Dashboard](https://dash.cloudflare.com) 查看：
-
-- 请求量统计
-- 响应时间
-- 错误率
-- 地理分布
-
-### 2. Workers Analytics
-
-在 Workers 项目页面查看：
-
-- 调用次数
-- CPU 时间
-- KV 读写次数
-
-### 3. 正常运行时间监控
-
-使用免费服务：
-
-- **UptimeRobot**: https://uptimerobot.com
-- **BetterUptime**: https://betteruptime.com
-
-配置：
-```
-监控 URL: https://api.creepjs.org
-检查间隔: 5 分钟
-告警方式: 邮件/Slack
-```
-
-### 4. 错误追踪 (可选)
-
-集成 Sentry:
+Use the automation script:
 
 ```bash
-npm install @sentry/cloudflare
-```
-
-在 Workers 中配置：
-
-```typescript
-import * as Sentry from '@sentry/cloudflare';
-
-Sentry.init({
-  dsn: 'your_sentry_dsn',
-  environment: 'production',
-});
-```
-
----
-
-## 性能优化
-
-### 1. Cloudflare Cache
-
-配置 Cache Rules:
-
-```javascript
-// 在 Worker 中设置缓存
-export default {
-  async fetch(request, env, ctx) {
-    const cache = caches.default;
-    const cacheKey = new Request(request.url, request);
-
-    // 检查缓存
-    let response = await cache.match(cacheKey);
-
-    if (!response) {
-      response = await handleRequest(request, env);
-
-      // 缓存响应（GET 请求）
-      if (request.method === 'GET') {
-        ctx.waitUntil(cache.put(cacheKey, response.clone()));
-      }
-    }
-
-    return response;
-  }
-};
-```
-
-### 2. Pages 优化
-
-- 启用 **Auto Minify** (HTML/CSS/JS)
-- 启用 **Brotli** 压缩
-- 配置 **Cache Everything** (静态资源)
-
-### 3. Workers 优化
-
-- 减少 KV 读取次数（使用缓存）
-- 优化代码体积（< 1MB）
-- 避免阻塞操作
-
----
-
-## 备份与恢复
-
-### KV 数据备份
-
-定期导出 KV 数据：
-
-```bash
-# 列出所有 key
-wrangler kv:key list --namespace-id=your_namespace_id > kv_keys.json
-
-# 批量导出
-wrangler kv:bulk export --namespace-id=your_namespace_id kv_backup.json
-```
-
-### 代码版本控制
-
-- 使用 Git tags 标记发布版本
-- 主分支受保护，需 PR 合并
-- 定期创建 release
-
-### 回滚策略
-
-**Workers 回滚**:
-```bash
-# 查看历史部署
-wrangler deployments list
-
-# 回滚到特定版本
-wrangler rollback --version-id=abc123
-```
-
-**Pages 回滚**:
-在 Cloudflare Dashboard → Pages → Deployments，选择历史部署并点击 "Rollback"。
-
----
-
-## 安全检查清单
-
-### 部署前检查
-
-- [ ] 所有环境变量已设置
-- [ ] API Token 安全存储（不要提交到 Git）
-- [ ] HTTPS 已启用
-- [ ] CORS 正确配置
-- [ ] 限流已启用
-- [ ] 输入验证完整
-- [ ] 错误消息不泄露敏感信息
-- [ ] KV 数据已加密（如需要）
-
-### 部署后检查
-
-- [ ] 所有端点正常响应
-- [ ] 限流正常工作
-- [ ] 错误处理正确
-- [ ] 监控已启用
-- [ ] SSL 证书有效
-- [ ] DNS 记录正确
-- [ ] 自定义域名正常访问
-
----
-
-## 故障排查
-
-### 常见问题
-
-#### 1. Workers 部署失败
-
-**错误**: `Error: No account_id found`
-
-**解决**:
-```bash
-# 登录 Cloudflare
+# Authenticate with Cloudflare
 wrangler login
 
-# 验证 account_id
-wrangler whoami
+# Create production KV namespaces
+./scripts/setup-kv.sh production
+
+# Output will show:
+# ✓ Created: creepjs_tokens_production (ID: abc123...)
+# ✓ Created: creepjs_ratelimit_production (ID: def456...)
+# ✓ Updated wrangler.toml with namespace IDs
 ```
 
-#### 2. KV 读写错误
+The script automatically:
+- Creates `TOKENS` and `RATE_LIMIT` KV namespaces
+- Updates `apps/api/wrangler.toml` with namespace IDs
+- Backs up existing configuration
+- Offers interactive testing
 
-**错误**: `KV.get is not a function`
-
-**解决**: 检查 `wrangler.toml` 中的 KV binding 配置。
-
-#### 3. CORS 错误
-
-**错误**: `Access-Control-Allow-Origin header is missing`
-
-**解决**: 在 Worker 中添加 CORS 中间件：
-```typescript
-app.use('*', cors({
-  origin: ['https://creepjs.org'],
-  allowMethods: ['GET', 'POST'],
-}));
+**For staging/preview environments:**
+```bash
+./scripts/setup-kv.sh staging
+./scripts/setup-kv.sh preview
 ```
 
-#### 4. Pages 构建失败
+### Step 5: Configure Workers Secrets (Optional)
 
-**错误**: `Build failed: Command failed with exit code 1`
+```bash
+# For future token signing (currently optional)
+./scripts/setup-secrets.sh production
 
-**解决**:
-- 检查 Node 版本是否正确
-- 检查 Build command 路径
-- 查看详细日志
-
----
-
-## 维护计划
-
-### 每周
-
-- [ ] 检查错误日志
-- [ ] 查看性能指标
-- [ ] 响应用户反馈
-
-### 每月
-
-- [ ] 更新依赖包
-- [ ] 审查安全性
-- [ ] 检查账单
-- [ ] 备份 KV 数据
-
-### 每季度
-
-- [ ] 性能优化
-- [ ] 代码审查
-- [ ] 安全审计
-- [ ] 架构评估
+# Follow prompts to set:
+# - CREEPJS_TOKEN_PRIVATE_KEY (optional - for enhanced token security)
+```
 
 ---
 
-## 扩展资源
+## Automated Deployment
 
-### Cloudflare 文档
+### GitHub Actions Workflows
 
-- [Workers 文档](https://developers.cloudflare.com/workers/)
-- [Pages 文档](https://developers.cloudflare.com/pages/)
-- [KV 文档](https://developers.cloudflare.com/workers/runtime-apis/kv/)
+Three automated workflows are configured:
 
-### 社区资源
+#### 1. CI - Pre-merge Checks (`.github/workflows/ci.yml`)
 
-- [Cloudflare Discord](https://discord.gg/cloudflaredev)
-- [Cloudflare Community](https://community.cloudflare.com/)
+**Triggers:** Pull requests, pushes to main/develop
+
+**Jobs:**
+- **Lint** - ESLint + Prettier checks
+- **Type Check** - TypeScript validation
+- **Test** - Unit tests for all packages
+- **Build** - Build verification
+- **OpenSpec Validate** - Spec validation
+- **Security Audit** - Dependency vulnerability scan
+
+**Status:** Required to pass before merge
+
+#### 2. Deploy API (`.github/workflows/deploy-api.yml`)
+
+**Triggers:** Push to main branch
+
+**Steps:**
+1. Install dependencies
+2. Build API package
+3. Deploy to Cloudflare Workers
+4. Run health checks:
+   - API root endpoint
+   - Fingerprint generation endpoint
+5. **Automatic rollback** if health checks fail
+
+**Deployment URL:** `https://api.creepjs.org`
+
+#### 3. Deploy Web (`.github/workflows/deploy-web.yml`)
+
+**Triggers:** Push to main branch
+
+**Steps:**
+1. Install dependencies
+2. Build Next.js app
+3. Deploy to Cloudflare Pages
+4. Run health checks:
+   - Homepage
+   - Demo page
+   - Sitemap.xml
+5. **Lighthouse CI** on PR previews
+
+**Deployment URL:** `https://creepjs.org`
+
+### Deployment Process
+
+```bash
+# 1. Create feature branch
+git checkout -b feature/my-feature
+
+# 2. Make changes and commit
+git add .
+git commit -m "feat: add new feature"
+
+# 3. Push and create PR
+git push origin feature/my-feature
+# Create PR on GitHub
+
+# 4. CI checks run automatically
+# - Lint, typecheck, test, build must pass
+# - PR preview deployment created
+
+# 5. Merge PR to main
+# - Production deployment triggered automatically
+# - Health checks run
+# - Rollback if any check fails
+```
+
+### PR Preview Deployments
+
+**Automatic preview URLs:**
+- Web: `https://<branch-name>.creepjs.pages.dev`
+- API: Workers preview deployment
+
+**Features:**
+- Isolated environment per PR
+- Lighthouse performance report
+- Automatic cleanup when PR is closed
 
 ---
 
-## 紧急联系方式
+## Manual Deployment
 
-**技术支持**:
-- Cloudflare Support: https://dash.cloudflare.com/support
-- GitHub Issues: https://github.com/yourusername/creepjs/issues
+### API (Cloudflare Workers)
 
-**监控告警**:
-- 邮箱: alerts@creepjs.org
-- Slack: #creepjs-alerts
+```bash
+cd apps/api
+
+# Build
+pnpm build
+
+# Deploy to production
+wrangler deploy
+
+# Deploy to staging
+wrangler deploy --env staging
+
+# View deployment
+wrangler deployments list
+
+# Rollback if needed
+wrangler rollback
+```
+
+### Web (Cloudflare Pages)
+
+Cloudflare Pages handles deployment automatically via GitHub integration. For manual deployment:
+
+```bash
+cd apps/web
+
+# Build
+pnpm build
+
+# Deploy via Wrangler (alternative)
+wrangler pages deploy .next --project-name=creepjs-web
+```
 
 ---
 
-**文档维护**: 定期更新
-**最后更新**: 2025-01-09
+## Post-Deployment
+
+### Health Check Script
+
+Verify deployment with the automated health check script:
+
+```bash
+# Check production
+./scripts/health-check.sh https://api.creepjs.org
+
+# Check with API token
+./scripts/health-check.sh https://api.creepjs.org cfp_your_token_here
+
+# Output example:
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ✅ Health Check PASSED!
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#
+# Total Tests: 7
+# ✓ Passed: 7
+# ⚠  Warnings: 0
+# ✗ Failed: 0
+```
+
+**Tests performed:**
+- API root endpoint
+- CORS headers
+- Token generation
+- Fingerprint generation (if token provided)
+- Authentication requirements
+- Rate limiting
+- Error handling
+
+### Domain Configuration
+
+Verify DNS records in Cloudflare Dashboard:
+
+| Type | Name | Target | Proxy |
+|------|------|--------|-------|
+| A/CNAME | @ | (Pages auto-configured) | ✅ Proxied |
+| CNAME | www | creepjs.org | ✅ Proxied |
+| CNAME | api | (Workers auto-configured) | ✅ Proxied |
+
+### SEO Verification
+
+Check SEO implementation:
+
+```bash
+# Verify sitemap
+curl https://creepjs.org/sitemap.xml
+
+# Verify robots.txt
+curl https://creepjs.org/robots.txt
+
+# Verify Open Graph images
+curl -I https://creepjs.org/opengraph-image.png
+
+# Verify structured data (view source)
+curl https://creepjs.org | grep 'application/ld+json'
+```
+
+### Analytics Setup
+
+1. Create Cloudflare Web Analytics site:
+   - Dashboard → Web Analytics → Add a site
+   - Copy the site token
+
+2. Add to environment variables:
+   ```bash
+   # In Cloudflare Pages Settings → Environment Variables
+   NEXT_PUBLIC_CF_ANALYTICS_TOKEN=<your_token>
+   ```
+
+3. Redeploy to activate analytics
+
+4. View analytics:
+   - Dashboard → Web Analytics → View site
+
+---
+
+## Monitoring & Analytics
+
+### Cloudflare Analytics
+
+**Metrics available:**
+- Page views and unique visitors
+- Geographic distribution
+- Bandwidth usage
+- Cache hit rate
+- Response times
+
+**Access:** Dashboard → Analytics → Web Analytics
+
+### Workers Analytics
+
+**Metrics available:**
+- Request count
+- CPU time
+- KV operations
+- Error rate
+- Subrequest count
+
+**Access:** Dashboard → Workers → Select worker → Metrics
+
+### Custom Events
+
+The analytics library (`src/lib/analytics.ts`) tracks:
+- Fingerprint generation
+- API token requests
+- Button clicks
+- Page views
+- Errors
+
+**View in Cloudflare:** Web Analytics → Events tab
+
+### Uptime Monitoring (Recommended)
+
+Set up external monitoring:
+
+**UptimeRobot** (free):
+```
+Monitor: https://api.creepjs.org
+Interval: 5 minutes
+Alert: Email/Slack/Webhook
+```
+
+**Better Uptime** (free tier):
+```
+Monitor: https://api.creepjs.org
+Interval: 3 minutes
+Alert: Email/Slack/Discord/PagerDuty
+```
+
+---
+
+## Troubleshooting
+
+### Deployment Fails
+
+**Issue:** `Error: A request to the Cloudflare API failed`
+
+**Solutions:**
+1. Verify `CLOUDFLARE_API_TOKEN` in GitHub Secrets
+2. Check token permissions (Workers Scripts - Edit required)
+3. Ensure token hasn't expired
+4. Run `wrangler whoami` locally to test authentication
+
+### Health Check Fails
+
+**Issue:** Health check returns 404 or 500
+
+**Solutions:**
+1. Check Workers logs: `wrangler tail`
+2. Verify KV namespaces are bound in `wrangler.toml`
+3. Test locally: `wrangler dev` then `curl http://localhost:8787`
+4. Check recent deployments: `wrangler deployments list`
+
+### KV Namespace Errors
+
+**Issue:** `KV.get is not a function`
+
+**Solutions:**
+1. Verify `[[kv_namespaces]]` in `apps/api/wrangler.toml`
+2. Ensure namespace IDs are correct (not placeholder values)
+3. Re-run setup: `./scripts/setup-kv.sh production`
+
+### Build Fails
+
+**Issue:** `Type errors` or `Build failed`
+
+**Solutions:**
+1. Run locally: `pnpm build`
+2. Check TypeScript errors: `pnpm typecheck`
+3. Verify all dependencies: `pnpm install`
+4. Clear cache: `rm -rf node_modules .next && pnpm install`
+
+### CORS Errors
+
+**Issue:** `Access-Control-Allow-Origin header missing`
+
+**Solutions:**
+1. Check CORS middleware in `apps/api/src/middleware/cors.ts`
+2. Verify `CORS_ORIGIN` in `wrangler.toml` vars section
+3. Test preflight: `curl -X OPTIONS -H "Origin: https://creepjs.org" https://api.creepjs.org/v1/fingerprint`
+
+### Rollback Procedure
+
+**API (Workers):**
+```bash
+# List deployments
+wrangler deployments list
+
+# Rollback to previous
+wrangler rollback
+
+# Or specific deployment
+wrangler rollback --message "Rollback to stable version"
+```
+
+**Web (Pages):**
+1. Dashboard → Pages → creepjs-web → Deployments
+2. Find stable deployment
+3. Click "..." → "Rollback to this deployment"
+
+---
+
+## Maintenance
+
+### Weekly Checks
+
+- [ ] Review error logs in Cloudflare Dashboard
+- [ ] Check API response times
+- [ ] Monitor KV storage usage
+- [ ] Review GitHub Actions success rate
+
+### Monthly Tasks
+
+- [ ] Update dependencies: `pnpm update`
+- [ ] Run security audit: `pnpm audit`
+- [ ] Review and rotate API tokens
+- [ ] Backup KV data: `wrangler kv:bulk get`
+- [ ] Review analytics and optimize
+
+### Updating Dependencies
+
+```bash
+# Check outdated packages
+pnpm outdated
+
+# Update all (interactive)
+pnpm update
+
+# Update specific package
+pnpm update <package-name>
+
+# After updates, test thoroughly
+pnpm build
+pnpm test
+```
+
+---
+
+## Additional Resources
+
+### Documentation
+
+- [Cloudflare Workers Docs](https://developers.cloudflare.com/workers/)
+- [Cloudflare Pages Docs](https://developers.cloudflare.com/pages/)
+- [Next.js 15 Docs](https://nextjs.org/docs)
+- [Wrangler CLI Docs](https://developers.cloudflare.com/workers/wrangler/)
+
+### Support
+
+- **GitHub Issues**: For bugs and feature requests
+- **Cloudflare Community**: https://community.cloudflare.com
+- **Cloudflare Discord**: https://discord.gg/cloudflaredev
+
+---
+
+**Document Version:** 1.0.0
+**Last Updated:** 2025-01-10
+**Maintained By:** CreepJS Team

@@ -1,136 +1,129 @@
-# 开发者指南
+# Development Guide
 
-本指南面向在本地开发、调试和验证 CreepJS.org 的贡献者。
+## Prerequisites
 
-## 1. 前置要求
+- **Node.js** >= 20.9.0
+- **pnpm** >= 9.0.0 (MUST use pnpm, not npm or yarn)
+- **Git**
+- **Code Editor** (VS Code recommended)
 
-| 工具 | 版本/说明 |
-|------|-----------|
-| Node.js | 18.19+ (Cloudflare Workers 兼容) |
-| pnpm | 8.x+（推荐 `corepack enable`） |
-| Turborepo | 自带于 pnpm workspace，不需要全局安装 |
-| Wrangler CLI | `npm i -g wrangler`，用于 Workers/KV |
-| Git | 支持长路径与 LFS（如需 Demo 资源） |
-| Optional | Miniflare、Playwright、Redis CLI（仅本地调试） |
+## Getting Started
+
+### 1. Clone Repository
 
 ```bash
-# 快速检查
-node -v
-pnpm -v
-wrangler --version
+git clone https://github.com/taoyadev/creepjs.git
+cd creepjs
 ```
 
-## 2. 仓库结构
+### 2. Install Dependencies
 
-```
-creepjs/
-├── apps/
-│   ├── web/        # Next.js 15 App Router 站点
-│   └── api/        # Cloudflare Workers + Hono API
-├── packages/
-│   ├── core/       # 指纹收集 & 哈希算法
-│   └── sdk/        # 浏览器/Node SDK 封装
-├── docs/           # 产品 & 技术文档
-├── openspec/       # 规格与变更提案
-└── package.json    # Workspace 清单
-```
-
-- `apps/web`: 落地页、Demo、Docs、Playground，使用 shadcn/ui 和 Tailwind。
-- `apps/api`: Hono.js + KV，包含 `routes/`, `middleware/`, `utils/`。
-- `packages/core`: Canvas/WebGL/Navigator 收集器与 MurmurHash 实现。
-- `packages/sdk`: `getFingerprint` 高级封装（导出 ESM + UMD）。
-
-## 3. 安装与脚本
+**IMPORTANT**: MUST use pnpm
 
 ```bash
-pnpm install           # 安装所有 workspace 依赖
-pnpm dev:web           # apps/web 本地开发（Next.js）
-pnpm dev:api           # apps/api 使用 wrangler dev
-turbo run build        # 构建全部项目
-pnpm lint              # 运行 ESLint + TypeScript 检查
-turbo run test         # 运行单元测试（Vitest/Jest）
-turbo run test:e2e     # Playwright 端到端（需要浏览器）
+# Install pnpm if not installed
+npm install -g pnpm
+
+# Install all dependencies
+pnpm install
 ```
 
-> Linting 采用单一 `eslint.config.mjs`（Flat Config）+ Next 插件组合，`pnpm lint --filter <package>` 可在单个 workspace 中执行规则。Next.js 构建流程仍会运行 `next lint`，因此 `apps/web` 下的 `.eslintrc.json` 仅用于告知 Next 使用其插件，实际规则统一由根配置维护。
-
-### 环境变量
-
-复制模板文件并填写：
+### 3. Start Development Server
 
 ```bash
-cp .env.example .env.local
+# Start all dev servers (web + api)
+pnpm dev
+
+# Or start individually
+pnpm --filter @creepjs/web dev     # http://localhost:3000
+pnpm --filter @creepjs/api dev      # http://localhost:8787
 ```
 
-关键变量：
-- `NEXT_PUBLIC_API_BASE=https://api.creepjs.org`
-- `CREEPJS_TOKEN_PRIVATE_KEY=`（仅本地模拟）
-- `CREEPJS_KV_NAMESPACE=` （wrangler 输出）
+## Project Structure
 
-Workers 端环境通过 `wrangler secret put` 管理。
+See [README.md](../README.md#project-structure) for detailed structure.
 
-## 4. 开发流程
+## Development Workflow
 
-1. **创建 OpenSpec 变更** → `openspec/changes/<id>/`，写好 proposal/tasks/spec。
-2. **创建分支** → `git checkout -b docs/add-playground-guide`。
-3. **实现与自测** → 依据 `tasks.md` 完成子任务。
-4. **运行质量检查** → `pnpm lint && turbo run test`；如修改 API，还需 `wrangler dev` 验证。
-5. **提交** → 使用 Conventional Commit (`docs: add sdk guide`) 并在描述中引用 change-id。
-6. **PR & 回归** → 在 CI 中验证 lint/test/preview 均通过。
+### 1. Create Feature Branch
 
-## 5. 测试策略
-
-| 层级 | 位置 | 说明 |
-|------|------|------|
-| 单元测试 | `*.test.ts` | collectors、hash、Hono handlers、SDK utils |
-| 集成测试 | `apps/api/tests`, `apps/web/tests` | Miniflare + Playwright 场景 |
-| 可视测试 | Storybook/Chromatic（可选） | 组件回归 |
-
-示例运行：
 ```bash
+git checkout -b feature/my-feature
+```
+
+### 2. Make Changes
+
+- Follow code standards
+- Write tests
+- Update documentation
+
+### 3. Run Tests
+
+```bash
+pnpm turbo run test
+```
+
+### 4. Commit Changes
+
+```bash
+git add .
+git commit -m "feat: add my feature"
+git push origin feature/my-feature
+```
+
+### 5. Create Pull Request
+
+Submit PR on GitHub for review.
+
+## Code Standards
+
+- TypeScript strict mode
+- ESLint + Prettier
+- Follow conventional commits
+- Write tests for new features
+
+## Testing
+
+```bash
+# Run all tests
+pnpm turbo run test
+
+# Test specific package
 pnpm --filter @creepjs/core test
-pnpm --filter apps/web test:e2e
-pnpm --filter @creepjs/api test   # Cloudflare Workers (Vitest pool)
+pnpm --filter @creepjs/api test
 ```
 
-`apps/api/tests` 使用 Cloudflare Vitest pool + 内存 KV 模拟器，覆盖 `/v1/token`、`/v1/fingerprint` 的鉴权、限流和成功路径。添加新端点时务必同步扩展对应的测试 helper（`tests/utils.ts`）以保持行为可验证。
+## Build
 
-## 6. 调试与排障
+```bash
+# Build all packages
+pnpm turbo run build
 
-### API
-- `wrangler dev` 会自动加载 `.dev.vars`，如需自定义 KV 数据可使用 `wrangler kv:key put`。
-- 通过 `wrangler tail` 观察生产日志。
-- 常见错误
-  - `KV namespace not bound` → 检查 `wrangler.toml`。
-  - `401 INVALID_TOKEN` → 确认 `X-API-Token` 头。
+# Build specific package
+pnpm --filter @creepjs/web build
+```
 
-### Web
-- Next.js 使用边缘运行时，确保 API 代理指向 `api.creepjs.org`。
-- Demo 需要 WebGL；若浏览器禁用，将 fallback 到 "WebGL unavailable" 提示。
+## Common Issues
 
-### SDK
-- `pnpm --filter @creepjs/sdk build --watch` 可实时输出 UMD/ESM。
-- 通过 `pnpm --filter apps/web dev` 引入本地 SDK（pnpm workspace linking）。
+### pnpm install fails
 
-## 7. 质量守则
+```bash
+# Clear cache
+pnpm store prune
 
-- 模块上限 ~300 行；当 Demo/SDK 逻辑复杂时拆分 hooks/util。
-- 不直接引入浏览器专有 API 于服务器组件；使用 `"use client"` 分离。
-- 所有网络请求包裹在 `try/catch` 并打印结构化日志。
-- SDK 公共 API 变更必须 bump minor/major 版本并更新 [SDK](./SDK.md)。
-- 提交前运行 `openspec validate <change-id> --strict`。
+# Re-install
+rm -rf node_modules pnpm-lock.yaml
+pnpm install
+```
 
-## 8. 发布流程（概览）
+### Port already in use
 
-1. 合并到 `main` → 触发 CI（lint/test/build）。
-2. Cloudflare Pages 自动构建 `apps/web`。
-3. Workers 通过 `wrangler deploy`（GitHub Action）发布。
-4. SDK 发布：`pnpm changeset`, `pnpm publish -r`，并把构建产物同步到 `apps/web/public/sdk.js` 与 CDN。
-5. 更新 `docs` & `CHANGELOG`，必要时运行 `openspec archive`。
+```bash
+# Kill process on port
+lsof -ti:3000 | xargs kill -9
+```
 
-## 9. 资源
+## Support
 
-- [ARCHITECTURE.md](./ARCHITECTURE.md) 获取系统图。
-- [DEPLOYMENT.md](./DEPLOYMENT.md) 获取 Cloudflare 指令。
-- [SECURITY.md](./SECURITY.md) 审查数据处理。
-- Slack `#creepjs-dev` / 邮件 `dev@creepjs.org` 反馈阻塞。
+- **GitHub Issues**: https://github.com/taoyadev/creepjs/issues
+- **Documentation**: https://creepjs.org/docs

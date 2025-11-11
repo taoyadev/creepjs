@@ -1,198 +1,306 @@
-# SDK 指南 (@creepjs/sdk)
+# SDK Guide
 
-CreepJS SDK 为浏览器与边缘环境提供易用的 `getFingerprint` API，用来采集 Canvas/WebGL/Navigator 等组件并调用 `POST /v1/fingerprint`。
+## Installation
 
-## 1. 安装方式
+### NPM
 
-### npm / pnpm / yarn
+```bash
+npm install @creepjs/sdk
+```
+
+### Yarn
+
+```bash
+yarn add @creepjs/sdk
+```
+
+### pnpm
+
 ```bash
 pnpm add @creepjs/sdk
 ```
 
 ### CDN (UMD)
+
 ```html
-<script src="https://cdn.creepjs.org/sdk@1.x/creepjs-sdk.umd.js" defer></script>
+<script src="https://cdn.creepjs.org/v1/sdk.js"></script>
+```
+
+## Quick Start
+
+### ES Modules
+
+```javascript
+import { getFingerprint } from '@creepjs/sdk';
+
+const result = await getFingerprint({
+  token: 'cfp_your_token_here',
+});
+
+console.log(result.fingerprintId); // "3mK9vN2Lx8pQ"
+console.log(result.confidence);     // 0.95
+console.log(result.cached);         // false
+```
+
+### CommonJS
+
+```javascript
+const { getFingerprint } = require('@creepjs/sdk');
+
+getFingerprint({
+  token: 'cfp_your_token_here',
+}).then(result => {
+  console.log(result.fingerprintId);
+});
+```
+
+### UMD (Browser)
+
+```html
+<script src="https://cdn.creepjs.org/v1/sdk.js"></script>
 <script>
-  async function run() {
-    await window.CreepJS.ready;
-    const fp = await window.CreepJS.getFingerprint({ token: 'cfp_xxx' });
-    console.log(fp.fingerprintId);
-  }
-  run();
+  CreepJS.getFingerprint({
+    token: 'cfp_your_token_here',
+  }).then(result => {
+    console.log('Fingerprint:', result.fingerprintId);
+  });
 </script>
 ```
 
-### ESM import (Edge/Workers)
-```ts
-import { createClient } from '@creepjs/sdk/edge';
-const client = createClient({ token: env.API_TOKEN, baseUrl: env.API_BASE });
-const result = await client.getFingerprint({ components });
+## API Reference
+
+### `getFingerprint(options)`
+
+Generate browser fingerprint.
+
+**Parameters**:
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `token` | string | Yes | - | API Token |
+| `endpoint` | string | No | `https://api.creepjs.org` | API endpoint |
+| `cache` | boolean | No | `true` | Enable caching |
+| `cacheTtl` | number | No | `3600` | Cache TTL (seconds) |
+
+**Returns**: `Promise<FingerprintResult>`
+
+```typescript
+interface FingerprintResult {
+  fingerprintId: string;    // Unique fingerprint ID
+  confidence: number;        // Confidence (0-1)
+  uniqueness: number;        // Uniqueness score (0-1)
+  timestamp: number;         // Timestamp (ms)
+  cached: boolean;           // From cache?
+}
 ```
 
-## 2. 快速开始
+**Example**:
 
-```ts
-import { getFingerprint } from '@creepjs/sdk';
+```javascript
+const result = await getFingerprint({
+  token: 'cfp_xxx',
+  cache: true,
+  cacheTtl: 7200, // 2 hours
+});
+```
 
+### `CreepJS` Class
+
+Advanced usage with class instantiation.
+
+```javascript
+import { CreepJS } from '@creepjs/sdk';
+
+const client = new CreepJS({
+  token: 'cfp_your_token_here',
+  endpoint: 'https://api.creepjs.org',
+  cache: true,
+  cacheTtl: 3600,
+});
+
+// Get fingerprint
+const fp = await client.getFingerprint();
+
+// Clear cache
+client.clearCache();
+```
+
+## Configuration
+
+### Cache Settings
+
+```javascript
+// Enable caching (default)
 const fp = await getFingerprint({
-  token: 'cfp_demo_token',
-  components: {
-    navigator: true,
-    canvas: true,
-    webgl: true,
-  },
-  metadata: {
-    userAgent: navigator.userAgent,
-  },
+  token: 'cfp_xxx',
+  cache: true,      // Use localStorage
+  cacheTtl: 3600,   // 1 hour
 });
 
-console.log(fp.fingerprintId); // => "abc123def456"
-```
-
-## 3. API 概览
-
-| 函数 | 描述 |
-|------|------|
-| `getFingerprint(options?)` | 采集默认组件并请求 API，返回 `{ fingerprintId, confidence, components }` |
-| `createClient(config)` | 返回带缓存/重试的客户端实例，可多次调用 `client.getFingerprint()` |
-| `collectComponents(overrides?)` | 仅收集信息，不调用 API，常用于自定义管道 |
-
-### `getFingerprint` 选项
-
-```ts
-interface GetFingerprintOptions {
-  token: string;                  // 必填，X-API-Token
-  baseUrl?: string;               // 默认 https://api.creepjs.org
-  transport?: 'fetch' | 'xhr';    // 浏览器兼容选择
-  cacheTtl?: number;              // 本地缓存秒数，默认 3600
-  components?: ComponentsConfig;  // 控制采集项
-  metadata?: {
-    userAgent?: string;
-    timestamp?: number;
-    dnt?: boolean;
-  };
-  onProgress?: (step: ProgressEvent) => void;
-  signal?: AbortSignal;
-}
-```
-
-`ComponentsConfig` 允许传入 `boolean | CollectorFn`. 例如：
-```ts
+// Disable caching
 const fp = await getFingerprint({
-  token,
-  components: {
-    canvas: ({ canvas }) => canvas.toDataURL(),
-    fonts: false, // 关闭字体检测
-  },
+  token: 'cfp_xxx',
+  cache: false,  // Always fetch fresh
 });
 ```
 
-### 返回值
-```ts
-interface FingerprintResponse {
-  fingerprintId: string;
-  confidence: number;           // 0-1 之间，基于组件覆盖率
-  requestedAt: string;          // ISO timestamp
-  components: Record<string, ComponentHash>;
-}
-```
+### Custom Endpoint
 
-## 4. 缓存与重试
-
-- 默认使用 `localStorage` 作为 1 小时缓存；可通过 `cacheProvider` 注入自定义实现。
-- 网络失败时重试 2 次（指数退避 250ms → 1s）。
-- SDK 会在 `navigator.doNotTrack === '1'` 时直接拒绝并抛出 `DntSignalError`。
-
-```ts
-const client = createClient({
-  token,
-  cacheProvider: new MapCache(),
-  retries: 1,
+```javascript
+// Use custom API endpoint
+const fp = await getFingerprint({
+  token: 'cfp_xxx',
+  endpoint: 'https://your-custom-api.com',
 });
 ```
 
-## 5. Node / 边缘运行
+## Error Handling
 
-- `@creepjs/sdk/edge` 删除了 DOM 依赖，可在 Cloudflare Workers、Next.js Edge、Deno Deploy 使用。
-- 需要由客户端提前收集组件并传入 `client.getFingerprint({ components })`。
-
-```ts
-import { createClient } from '@creepjs/sdk/edge';
-import type { ComponentsPayload } from '@creepjs/sdk';
-
-export default async function handler(req: Request) {
-  const payload = (await req.json()) as ComponentsPayload;
-  const client = createClient({ token: env.API_TOKEN, baseUrl: env.API_BASE });
-  return client.getFingerprint({ components: payload });
+```javascript
+try {
+  const fp = await getFingerprint({ token: 'cfp_xxx' });
+} catch (error) {
+  if (error.code === 'INVALID_TOKEN') {
+    console.error('Invalid API token');
+  } else if (error.code === 'RATE_LIMIT_EXCEEDED') {
+    console.error('Rate limit exceeded');
+  } else if (error.code === 'NETWORK_ERROR') {
+    console.error('Network error, please try again');
+  } else {
+    console.error('Unknown error:', error.message);
+  }
 }
 ```
 
-## 6. 构建与发布
+### Error Codes
 
-| 命令 | 说明 |
-|------|------|
-| `pnpm --filter @creepjs/sdk dev` | Rollup watch，输出 `dist/` |
-| `pnpm --filter @creepjs/sdk build` | 产出 `dist/index.esm.js` 与 `dist/index.umd.js` |
-| `pnpm --filter @creepjs/sdk test` | 单元测试（collectors/hash/transport） |
-| `pnpm changeset` | 声明版本号（遵循 semver） |
-| `pnpm publish -r` | 发包到 npm，并同步到 `apps/web/public/sdk.js` |
+| Code | Description |
+|------|-------------|
+| `INVALID_TOKEN` | Invalid API token |
+| `RATE_LIMIT_EXCEEDED` | Rate limit exceeded |
+| `NETWORK_ERROR` | Network connection failed |
+| `INVALID_RESPONSE` | Invalid API response |
+| `BROWSER_NOT_SUPPORTED` | Browser not supported |
 
-发布检查：
-1. 更新 [CHANGELOG](../README.md#快速开始) 及版本号。
-2. 运行 `pnpm lint && pnpm --filter @creepjs/sdk test`。
-3. 执行 `pnpm --filter @creepjs/sdk build` 并核对产物大小 < 15KB (gz)。
-4. 将新 CDN 地址写入 [PLAYGROUND](./PLAYGROUND.md) 如果需要。
+## Advanced Usage
 
-## 7. 集成示例
+### TypeScript
 
-### React / Next.js App Router
+```typescript
+import { getFingerprint, FingerprintResult } from '@creepjs/sdk';
+
+async function identifyUser(): Promise<string> {
+  const result: FingerprintResult = await getFingerprint({
+    token: process.env.CREEPJS_TOKEN!,
+  });
+  
+  return result.fingerprintId;
+}
+```
+
+### React
+
 ```tsx
-'use client';
 import { useEffect, useState } from 'react';
 import { getFingerprint } from '@creepjs/sdk';
 
-export default function Demo() {
-  const [fingerprint, setFingerprint] = useState<string>();
+function App() {
+  const [fingerprintId, setFingerprintId] = useState<string>('');
+
   useEffect(() => {
-    getFingerprint({ token: process.env.NEXT_PUBLIC_CREEPJS_TOKEN! })
-      .then((res) => setFingerprint(res.fingerprintId))
+    getFingerprint({ token: 'cfp_xxx' })
+      .then(result => setFingerprintId(result.fingerprintId))
       .catch(console.error);
   }, []);
-  return <p>Fingerprint: {fingerprint ?? 'Collecting...'}</p>;
+
+  return <div>Fingerprint: {fingerprintId}</div>;
 }
 ```
 
 ### Vue
-```ts
+
+```vue
+<script setup>
+import { ref, onMounted } from 'vue';
 import { getFingerprint } from '@creepjs/sdk';
-const fp = await getFingerprint({ token: import.meta.env.VITE_TOKEN });
+
+const fingerprintId = ref('');
+
+onMounted(async () => {
+  const result = await getFingerprint({ token: 'cfp_xxx' });
+  fingerprintId.value = result.fingerprintId;
+});
+</script>
+
+<template>
+  <div>Fingerprint: {{ fingerprintId }}</div>
+</template>
 ```
 
-### Server-side Verification
-```ts
-// Express example
-app.post('/session', async (req, res) => {
-  const { components } = req.body;
-  const client = createClient({ token: process.env.CREEPJS_TOKEN! });
-  const fp = await client.getFingerprint({ components });
-  res.json({ sessionId: uuid(), fingerprintId: fp.fingerprintId });
+## Best Practices
+
+### 1. Cache Results
+
+```javascript
+// ✅ Good: Use caching
+const fp = await getFingerprint({
+  token: 'cfp_xxx',
+  cache: true,
+  cacheTtl: 3600,
+});
+
+// ❌ Bad: No caching
+const fp = await getFingerprint({
+  token: 'cfp_xxx',
+  cache: false,
 });
 ```
 
-## 8. 排障
+### 2. Error Handling
 
-| 问题 | 原因 | 解决 |
-|------|------|------|
-| `INVALID_TOKEN` | Token 过期/未绑定 | 重新生成 token，确认部署变量 |
-| `RATE_LIMIT_EXCEEDED` | 超过 1000 次/天/token | 降低采集频率或联系支持调额 |
-| `WebGL unavailable` | 浏览器禁用或 iframe 沙盒 | 启用 WebGL，或关闭 webgl 组件 |
-| `ReferenceError: window is not defined` | 在 SSR 中直接调用 `getFingerprint` | 延迟到客户端 / 使用 `collectComponents` + 服务器调用 |
+```javascript
+// ✅ Good: Proper error handling
+try {
+  const fp = await getFingerprint({ token: 'cfp_xxx' });
+  sendToBackend(fp.fingerprintId);
+} catch (error) {
+  logError(error);
+  showUserMessage('Failed to identify browser');
+}
+```
 
-## 9. 常见约定
+### 3. Respect Privacy
 
-- 默认开启组件：Canvas、WebGL、Navigator、Screen、Fonts。
-- 所有可选组件都应显式说明用途，遵循「最小化收集」。
-- 不存储原始组件数据；SDK 仅在内存/缓存保留加密哈希。
-- 在示例中演示如何尊重 DNT，并提示用户在隐私政策中披露用途。
+```javascript
+// Check Do Not Track
+if (navigator.doNotTrack === '1') {
+  console.log('User opted out of tracking');
+  // Skip fingerprinting
+} else {
+  const fp = await getFingerprint({ token: 'cfp_xxx' });
+}
+```
 
-更多 API 细节见 [API.md](./API.md)。
+## Browser Support
+
+| Browser | Version |
+|---------|---------|
+| Chrome | 80+ |
+| Firefox | 75+ |
+| Safari | 13+ |
+| Edge | 80+ |
+| Opera | 67+ |
+
+## Changelog
+
+### v1.0.0
+- Initial release
+- Basic fingerprint generation
+- LocalStorage caching
+- TypeScript support
+
+## Support
+
+- **Documentation**: https://creepjs.org/docs
+- **GitHub**: https://github.com/taoyadev/creepjs
+- **Email**: support@creepjs.org
