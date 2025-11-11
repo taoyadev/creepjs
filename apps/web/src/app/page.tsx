@@ -15,7 +15,12 @@ import {
   Palette,
   Type,
   Fingerprint,
-  AlertCircle
+  AlertCircle,
+  Shield,
+  Cpu,
+  HardDrive,
+  Languages,
+  Eye
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -842,27 +847,71 @@ export default function Home() {
 
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {[
+              // Graphics
               { type: 'canvas', icon: <Palette className="h-5 w-5" />, name: 'Canvas', category: 'Graphics' },
               { type: 'webgl', icon: <Monitor className="h-5 w-5" />, name: 'WebGL', category: 'Graphics' },
-              { type: 'navigator', icon: <Globe className="h-5 w-5" />, name: 'Navigator', category: 'Browser' },
-              { type: 'screen', icon: <Monitor className="h-5 w-5" />, name: 'Screen', category: 'Hardware' },
-              { type: 'fonts', icon: <Type className="h-5 w-5" />, name: 'Fonts', category: 'System' },
-              { type: 'timezone', icon: <Globe className="h-5 w-5" />, name: 'Timezone', category: 'System' },
-              { type: 'audio', icon: <Monitor className="h-5 w-5" />, name: 'Audio', category: 'Audio' },
-              { type: 'media-devices', icon: <Monitor className="h-5 w-5" />, name: 'Media Devices', category: 'Hardware' },
               { type: 'emoji-rendering', icon: <Palette className="h-5 w-5" />, name: 'Emoji Rendering', category: 'Graphics' },
-              { type: 'speech-voices', icon: <Type className="h-5 w-5" />, name: 'Speech Voices', category: 'Audio' },
               { type: 'svg-rendering', icon: <Palette className="h-5 w-5" />, name: 'SVG Rendering', category: 'Graphics' },
-              { type: 'math-precision', icon: <Monitor className="h-5 w-5" />, name: 'Math Precision', category: 'System' },
-              { type: 'css-styles', icon: <Palette className="h-5 w-5" />, name: 'CSS Styles', category: 'Browser' },
               { type: 'text-metrics', icon: <Type className="h-5 w-5" />, name: 'Text Metrics', category: 'Graphics' },
+
+              // Hardware
+              { type: 'screen', icon: <Monitor className="h-5 w-5" />, name: 'Screen', category: 'Hardware' },
+              { type: 'screen-frame', icon: <Monitor className="h-5 w-5" />, name: 'Screen Frame', category: 'Hardware' },
+              { type: 'screen-resolution', icon: <Monitor className="h-5 w-5" />, name: 'Screen Resolution', category: 'Hardware' },
+              { type: 'color-depth', icon: <Monitor className="h-5 w-5" />, name: 'Color Depth', category: 'Hardware' },
+              { type: 'color-gamut', icon: <Monitor className="h-5 w-5" />, name: 'Color Gamut', category: 'Hardware' },
+              { type: 'hardware-concurrency', icon: <Cpu className="h-5 w-5" />, name: 'Hardware Concurrency', category: 'Hardware' },
+              { type: 'device-memory', icon: <HardDrive className="h-5 w-5" />, name: 'Device Memory', category: 'Hardware' },
+              { type: 'media-devices', icon: <Monitor className="h-5 w-5" />, name: 'Media Devices', category: 'Hardware' },
+              { type: 'touch-support', icon: <Monitor className="h-5 w-5" />, name: 'Touch Support', category: 'Hardware' },
+              { type: 'monochrome', icon: <Monitor className="h-5 w-5" />, name: 'Monochrome', category: 'Hardware' },
+              { type: 'hdr', icon: <Monitor className="h-5 w-5" />, name: 'HDR Support', category: 'Hardware' },
+
+              // Browser
+              { type: 'navigator', icon: <Globe className="h-5 w-5" />, name: 'Navigator', category: 'Browser' },
+              { type: 'vendor', icon: <Globe className="h-5 w-5" />, name: 'Browser Vendor', category: 'Browser' },
+              { type: 'plugins', icon: <Globe className="h-5 w-5" />, name: 'Plugins', category: 'Browser' },
+              { type: 'pdf-viewer', icon: <Globe className="h-5 w-5" />, name: 'PDF Viewer', category: 'Browser' },
+              { type: 'cookies-enabled', icon: <Globe className="h-5 w-5" />, name: 'Cookies Enabled', category: 'Browser' },
+              { type: 'indexed-db', icon: <Globe className="h-5 w-5" />, name: 'IndexedDB', category: 'Browser' },
+              { type: 'local-storage', icon: <Globe className="h-5 w-5" />, name: 'Local Storage', category: 'Browser' },
+              { type: 'session-storage', icon: <Globe className="h-5 w-5" />, name: 'Session Storage', category: 'Browser' },
+              { type: 'open-database', icon: <Globe className="h-5 w-5" />, name: 'Open Database', category: 'Browser' },
+              { type: 'css-styles', icon: <Palette className="h-5 w-5" />, name: 'CSS Styles', category: 'Browser' },
               { type: 'html-element', icon: <Globe className="h-5 w-5" />, name: 'HTML Element', category: 'Browser' },
-              { type: 'console-errors', icon: <Monitor className="h-5 w-5" />, name: 'Console Errors', category: 'System' },
               { type: 'dom-rect', icon: <Globe className="h-5 w-5" />, name: 'DOM Rect', category: 'Browser' },
               { type: 'mime-types', icon: <Type className="h-5 w-5" />, name: 'MIME Types', category: 'Browser' },
-              { type: 'anti-fingerprint', icon: <AlertCircle className="h-5 w-5" />, name: 'Anti-Fingerprint', category: 'Privacy' },
               { type: 'content-window', icon: <Globe className="h-5 w-5" />, name: 'Content Window', category: 'Browser' },
               { type: 'css-media', icon: <Palette className="h-5 w-5" />, name: 'CSS Media', category: 'Browser' },
+              { type: 'vendor-flavors', icon: <Globe className="h-5 w-5" />, name: 'Vendor Flavors', category: 'Browser' },
+
+              // System
+              { type: 'fonts', icon: <Type className="h-5 w-5" />, name: 'Fonts', category: 'System' },
+              { type: 'font-preferences', icon: <Type className="h-5 w-5" />, name: 'Font Preferences', category: 'System' },
+              { type: 'timezone', icon: <Globe className="h-5 w-5" />, name: 'Timezone', category: 'System' },
+              { type: 'languages', icon: <Languages className="h-5 w-5" />, name: 'Languages', category: 'System' },
+              { type: 'platform', icon: <Monitor className="h-5 w-5" />, name: 'Platform', category: 'System' },
+              { type: 'date-time-locale', icon: <Globe className="h-5 w-5" />, name: 'Date/Time Locale', category: 'System' },
+              { type: 'architecture', icon: <Cpu className="h-5 w-5" />, name: 'CPU Architecture', category: 'System' },
+              { type: 'cpu-class', icon: <Cpu className="h-5 w-5" />, name: 'CPU Class', category: 'System' },
+              { type: 'os-cpu', icon: <Cpu className="h-5 w-5" />, name: 'OS CPU', category: 'System' },
+              { type: 'math-precision', icon: <Monitor className="h-5 w-5" />, name: 'Math Precision', category: 'System' },
+              { type: 'console-errors', icon: <Monitor className="h-5 w-5" />, name: 'Console Errors', category: 'System' },
+
+              // Audio
+              { type: 'audio', icon: <Monitor className="h-5 w-5" />, name: 'Audio', category: 'Audio' },
+              { type: 'speech-voices', icon: <Type className="h-5 w-5" />, name: 'Speech Voices', category: 'Audio' },
+
+              // Accessibility
+              { type: 'reduced-motion', icon: <Shield className="h-5 w-5" />, name: 'Reduced Motion', category: 'Accessibility' },
+              { type: 'reduced-transparency', icon: <Shield className="h-5 w-5" />, name: 'Reduced Transparency', category: 'Accessibility' },
+              { type: 'inverted-colors', icon: <Eye className="h-5 w-5" />, name: 'Inverted Colors', category: 'Accessibility' },
+              { type: 'forced-colors', icon: <Shield className="h-5 w-5" />, name: 'Forced Colors', category: 'Accessibility' },
+              { type: 'contrast', icon: <Eye className="h-5 w-5" />, name: 'Contrast Preference', category: 'Accessibility' },
+
+              // Privacy
+              { type: 'anti-fingerprint', icon: <AlertCircle className="h-5 w-5" />, name: 'Anti-Fingerprint', category: 'Privacy' },
+              { type: 'private-click-measurement', icon: <AlertCircle className="h-5 w-5" />, name: 'Private Click Measurement', category: 'Privacy' },
             ].map((item) => (
               <Link key={item.type} href={`/fingerprint/${item.type}`}>
                 <Card className="hover:border-primary transition-colors cursor-pointer h-full">
