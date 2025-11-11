@@ -22,51 +22,118 @@ export function ConfidenceDashboard({ result }: ConfidenceDashboardProps) {
   const confidencePercent = Math.round(confidence * 100);
   const collectorEntries = Object.entries(collectors || {});
 
-  // Calculate category statistics
+  // Calculate category statistics (updated to match 55 collectors)
   const categories: CategoryStats[] = [
     {
       name: 'Graphics',
       total: 5,
-      successful: [data.canvas, data.webgl, data.svg, data.css, data.textMetrics].filter(hasValue).length,
+      successful: [
+        data.canvas,
+        data.webgl,
+        data.svg,
+        data.css,
+        data.textMetrics,
+      ].filter(hasValue).length,
       color: 'hsl(var(--chart-1))',
     },
     {
-      name: 'System',
-      total: 5,
-      successful: [data.navigator, data.screen, data.fonts, data.math, data.htmlElement].filter(hasValue).length,
+      name: 'Hardware',
+      total: 11,
+      successful: [
+        data.screen,
+        data.screenFrame,
+        data.screenResolution,
+        data.colorDepth,
+        data.colorGamut,
+        data.hardwareConcurrency,
+        data.deviceMemory,
+        data.media, // Media Devices
+        data.touchSupport,
+        data.monochrome,
+        data.hdr,
+      ].filter(hasValue).length,
       color: 'hsl(var(--chart-2))',
     },
     {
-      name: 'Media',
-      total: 5,
-      successful: [data.audio, data.media, data.voices, data.clientRects, data.domRect].filter(hasValue).length,
+      name: 'Browser',
+      total: 16,
+      successful: [
+        data.navigator,
+        data.userAgent,
+        data.platform,
+        data.languages,
+        data.cookies,
+        data.storage,
+        data.plugins,
+        data.mimeTypes,
+        data.permissions,
+        data.battery,
+        data.networkInfo,
+        data.connectionType,
+        data.webdriver,
+        data.pdfViewer,
+        data.htmlElement,
+        data.contentWindow,
+      ].filter(hasValue).length,
       color: 'hsl(var(--chart-3))',
     },
     {
-      name: 'Network',
-      total: 5,
-      successful: [data.webrtc, data.serviceWorker, data.mimeTypes, data.contentWindow, data.cssMedia].filter(hasValue)
-        .length,
+      name: 'System',
+      total: 11,
+      successful: [
+        data.fonts,
+        data.fontPreferences,
+        data.timezone,
+        data.locale,
+        data.calendar,
+        data.math,
+        data.architecture,
+        data.css,
+        data.cssMedia,
+        data.domRect,
+        data.consoleErrors,
+      ].filter(hasValue).length,
       color: 'hsl(var(--chart-4))',
     },
     {
-      name: 'Security',
-      total: 4,
-      successful: [data.lies, data.resistance, data.timezone, data.consoleErrors].filter(hasValue).length,
+      name: 'Audio',
+      total: 2,
+      successful: [
+        data.audio,
+        data.audioBaseLatency,
+      ].filter(hasValue).length,
       color: 'hsl(var(--chart-5))',
     },
     {
       name: 'Accessibility',
-      total: 6,
+      total: 5,
       successful: [
-        data.colorGamut,
-        data.contrast,
-        data.forcedColors,
         data.reducedMotion,
         data.reducedTransparency,
-        data.hdr,
+        data.forcedColors,
+        data.contrast,
+        data.invertedColors,
       ].filter(hasValue).length,
       color: 'hsl(var(--primary))',
+    },
+    {
+      name: 'Privacy',
+      total: 2,
+      successful: [
+        data.resistance,
+        data.lies,
+      ].filter(hasValue).length,
+      color: 'hsl(var(--destructive))',
+    },
+    {
+      name: 'Network',
+      total: 3,
+      successful: [
+        data.webrtc,
+        data.serviceWorker,
+        data.voices,
+      ].filter(hasValue).length,
+      color: 'hsl(var(--warning))',
     },
   ];
 
@@ -285,7 +352,7 @@ export function ConfidenceDashboard({ result }: ConfidenceDashboardProps) {
               <div className="flex items-center gap-2">
                 <div
                   className={`w-3 h-3 rounded-full ${
-                    data.lies && data.lies.totalLies === 0
+                    data.lies?.totalLies === 0
                       ? 'bg-green-500'
                       : data.lies && data.lies.totalLies <= 3
                         ? 'bg-yellow-500'
@@ -295,7 +362,7 @@ export function ConfidenceDashboard({ result }: ConfidenceDashboardProps) {
                 <h4 className="font-semibold">Stability</h4>
               </div>
               <p className="text-sm text-muted-foreground">
-                {data.lies && data.lies.totalLies === 0
+                {data.lies?.totalLies === 0
                   ? 'Stable: No inconsistencies detected'
                   : data.lies && data.lies.totalLies <= 3
                     ? 'Minor: Few inconsistencies found'

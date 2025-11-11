@@ -6,8 +6,7 @@ import { Button } from '@/components/ui/button';
 import { collectFingerprint } from '@creepjs/core';
 import type { FingerprintResult } from '@creepjs/core';
 import { Copy, Check, RefreshCw } from 'lucide-react';
-import Link from 'next/link';
-import { FingerprintCollectorCard, DataRow, DataGrid, RiskBadge } from '@/components/FingerprintCollectorCard';
+import { FingerprintCollectorCard, DataRow, RiskBadge } from '@/components/FingerprintCollectorCard';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { ConfidenceDashboard } from '@/components/ConfidenceDashboard';
 import { UniquenessAnalysis } from '@/components/UniquenessAnalysis';
@@ -26,20 +25,38 @@ export default function DemoPage() {
   const [fingerprint, setFingerprint] = useState<FingerprintResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
-  const [progress, setProgress] = useState<CollectionProgress>({ current: 0, total: 24, currentCollector: '' });
+  const [progress, setProgress] = useState<CollectionProgress>({ current: 0, total: 55, currentCollector: '' });
 
   const loadFingerprint = async () => {
     setLoading(true);
-    setProgress({ current: 0, total: 24, currentCollector: 'Initializing...' });
+    setProgress({ current: 0, total: 55, currentCollector: 'Initializing...' });
 
     try {
       // Simulate progress updates (since collectFingerprint doesn't expose progress natively)
       const collectors = [
-        'Canvas', 'WebGL', 'Navigator', 'Screen', 'Fonts', 'Timezone',
-        'Audio', 'Media', 'ClientRects', 'Voices', 'SVG', 'Math',
-        'CSS', 'TextMetrics', 'HTMLElement', 'ConsoleErrors', 'DOMRect',
-        'MimeTypes', 'Resistance', 'ContentWindow', 'CSSMedia',
-        'WebRTC', 'ServiceWorker', 'Lies Detection'
+        // Graphics (5)
+        'Canvas', 'WebGL', 'Emoji Rendering', 'SVG Rendering', 'Text Metrics',
+        // Hardware (11)
+        'Screen', 'Screen Frame', 'Screen Resolution', 'Color Depth', 'Color Gamut',
+        'Hardware Concurrency', 'Device Memory', 'Media Devices', 'Touch Support',
+        'Monochrome Display', 'HDR Support',
+        // Browser (16)
+        'Navigator', 'User Agent', 'Platform', 'Languages', 'Cookies',
+        'Storage', 'Plugins', 'MIME Types', 'Permissions', 'Battery',
+        'Network Info', 'Connection Type', 'WebDriver', 'PDF Viewer',
+        'HTML Element', 'Content Window',
+        // System (11)
+        'Fonts', 'Font Preferences', 'Timezone', 'Locale', 'Calendar',
+        'Math Precision', 'CPU Architecture', 'CSS Styles', 'CSS Media',
+        'DOM Rectangle', 'Console Errors',
+        // Audio (2)
+        'Audio Context', 'Audio Base Latency',
+        // Accessibility (5)
+        'Reduced Motion', 'Reduced Transparency', 'Forced Colors', 'Contrast', 'Inverted Colors',
+        // Privacy (2)
+        'Resistance', 'Privacy Fingerprint',
+        // Network (3)
+        'WebRTC', 'Service Worker', 'Lies Detection'
       ];
 
       // Update progress incrementally
@@ -55,12 +72,12 @@ export default function DemoPage() {
             currentCollector: collectors[prev.current] || 'Finalizing...'
           };
         });
-      }, 150); // Update every 150ms
+      }, 120); // Update every 120ms (55 * 120ms = 6.6 seconds)
 
       const fp = await collectFingerprint();
 
       clearInterval(progressInterval);
-      setProgress({ current: 24, total: 24, currentCollector: 'Complete!' });
+      setProgress({ current: 55, total: 55, currentCollector: 'Complete!' });
 
       setFingerprint(fp);
     } catch (error) {
@@ -343,12 +360,15 @@ export default function DemoPage() {
                 <div className="space-y-1">
                   <DataRow label="Platform" value={fingerprint.data.navigator.platform} />
                   <DataRow label="Language" value={fingerprint.data.navigator.language} />
-                  <DataRow label="Languages" value={fingerprint.data.navigator.languages.join(', ')} />
-                  <DataRow label="Hardware Concurrency" value={`${fingerprint.data.navigator.hardwareConcurrency} cores`} />
+                  <DataRow
+                    label="Languages"
+                    value={Array.isArray(fingerprint.data.navigator.languages) ? fingerprint.data.navigator.languages.join(', ') : String(fingerprint.data.navigator.languages)}
+                  />
+                  <DataRow label="Hardware Concurrency" value={`${fingerprint.data.navigator.hardwareConcurrency ?? 'N/A'} cores`} />
                   {fingerprint.data.navigator.deviceMemory && (
                     <DataRow label="Device Memory" value={`${fingerprint.data.navigator.deviceMemory}GB`} />
                   )}
-                  <DataRow label="Max Touch Points" value={fingerprint.data.navigator.maxTouchPoints} />
+                  <DataRow label="Max Touch Points" value={String(fingerprint.data.navigator.maxTouchPoints ?? 'N/A')} />
                 </div>
                 <div className="space-y-1">
                   <DataRow label="Cookie Enabled" value={fingerprint.data.navigator.cookieEnabled ? 'Yes' : 'No'} />

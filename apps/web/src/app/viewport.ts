@@ -1,4 +1,4 @@
-import { Viewport } from 'next';
+import type { Viewport } from 'next';
 
 /**
  * Viewport configuration for Next.js 15+

@@ -447,43 +447,71 @@ function FeatureItem({ enabled, label }: { enabled: boolean; label: string }) {
 }
 
 function calculatePrivacyScore(result: FingerprintResult): number {
-  let score = 100;
+  // Use consistent scoring with PrivacyLeakageAssessment
+  // Weight: high risk=10, medium risk=4, low risk=1
+  let riskPoints = 0;
 
-  // WebRTC leak (-20 points)
+  // High risk items (10 points each)
+  // WebRTC leak
   if (result.data.webrtc && result.data.webrtc.candidates.ipv4.length > 0) {
-    score -= 20;
+    riskPoints += 10;
   }
-
-  // Canvas fingerprinting not blocked (-15 points)
+  // Canvas fingerprinting not blocked
   if (result.data.canvas && (!result.data.lies || result.data.lies.totalLies < 2)) {
-    score -= 15;
+    riskPoints += 10;
   }
-
-  // Many unique fonts (-10 points)
+  // Many unique fonts (highly identifiable)
   const uniqueFonts = result.data.fonts?.available?.length || 0;
-  if (uniqueFonts > 30) {
-    score -= 10;
+  if (uniqueFonts > 50) {
+    riskPoints += 10;
+  } else if (uniqueFonts > 30) {
+    riskPoints += 4; // Medium risk
+  }
+  // Audio fingerprinting enabled
+  if (result.data.audio?.hash) {
+    riskPoints += 10;
   }
 
-  // Audio fingerprinting enabled (-10 points)
-  if (result.data.audio && result.data.audio.hash) {
-    score -= 10;
+  // Medium risk items (4 points each)
+  // Timezone reveals location
+  if (result.data.timezone?.timezone && !result.data.timezone.timezone.includes('UTC')) {
+    riskPoints += 4;
+  }
+  // User Agent exposes info
+  if (result.data.navigator?.userAgent) {
+    riskPoints += 4;
+  }
+  // Screen resolution
+  if (result.data.screen) {
+    riskPoints += 4;
   }
 
-  // Timezone reveals location (-10 points)
-  if (result.data.timezone && result.data.timezone.timezone && !result.data.timezone.timezone.includes('UTC')) {
-    score -= 10;
+  // Low risk items (1 point each)
+  // Language preferences
+  if (result.data.navigator?.languages && result.data.navigator.languages.length > 0) {
+    riskPoints += 1;
+  }
+  // Hardware concurrency
+  if (result.data.navigator?.hardwareConcurrency) {
+    riskPoints += 1;
   }
 
-  // Low confidence suggests tampering (good) (+15 points)
+  // Bonus: Low confidence suggests privacy tools (reduce risk)
   if (result.confidence < 0.7) {
-    score += 15;
+    riskPoints -= 15;
   }
 
-  return Math.max(0, Math.min(100, score));
+  // Calculate score (0-100 scale)
+  // Max expected risk: ~70 points
+  const score = Math.max(0, Math.min(100, 100 - riskPoints));
+
+  return Math.round(score);
 }
 
-function getDeficiencies(result: FingerprintResult, analysis: any): string[] {
+function getDeficiencies(
+  result: FingerprintResult,
+  analysis: { hasWebRTCLeak: boolean; hasCanvasProtection: boolean; uniqueFonts: number; privacyScore: number }
+): string[] {
   const deficiencies: string[] = [];
 
   if (analysis.hasWebRTCLeak) {
@@ -498,7 +526,7 @@ function getDeficiencies(result: FingerprintResult, analysis: any): string[] {
     deficiencies.push(`${analysis.uniqueFonts} unique fonts make you highly identifiable`);
   }
 
-  if (result.data.audio && result.data.audio.hash) {
+  if (result.data.audio?.hash) {
     deficiencies.push('Audio fingerprinting is active');
   }
 

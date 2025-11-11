@@ -333,7 +333,7 @@ export const structuredData = {
   /**
    * Generate BreadcrumbList schema
    */
-  breadcrumb: (items: { name: string; url: string }[]) => ({
+  breadcrumb: (items: Array<{ name: string; url: string }>) => ({
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: items.map((item, index) => ({

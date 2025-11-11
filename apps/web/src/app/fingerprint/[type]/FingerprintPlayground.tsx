@@ -417,17 +417,10 @@ export default function FingerprintPlayground({ type }: { type: string }) {
   const [copied, setCopied] = useState(false);
   const [showCode, setShowCode] = useState(false);
   const [markdownContent, setMarkdownContent] = useState<string>('');
-  const [markdownLoading, setMarkdownLoading] = useState(true);
   const [scanSteps, setScanSteps] = useState<ScanStep[]>([]);
   const [progress, setProgress] = useState(0);
 
   const meta = fingerprintMeta[type];
-
-  interface FingerprintApiResponse {
-    success: boolean;
-    data?: unknown;
-    error?: string;
-  }
 
   // Define scan steps for different fingerprint types
   const getScanSteps = (fingerprintType: string): string[] => {
@@ -525,9 +518,8 @@ export default function FingerprintPlayground({ type }: { type: string }) {
           idx === i ? { ...step, status: 'completed' } : step
         ));
       }
-    } catch (err) {
+    } catch {
       setError('Failed to collect fingerprint. Please try again.');
-      console.error(err);
     } finally {
       setLoading(false);
       setProgress(100);
@@ -535,19 +527,14 @@ export default function FingerprintPlayground({ type }: { type: string }) {
   };
 
   const loadMarkdownContent = async () => {
-    setMarkdownLoading(true);
     try {
       const response = await fetch(`/content/fingerprints/${type}.md`);
       if (response.ok) {
         const text = await response.text();
         setMarkdownContent(text);
-      } else {
-        console.warn(`No content found for ${type}`);
       }
-    } catch (err) {
-      console.warn('Failed to load markdown content:', err);
-    } finally {
-      setMarkdownLoading(false);
+    } catch {
+      // Silent fail - markdown content is optional
     }
   };
 

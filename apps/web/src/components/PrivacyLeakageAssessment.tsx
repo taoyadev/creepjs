@@ -166,7 +166,7 @@ export function PrivacyLeakageAssessment({ result }: PrivacyLeakageAssessmentPro
       riskCount++;
     }
 
-    if (result.data.fonts && result.data.fonts.available && result.data.fonts.available.length > 0) {
+    if (result.data.fonts?.available && result.data.fonts.available.length > 0) {
       browserLeaks.push({
         name: 'Installed Fonts',
         value: `${result.data.fonts.available.length} unique fonts`,
@@ -320,29 +320,45 @@ export function PrivacyLeakageAssessment({ result }: PrivacyLeakageAssessmentPro
       (sum, category) => sum + category.leaks.filter((l) => l.sensitivity === 'high').length,
       0
     );
+    const mediumSensitivityCount = leaks.reduce(
+      (sum, category) => sum + category.leaks.filter((l) => l.sensitivity === 'medium').length,
+      0
+    );
+    const lowSensitivityCount = leaks.reduce(
+      (sum, category) => sum + category.leaks.filter((l) => l.sensitivity === 'low').length,
+      0
+    );
+
+    // More balanced scoring formula
+    // Weight: high=10, medium=4, low=1
+    const riskPoints = highSensitivityCount * 10 + mediumSensitivityCount * 4 + lowSensitivityCount * 1;
+
+    // Calculate base score (0-100 scale)
+    // Max expected risk: ~15 high + 10 medium + 10 low = ~200 risk points
+    const baseScore = Math.max(0, Math.min(100, 100 - (riskPoints / 2)));
 
     let privacyScore: PrivacyScore;
-    if (highSensitivityCount >= 6) {
+    if (baseScore <= 25) {
       privacyScore = {
-        score: Math.max(0, 100 - totalLeaks * 5 - highSensitivityCount * 10),
+        score: Math.round(baseScore),
         level: 'critical',
         message: 'Your browser leaks extensive personal information. Consider using privacy-focused browsers and VPNs.',
       };
-    } else if (highSensitivityCount >= 4) {
+    } else if (baseScore <= 50) {
       privacyScore = {
-        score: Math.max(0, 100 - totalLeaks * 5 - highSensitivityCount * 8),
+        score: Math.round(baseScore),
         level: 'poor',
         message: 'Significant privacy leaks detected. Enable tracking protection and consider browser hardening.',
       };
-    } else if (highSensitivityCount >= 2) {
+    } else if (baseScore <= 75) {
       privacyScore = {
-        score: Math.max(0, 100 - totalLeaks * 4 - highSensitivityCount * 6),
+        score: Math.round(baseScore),
         level: 'good',
         message: 'Moderate privacy protection. Some tracking is possible but limited.',
       };
     } else {
       privacyScore = {
-        score: Math.max(0, 100 - totalLeaks * 3 - highSensitivityCount * 4),
+        score: Math.round(baseScore),
         level: 'excellent',
         message: 'Strong privacy protection detected. Your fingerprint reveals minimal personal information.',
       };
