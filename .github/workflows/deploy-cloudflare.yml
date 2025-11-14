@@ -112,7 +112,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           projectName: creepjs
-          directory: apps/web/.next
+          directory: apps/web/out
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
           branch: main
 
