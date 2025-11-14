@@ -34,9 +34,45 @@ export * from './collectors/reducedTransparency';
 export * from './collectors/hdr';
 export * from './collectors/audioBaseLatency';
 export * from './collectors/applePay';
+export * from './collectors/architecture';
+export * from './collectors/colorDepth';
+export * from './collectors/cookiesEnabled';
+export * from './collectors/cpuClass';
+export * from './collectors/dateTimeLocale';
+export * from './collectors/deviceMemory';
+export * from './collectors/hardwareConcurrency';
+export * from './collectors/indexedDB';
+export * from './collectors/invertedColors';
+export * from './collectors/languages';
+export * from './collectors/localStorage';
+export * from './collectors/openDatabase';
+export * from './collectors/osCpu';
+export * from './collectors/pdfViewer';
+export * from './collectors/platform';
+export * from './collectors/plugins';
+export * from './collectors/privateClickMeasurement';
+export * from './collectors/screenFrame';
+export * from './collectors/screenResolution';
+export * from './collectors/sessionStorage';
+export * from './collectors/touchSupport';
+export * from './collectors/vendor';
+export * from './collectors/vendorFlavors';
 export * from './utils/hash';
 
-import type { FingerprintData, FingerprintResult, CollectorTimings, CollectorSummary } from './types';
+export type {
+  FingerprintData,
+  FingerprintResult,
+  CollectorTimings,
+  CollectorSummary,
+  CollectorCoverage,
+} from './types';
+import type {
+  FingerprintData,
+  FingerprintResult,
+  CollectorTimings,
+  CollectorSummary,
+  CollectorCoverage,
+} from './types';
 import { collectLiesFingerprint } from './collectors/lies';
 import { generateFingerprintId } from './utils/hash';
 import { defaultSources } from './sources/registry';
@@ -44,13 +80,27 @@ import { runSources } from './sources/types';
 
 const now = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
 const DEFAULT_IDLE_DELAY = 12;
+const DEFAULT_CONCURRENCY =
+  typeof navigator !== 'undefined' && typeof navigator.hardwareConcurrency === 'number'
+    ? Math.min(4, Math.max(1, Math.floor(navigator.hardwareConcurrency / 2)))
+    : 2;
+
+export interface CollectFingerprintOptions {
+  idleDelay?: number;
+  concurrency?: number;
+}
 
 /**
  * Collect all fingerprint data and generate a unique ID
  */
-export async function collectFingerprint(): Promise<FingerprintResult> {
+export async function collectFingerprint(
+  options: CollectFingerprintOptions = {}
+): Promise<FingerprintResult> {
   const overallStart = now();
-  const baseComponents = await runSources(defaultSources, { idleDelay: DEFAULT_IDLE_DELAY });
+  const baseComponents = await runSources(defaultSources, {
+    idleDelay: options.idleDelay ?? DEFAULT_IDLE_DELAY,
+    concurrency: options.concurrency ?? DEFAULT_CONCURRENCY,
+  });
   const dataWithoutLies = buildFingerprintData(baseComponents);
   const liesComponent = await runLiesComponent(dataWithoutLies);
 
@@ -61,11 +111,12 @@ export async function collectFingerprint(): Promise<FingerprintResult> {
 
   const data: FingerprintData = {
     ...dataWithoutLies,
-    lies: liesComponent.status === 'success' ? liesComponent.value : undefined,
+    lies: liesComponent.status === 'success' ? (liesComponent.value as any) : undefined,
   };
 
   const fingerprintId = generateFingerprintId(data);
-  const confidence = calculateConfidence(collectors);
+  const coverage = calculateCoverageStats(collectors);
+  const confidence = coverage.ratio;
   const timings = buildTimings(collectors);
   timings.total = now() - overallStart;
 
@@ -74,6 +125,7 @@ export async function collectFingerprint(): Promise<FingerprintResult> {
     data,
     timestamp: Date.now(),
     confidence,
+    coverage,
     timings,
     collectors,
   };
@@ -90,10 +142,15 @@ function buildFingerprintData(collectors: Record<string, CollectorSummary>): Fin
     webgl: value('webgl'),
     navigator: value('navigator'),
     screen: value('screen'),
+    screenFrame: value('screenFrame'),
+    screenResolution: value('screenResolution'),
+    colorDepth: value('colorDepth'),
+    languages: value('languages'),
     fonts: value('fonts'),
     domBlockers: value('domBlockers'),
     fontPreferences: value('fontPreferences'),
     colorGamut: value('colorGamut'),
+    invertedColors: value('invertedColors'),
     contrast: value('contrast'),
     forcedColors: value('forcedColors'),
     monochrome: value('monochrome'),
@@ -102,6 +159,7 @@ function buildFingerprintData(collectors: Record<string, CollectorSummary>): Fin
     hdr: value('hdr'),
     audioBaseLatency: value('audioBaseLatency'),
     applePay: value('applePay'),
+    dateTimeLocale: value('dateTimeLocale'),
     timezone: value('timezone'),
     audio: value('audio'),
     media: value('media'),
@@ -115,11 +173,28 @@ function buildFingerprintData(collectors: Record<string, CollectorSummary>): Fin
     consoleErrors: value('consoleErrors'),
     domRect: value('domRect'),
     mimeTypes: value('mimeTypes'),
+    plugins: value('plugins'),
     resistance: value('resistance'),
     contentWindow: value('contentWindow'),
     cssMedia: value('cssMedia'),
     webrtc: value('webrtc'),
     serviceWorker: value('serviceWorker'),
+    deviceMemory: value('deviceMemory'),
+    hardwareConcurrency: value('hardwareConcurrency'),
+    osCpu: value('osCpu'),
+    cpuClass: value('cpuClass'),
+    platform: value('platform'),
+    vendor: value('vendor'),
+    vendorFlavors: value('vendorFlavors'),
+    sessionStorage: value('sessionStorage'),
+    localStorage: value('localStorage'),
+    indexedDB: value('indexedDB'),
+    openDatabase: value('openDatabase'),
+    touchSupport: value('touchSupport'),
+    cookiesEnabled: value('cookiesEnabled'),
+    pdfViewerEnabled: value('pdfViewerEnabled'),
+    architecture: value('architecture'),
+    privateClickMeasurement: value('privateClickMeasurement'),
   };
 }
 
@@ -128,7 +203,7 @@ async function runLiesComponent(data: FingerprintData): Promise<CollectorSummary
   try {
     const value = await collectLiesFingerprint(data);
     return {
-      status: 'success',
+      status: value ? 'success' : 'skipped',
       value,
       duration: now() - start,
     };
@@ -141,14 +216,20 @@ async function runLiesComponent(data: FingerprintData): Promise<CollectorSummary
   }
 }
 
-function calculateConfidence(collectors: Record<string, CollectorSummary>): number {
+function calculateCoverageStats(collectors: Record<string, CollectorSummary>): CollectorCoverage {
   const entries = Object.values(collectors);
-  if (entries.length === 0) {
-    return 0;
-  }
+  const successful = entries.filter((component) => component.status === 'success').length;
+  const failed = entries.filter((component) => component.status === 'error').length;
+  const skipped = entries.filter((component) => component.status === 'skipped').length;
+  const considered = successful + failed;
+  const ratio = considered === 0 ? 0 : successful / considered;
 
-  const successful = entries.filter((component) => component.status === 'success' && component.value !== undefined && component.value !== null).length;
-  return successful / entries.length;
+  return {
+    ratio,
+    successful,
+    failed,
+    skipped,
+  };
 }
 
 function buildTimings(collectors: Record<string, CollectorSummary>): CollectorTimings {
