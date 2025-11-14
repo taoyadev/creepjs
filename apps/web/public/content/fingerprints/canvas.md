@@ -42,24 +42,24 @@ Here's the step-by-step breakdown of what's happening behind the scenes:
 
 Let me hit you with some data that shows just how powerful (and widespread) this technique has become:
 
-| Metric | Value | Source | Year |
-|--------|-------|--------|------|
-| **Unique identification rate** | 99%+ (when combined with other techniques) | Multiple studies | 2024-2025 |
-| **Canvas alone entropy** | 5.7 bits | Amazon Mechanical Turk study | 2024 |
-| **Websites using canvas fingerprinting** | 10,000+ of top sites | BrowserLeaks analysis | 2025 |
-| **Market adoption rate** | 5-10% of top 100K websites | Academic research | 2024 |
-| **Fingerprinting protection market** | $4.5 billion projected by 2031 | Market research | 2025 |
-| **User awareness** | Only 43% understand it (despite 70% being concerned) | Privacy survey | 2025 |
+| Metric                                   | Value                                                | Source                       | Year      |
+| ---------------------------------------- | ---------------------------------------------------- | ---------------------------- | --------- |
+| **Unique identification rate**           | 99%+ (when combined with other techniques)           | Multiple studies             | 2024-2025 |
+| **Canvas alone entropy**                 | 5.7 bits                                             | Amazon Mechanical Turk study | 2024      |
+| **Websites using canvas fingerprinting** | 10,000+ of top sites                                 | BrowserLeaks analysis        | 2025      |
+| **Market adoption rate**                 | 5-10% of top 100K websites                           | Academic research            | 2024      |
+| **Fingerprinting protection market**     | $4.5 billion projected by 2031                       | Market research              | 2025      |
+| **User awareness**                       | Only 43% understand it (despite 70% being concerned) | Privacy survey               | 2025      |
 
 **What this means**: In a small-scale study with 294 participants, researchers found an entropy of 5.7 bits just from canvas alone. But here's the kicker—when combined with other fingerprinting techniques like WebGL and audio fingerprinting, the identification rate jumps to 99%+.
 
 ### The Reality Check Table
 
-| Scenario | Uniqueness Rate | Tracking Persistence | Notes |
-|----------|-----------------|---------------------|-------|
-| Canvas alone | ~60-70% | Medium (weeks) | Can be defeated by browser extensions |
-| Canvas + WebGL | ~90-95% | High (months) | Very difficult to randomize |
-| Full fingerprint suite | 99%+ | Very high (semi-permanent) | Requires dedicated privacy browser |
+| Scenario               | Uniqueness Rate | Tracking Persistence       | Notes                                 |
+| ---------------------- | --------------- | -------------------------- | ------------------------------------- |
+| Canvas alone           | ~60-70%         | Medium (weeks)             | Can be defeated by browser extensions |
+| Canvas + WebGL         | ~90-95%         | High (months)              | Very difficult to randomize           |
+| Full fingerprint suite | 99%+            | Very high (semi-permanent) | Requires dedicated privacy browser    |
 
 ## Real-World Applications: The Good, The Bad, and The Ugly
 
@@ -90,6 +90,7 @@ Here's where I'm going to share some insights that most articles gloss over—th
 ### The iPhone Paradox
 
 We tested 1,000 devices, and here's something surprising: **87% of iPhone users with identical models (same iPhone 14 Pro running iOS 17.2) still had unique canvas fingerprints**. Why? Because even though the hardware is identical, factors like:
+
 - Screen calibration variations from manufacturing
 - iOS minor build differences
 - Installed apps that modify system libraries
@@ -114,6 +115,7 @@ A study on "Canvas Deceiver" found it puts users in a group of 7,847 people (com
 ### Browser Version Matters More Than You Think
 
 The biggest differentiator isn't your GPU or OS—it's your browser version and OS version. We found:
+
 - Chrome 120 vs Chrome 121: Different fingerprint
 - Windows 10 vs Windows 11: Massively different
 - macOS 13.5 vs 13.6: Subtle but detectable differences
@@ -137,33 +139,37 @@ Want to see your own canvas fingerprint? Here's how:
 
 Here's how different browsers handle canvas fingerprinting in 2025:
 
-| Browser | Reveals Full Canvas | Entropy Bits | Privacy Protection | Default Behavior | Mobile Support |
-|---------|---------------------|--------------|-------------------|-----------------|----------------|
-| **Chrome/Edge** | ✅ Yes | 5.7 | ⚠️ Partial (Privacy Sandbox) | Full disclosure | ✅ Yes |
-| **Firefox** | ⚠️ Limited | 4.2 | ✅ Strong (Resist Fingerprinting) | Can enable protection | ✅ Yes |
-| **Safari** | ⚠️ Limited | 2.1 | ✅ Strong (Intelligent Tracking Prevention) | Auto-protection | ✅ Yes |
-| **Brave** | ⚠️ Randomized | 3.8 | ✅ Very Strong (Fingerprint randomization) | Randomizes per session | ✅ Yes |
-| **Tor Browser** | 🔒 Blocked | 0.5 | ✅ Maximum (Unified fingerprint) | All users look identical | ❌ No |
+| Browser         | Reveals Full Canvas | Entropy Bits | Privacy Protection                          | Default Behavior         | Mobile Support |
+| --------------- | ------------------- | ------------ | ------------------------------------------- | ------------------------ | -------------- |
+| **Chrome/Edge** | ✅ Yes              | 5.7          | ⚠️ Partial (Privacy Sandbox)                | Full disclosure          | ✅ Yes         |
+| **Firefox**     | ⚠️ Limited          | 4.2          | ✅ Strong (Resist Fingerprinting)           | Can enable protection    | ✅ Yes         |
+| **Safari**      | ⚠️ Limited          | 2.1          | ✅ Strong (Intelligent Tracking Prevention) | Auto-protection          | ✅ Yes         |
+| **Brave**       | ⚠️ Randomized       | 3.8          | ✅ Very Strong (Fingerprint randomization)  | Randomizes per session   | ✅ Yes         |
+| **Tor Browser** | 🔒 Blocked          | 0.5          | ✅ Maximum (Unified fingerprint)            | All users look identical | ❌ No          |
 
 ### Key Findings by Browser
 
 **Chrome/Chromium-based browsers** (including Edge):
+
 - Provide full canvas API access by default
 - Highest entropy (most trackable)
 - Privacy Sandbox aims to replace third-party cookies but allows fingerprinting under certain conditions
 - Best for developers testing, worst for privacy
 
 **Firefox**:
+
 - `privacy.resistFingerprinting` setting available (disabled by default)
 - When enabled, makes all Firefox users look identical (which paradoxically makes you stand out as a Firefox privacy user)
 - Good middle ground between functionality and privacy
 
 **Safari**:
+
 - Intelligent Tracking Prevention limits cross-site tracking
 - Restricts canvas data access for third-party content
 - Decent protection by default without breaking sites
 
 **Brave**:
+
 - Automatically randomizes canvas fingerprint on each session
 - Best default privacy protection among mainstream browsers
 - Fingerprint changes per session, making long-term tracking difficult
@@ -256,13 +262,13 @@ console.log('Canvas Fingerprint:', fingerprintHash);
 
 ### Browser Compatibility
 
-| Method | Chrome | Firefox | Safari | Edge | Support Level |
-|--------|--------|---------|--------|------|--------------|
-| `canvas.toDataURL()` | ✅ | ✅ | ✅ | ✅ | Universal |
-| `canvas.getImageData()` | ✅ | ✅ | ⚠️ | ✅ | Safari may block |
-| `canvas.toBlob()` | ✅ | ✅ | ✅ | ✅ | Universal |
-| Text rendering | ✅ | ✅ | ✅ | ✅ | Universal |
-| Emoji rendering | ✅ | ✅ | ⚠️ | ✅ | Version-dependent |
+| Method                  | Chrome | Firefox | Safari | Edge | Support Level     |
+| ----------------------- | ------ | ------- | ------ | ---- | ----------------- |
+| `canvas.toDataURL()`    | ✅     | ✅      | ✅     | ✅   | Universal         |
+| `canvas.getImageData()` | ✅     | ✅      | ⚠️     | ✅   | Safari may block  |
+| `canvas.toBlob()`       | ✅     | ✅      | ✅     | ✅   | Universal         |
+| Text rendering          | ✅     | ✅      | ✅     | ✅   | Universal         |
+| Emoji rendering         | ✅     | ✅      | ⚠️     | ✅   | Version-dependent |
 
 ### Detection Evasion (For Sites Testing Security)
 
@@ -344,6 +350,7 @@ The EU's ePrivacy Regulation (expected 2025-2026) may require explicit consent f
 ### Technical Evolution
 
 Machine learning is being used to:
+
 1. **Detect spoofing**: Sites can identify when users are lying about their fingerprint
 2. **Create better fingerprints**: Combining more signals for even higher accuracy
 3. **Privacy preservation**: New techniques to enable necessary tracking (fraud prevention) while respecting privacy
@@ -355,6 +362,7 @@ The arms race continues.
 Ready to see your own canvas fingerprint in action? Head over to our [Canvas Fingerprinting Playground](/fingerprint/canvas) and run a live test.
 
 You'll see:
+
 - Your unique canvas hash
 - The actual image your browser rendered
 - How your fingerprint compares to others
@@ -367,6 +375,7 @@ Understanding your digital footprint is the first step to controlling it. Go che
 **Last Updated**: November 2025 | **Word Count**: 3,124 words | **Reading Time**: ~12 minutes
 
 **Sources**:
+
 - [BrowserLeaks Canvas Testing](https://browserleaks.com/canvas)
 - [Wikipedia: Canvas Fingerprinting](https://en.wikipedia.org/wiki/Canvas_fingerprinting)
 - [Academic Research: Browser Fingerprinting Survey](https://www.researchgate.net/publication/332873650_Browser_Fingerprinting_A_survey)

@@ -31,12 +31,14 @@ export function collectNavigatorFingerprint():
       doNotTrack: navigator.doNotTrack || null,
       onLine: navigator.onLine,
       webdriver: nav.webdriver,
-      connection: nav.connection ? {
-        effectiveType: nav.connection.effectiveType,
-        rtt: nav.connection.rtt,
-        downlink: nav.connection.downlink,
-        saveData: nav.connection.saveData,
-      } : undefined,
+      connection: nav.connection
+        ? {
+            effectiveType: nav.connection.effectiveType,
+            rtt: nav.connection.rtt,
+            downlink: nav.connection.downlink,
+            saveData: nav.connection.saveData,
+          }
+        : undefined,
     };
   } catch (error) {
     console.error('Navigator fingerprinting error:', error);

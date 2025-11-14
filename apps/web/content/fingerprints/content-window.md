@@ -15,7 +15,7 @@ function getContentWindowFingerprint() {
 
   return {
     propertyCount: keys.length,
-    uniqueProperties: keys.filter(k => isUnique(k))
+    uniqueProperties: keys.filter((k) => isUnique(k)),
   };
 }
 ```

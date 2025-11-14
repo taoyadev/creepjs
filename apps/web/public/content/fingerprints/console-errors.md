@@ -9,6 +9,7 @@ Think of it like this: imagine if every car brand's check engine light blinked i
 Every time a website runs JavaScript code, there's a chance something will break. Maybe the code tries to access something that doesn't exist, or calls a function incorrectly. When this happens, your browser's JavaScript engine throws an error and logs it to the console.
 
 These error messages contain information like:
+
 - **The error message**: What went wrong
 - **Stack trace**: Where in the code it happened
 - **Error type**: The category of error (TypeError, ReferenceError, etc.)
@@ -44,7 +45,7 @@ function getConsoleErrorsFingerprint() {
       message: e.message,
       stack: e.stack ? e.stack.substring(0, 100) : null,
       name: e.name,
-      toString: e.toString()
+      toString: e.toString(),
     });
   }
 
@@ -56,7 +57,7 @@ function getConsoleErrorsFingerprint() {
       test: 'undefined_access',
       message: e.message,
       stack: e.stack ? e.stack.substring(0, 100) : null,
-      name: e.name
+      name: e.name,
     });
   }
 
@@ -69,7 +70,7 @@ function getConsoleErrorsFingerprint() {
       test: 'not_a_function',
       message: e.message,
       stack: e.stack ? e.stack.substring(0, 100) : null,
-      name: e.name
+      name: e.name,
     });
   }
 
@@ -80,7 +81,7 @@ function getConsoleErrorsFingerprint() {
     errors.push({
       test: 'symbol_error',
       message: e.message,
-      name: e.name
+      name: e.name,
     });
   }
 
@@ -89,11 +90,14 @@ function getConsoleErrorsFingerprint() {
 
 // Detect JavaScript engine from error patterns
 function detectJavaScriptEngine(errors) {
-  const signatures = errors.map(e => e.message).join('|');
+  const signatures = errors.map((e) => e.message).join('|');
 
   if (signatures.includes('is not a function') && signatures.includes('null')) {
     return 'V8 (Chrome/Edge)';
-  } else if (signatures.includes('is not an object') || signatures.includes('has no properties')) {
+  } else if (
+    signatures.includes('is not an object') ||
+    signatures.includes('has no properties')
+  ) {
     return 'SpiderMonkey (Firefox)';
   } else if (signatures.includes('is not an object (evaluating')) {
     return 'JavaScriptCore (Safari)';
@@ -106,18 +110,21 @@ function detectJavaScriptEngine(errors) {
 When you run this code, here's what happens in different browsers:
 
 ### Chrome (V8 Engine)
+
 ```
 Error: Cannot read properties of null (reading 'someFunction')
 TypeError: null.someFunction is not a function
 ```
 
 ### Firefox (SpiderMonkey)
+
 ```
 Error: null has no properties
 TypeError: null is not an object
 ```
 
 ### Safari (JavaScriptCore)
+
 ```
 TypeError: null is not an object (evaluating 'null.someFunction')
 ```
@@ -130,12 +137,12 @@ Console errors fingerprinting isn't as widely discussed as canvas or WebGL finge
 
 ### Browser Engine Market Share (2024)
 
-| JavaScript Engine | Browser(s) | Global Market Share | Fingerprint Uniqueness |
-|-------------------|-----------|---------------------|----------------------|
-| V8 (Blink) | Chrome, Edge, Opera, Brave | ~65-70% | High |
-| SpiderMonkey (Gecko) | Firefox | ~3-4% | Very High |
-| JavaScriptCore (WebKit) | Safari, iOS browsers | ~20-25% | High |
-| Other engines | Samsung Internet, etc. | ~2-5% | Variable |
+| JavaScript Engine       | Browser(s)                 | Global Market Share | Fingerprint Uniqueness |
+| ----------------------- | -------------------------- | ------------------- | ---------------------- |
+| V8 (Blink)              | Chrome, Edge, Opera, Brave | ~65-70%             | High                   |
+| SpiderMonkey (Gecko)    | Firefox                    | ~3-4%               | Very High              |
+| JavaScriptCore (WebKit) | Safari, iOS browsers       | ~20-25%             | High                   |
+| Other engines           | Samsung Internet, etc.     | ~2-5%               | Variable               |
 
 **Source**: StatCounter Global Stats & Browser Market Reports 2024
 
@@ -143,12 +150,12 @@ Console errors fingerprinting isn't as widely discussed as canvas or WebGL finge
 
 According to research published in 2025:
 
-| Metric | Value | Notes |
-|--------|-------|-------|
-| Unique error formats per engine | 15-30 distinct patterns | Varies by error type |
-| Stability across versions | High (95%+ consistent) | Changes only with major updates |
-| Combined fingerprint entropy | Medium-High | Works best with other signals |
-| Detection accuracy | 85-92% | When combined with user agent |
+| Metric                          | Value                   | Notes                           |
+| ------------------------------- | ----------------------- | ------------------------------- |
+| Unique error formats per engine | 15-30 distinct patterns | Varies by error type            |
+| Stability across versions       | High (95%+ consistent)  | Changes only with major updates |
+| Combined fingerprint entropy    | Medium-High             | Works best with other signals   |
+| Detection accuracy              | 85-92%                  | When combined with user agent   |
 
 The CreepJS fingerprinting library (as of 2025) successfully detects JavaScript engines using error patterns with high accuracy. This technique has proven reliable because engine developers rarely change error message formats - doing so would break debugging tools and developer workflows.
 
@@ -158,14 +165,14 @@ Let's look at how the major browsers differ in their error reporting:
 
 ### Detailed Comparison Table
 
-| Test Case | Chrome 130+ (V8) | Firefox 132+ (SpiderMonkey) | Safari 18+ (JavaScriptCore) |
-|-----------|------------------|----------------------------|---------------------------|
-| Null property access | "Cannot read properties of null" | "null has no properties" | "null is not an object" |
-| Undefined function call | "'x' is not a function" | "x is not a function" | "undefined is not a function" |
-| Stack trace format | at functionName (file:line:col) | functionName@file:line:col | functionName@file:line:col |
-| Error.stack availability | Always present | Always present | Always present |
-| Line number format | Detailed with column | Detailed with column | Detailed with column |
-| Async stack traces | Full support | Full support | Partial support |
+| Test Case                | Chrome 130+ (V8)                 | Firefox 132+ (SpiderMonkey) | Safari 18+ (JavaScriptCore)   |
+| ------------------------ | -------------------------------- | --------------------------- | ----------------------------- |
+| Null property access     | "Cannot read properties of null" | "null has no properties"    | "null is not an object"       |
+| Undefined function call  | "'x' is not a function"          | "x is not a function"       | "undefined is not a function" |
+| Stack trace format       | at functionName (file:line:col)  | functionName@file:line:col  | functionName@file:line:col    |
+| Error.stack availability | Always present                   | Always present              | Always present                |
+| Line number format       | Detailed with column             | Detailed with column        | Detailed with column          |
+| Async stack traces       | Full support                     | Full support                | Partial support               |
 
 ### Advanced Differences
 
@@ -186,21 +193,28 @@ function advancedErrorFingerprint() {
 
   // Test: Proxy errors
   try {
-    const proxy = new Proxy({}, {
-      get() { throw new Error('trapped'); }
-    });
+    const proxy = new Proxy(
+      {},
+      {
+        get() {
+          throw new Error('trapped');
+        },
+      }
+    );
     proxy.test;
   } catch (e) {
     tests.push({
       type: 'proxy_error',
       message: e.message,
-      engineHint: detectEngineFromProxyError(e)
+      engineHint: detectEngineFromProxyError(e),
     });
   }
 
   // Test: Async/await errors
   try {
-    (async () => { await null.method(); })();
+    (async () => {
+      await null.method();
+    })();
   } catch (e) {
     tests.push({ type: 'async_error', message: e.message });
   }
@@ -208,14 +222,15 @@ function advancedErrorFingerprint() {
   // Test: Worker errors (if available)
   if (typeof Worker !== 'undefined') {
     try {
-      const blob = new Blob(['throw new Error("worker test")'],
-        { type: 'application/javascript' });
+      const blob = new Blob(['throw new Error("worker test")'], {
+        type: 'application/javascript',
+      });
       const worker = new Worker(URL.createObjectURL(blob));
       worker.onerror = (e) => {
         tests.push({
           type: 'worker_error',
           message: e.message,
-          format: e.toString()
+          format: e.toString(),
         });
       };
     } catch (e) {
@@ -240,16 +255,21 @@ function detectEngineFromProxyError(error) {
 Console errors fingerprinting is sneaky for several reasons:
 
 ### 1. It's Completely Passive
+
 Unlike canvas fingerprinting (which draws graphics) or WebGL fingerprinting (which uses your GPU), console errors fingerprinting doesn't actually do anything visible. It just triggers errors and listens to the responses. No performance impact, no visual artifacts, nothing you can detect.
 
 ### 2. It's Hard to Block
+
 Browser extensions that block fingerprinting typically focus on canvas, WebGL, fonts, and other well-known vectors. Error handling is fundamental to JavaScript - you can't really "block" it without breaking every website.
 
 ### 3. It Works in Restricted Contexts
+
 Some privacy-focused browsers limit access to fingerprinting APIs. But JavaScript error handling? That's always available because it's core to the language itself.
 
 ### 4. It Combines Well With Other Signals
+
 Alone, knowing someone uses Chrome vs. Firefox isn't super unique (Chrome has 65%+ market share). But combine that with:
+
 - Screen resolution (hundreds of variants)
 - Timezone (dozens of options)
 - Canvas fingerprint (millions of variants)
@@ -266,6 +286,7 @@ Let's talk about JavaScript engine performance, because it relates to why differ
 Online forums often claim V8 (Chrome) vastly outperforms SpiderMonkey (Firefox). But as of 2024-2025, this is largely outdated. According to recent technical analysis:
 
 **Modern Performance Reality:**
+
 - V8 was historically tuned for synthetic benchmarks like Octane (now retired)
 - SpiderMonkey's Warp upgrade (2020+) made it competitive in real-world use cases
 - Speedometer benchmarks show both engines perform similarly for typical web browsing
@@ -273,6 +294,7 @@ Online forums often claim V8 (Chrome) vastly outperforms SpiderMonkey (Firefox).
 
 **Why This Matters for Fingerprinting:**
 Both engines are actively maintained and frequently updated. Error message formats rarely change because:
+
 1. Developers rely on consistent error messages for debugging
 2. Developer tools parse error formats
 3. Monitoring/logging services depend on predictable error structures
@@ -282,16 +304,19 @@ This stability makes console errors fingerprinting reliable over time.
 ### Architecture Differences
 
 **V8 (Chrome/Edge):**
+
 - Uses Ignition interpreter + TurboFan JIT compiler
 - Aggressive optimization strategies
 - Detailed error messages optimized for DevTools
 
 **SpiderMonkey (Firefox):**
+
 - Uses baseline interpreter + IonMonkey/WarpMonkey JIT tiers
 - Balanced optimization approach
 - Error messages focused on standards compliance
 
 **JavaScriptCore (Safari):**
+
 - Multiple JIT tiers (LLInt, Baseline, DFG, FTL)
 - Power-efficiency focused
 - Concise error messages
@@ -305,16 +330,19 @@ Okay, so how do you protect yourself against console errors fingerprinting?
 ### 1. Use Privacy-Focused Browsers (Limited Help)
 
 **Tor Browser:**
+
 - Uses Firefox's SpiderMonkey engine
 - Doesn't specifically protect against error fingerprinting
 - Effectiveness: Low for this specific technique (but high overall privacy)
 
 **Brave:**
+
 - Uses V8 engine (same as Chrome)
 - Implements "farbling" for many APIs but not error messages
 - Effectiveness: Low for console errors specifically
 
 **Firefox with RFP:**
+
 - Enable `privacy.resistFingerprinting` in about:config
 - Does NOT currently protect against console errors fingerprinting
 - Effectiveness: Low for this technique
@@ -324,12 +352,14 @@ Okay, so how do you protect yourself against console errors fingerprinting?
 ### 2. Browser Extensions (Very Limited)
 
 Most anti-fingerprinting extensions focus on:
+
 - Canvas API
 - WebGL
 - Fonts
 - User agent
 
 Very few (if any) attempt to modify error handling because:
+
 - It would require deep JavaScript engine hooks
 - Could break legitimate error handling
 - Might cause more issues than it solves
@@ -339,6 +369,7 @@ Very few (if any) attempt to modify error handling because:
 Here's the honest truth: completely blocking console errors fingerprinting is nearly impossible without breaking JavaScript entirely. But you can reduce your overall fingerprint surface:
 
 **Recommended Strategy:**
+
 1. **Use mainstream configurations**: The most common OS + browser combination in your region makes you blend into a larger crowd
 2. **Keep browsers updated**: Run the latest version so your error messages match the majority of users
 3. **Accept partial exposure**: This technique alone isn't enough to uniquely identify you - it's just one signal among many
@@ -346,6 +377,7 @@ Here's the honest truth: completely blocking console errors fingerprinting is ne
 ### 4. For the Truly Paranoid
 
 If you're seriously concerned about fingerprinting:
+
 - **Use Tor Browser** for sensitive activities (standardizes many signals)
 - **Run browsers in VMs** with common configurations
 - **Disable JavaScript** on non-essential sites (nuclear option)
@@ -356,11 +388,13 @@ If you're seriously concerned about fingerprinting:
 The fingerprinting battle is ongoing. Here's where we are in 2025:
 
 ### Tracker Innovations
+
 - **Machine learning models** that combine dozens of signals including error patterns
 - **Temporal tracking** that watches how fingerprints change over time
 - **Probabilistic matching** that doesn't need perfect fingerprint matches
 
 ### Browser Vendor Responses
+
 - **Google** (Chrome): Announced support for fingerprinting-based tracking starting February 2025, replacing third-party cookies
 - **Mozilla** (Firefox): Continues developing Enhanced Tracking Protection but doesn't specifically address console errors
 - **Apple** (Safari): Implemented privacy budgets but error messages aren't included yet
@@ -369,6 +403,7 @@ The fingerprinting battle is ongoing. Here's where we are in 2025:
 ### Policy Changes
 
 The landscape shifted significantly in 2024-2025:
+
 - **Google's U-turn**: After planning to block third-party cookies, Google instead embraced fingerprinting
 - **UK ICO criticism**: The UK's data protection authority sharply criticized Google's fingerprinting decision
 - **GDPR implications**: Unclear whether console errors fingerprinting requires consent under EU law
@@ -379,15 +414,19 @@ The landscape shifted significantly in 2024-2025:
 Console errors fingerprinting is used by:
 
 ### Fraud Detection Services
+
 Companies like DataDome, PerimeterX, and Fingerprint.com use error patterns as part of bot detection and fraud prevention. If your error messages match known bot patterns, you might get blocked.
 
 ### Advertising Networks
+
 Post-cookie advertising relies heavily on fingerprinting. Error handling patterns are one small piece of the puzzle that helps ad networks track users across sites.
 
 ### Analytics Platforms
+
 Advanced analytics tools use fingerprinting to identify unique users without cookies. Console errors provide another data point for probabilistic user identification.
 
 ### Security Research
+
 The CreepJS project (which this platform is based on) uses console errors detection as part of comprehensive fingerprinting research and education.
 
 ## Bottom Line: Should You Worry?
@@ -395,6 +434,7 @@ The CreepJS project (which this platform is based on) uses console errors detect
 Here's my take: console errors fingerprinting is real and it works, but it's not the biggest threat to your privacy on its own.
 
 **The Reality Check:**
+
 1. **Low uniqueness alone**: Knowing your JavaScript engine (Chrome vs. Firefox vs. Safari) only narrows you down to millions of users
 2. **Powerful in combination**: When combined with 10+ other signals, it contributes to a highly unique fingerprint
 3. **Hard to prevent**: Unless you're willing to break JavaScript entirely, you can't really block this
@@ -402,6 +442,7 @@ Here's my take: console errors fingerprinting is real and it works, but it's not
 
 **My Recommendation:**
 Don't obsess over console errors fingerprinting specifically. Instead:
+
 - Use a privacy-respecting browser (Brave or Firefox)
 - Enable tracking protection features
 - Use content blockers to prevent tracker scripts from loading in the first place
@@ -411,6 +452,7 @@ If trackers can't load their JavaScript in the first place, they can't fingerpri
 
 **For Developers:**
 If you're building privacy-focused tools, consider:
+
 - Standardizing error message formats across a user base
 - Providing consistent error stacks regardless of actual engine
 - Intercepting and normalizing Error objects before they're exposed to page scripts
@@ -430,6 +472,7 @@ And hey, now you know that even your browser's error messages are snitching on y
 ---
 
 **Sources:**
+
 - [CreepJS GitHub Repository](https://github.com/abrahamjuliot/creepjs) - Open-source browser fingerprinting library with error detection
 - [JavaScript Engines Explained: V8, SpiderMonkey, and More (2025)](https://frontenddogma.com/posts/2025/javascript-engines-explained/) - Comprehensive engine comparison
 - [Deep Dive into JavaScript Engine Internals (2024)](https://medium.com/@sohail_saifi/deep-dive-into-javascript-engine-internals-v8-spidermonkey-and-chakra-9187a53658c0) - Technical analysis of V8 and SpiderMonkey

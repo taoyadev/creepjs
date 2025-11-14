@@ -19,7 +19,12 @@ export function MobileNav({ currentPage }: MobileNavProps) {
     { href: '/', label: 'Home', icon: Home, page: 'home' },
     { href: '/checker', label: 'Checker', icon: Fingerprint, page: 'checker' },
     { href: '/docs', label: 'Docs', icon: FileText, page: 'docs' },
-    { href: '/playground', label: 'Playground', icon: Code, page: 'playground' },
+    {
+      href: '/playground',
+      label: 'Playground',
+      icon: Code,
+      page: 'playground',
+    },
   ];
 
   return (
@@ -45,8 +50,8 @@ export function MobileNav({ currentPage }: MobileNavProps) {
           />
 
           {/* Menu Panel */}
-          <div className="fixed right-0 top-16 z-50 h-[calc(100vh-4rem)] w-64 border-l bg-background shadow-xl md:hidden">
-            <nav className="flex flex-col p-4 space-y-2">
+          <div className="bg-background fixed right-0 top-16 z-50 h-[calc(100vh-4rem)] w-64 border-l shadow-xl md:hidden">
+            <nav className="flex flex-col space-y-2 p-4">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = currentPage === item.page;
@@ -57,7 +62,7 @@ export function MobileNav({ currentPage }: MobileNavProps) {
                       variant={isActive ? 'default' : 'ghost'}
                       className="w-full justify-start"
                     >
-                      <Icon className="h-4 w-4 mr-2" />
+                      <Icon className="mr-2 h-4 w-4" />
                       {item.label}
                     </Button>
                   </Link>
@@ -65,7 +70,7 @@ export function MobileNav({ currentPage }: MobileNavProps) {
               })}
 
               {/* Theme Toggle in Mobile Menu */}
-              <div className="pt-4 border-t">
+              <div className="border-t pt-4">
                 <div className="flex items-center justify-between px-3 py-2">
                   <span className="text-sm font-medium">Theme</span>
                   <ThemeToggle />

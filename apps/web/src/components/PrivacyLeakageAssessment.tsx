@@ -1,9 +1,24 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import type { FingerprintResult } from '@creepjs/core';
-import { Shield, AlertTriangle, Info, Eye, Lock, MapPin, Monitor, Globe } from 'lucide-react';
+import {
+  Shield,
+  AlertTriangle,
+  Info,
+  Eye,
+  Lock,
+  MapPin,
+  Monitor,
+  Globe,
+} from 'lucide-react';
 
 interface PrivacyLeakageAssessmentProps {
   result: FingerprintResult;
@@ -27,7 +42,9 @@ interface PrivacyScore {
   message: string;
 }
 
-export function PrivacyLeakageAssessment({ result }: PrivacyLeakageAssessmentProps) {
+export function PrivacyLeakageAssessment({
+  result,
+}: PrivacyLeakageAssessmentProps) {
   const assessment = useMemo(() => {
     const leaks: PrivacyLeak[] = [];
     let totalRiskScore = 0;
@@ -41,7 +58,8 @@ export function PrivacyLeakageAssessment({ result }: PrivacyLeakageAssessmentPro
         name: 'Timezone',
         value: result.data.timezone.timezone,
         sensitivity: 'high',
-        description: 'Reveals your approximate geographical location (city/country level)',
+        description:
+          'Reveals your approximate geographical location (city/country level)',
       });
       totalRiskScore += 3;
       riskCount++;
@@ -72,7 +90,12 @@ export function PrivacyLeakageAssessment({ result }: PrivacyLeakageAssessmentPro
     if (locationLeaks.length > 0) {
       leaks.push({
         category: 'Location & Network',
-        risk: totalRiskScore / riskCount >= 2.5 ? 'high' : totalRiskScore / riskCount >= 1.5 ? 'medium' : 'low',
+        risk:
+          totalRiskScore / riskCount >= 2.5
+            ? 'high'
+            : totalRiskScore / riskCount >= 1.5
+              ? 'medium'
+              : 'low',
         icon: <MapPin className="h-5 w-5" />,
         leaks: locationLeaks,
       });
@@ -88,7 +111,8 @@ export function PrivacyLeakageAssessment({ result }: PrivacyLeakageAssessmentPro
         name: 'Screen Resolution',
         value: `${result.data.screen.width}×${result.data.screen.height}`,
         sensitivity: 'medium',
-        description: 'Identifies your display size and potentially device model',
+        description:
+          'Identifies your display size and potentially device model',
       });
       totalRiskScore += 2;
       riskCount++;
@@ -144,7 +168,12 @@ export function PrivacyLeakageAssessment({ result }: PrivacyLeakageAssessmentPro
     if (deviceLeaks.length > 0) {
       leaks.push({
         category: 'Device & Hardware',
-        risk: totalRiskScore / riskCount >= 2.5 ? 'high' : totalRiskScore / riskCount >= 1.5 ? 'medium' : 'low',
+        risk:
+          totalRiskScore / riskCount >= 2.5
+            ? 'high'
+            : totalRiskScore / riskCount >= 1.5
+              ? 'medium'
+              : 'low',
         icon: <Monitor className="h-5 w-5" />,
         leaks: deviceLeaks,
       });
@@ -166,18 +195,25 @@ export function PrivacyLeakageAssessment({ result }: PrivacyLeakageAssessmentPro
       riskCount++;
     }
 
-    if (result.data.fonts?.available && result.data.fonts.available.length > 0) {
+    if (
+      result.data.fonts?.available &&
+      result.data.fonts.available.length > 0
+    ) {
       browserLeaks.push({
         name: 'Installed Fonts',
         value: `${result.data.fonts.available.length} unique fonts`,
         sensitivity: 'high',
-        description: 'Font list is highly unique and tracks software installations',
+        description:
+          'Font list is highly unique and tracks software installations',
       });
       totalRiskScore += 3;
       riskCount++;
     }
 
-    if (result.data.domBlockers?.detected && result.data.domBlockers.detected.length > 0) {
+    if (
+      result.data.domBlockers?.detected &&
+      result.data.domBlockers.detected.length > 0
+    ) {
       browserLeaks.push({
         name: 'Ad/Privacy Blockers',
         value: result.data.domBlockers.detected.join(', '),
@@ -202,7 +238,12 @@ export function PrivacyLeakageAssessment({ result }: PrivacyLeakageAssessmentPro
     if (browserLeaks.length > 0) {
       leaks.push({
         category: 'Browser & Software',
-        risk: totalRiskScore / riskCount >= 2.5 ? 'high' : totalRiskScore / riskCount >= 1.5 ? 'medium' : 'low',
+        risk:
+          totalRiskScore / riskCount >= 2.5
+            ? 'high'
+            : totalRiskScore / riskCount >= 1.5
+              ? 'medium'
+              : 'low',
         icon: <Globe className="h-5 w-5" />,
         leaks: browserLeaks,
       });
@@ -308,59 +349,77 @@ export function PrivacyLeakageAssessment({ result }: PrivacyLeakageAssessmentPro
     if (trackingLeaks.length > 0) {
       leaks.push({
         category: 'Tracking & Uniqueness',
-        risk: totalRiskScore / riskCount >= 2.5 ? 'high' : totalRiskScore / riskCount >= 1.5 ? 'medium' : 'low',
+        risk:
+          totalRiskScore / riskCount >= 2.5
+            ? 'high'
+            : totalRiskScore / riskCount >= 1.5
+              ? 'medium'
+              : 'low',
         icon: <Eye className="h-5 w-5" />,
         leaks: trackingLeaks,
       });
     }
 
     // Calculate overall privacy score
-    const totalLeaks = leaks.reduce((sum, category) => sum + category.leaks.length, 0);
+    const totalLeaks = leaks.reduce(
+      (sum, category) => sum + category.leaks.length,
+      0
+    );
     const highSensitivityCount = leaks.reduce(
-      (sum, category) => sum + category.leaks.filter((l) => l.sensitivity === 'high').length,
+      (sum, category) =>
+        sum + category.leaks.filter((l) => l.sensitivity === 'high').length,
       0
     );
     const mediumSensitivityCount = leaks.reduce(
-      (sum, category) => sum + category.leaks.filter((l) => l.sensitivity === 'medium').length,
+      (sum, category) =>
+        sum + category.leaks.filter((l) => l.sensitivity === 'medium').length,
       0
     );
     const lowSensitivityCount = leaks.reduce(
-      (sum, category) => sum + category.leaks.filter((l) => l.sensitivity === 'low').length,
+      (sum, category) =>
+        sum + category.leaks.filter((l) => l.sensitivity === 'low').length,
       0
     );
 
     // More balanced scoring formula
     // Weight: high=10, medium=4, low=1
-    const riskPoints = highSensitivityCount * 10 + mediumSensitivityCount * 4 + lowSensitivityCount * 1;
+    const riskPoints =
+      highSensitivityCount * 10 +
+      mediumSensitivityCount * 4 +
+      lowSensitivityCount * 1;
 
     // Calculate base score (0-100 scale)
     // Max expected risk: ~15 high + 10 medium + 10 low = ~200 risk points
-    const baseScore = Math.max(0, Math.min(100, 100 - (riskPoints / 2)));
+    const baseScore = Math.max(0, Math.min(100, 100 - riskPoints / 2));
 
     let privacyScore: PrivacyScore;
     if (baseScore <= 25) {
       privacyScore = {
         score: Math.round(baseScore),
         level: 'critical',
-        message: 'Your browser leaks extensive personal information. Consider using privacy-focused browsers and VPNs.',
+        message:
+          'Your browser leaks extensive personal information. Consider using privacy-focused browsers and VPNs.',
       };
     } else if (baseScore <= 50) {
       privacyScore = {
         score: Math.round(baseScore),
         level: 'poor',
-        message: 'Significant privacy leaks detected. Enable tracking protection and consider browser hardening.',
+        message:
+          'Significant privacy leaks detected. Enable tracking protection and consider browser hardening.',
       };
     } else if (baseScore <= 75) {
       privacyScore = {
         score: Math.round(baseScore),
         level: 'good',
-        message: 'Moderate privacy protection. Some tracking is possible but limited.',
+        message:
+          'Moderate privacy protection. Some tracking is possible but limited.',
       };
     } else {
       privacyScore = {
         score: Math.round(baseScore),
         level: 'excellent',
-        message: 'Strong privacy protection detected. Your fingerprint reveals minimal personal information.',
+        message:
+          'Strong privacy protection detected. Your fingerprint reveals minimal personal information.',
       };
     }
 
@@ -397,40 +456,53 @@ export function PrivacyLeakageAssessment({ result }: PrivacyLeakageAssessmentPro
             Privacy Leakage Assessment
           </CardTitle>
           <CardDescription>
-            Analysis of sensitive information exposed by your browser fingerprint
+            Analysis of sensitive information exposed by your browser
+            fingerprint
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-6">
             {/* Score Display */}
-            <div className="text-center space-y-2">
-              <div className={`text-6xl font-bold ${scoreColor}`}>{privacyScore.score}/100</div>
+            <div className="space-y-2 text-center">
+              <div className={`text-6xl font-bold ${scoreColor}`}>
+                {privacyScore.score}/100
+              </div>
               <div className="text-lg font-medium">
                 Privacy Protection:{' '}
                 <span className={scoreColor}>
-                  {privacyScore.level.charAt(0).toUpperCase() + privacyScore.level.slice(1)}
+                  {privacyScore.level.charAt(0).toUpperCase() +
+                    privacyScore.level.slice(1)}
                 </span>
               </div>
-              <p className="text-sm text-muted-foreground max-w-md mx-auto">{privacyScore.message}</p>
+              <p className="text-muted-foreground mx-auto max-w-md text-sm">
+                {privacyScore.message}
+              </p>
             </div>
 
             {/* Stats */}
             <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-1 p-4 bg-background rounded-lg border text-center">
+              <div className="bg-background space-y-1 rounded-lg border p-4 text-center">
                 <div className="text-2xl font-bold">{leaks.length}</div>
-                <div className="text-sm text-muted-foreground">Leak Categories</div>
+                <div className="text-muted-foreground text-sm">
+                  Leak Categories
+                </div>
               </div>
-              <div className="space-y-1 p-4 bg-background rounded-lg border text-center">
+              <div className="bg-background space-y-1 rounded-lg border p-4 text-center">
                 <div className="text-2xl font-bold">
                   {leaks.reduce((sum, cat) => sum + cat.leaks.length, 0)}
                 </div>
-                <div className="text-sm text-muted-foreground">Data Points</div>
+                <div className="text-muted-foreground text-sm">Data Points</div>
               </div>
-              <div className="space-y-1 p-4 bg-background rounded-lg border text-center">
+              <div className="bg-background space-y-1 rounded-lg border p-4 text-center">
                 <div className="text-2xl font-bold text-red-600 dark:text-red-400">
-                  {leaks.reduce((sum, cat) => sum + cat.leaks.filter((l) => l.sensitivity === 'high').length, 0)}
+                  {leaks.reduce(
+                    (sum, cat) =>
+                      sum +
+                      cat.leaks.filter((l) => l.sensitivity === 'high').length,
+                    0
+                  )}
                 </div>
-                <div className="text-sm text-muted-foreground">High Risk</div>
+                <div className="text-muted-foreground text-sm">High Risk</div>
               </div>
             </div>
           </div>
@@ -446,12 +518,12 @@ export function PrivacyLeakageAssessment({ result }: PrivacyLeakageAssessmentPro
                 {category.icon}
                 {category.category}
                 <span
-                  className={`ml-auto text-xs px-2 py-1 rounded-full ${
+                  className={`ml-auto rounded-full px-2 py-1 text-xs ${
                     category.risk === 'high'
-                      ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                      ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
                       : category.risk === 'medium'
-                        ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
-                        : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                        ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                        : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
                   }`}
                 >
                   {category.risk.toUpperCase()} RISK
@@ -463,16 +535,16 @@ export function PrivacyLeakageAssessment({ result }: PrivacyLeakageAssessmentPro
                 {category.leaks.map((leak, index) => (
                   <div
                     key={index}
-                    className={`p-4 rounded-lg border ${
+                    className={`rounded-lg border p-4 ${
                       leak.sensitivity === 'high'
-                        ? 'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/50'
+                        ? 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/50'
                         : leak.sensitivity === 'medium'
-                          ? 'border-yellow-200 dark:border-yellow-800 bg-yellow-50 dark:bg-yellow-950/50'
-                          : 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-950/50'
+                          ? 'border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950/50'
+                          : 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/50'
                     }`}
                   >
                     <div className="flex items-start gap-3">
-                      <div className="flex-shrink-0 mt-1">
+                      <div className="mt-1 flex-shrink-0">
                         {leak.sensitivity === 'high' ? (
                           <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
                         ) : leak.sensitivity === 'medium' ? (
@@ -483,21 +555,27 @@ export function PrivacyLeakageAssessment({ result }: PrivacyLeakageAssessmentPro
                       </div>
                       <div className="flex-1 space-y-1">
                         <div className="flex items-center gap-2">
-                          <div className="font-semibold text-sm">{leak.name}</div>
+                          <div className="text-sm font-semibold">
+                            {leak.name}
+                          </div>
                           <span
-                            className={`text-xs px-2 py-0.5 rounded-full ${
+                            className={`rounded-full px-2 py-0.5 text-xs ${
                               leak.sensitivity === 'high'
-                                ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                                ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
                                 : leak.sensitivity === 'medium'
-                                  ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
-                                  : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                                  ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                                  : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
                             }`}
                           >
                             {leak.sensitivity}
                           </span>
                         </div>
-                        <div className="text-sm font-mono text-muted-foreground truncate">{leak.value}</div>
-                        <div className="text-xs text-muted-foreground">{leak.description}</div>
+                        <div className="text-muted-foreground truncate font-mono text-sm">
+                          {leak.value}
+                        </div>
+                        <div className="text-muted-foreground text-xs">
+                          {leak.description}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -513,16 +591,32 @@ export function PrivacyLeakageAssessment({ result }: PrivacyLeakageAssessmentPro
         <CardContent className="pt-6">
           <div className="space-y-3">
             <div className="flex items-start gap-3">
-              <Shield className="h-5 w-5 mt-0.5 text-primary flex-shrink-0" />
+              <Shield className="text-primary mt-0.5 h-5 w-5 flex-shrink-0" />
               <div className="space-y-2 text-sm">
-                <p className="font-medium text-foreground">Privacy Protection Recommendations:</p>
-                <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                  <li>Use privacy-focused browsers (Brave, Firefox with hardening, Tor Browser)</li>
-                  <li>Enable tracking protection and disable WebRTC in browser settings</li>
+                <p className="text-foreground font-medium">
+                  Privacy Protection Recommendations:
+                </p>
+                <ul className="text-muted-foreground list-inside list-disc space-y-1">
+                  <li>
+                    Use privacy-focused browsers (Brave, Firefox with hardening,
+                    Tor Browser)
+                  </li>
+                  <li>
+                    Enable tracking protection and disable WebRTC in browser
+                    settings
+                  </li>
                   <li>Use VPN services to mask your IP address and location</li>
-                  <li>Regularly clear cookies and use incognito/private browsing mode</li>
-                  <li>Install privacy extensions (uBlock Origin, Privacy Badger, CanvasBlocker)</li>
-                  <li>Avoid installing uncommon fonts that make you more unique</li>
+                  <li>
+                    Regularly clear cookies and use incognito/private browsing
+                    mode
+                  </li>
+                  <li>
+                    Install privacy extensions (uBlock Origin, Privacy Badger,
+                    CanvasBlocker)
+                  </li>
+                  <li>
+                    Avoid installing uncommon fonts that make you more unique
+                  </li>
                   <li>Use Tor Browser for maximum anonymity when needed</li>
                 </ul>
               </div>

@@ -42,6 +42,7 @@ curl "https://api.cloudflare.com/client/v4/accounts/fe394f7c37b25babc4e351d704a6
 ```
 
 Expected response:
+
 ```json
 {
   "success": true,
@@ -62,18 +63,18 @@ Click **New repository secret** and add each of the following:
 
 ### Required Secrets
 
-| Secret Name | Value | Description |
-|-------------|-------|-------------|
-| `CLOUDFLARE_API_TOKEN` | `kbjmXswH0vV9zMs1uuYSepwH1RAWWJsqgenjAtt8` | Cloudflare API token (Pages + Workers + KV) |
-| `CLOUDFLARE_ACCOUNT_ID` | `fe394f7c37b25babc4e351d704a6a97c` | Your Cloudflare account ID |
+| Secret Name             | Value                                      | Description                                 |
+| ----------------------- | ------------------------------------------ | ------------------------------------------- |
+| `CLOUDFLARE_API_TOKEN`  | `kbjmXswH0vV9zMs1uuYSepwH1RAWWJsqgenjAtt8` | Cloudflare API token (Pages + Workers + KV) |
+| `CLOUDFLARE_ACCOUNT_ID` | `fe394f7c37b25babc4e351d704a6a97c`         | Your Cloudflare account ID                  |
 
 ### Optional Secrets (for enhanced features)
 
-| Secret Name | Example Value | Description | When to Add |
-|-------------|---------------|-------------|-------------|
-| `TEST_API_TOKEN` | `cfp_xxxxxxxxxxxxx` | Test token for API health checks | After first API deployment |
-| `CLOUDFLARE_API_URL` | `https://api.creepjs.org` | API base URL for Next.js frontend | When custom domain configured |
-| `CLOUDFLARE_WEB_URL` | `https://creepjs.org` | Production web URL for health checks | When custom domain configured |
+| Secret Name          | Example Value             | Description                          | When to Add                   |
+| -------------------- | ------------------------- | ------------------------------------ | ----------------------------- |
+| `TEST_API_TOKEN`     | `cfp_xxxxxxxxxxxxx`       | Test token for API health checks     | After first API deployment    |
+| `CLOUDFLARE_API_URL` | `https://api.creepjs.org` | API base URL for Next.js frontend    | When custom domain configured |
+| `CLOUDFLARE_WEB_URL` | `https://creepjs.org`     | Production web URL for health checks | When custom domain configured |
 
 **⚠️ Security Note**: Never commit API tokens to your repository. Always use GitHub Secrets.
 
@@ -210,10 +211,12 @@ To set up a custom domain for the API:
 The workflows are already configured correctly. They will:
 
 ### CI Workflow (`ci.yml`)
+
 - **Trigger**: Every PR and push to `main`/`develop`
 - **Actions**: Lint, typecheck, test all packages, build verification, security audit
 
 ### Web Deployment Workflow (`deploy-web.yml`)
+
 - **Trigger**: Push to `main` (paths: `apps/web/**`, `packages/**`), PR, or manual
 - **Production deployment** (push to `main` only):
   1. Run linting and tests
@@ -226,6 +229,7 @@ The workflows are already configured correctly. They will:
   3. Comment on PR with preview URL and metrics
 
 ### API Deployment Workflow (`deploy-api.yml`)
+
 - **Trigger**: Push to `main` (paths: `apps/api/**`, `packages/**`), PR, or manual
 - **Production deployment** (push to `main` only):
   1. Lint, typecheck, test API
@@ -238,6 +242,7 @@ The workflows are already configured correctly. They will:
   2. Comment on PR with preview URL
 
 ### Manual Deployment
+
 - Go to **Actions** → Select workflow → **Run workflow**
 
 ## Step 6: Test the Workflow
@@ -278,6 +283,7 @@ git push origin test/github-actions
 3. Watch the deployment progress in real-time
 
 **Expected workflow steps**:
+
 ```
 ✓ Lint & Test Web App (5-8 minutes)
   ├── Checkout code
@@ -317,6 +323,7 @@ Once the workflow completes:
    - Verify the latest deployment
 
 3. **Test the deployed site**:
+
    ```bash
    # Test production deployment
    curl https://creepjs.org/
@@ -336,8 +343,9 @@ Once the workflow completes:
 **Solution**: Ensure the Cloudflare Pages project exists and name matches.
 
 In `.github/workflows/deploy-web.yml` line 171:
+
 ```yaml
-projectName: creepjs-web  # Must match your Cloudflare Pages project name
+projectName: creepjs-web # Must match your Cloudflare Pages project name
 ```
 
 Create project: See Step 3 above.
@@ -347,9 +355,10 @@ Create project: See Step 3 above.
 **Solution**: The workflow expects static files in `apps/web/out`. Verify Next.js config:
 
 In `apps/web/next.config.mjs`:
+
 ```javascript
 const nextConfig = {
-  output: 'export',  // Must be set for static export
+  output: 'export', // Must be set for static export
   // ...
 };
 ```
@@ -357,6 +366,7 @@ const nextConfig = {
 #### Deployment succeeds but site shows 404
 
 **Possible causes**:
+
 1. **Wrong output directory**: Should be `apps/web/out`, not `apps/web/.next`
 2. **Missing `_routes.json`**: Cloudflare Pages needs routing configuration for SPAs
 3. **Build artifacts incomplete**: Check the build logs
@@ -385,6 +395,7 @@ pnpm --filter @creepjs/api build
 ```
 
 Verify `apps/api/package.json` has:
+
 ```json
 {
   "dependencies": {
@@ -396,6 +407,7 @@ Verify `apps/api/package.json` has:
 #### Error: "Health check failed" (API)
 
 **Solution**:
+
 1. Wait 30-60 seconds for global propagation
 2. Check Cloudflare Workers dashboard for deployment status
 3. Test API manually:
@@ -407,6 +419,7 @@ Verify `apps/api/package.json` has:
 #### API deployment succeeds but returns 500 errors
 
 **Possible causes**:
+
 1. **Missing KV bindings**: Check `wrangler.toml` has all 3 KV namespaces
 2. **Environment variables missing**: Check `wrangler.toml` `[vars]` section
 3. **Code errors**: Check Workers logs:
@@ -428,6 +441,7 @@ curl "https://api.cloudflare.com/client/v4/accounts/fe394f7c37b25babc4e351d704a6
 ```
 
 Expected response:
+
 ```json
 {
   "success": true,
@@ -445,6 +459,7 @@ If token is invalid, regenerate in Cloudflare Dashboard and update GitHub Secret
 #### Error: "Authentication error" in GitHub Actions
 
 **Solution**:
+
 - Verify `CLOUDFLARE_API_TOKEN` secret is correctly set
 - Check token has required permissions:
   - Cloudflare Pages: Edit
@@ -454,6 +469,7 @@ If token is invalid, regenerate in Cloudflare Dashboard and update GitHub Secret
 #### Workflow doesn't trigger on push
 
 **Solution**:
+
 - Check `.github/workflows/*.yml` `paths` filters
 - Verify you're pushing to the correct branch (`main`)
 - Check workflow is enabled in GitHub Actions settings
@@ -498,6 +514,7 @@ Add environment variables in Cloudflare Pages dashboard:
 ### Branch Previews
 
 Cloudflare Pages automatically creates previews for all branches:
+
 - **URL pattern**: `https://[branch-name].creepjs-web.pages.dev`
 - **Example**: `https://feature-xyz.creepjs-web.pages.dev`
 
@@ -508,6 +525,7 @@ The workflow automatically comments on PRs with the preview URL.
 ### Lighthouse CI
 
 The workflow runs Lighthouse audits on PR previews:
+
 - Performance target: > 90
 - Accessibility target: > 95
 - Best Practices target: > 90
@@ -518,6 +536,7 @@ Results are posted as PR comments.
 ### Cloudflare Analytics
 
 View real-time analytics in Cloudflare dashboard:
+
 - **Workers & Pages** → `creepjs-web` → **Analytics**
 - Metrics: Page views, unique visitors, bandwidth, Core Web Vitals
 
@@ -539,6 +558,7 @@ View real-time analytics in Cloudflare dashboard:
 ## Support
 
 If you encounter issues:
+
 1. Check GitHub Actions logs for detailed error messages
 2. Review Cloudflare Pages deployment logs
 3. Verify all secrets are correctly set

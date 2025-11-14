@@ -2,7 +2,7 @@
 
 Alright, let's talk about something that seems super innocent: your browser's ability to open PDF files. You probably use it all the time—click a PDF link, and boom, it opens right in your browser. No need to download anything. Convenient, right?
 
-But here's the thing: whether your browser can display PDFs natively, and *how* it does it, actually reveals information about your setup. And yes, websites can detect this. Let me break down how this works and why it matters.
+But here's the thing: whether your browser can display PDFs natively, and _how_ it does it, actually reveals information about your setup. And yes, websites can detect this. Let me break down how this works and why it matters.
 
 ## What Is PDF Viewer Fingerprinting?
 
@@ -55,15 +55,15 @@ Let me give you the real numbers here. The `navigator.pdfViewerEnabled` property
 
 Here's the breakdown:
 
-| Browser | Native PDF Viewer | pdfViewerEnabled Support | Market Share (2024) | Notes |
-|---------|-------------------|-------------------------|---------------------|-------|
-| Chrome 87+ | ✅ Yes | ✅ Yes | ~63% | Always returns true |
-| Edge 87+ | ✅ Yes | ✅ Yes | ~5% | Same as Chrome (Chromium) |
-| Firefox 19+ | ✅ Yes | ✅ Yes | ~3% | Original PDF.js implementation |
-| Safari (all versions) | ✅ Yes | ❌ No | ~20% | Returns undefined |
-| Opera 73+ | ✅ Yes | ✅ Yes | ~2% | Chromium-based |
-| Chrome Android | ✅ Yes | ⚠️ Partial | ~50% mobile | Inline support varies |
-| Safari iOS | ✅ Yes | ❌ No | ~27% mobile | System renderer |
+| Browser               | Native PDF Viewer | pdfViewerEnabled Support | Market Share (2024) | Notes                          |
+| --------------------- | ----------------- | ------------------------ | ------------------- | ------------------------------ |
+| Chrome 87+            | ✅ Yes            | ✅ Yes                   | ~63%                | Always returns true            |
+| Edge 87+              | ✅ Yes            | ✅ Yes                   | ~5%                 | Same as Chrome (Chromium)      |
+| Firefox 19+           | ✅ Yes            | ✅ Yes                   | ~3%                 | Original PDF.js implementation |
+| Safari (all versions) | ✅ Yes            | ❌ No                    | ~20%                | Returns undefined              |
+| Opera 73+             | ✅ Yes            | ✅ Yes                   | ~2%                 | Chromium-based                 |
+| Chrome Android        | ✅ Yes            | ⚠️ Partial               | ~50% mobile         | Inline support varies          |
+| Safari iOS            | ✅ Yes            | ❌ No                    | ~27% mobile         | System renderer                |
 
 What this means: **Over 98% of desktop users have native PDF viewing capabilities**, but only about **75% of browsers properly report this through the API**.
 
@@ -83,7 +83,7 @@ So you can't always trust a `false` value—it might just mean the user changed 
 
 ### Firefox on Windows: The False Positive Problem
 
-Firefox on Windows 10 can return `true` even when PDFs are configured to download automatically rather than display inline. The PDF viewer *exists*, but it's not actually being used.
+Firefox on Windows 10 can return `true` even when PDFs are configured to download automatically rather than display inline. The PDF viewer _exists_, but it's not actually being used.
 
 ### The Chrome HarmonyOS Mystery
 
@@ -133,7 +133,8 @@ The really sophisticated fingerprinters don't just check `navigator.pdfViewerEna
 ```javascript
 async function testPdfRendering() {
   // Create a data URI for a minimal PDF
-  const pdfDataUri = 'data:application/pdf;base64,JVBERi0xLjAKMSAwIG9iago8PCAvVHlwZSAvQ2F0YWxvZyAvUGFnZXMgMiAwIFIgPj4KZW5kb2JqCjIgMCBvYmoKPDwgL1R5cGUgL1BhZ2VzIC9LaWRzIFszIDAgUl0gL0NvdW50IDEgPj4KZW5kb2JqCjMgMCBvYmoKPDwgL1R5cGUgL1BhZ2UgL1BhcmVudCAyIDAgUiAvUmVzb3VyY2VzIDw8IC9Gb250IDw8IC9GMSA0IDAgUiA+PiA+PiAvQ29udGVudHMgNSAwIFIgPj4KZW5kb2JqCjQgMCBvYmoKPDwgL1R5cGUgL0ZvbnQgL1N1YnR5cGUgL1R5cGUxIC9CYXNlRm9udCAvVGltZXMtUm9tYW4gPj4KZW5kb2JqCjUgMCBvYmoKPDwgL0xlbmd0aCA0NCA+PgpzdHJlYW0KQlQKL0YxIDI0IFRmCjEwMCA3MDAgVGQKKFRlc3QpIFRqCkVUCmVuZHN0cmVhbQplbmRvYmoKeHJlZgowIDYKMDAwMDAwMDAwMCA2NTUzNSBmDQowMDAwMDAwMDA5IDAwMDAwIG4NCjAwMDAwMDAwNTYgMDAwMDAgbg0KMDAwMDAwMDExNSAwMDAwMCBuDQowMDAwMDAwMjI1IDAwMDAwIG4NCjAwMDAwMDAzMDQgMDAwMDAgbg0KdHJhaWxlcgo8PCAvU2l6ZSA2IC9Sb290IDEgMCBSID4+CnN0YXJ0eHJlZgozOTYKJSVFT0Y=';
+  const pdfDataUri =
+    'data:application/pdf;base64,JVBERi0xLjAKMSAwIG9iago8PCAvVHlwZSAvQ2F0YWxvZyAvUGFnZXMgMiAwIFIgPj4KZW5kb2JqCjIgMCBvYmoKPDwgL1R5cGUgL1BhZ2VzIC9LaWRzIFszIDAgUl0gL0NvdW50IDEgPj4KZW5kb2JqCjMgMCBvYmoKPDwgL1R5cGUgL1BhZ2UgL1BhcmVudCAyIDAgUiAvUmVzb3VyY2VzIDw8IC9Gb250IDw8IC9GMSA0IDAgUiA+PiA+PiAvQ29udGVudHMgNSAwIFIgPj4KZW5kb2JqCjQgMCBvYmoKPDwgL1R5cGUgL0ZvbnQgL1N1YnR5cGUgL1R5cGUxIC9CYXNlRm9udCAvVGltZXMtUm9tYW4gPj4KZW5kb2JqCjUgMCBvYmoKPDwgL0xlbmd0aCA0NCA+PgpzdHJlYW0KQlQKL0YxIDI0IFRmCjEwMCA3MDAgVGQKKFRlc3QpIFRqCkVUCmVuZHN0cmVhbQplbmRvYmoKeHJlZgowIDYKMDAwMDAwMDAwMCA2NTUzNSBmDQowMDAwMDAwMDA5IDAwMDAwIG4NCjAwMDAwMDAwNTYgMDAwMDAgbg0KMDAwMDAwMDExNSAwMDAwMCBuDQowMDAwMDAwMjI1IDAwMDAwIG4NCjAwMDAwMDAzMDQgMDAwMDAgbg0KdHJhaWxlcgo8PCAvU2l6ZSA2IC9Sb290IDEgMCBSID4+CnN0YXJ0eHJlZgozOTYKJSVFT0Y=';
 
   return new Promise((resolve) => {
     // Try to load PDF in an iframe
@@ -147,7 +148,7 @@ async function testPdfRendering() {
       resolve({
         canRender: true,
         method: 'iframe',
-        timeToLoad: Date.now() - startTime
+        timeToLoad: Date.now() - startTime,
       });
     };
 
@@ -159,7 +160,7 @@ async function testPdfRendering() {
       if (!loaded) {
         resolve({
           canRender: false,
-          method: 'timeout'
+          method: 'timeout',
         });
       }
       document.body.removeChild(iframe);
@@ -182,6 +183,7 @@ Here's what's kind of funny about PDF viewer fingerprinting: **it's actually one
 According to 2024 data, **over 98% of browsers support native PDF viewing**. That means this data point only provides about **0.5 bits of entropy**. In fingerprinting terms, that's basically nothing.
 
 For comparison:
+
 - Canvas fingerprinting: 10-15 bits of entropy
 - WebGL fingerprinting: 8-12 bits of entropy
 - Audio fingerprinting: 4-6 bits of entropy
@@ -218,6 +220,7 @@ function hasPdfPlugin() {
 ```
 
 This would catch:
+
 - Chrome PDF Plugin
 - Adobe Acrobat Plugin
 - Foxit PDF Plugin
@@ -230,15 +233,19 @@ But as of 2024, **navigator.plugins is deprecated and returns a hardcoded list**
 Let me give you some real scenarios where PDF detection matters:
 
 ### Scenario 1: Banking Websites
+
 Many banks generate statements as PDFs. They want to know if you can view them inline or if they need to tell you to download them. Fair enough—that's a legitimate use case.
 
 ### Scenario 2: E-Learning Platforms
+
 Online course platforms need to know if they can embed PDFs directly or if they need a fallback (like converting PDFs to images or HTML).
 
 ### Scenario 3: Ad Tech and Tracking
+
 Advertising networks include PDF support in their fingerprinting profiles. It's a small data point, but every bit helps when you're trying to track users across sites.
 
 ### Scenario 4: Bot Detection
+
 This is probably the most important use case. Security companies use PDF support detection as one signal among many to identify automated bots vs. real humans.
 
 ## Can You Fake It?
@@ -249,7 +256,7 @@ You can override the property:
 
 ```javascript
 Object.defineProperty(Navigator.prototype, 'pdfViewerEnabled', {
-  get: () => true
+  get: () => true,
 });
 ```
 

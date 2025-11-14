@@ -29,9 +29,9 @@ const result = await fp.get()
 // You should implement the `getFooComponent` and `getBarComponent` functions by yourself,
 // they can return any value.
 const components = {
-  ...result.components,
-  foo: { value: await getFooComponent() },
-  bar: { value: await getBarComponent() },
+    ...result.components,
+    foo: { value: await getFooComponent() },
+    bar: { value: await getBarComponent() },
 }
 
 // Optionally, you can make a visitor identifier from your custom list of components
@@ -50,9 +50,9 @@ const { languages, audio, ...components } = result.components
 
 // New components will be added: `foo` and `bar`
 const extendedComponents = {
-  ...components,
-  foo: { value: await getFooComponent() },
-  bar: { value: await getBarComponent() },
+    ...components,
+    foo: { value: await getFooComponent() },
+    bar: { value: await getBarComponent() },
 }
 
 // Optionally, you can make a visitor identifier from your custom list of components
@@ -82,7 +82,7 @@ Example:
 let { components } = await fp.get()
 
 if ('value' in components.canvas) {
-  components.canvas.value.text = ''
+    components.canvas.value.text = ''
 }
 
 // Optionally, you can make a visitor identifier from your custom list of components

@@ -41,7 +41,7 @@ function getTextMetricsFingerprint() {
     actualBoundingBoxLeft: metrics.actualBoundingBoxLeft,
     actualBoundingBoxRight: metrics.actualBoundingBoxRight,
     fontBoundingBoxAscent: metrics.fontBoundingBoxAscent,
-    fontBoundingBoxDescent: metrics.fontBoundingBoxDescent
+    fontBoundingBoxDescent: metrics.fontBoundingBoxDescent,
   };
 }
 ```
@@ -69,13 +69,13 @@ Most people don't do these things very often. I'm guessing you're still on the s
 
 Let me show you what I mean with actual data. Here's how different browser/OS combinations measure the same text:
 
-| Browser + OS | Width (px) | Ascent (px) | Descent (px) | Uniqueness |
-|--------------|-----------|-------------|--------------|------------|
-| Chrome 120 + Windows 11 | 87.234375 | 11.0 | 3.0 | High |
-| Chrome 120 + macOS Sonoma | 87.109375 | 10.8 | 2.9 | High |
-| Firefox 121 + Windows 11 | 87.156250 | 11.1 | 2.8 | High |
-| Safari 17 + macOS Sonoma | 87.093750 | 10.9 | 3.1 | High |
-| Chrome 120 + Ubuntu 22.04 | 87.281250 | 11.2 | 2.7 | High |
+| Browser + OS              | Width (px) | Ascent (px) | Descent (px) | Uniqueness |
+| ------------------------- | ---------- | ----------- | ------------ | ---------- |
+| Chrome 120 + Windows 11   | 87.234375  | 11.0        | 3.0          | High       |
+| Chrome 120 + macOS Sonoma | 87.109375  | 10.8        | 2.9          | High       |
+| Firefox 121 + Windows 11  | 87.156250  | 11.1        | 2.8          | High       |
+| Safari 17 + macOS Sonoma  | 87.093750  | 10.9        | 3.1          | High       |
+| Chrome 120 + Ubuntu 22.04 | 87.281250  | 11.2        | 2.7          | High       |
 
 See those tiny differences? **87.234375 vs 87.109375**. We're talking about fractions of a pixel. But those fractions are completely consistent and reproducible. If you're running Chrome on Windows 11, you'll always get 87.234375. That's what makes it perfect for tracking.
 
@@ -84,17 +84,20 @@ See those tiny differences? **87.234375 vs 87.109375**. We're talking about frac
 The really sophisticated trackers don't just measure one string in one font. They'll test dozens of combinations:
 
 ### Font Variations
+
 - System fonts (Arial, Times New Roman, Courier)
 - Web fonts (that might or might not be installed)
 - Emoji rendering (🔒📱💻 these render differently everywhere)
 - Special characters (mathematical symbols, foreign scripts)
 
 ### Size Variations
+
 - Multiple font sizes (10px, 12px, 14px, 16px, 20px)
 - Fractional sizes (14.5px, 15.7px)
 - Very large sizes (72px+) where differences are more pronounced
 
 ### Complex Text
+
 - Mixed scripts (Latin + Cyrillic + Chinese)
 - Ligatures (special character combinations like "fi")
 - Right-to-left text (Arabic, Hebrew)
@@ -113,7 +116,7 @@ function getAdvancedTextMetrics() {
     'The quick brown fox',
     '€£¥₹',
     '🔒📱💻🌐',
-    'مرحبا世界Привет'
+    'مرحبا世界Привет',
   ];
 
   const fonts = [
@@ -121,19 +124,19 @@ function getAdvancedTextMetrics() {
     '16px Times New Roman',
     '12px Courier New',
     '14px Georgia',
-    '14px Verdana'
+    '14px Verdana',
   ];
 
-  fonts.forEach(font => {
+  fonts.forEach((font) => {
     ctx.font = font;
-    testStrings.forEach(text => {
+    testStrings.forEach((text) => {
       const metrics = ctx.measureText(text);
       results.push({
         font: font,
         text: text,
         width: metrics.width,
         ascent: metrics.actualBoundingBoxAscent,
-        descent: metrics.actualBoundingBoxDescent
+        descent: metrics.actualBoundingBoxDescent,
       });
     });
   });
@@ -158,13 +161,13 @@ This adds another layer to your fingerprint. Two people with identical browsers 
 
 Mobile browsers add even more complexity:
 
-| Device | Width Variation | Ascent Variation | Notes |
-|--------|----------------|------------------|-------|
-| iPhone 14 Pro (Safari) | ±0.05px | ±0.1px | Very consistent |
-| iPhone 14 Pro (Chrome) | ±0.08px | ±0.15px | Slightly more variation |
-| Samsung Galaxy S23 | ±0.12px | ±0.2px | Android variability |
-| Google Pixel 8 | ±0.10px | ±0.18px | Stock Android |
-| OnePlus/Xiaomi | ±0.15px | ±0.25px | Custom Android skins |
+| Device                 | Width Variation | Ascent Variation | Notes                   |
+| ---------------------- | --------------- | ---------------- | ----------------------- |
+| iPhone 14 Pro (Safari) | ±0.05px         | ±0.1px           | Very consistent         |
+| iPhone 14 Pro (Chrome) | ±0.08px         | ±0.15px          | Slightly more variation |
+| Samsung Galaxy S23     | ±0.12px         | ±0.2px           | Android variability     |
+| Google Pixel 8         | ±0.10px         | ±0.18px          | Stock Android           |
+| OnePlus/Xiaomi         | ±0.15px         | ±0.25px          | Custom Android skins    |
 
 Mobile devices are actually **easier to fingerprint** because there's less variation in hardware and software configurations.
 
@@ -173,6 +176,7 @@ Mobile devices are actually **easier to fingerprint** because there's less varia
 A bombshell study presented at the ACM Web Conference 2025 titled "Breaking the Shield: Analyzing and Attacking Canvas Fingerprinting Defenses in the Wild" found something disturbing: **all current randomization defenses against canvas fingerprinting can be defeated**.
 
 The researchers successfully attacked every major anti-fingerprinting tool:
+
 - Brave's farbling (noise injection)
 - Firefox's Resist Fingerprinting mode
 - Canvas Defender extension
@@ -185,15 +189,19 @@ Their conclusion? **No fully deployable defense against canvas fingerprinting ex
 Here's the honest truth: it's really hard. But here are some options:
 
 ### Option 1: Use Brave or Firefox with RFP
+
 These browsers add random noise to text metrics or standardize them. But as the 2025 research showed, sophisticated trackers can detect and defeat these defenses.
 
 ### Option 2: Disable JavaScript
+
 This works, but you'll break like 90% of modern websites. Not realistic for most people.
 
 ### Option 3: Use Tor Browser
+
 Tor standardizes all font metrics to make everyone look the same. It's the most effective solution, but it's also the slowest and some websites block Tor.
 
 ### Option 4: Accept It
+
 This is what most people do. Text metrics fingerprinting is just one piece of the tracking puzzle.
 
 ## Why This Matters for Privacy

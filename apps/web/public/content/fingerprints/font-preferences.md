@@ -23,32 +23,32 @@ function getDefaultFont(generic) {
 }
 
 const defaults = {
-  serif: getDefaultFont('serif'),       // "Times New Roman" (Windows), "Times" (macOS)
+  serif: getDefaultFont('serif'), // "Times New Roman" (Windows), "Times" (macOS)
   sansSerif: getDefaultFont('sans-serif'), // "Arial" (Windows), "Helvetica" (macOS)
-  monospace: getDefaultFont('monospace'),  // "Courier New" (Windows), "Courier" (macOS)
+  monospace: getDefaultFont('monospace'), // "Courier New" (Windows), "Courier" (macOS)
 };
 ```
 
 ## OS-Specific Defaults
 
-| OS | Serif | Sans-Serif | Monospace |
-|----|-------|------------|-----------|
-| Windows 10/11 | Times New Roman | Arial | Consolas |
-| macOS | Times | Helvetica | Courier |
-| Linux (Ubuntu) | Liberation Serif | Ubuntu | Ubuntu Mono |
-| Android | Noto Serif | Roboto | Droid Sans Mono |
-| iOS | Times | Helvetica | Courier |
+| OS             | Serif            | Sans-Serif | Monospace       |
+| -------------- | ---------------- | ---------- | --------------- |
+| Windows 10/11  | Times New Roman  | Arial      | Consolas        |
+| macOS          | Times            | Helvetica  | Courier         |
+| Linux (Ubuntu) | Liberation Serif | Ubuntu     | Ubuntu Mono     |
+| Android        | Noto Serif       | Roboto     | Droid Sans Mono |
+| iOS            | Times            | Helvetica  | Courier         |
 
 ## Fingerprint Uniqueness
 
 **Entropy**: 1-2 bits (OS detection)
 
-| Configuration | % | Indicates |
-|---------------|---|-----------|
-| Times New Roman + Arial + Consolas | 65% | Windows |
-| Times + Helvetica + Courier | 20% | macOS/iOS |
-| Liberation/Ubuntu fonts | 5% | Linux |
-| Custom fonts | 10% | User customization (rare, very unique) |
+| Configuration                      | %   | Indicates                              |
+| ---------------------------------- | --- | -------------------------------------- |
+| Times New Roman + Arial + Consolas | 65% | Windows                                |
+| Times + Helvetica + Courier        | 20% | macOS/iOS                              |
+| Liberation/Ubuntu fonts            | 5%  | Linux                                  |
+| Custom fonts                       | 10% | User customization (rare, very unique) |
 
 ## Privacy Implications
 
@@ -74,7 +74,8 @@ const defaults = {
 ```javascript
 function detectOS(fonts) {
   if (fonts.serif === 'Times New Roman') return 'Windows';
-  if (fonts.serif === 'Times' && fonts.sansSerif === 'Helvetica') return 'macOS/iOS';
+  if (fonts.serif === 'Times' && fonts.sansSerif === 'Helvetica')
+    return 'macOS/iOS';
   if (/liberation|ubuntu/i.test(fonts.serif)) return 'Linux';
   return 'Unknown or customized';
 }
@@ -92,13 +93,13 @@ function getMappedFont(generic) {
   test.style.fontFamily = generic;
   test.innerHTML = 'mmmmmmmmmmlli';
   document.body.appendChild(test);
-  
+
   const metrics = {
     width: test.offsetWidth,
     height: test.offsetHeight,
     font: getComputedStyle(test).fontFamily,
   };
-  
+
   document.body.removeChild(test);
   return metrics;
 }
@@ -119,7 +120,7 @@ const preferences = {
 function isDefaultFont(fontName, generic) {
   const testGeneric = getMappedFont(generic);
   const testSpecific = getMappedFont(fontName + ', ' + generic);
-  
+
   // If widths match, font is likely the default
   return Math.abs(testGeneric.width - testSpecific.width) < 1;
 }
@@ -133,24 +134,24 @@ const windowsDefaults = {
 
 ## Browser Support
 
-| Browser | API Support | Accuracy |
-|---------|-------------|----------|
-| Chrome 1+ | ✅ Full | 100% |
-| Firefox 1+ | ✅ Full | 100% |
-| Safari 3+ | ✅ Full | 100% |
-| Edge 12+ | ✅ Full | 100% |
-| Mobile | ✅ Full | 100% |
+| Browser    | API Support | Accuracy |
+| ---------- | ----------- | -------- |
+| Chrome 1+  | ✅ Full     | 100%     |
+| Firefox 1+ | ✅ Full     | 100%     |
+| Safari 3+  | ✅ Full     | 100%     |
+| Edge 12+   | ✅ Full     | 100%     |
+| Mobile     | ✅ Full     | 100%     |
 
 ## Mitigation Strategies
 
 ### Browser Protections
 
-| Browser | Protection | Effectiveness |
-|---------|------------|---------------|
-| Tor Browser | Fixed fonts | High |
-| Brave | Randomizes slightly | Medium |
-| Firefox Privacy | No changes | None |
-| Standard Chrome/Safari | No changes | None |
+| Browser                | Protection          | Effectiveness |
+| ---------------------- | ------------------- | ------------- |
+| Tor Browser            | Fixed fonts         | High          |
+| Brave                  | Randomizes slightly | Medium        |
+| Firefox Privacy        | No changes          | None          |
+| Standard Chrome/Safari | No changes          | None          |
 
 ### User Actions
 
@@ -162,12 +163,14 @@ const windowsDefaults = {
 ## Use Cases
 
 ✅ **Legitimate**:
+
 - **Cross-platform testing**: Verify font rendering
 - **Accessibility**: Detect large text settings
 - **OS detection**: Optimize UI for platform
 - **Bot detection**: Headless browsers may have unusual fonts
 
 ❌ **Concerning**:
+
 - **Fingerprinting**: Part of device fingerprint
 - **OS-based discrimination**: Different experience by platform
 - **Accessibility profiling**: Identifying disabled users
@@ -191,12 +194,14 @@ From 20M+ samples (2024):
 ## Recommendations
 
 **For Developers**:
+
 1. Use font preferences for legitimate compatibility checks only
 2. Don't make assumptions based on fonts alone
 3. Respect user customizations (accessibility)
 4. Combine with User Agent for robust OS detection
 
 **For Privacy-Conscious Users**:
+
 1. Use Tor Browser (standardized fonts)
 2. Don't customize default fonts unnecessarily
 3. Awareness: Default fonts reveal OS with high accuracy
@@ -208,7 +213,7 @@ From 20M+ samples (2024):
 async function getFontPreferences() {
   const generics = ['serif', 'sans-serif', 'monospace', 'cursive', 'fantasy'];
   const preferences = {};
-  
+
   for (const generic of generics) {
     const test = document.createElement('div');
     test.style.fontFamily = generic;
@@ -216,22 +221,25 @@ async function getFontPreferences() {
     test.style.visibility = 'hidden';
     test.textContent = 'abcdefghijklmnopqrstuvwxyz0123456789';
     document.body.appendChild(test);
-    
+
     preferences[generic] = {
       family: getComputedStyle(test).fontFamily,
       width: test.offsetWidth,
       height: test.offsetHeight,
     };
-    
+
     document.body.removeChild(test);
   }
-  
+
   // Infer OS
-  const os = preferences.serif.family.includes('Times New Roman') ? 'Windows' :
-             preferences.serif.family.includes('Times') ? 'macOS/iOS' :
-             /liberation|ubuntu/i.test(preferences.serif.family) ? 'Linux' :
-             'Unknown';
-  
+  const os = preferences.serif.family.includes('Times New Roman')
+    ? 'Windows'
+    : preferences.serif.family.includes('Times')
+      ? 'macOS/iOS'
+      : /liberation|ubuntu/i.test(preferences.serif.family)
+        ? 'Linux'
+        : 'Unknown';
+
   return { preferences, inferredOS: os };
 }
 ```
@@ -262,14 +270,15 @@ function detectOSWithConfidence(fonts, userAgent) {
 
 Custom font preferences often indicate **accessibility needs**:
 
-| Font Change | Likely Reason | Privacy Concern |
-|-------------|---------------|-----------------|
-| **Large default fonts** | Vision impairment | Identifies disabled users |
-| **High-contrast fonts** | Visual accessibility | Sensitive health info |
-| **Dyslexia-friendly fonts** (OpenDyslexic, Comic Sans) | Learning disability | Discriminatory profiling |
-| **Non-Latin defaults** | Language/cultural background | Demographic profiling |
+| Font Change                                            | Likely Reason                | Privacy Concern           |
+| ------------------------------------------------------ | ---------------------------- | ------------------------- |
+| **Large default fonts**                                | Vision impairment            | Identifies disabled users |
+| **High-contrast fonts**                                | Visual accessibility         | Sensitive health info     |
+| **Dyslexia-friendly fonts** (OpenDyslexic, Comic Sans) | Learning disability          | Discriminatory profiling  |
+| **Non-Latin defaults**                                 | Language/cultural background | Demographic profiling     |
 
 This creates **potential discrimination risks**. Imagine:
+
 - Job application sites identifying candidates with disabilities
 - Insurance sites adjusting rates based on accessibility settings
 - Content sites serving different experiences to users with vision needs
@@ -279,6 +288,7 @@ This creates **potential discrimination risks**. Imagine:
 Windows 11 introduced **new default fonts** that create a fingerprinting opportunity:
 
 **Windows 10 vs 11 differences**:
+
 - Windows 10: Segoe UI (2012 version)
 - Windows 11: Segoe UI Variable (2021 version)
 
@@ -291,7 +301,8 @@ function detectWindows11() {
   test.textContent = 'test';
   document.body.appendChild(test);
 
-  const hasVariableFont = getComputedStyle(test).fontFamily.includes('Variable');
+  const hasVariableFont =
+    getComputedStyle(test).fontFamily.includes('Variable');
   document.body.removeChild(test);
 
   return hasVariableFont ? 'Windows 11' : 'Windows 10 or older';
@@ -307,6 +318,7 @@ This allows **OS version fingerprinting** with high accuracy.
 On **December 19, 2024**, Google announced they would **no longer prohibit advertisers from using fingerprinting techniques starting February 16, 2025**.
 
 This means:
+
 - Font preference fingerprinting becomes **standard practice** for Google Ads
 - Any site using Google Analytics may collect font data
 - Cross-site tracking via fonts becomes **ubiquitous**
@@ -314,6 +326,7 @@ This means:
 ### Browser Fingerprinting Statistics (2024-2025)
 
 From recent research analyzing 50M+ browsers:
+
 - **83.6% of browsers have unique fingerprints** (EFF study)
 - **80-90% of fingerprints are unique** enough for accurate tracking
 - **Over 10,000 top websites** actively use font fingerprinting
@@ -322,17 +335,20 @@ From recent research analyzing 50M+ browsers:
 ### Browser Protection Updates
 
 **Brave Browser (Version 1.39+, 2024)**:
+
 - Starting with version 1.39, Brave **randomizes font information**
 - Font preferences are slightly altered to prevent consistent fingerprinting
 - Still maintains functionality for websites
 
 **Firefox (2024 updates)**:
+
 - `layout.css.font-visibility` preferences now have three levels
 - Level 1: Only base system fonts visible
 - Level 2: Fonts from optional language packs
 - Level 3: User-installed fonts (default)
 
 **Tor Browser (Version 13.5, December 2024)**:
+
 - Enhanced letterboxing and standardized font set
 - All users report identical font preferences
 - Maximum anonymity through uniformity
@@ -342,6 +358,7 @@ From recent research analyzing 50M+ browsers:
 ### Scenario 1: OS Fingerprinting Despite VPN
 
 You're using a VPN to appear in a different country, but:
+
 1. Site detects font preferences: **Times New Roman + Arial + Consolas**
 2. Inference: Windows OS
 3. Cross-referenced with User Agent: **macOS**
@@ -352,6 +369,7 @@ Your VPN and User Agent spoofing are defeated by **font preferences**.
 ### Scenario 2: Language and Cultural Profiling
 
 A tracker detects:
+
 - Serif: **SimSun** (Chinese font)
 - Sans-Serif: **Microsoft YaHei** (Chinese UI font)
 - Monospace: **FangSong** (Chinese mono font)
@@ -363,6 +381,7 @@ A tracker detects:
 ### Scenario 3: Developer Identification
 
 A site detects:
+
 - Monospace: **Fira Code** or **JetBrains Mono**
 - Sans-Serif: **SF Pro** (macOS)
 
@@ -387,16 +406,19 @@ Set `about:config` preferences:
 ### System-Level Changes
 
 **Windows**:
+
 1. Remove unused fonts from `C:\Windows\Fonts`
 2. Keep only standard fonts (Arial, Times New Roman, Courier New)
 3. Avoid custom font installations
 
 **macOS**:
+
 1. Use Font Book to disable custom fonts
 2. Keep only system defaults
 3. Avoid downloading fonts from Adobe, Google Fonts, etc.
 
 **Linux**:
+
 1. Stick to distro defaults (Liberation, DejaVu, Ubuntu fonts)
 2. Avoid font packages from AUR or third-party repos
 
@@ -405,6 +427,7 @@ Set `about:config` preferences:
 ### The Nuclear Option
 
 For maximum anonymity:
+
 1. **Use Tor Browser exclusively**: Standardized fonts across all users
 2. **Virtual machine with minimal fonts**: Install only 10-20 standard fonts
 3. **Browser extensions**: "Font Fingerprint Defender" (though effectiveness varies)
@@ -414,12 +437,12 @@ For maximum anonymity:
 
 Font preferences are rarely used **alone**. Trackers combine them with:
 
-| Fingerprint Vector | Combined Uniqueness |
-|--------------------|---------------------|
-| Font preferences + User Agent | 70-80% OS accuracy |
-| Font preferences + Screen resolution | 85-90% device identification |
-| Font preferences + Timezone | 90-95% geographic accuracy |
-| Font preferences + Canvas fingerprint | 95%+ unique identification |
+| Fingerprint Vector                    | Combined Uniqueness          |
+| ------------------------------------- | ---------------------------- |
+| Font preferences + User Agent         | 70-80% OS accuracy           |
+| Font preferences + Screen resolution  | 85-90% device identification |
+| Font preferences + Timezone           | 90-95% geographic accuracy   |
+| Font preferences + Canvas fingerprint | 95%+ unique identification   |
 
 This is why **partial privacy measures fail**. You need to block **all** fingerprinting vectors or accept tracking.
 
@@ -439,6 +462,7 @@ Privacy and personalization are **fundamentally opposed**. You can't have both.
 Test your font preferences fingerprint at [/fingerprint/font-preferences](/fingerprint/font-preferences).
 
 You'll see:
+
 - What default fonts your system reports
 - Which OS trackers infer from your fonts
 - How unique your font configuration is

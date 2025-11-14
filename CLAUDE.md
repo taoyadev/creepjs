@@ -100,16 +100,19 @@ pnpm --filter @creepjs/sdk build --watch
 - **Validation**: Zod schemas for all inputs
 
 **Key Endpoints**:
+
 - `POST /v1/fingerprint` - Generate fingerprint ID from browser components
 - `GET /v1/token?email=<email>` - Request API token
 
 **Middleware Stack**:
+
 1. CORS (`hono/cors`)
 2. Logger (`hono/logger`)
 3. Auth middleware (validates `X-API-Token` header against KV)
 4. Rate limit middleware (1000 requests/day per token, tracked in KV)
 
 **File Structure**:
+
 ```
 apps/api/src/
 ├── index.ts                    # Main Hono app + route registration
@@ -128,6 +131,7 @@ apps/api/src/
 ### Core Fingerprinting Engine (packages/core)
 
 **Collectors** (`src/collectors/`):
+
 - `canvas.ts` - Canvas fingerprinting (text + shapes rendering)
 - `webgl.ts` - WebGL parameters (vendor, renderer, extensions)
 - `navigator.ts` - Navigator API data (userAgent, platform, languages)
@@ -138,11 +142,13 @@ apps/api/src/
 - Additional collectors: CSS, media devices, text metrics, SVG, math precision, etc.
 
 **Hashing** (`src/utils/hash.ts`):
+
 - Algorithm: MurmurHash3
 - Encoding: Base62 for compact fingerprint IDs
 - Normalization: Stable JSON serialization (sorted keys)
 
 **Main Function**:
+
 ```typescript
 generateFingerprintId(components: Components): string
 // Normalizes components → hashes with MurmurHash3 → Base62 encoding
@@ -163,20 +169,22 @@ generateFingerprintId(components: Components): string
 ### JavaScript SDK (packages/sdk)
 
 **Main API**:
+
 ```typescript
 import { getFingerprint } from '@creepjs/sdk';
 
 const result = await getFingerprint({
   token: 'cfp_your_token',
   endpoint: 'https://api.creepjs.org', // optional
-  cache: true,                          // localStorage caching
-  cacheTtl: 3600,                       // cache TTL in seconds
+  cache: true, // localStorage caching
+  cacheTtl: 3600, // cache TTL in seconds
 });
 
 // Returns: { fingerprintId, confidence, uniqueness, timestamp, cached }
 ```
 
 **Build Output**:
+
 - `dist/creepjs.umd.js` - UMD format for CDN
 - `dist/creepjs.esm.js` - ES modules
 - Target: <15KB gzipped
@@ -193,12 +201,14 @@ This project uses **OpenSpec** for spec-driven development. For major changes:
 4. **Use `/openspec:archive`** - Archive deployed changes
 
 **When to use OpenSpec**:
+
 - New capabilities or breaking changes
 - Architecture shifts
 - Performance or security work
 - Ambiguous requirements needing clarification
 
 **Structure**:
+
 ```
 openspec/changes/<change-id>/
 ├── proposal.md                 # Change description & rationale
@@ -208,13 +218,14 @@ openspec/changes/<change-id>/
 
 ### Testing Strategy
 
-| Type | Location | Tools |
-|------|----------|-------|
-| Unit tests | `*.test.ts` in each package | Vitest |
-| API tests | `apps/api/tests/` | Vitest + Cloudflare Workers pool + mock KV |
-| E2E tests | `apps/web/tests/` | Playwright (optional) |
+| Type       | Location                    | Tools                                      |
+| ---------- | --------------------------- | ------------------------------------------ |
+| Unit tests | `*.test.ts` in each package | Vitest                                     |
+| API tests  | `apps/api/tests/`           | Vitest + Cloudflare Workers pool + mock KV |
+| E2E tests  | `apps/web/tests/`           | Playwright (optional)                      |
 
 **Running Tests**:
+
 ```bash
 # All tests
 turbo run test
@@ -229,6 +240,7 @@ pnpm --filter @creepjs/api test         # Uses Cloudflare Workers test environme
 ### Environment Variables
 
 **Development**:
+
 ```bash
 # Copy template
 cp .env.example .env.local
@@ -240,6 +252,7 @@ CREEPJS_KV_NAMESPACE=<from-wrangler>
 ```
 
 **Production (Cloudflare Workers)**:
+
 ```bash
 # Set secrets via Wrangler
 wrangler secret put CREEPJS_TOKEN_PRIVATE_KEY
@@ -317,20 +330,24 @@ cp packages/sdk/dist/creepjs.umd.js apps/web/public/sdk.js
 ## Common Issues
 
 ### "KV namespace not bound"
+
 - Check `wrangler.toml` has correct KV binding
 - Ensure KV namespace exists: `wrangler kv:namespace list`
 - For local dev: `wrangler dev` auto-creates local KV
 
 ### Next.js "ReferenceError: navigator is not defined"
+
 - Browser APIs must be in Client Components with `"use client"`
 - Use dynamic imports with `ssr: false` if needed
 
 ### SDK not found in web app
+
 - Ensure `pnpm install` ran successfully (workspace linking)
 - Check `package.json` has `"@creepjs/sdk": "workspace:*"`
 - Rebuild SDK: `pnpm --filter @creepjs/sdk build`
 
 ### Rate limit not working in tests
+
 - Ensure test uses Workers test environment: `pool: '@cloudflare/vitest-pool-workers'`
 - Mock KV operations in `vitest.config.ts`
 
@@ -346,18 +363,19 @@ cp packages/sdk/dist/creepjs.umd.js apps/web/public/sdk.js
 ## Package Manager
 
 **MUST use pnpm** (not npm or yarn). The project uses pnpm workspaces with:
+
 - `packageManager: "pnpm@9.15.4"` in root `package.json`
 - Node.js >= 20.9.0 required
 - Turborepo for build orchestration
 
 ## Performance Targets
 
-| Metric | Target |
-|--------|--------|
-| API response time (p95) | <100ms |
-| SDK bundle size (gzipped) | <15KB |
-| Lighthouse score | >95 |
-| Uptime | >99.9% |
+| Metric                    | Target |
+| ------------------------- | ------ |
+| API response time (p95)   | <100ms |
+| SDK bundle size (gzipped) | <15KB  |
+| Lighthouse score          | >95    |
+| Uptime                    | >99.9% |
 
 ## License
 

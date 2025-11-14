@@ -11,6 +11,7 @@ const oscpu = navigator.oscpu;
 ```
 
 **Firefox Returns** (representative examples):
+
 - `"Windows NT 10.0; Win64; x64"` - Windows 10/11 64-bit
 - `"Windows NT 6.3; Win64; x64"` - Windows 8.1 64-bit
 - `"Linux x86_64"` - 64-bit Linux
@@ -19,6 +20,7 @@ const oscpu = navigator.oscpu;
 - `"Intel Mac OS X 13.0"` - macOS Ventura
 
 **Non-Firefox Browsers Return**:
+
 - Chrome/Chromium: `undefined`
 - Safari: `undefined`
 - Edge: `undefined`
@@ -36,6 +38,7 @@ When oscpu returns a non-undefined value, it discloses multiple layers of system
 The oscpu string reveals precise OS family and version:
 
 **Windows Detection**:
+
 - NT 10.0 = Windows 10 or Windows 11
 - NT 6.3 = Windows 8.1
 - NT 6.2 = Windows 8
@@ -45,11 +48,13 @@ The oscpu string reveals precise OS family and version:
 Note that Windows 11 reports the same NT version (10.0) as Windows 10, requiring additional signals to distinguish between them.
 
 **Linux Detection**:
+
 - Reveals Linux kernel architecture (x86_64, i686, armv7l, aarch64)
 - Does NOT reveal specific distribution (Ubuntu, Fedora, Debian)
 - Provides bitness (32-bit vs 64-bit)
 
 **macOS Detection**:
+
 - Reports macOS version number (10.15, 11.0, 12.0, 13.0)
 - Includes "Intel" prefix (even on Apple Silicon Macs due to Rosetta)
 - Reveals major OS updates immediately after installation
@@ -59,12 +64,14 @@ Note that Windows 11 reports the same NT version (10.0) as Windows 10, requiring
 The oscpu string exposes CPU architecture details:
 
 **x86/x64 Classification**:
+
 - "Win64; x64" or "x86_64" = 64-bit Intel/AMD
 - "Win32" or "i686" = 32-bit Intel/AMD
 - Distinguishes ARM from x86 on Linux (armv7l, aarch64)
 
 **Bitness Detection**:
 The 32-bit vs 64-bit distinction reveals:
+
 - Device age (most post-2015 systems are 64-bit)
 - RAM capacity (32-bit limited to 4GB)
 - Software ecosystem (legacy vs modern)
@@ -91,6 +98,7 @@ function isFirefox() {
 This binary test contributes entropy based on Firefox market share:
 
 **Global Browser Market Share** (2024-2025):
+
 - Chrome/Chromium: ~65%
 - Safari: ~20%
 - Edge: ~5%
@@ -143,6 +151,7 @@ Unlike user agent strings (which Firefox freezes for privacy), oscpu dynamically
 A user upgrading from Windows 10 to Windows 11 would see oscpu change from "Windows NT 10.0" to... also "Windows NT 10.0" (same NT version). However, macOS users upgrading from 12.0 to 13.0 are immediately identifiable through oscpu changes.
 
 This enables:
+
 - Tracking users across OS upgrades
 - Identifying early adopters of new OS versions
 - Detecting corporate environments with standardized OS builds
@@ -152,6 +161,7 @@ This enables:
 Corporate IT departments often standardize on specific OS builds, creating distinctive oscpu patterns:
 
 **Corporate Fingerprints**:
+
 - "Windows NT 10.0; Win64; x64" + specific Firefox ESR version = likely enterprise deployment
 - Older NT versions (6.1, 6.3) on modern hardware = legacy enterprise environment
 - Uniform OS version across multiple sessions = centrally managed systems
@@ -163,11 +173,13 @@ This allows B2B advertisers to identify and target enterprise users with higher-
 OS version adoption varies by region and income:
 
 **Regional Patterns**:
+
 - Latest macOS versions (13.0+) concentrated in North America, Western Europe
 - Older Windows versions (NT 6.x) more common in developing regions
 - Linux users (any oscpu containing "Linux") skew technical/developer demographics
 
 **Device Age Inference**:
+
 - 32-bit architectures (i686, Win32) indicate older hardware
 - Latest macOS versions require recent hardware ($1000+ devices)
 - Windows NT 6.x versions suggest devices 5+ years old
@@ -191,16 +203,19 @@ Mozilla documentation marks navigator.oscpu as deprecated with warnings:
 Firefox's `privacy.resistFingerprinting` preference modifies oscpu behavior:
 
 **Standard Configuration**:
+
 ```javascript
 navigator.oscpu; // Returns actual OS and architecture
 ```
 
 **With privacy.resistFingerprinting Enabled**:
+
 ```javascript
 navigator.oscpu; // Returns spoofed/normalized value
 ```
 
 Specifically, enabling `privacy.resistFingerprinting` (about:config setting) causes Firefox to report:
+
 - Spoofed OS version (normalized to common value)
 - Randomized or frozen architecture
 - Consistent with spoofed user agent
@@ -222,14 +237,15 @@ All Tor Browser users report identical oscpu values, eliminating this fingerprin
 
 The oscpu property exists in a landscape of related but distinct OS-detection APIs:
 
-| Property | Firefox | Chrome | Safari | Entropy |
-|----------|---------|--------|--------|---------|
-| navigator.oscpu | Detailed OS+CPU | undefined | undefined | 5+ bits |
-| navigator.platform | Generic (e.g., "Win32") | Generic | Generic | 2-3 bits |
-| navigator.userAgent | Full details | Full details | Full details | 5-8 bits |
-| navigator.userAgentData | undefined | Detailed (permission) | undefined | Variable |
+| Property                | Firefox                 | Chrome                | Safari       | Entropy  |
+| ----------------------- | ----------------------- | --------------------- | ------------ | -------- |
+| navigator.oscpu         | Detailed OS+CPU         | undefined             | undefined    | 5+ bits  |
+| navigator.platform      | Generic (e.g., "Win32") | Generic               | Generic      | 2-3 bits |
+| navigator.userAgent     | Full details            | Full details          | Full details | 5-8 bits |
+| navigator.userAgentData | undefined               | Detailed (permission) | undefined    | Variable |
 
 The oscpu property is unique in:
+
 - Firefox exclusivity (highest browser-specific entropy)
 - Detailed OS version without parsing required
 - No permission requirements (unlike userAgentData)
@@ -248,6 +264,7 @@ Browser identification alone: -log2(0.03) ≈ 5.1 bits
 ### Within-Firefox OS Distribution
 
 **Firefox User Base OS Breakdown** (estimated):
+
 - Windows: ~60% of Firefox users
   - NT 10.0: ~90% of Windows Firefox users
   - NT 6.3 and older: ~10%
@@ -295,7 +312,7 @@ const oscpuData = {
   value: navigator.oscpu,
   isFirefox: typeof navigator.oscpu !== 'undefined',
   osVersion: parseOSVersion(navigator.oscpu),
-  architecture: parseArchitecture(navigator.oscpu)
+  architecture: parseArchitecture(navigator.oscpu),
 };
 ```
 
@@ -312,13 +329,13 @@ Enterprise bot detection platforms (DataDome, PerimeterX, Akamai) use oscpu as p
 
 The oscpu property serves similar purposes as the obsolete navigator.cpuClass (IE-only), but with key differences:
 
-| Feature | oscpu (Firefox) | cpuClass (IE, obsolete) |
-|---------|-----------------|-------------------------|
-| Browser support | Firefox only | IE only (deprecated) |
-| Current status | Active but deprecated | Completely removed |
-| Information | OS version + CPU | CPU architecture only |
-| Entropy | 6.5-7.0 bits | 1-3 bits (historical) |
-| Privacy controls | resistFingerprinting | None |
+| Feature          | oscpu (Firefox)       | cpuClass (IE, obsolete) |
+| ---------------- | --------------------- | ----------------------- |
+| Browser support  | Firefox only          | IE only (deprecated)    |
+| Current status   | Active but deprecated | Completely removed      |
+| Information      | OS version + CPU      | CPU architecture only   |
+| Entropy          | 6.5-7.0 bits          | 1-3 bits (historical)   |
+| Privacy controls | resistFingerprinting  | None                    |
 
 Both properties share the pattern of browser-exclusive APIs that become powerful fingerprinting vectors through their exclusivity rather than just their information content.
 
@@ -335,6 +352,7 @@ The most effective Firefox-native approach:
 3. This spoofs oscpu to generic values matching spoofed user agent
 
 **Trade-offs**:
+
 - Breaks some websites expecting real OS detection
 - May impact font rendering and UI scaling
 - Disables certain performance optimizations
@@ -355,16 +373,17 @@ Browser extensions can override oscpu:
 
 ```javascript
 Object.defineProperty(Navigator.prototype, 'oscpu', {
-  get: () => undefined
+  get: () => undefined,
 });
 ```
 
 This removes the property entirely, making Firefox appear as Chrome/Safari. However, this creates a detectable anomaly—Firefox without oscpu is suspicious.
 
 **Alternative Approach**:
+
 ```javascript
 Object.defineProperty(Navigator.prototype, 'oscpu', {
-  get: () => 'Windows NT 10.0; Win64; x64' // Spoof to common value
+  get: () => 'Windows NT 10.0; Win64; x64', // Spoof to common value
 });
 ```
 
@@ -381,6 +400,7 @@ The WHATWG HTML Living Standard does NOT include navigator.oscpu, marking it as 
 ### W3C Privacy Community Group
 
 The Privacy CG recommends against exposing detailed OS information without permission controls, citing fingerprinting risks. The oscpu property violates these principles by:
+
 - Providing passive (no permission) access to OS details
 - Exposing high-entropy information
 - Enabling persistent tracking through hardware-based signals
@@ -415,6 +435,7 @@ The ePrivacy Directive requires consent for storing or accessing information on 
 ### CCPA
 
 California Consumer Privacy Act classifies browser fingerprints as "unique identifiers" subject to:
+
 - Disclosure in privacy policies
 - Opt-out rights for sale to third parties
 - Deletion rights (though fingerprints are often regenerated)
@@ -426,6 +447,7 @@ Browser fingerprinting research has extensively studied Firefox-specific signals
 ### AmIUnique Study (2016)
 
 Analysis of 118,934 browser fingerprints found:
+
 - Firefox users had distinct fingerprints due to Gecko-specific properties
 - oscpu contributed 5-7 bits of entropy when present
 - 89.4% of overall fingerprints were unique (across all browsers)
@@ -433,6 +455,7 @@ Analysis of 118,934 browser fingerprints found:
 ### Cross-Browser Tracking Research (2017)
 
 Academic paper "Cross-Browser Fingerprinting via OS and Hardware Level Features" identified oscpu as a high-value cross-session tracking signal:
+
 - Stable across Firefox updates
 - Resistant to cache/cookie clearing
 - Enables linking Firefox sessions to Chrome/Safari sessions (same hardware)
@@ -440,6 +463,7 @@ Academic paper "Cross-Browser Fingerprinting via OS and Hardware Level Features"
 ### Panopticlick Updates (2020-2025)
 
 EFF's Panopticlick tool tests for oscpu and warns Firefox users:
+
 - "Your browser exposes OS details through navigator.oscpu"
 - Recommends enabling privacy.resistFingerprinting
 - Measures 83.6% unique fingerprints overall
@@ -451,6 +475,7 @@ The oscpu property faces likely removal as Firefox prioritizes privacy:
 ### Mozilla's Privacy Roadmap
 
 Firefox development roadmap indicates:
+
 - Increased adoption of privacy-preserving defaults
 - Gradual removal of fingerprintable APIs
 - Alignment with web standards (oscpu is non-standard)
@@ -464,6 +489,7 @@ Firefox development roadmap indicates:
 ### Web Compatibility Concerns
 
 The main barrier to removal is website compatibility:
+
 - ~0.5% of websites probe oscpu (per HTTP Archive data)
 - Most uses are for analytics/telemetry (not critical functionality)
 - Breaking changes unlikely to affect major sites

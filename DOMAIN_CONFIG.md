@@ -3,12 +3,14 @@
 ## 已配置的域名
 
 ### Web App (Cloudflare Pages)
+
 - **主域名**: https://creepjs.org
 - **Cloudflare 子域名**: https://creepjs-b0x.pages.dev
 - **状态**: ✅ 已验证 (HTTP 200)
 - **配置时间**: 2025-11-14
 
 ### API (Cloudflare Workers)
+
 - **主域名**: https://api.creepjs.org
 - **Workers 默认域名**: https://creepjs-api.lively-sound-ed65.workers.dev
 - **状态**: ✅ 已验证 (HTTP 200)
@@ -17,6 +19,7 @@
 ## DNS 配置
 
 ### creepjs.org
+
 ```
 类型: CNAME
 名称: @
@@ -25,6 +28,7 @@
 ```
 
 ### api.creepjs.org
+
 ```
 类型: CNAME
 名称: api
@@ -50,6 +54,7 @@ CLOUDFLARE_WEB_URL=https://creepjs.org
 ```
 
 这些 secrets 用于：
+
 - Health checks
 - 环境变量配置
 - PR 预览部署链接
@@ -57,6 +62,7 @@ CLOUDFLARE_WEB_URL=https://creepjs.org
 ## 验证步骤
 
 ### 1. Web App 验证
+
 ```bash
 # 测试主页
 curl -I https://creepjs.org/
@@ -66,6 +72,7 @@ curl https://creepjs.org/api/health
 ```
 
 ### 2. API 验证
+
 ```bash
 # 测试根路径
 curl https://api.creepjs.org/
@@ -75,6 +82,7 @@ curl https://api.creepjs.org/health
 ```
 
 ### 3. SSL 验证
+
 ```bash
 # 检查 SSL 证书
 openssl s_client -connect creepjs.org:443 -servername creepjs.org < /dev/null 2>/dev/null | openssl x509 -text -noout | grep "Subject:"
@@ -86,11 +94,13 @@ openssl s_client -connect api.creepjs.org:443 -servername api.creepjs.org < /dev
 ## 预览部署域名
 
 ### PR 预览 (Web)
+
 - **模式**: `https://[branch-name].creepjs.pages.dev`
 - **示例**: `https://feature-xyz.creepjs.pages.dev`
 - **自动创建**: 每个 PR 自动部署
 
 ### PR 预览 (API)
+
 - **模式**: `https://creepjs-api-preview.workers.dev`
 - **环境**: 独立的 preview 环境
 - **KV 命名空间**: 使用 preview 版本
@@ -98,12 +108,14 @@ openssl s_client -connect api.creepjs.org:443 -servername api.creepjs.org < /dev
 ## 性能指标
 
 ### Web App (creepjs.org)
+
 - **Lighthouse Score**: >90 (目标)
 - **First Contentful Paint**: <1.5s
 - **Time to Interactive**: <3s
 - **Largest Contentful Paint**: <2.5s
 
 ### API (api.creepjs.org)
+
 - **响应时间 (p95)**: <100ms
 - **可用性**: >99.9%
 - **全球 CDN**: Cloudflare 边缘网络
@@ -113,22 +125,26 @@ openssl s_client -connect api.creepjs.org:443 -servername api.creepjs.org < /dev
 ### Cloudflare 缓存规则
 
 **静态资源**:
+
 - `/_next/static/*`: Cache Everything (1 year)
 - `/favicon.ico`: Cache Everything (1 week)
 - `/icon-*.png`: Cache Everything (1 month)
 
 **API 响应**:
+
 - 默认: 不缓存
 - 可配置: 通过 Cache-Control headers
 
 ## 监控与告警
 
 ### Cloudflare Analytics
+
 - **Web Analytics**: 已启用
 - **Real User Monitoring**: 已启用
 - **Core Web Vitals**: 自动跟踪
 
 ### 告警规则
+
 - **Web 可用性**: <99% 触发告警
 - **API 错误率**: >1% 触发告警
 - **响应时间**: p95 >200ms 触发告警
@@ -138,6 +154,7 @@ openssl s_client -connect api.creepjs.org:443 -servername api.creepjs.org < /dev
 ### 问题：域名无法访问
 
 **检查步骤**:
+
 1. 验证 DNS 解析: `nslookup creepjs.org`
 2. 检查 Cloudflare 代理状态: 确保橙色云朵已启用
 3. 查看 Cloudflare Pages 部署状态
@@ -146,6 +163,7 @@ openssl s_client -connect api.creepjs.org:443 -servername api.creepjs.org < /dev
 ### 问题：API 返回 502 错误
 
 **检查步骤**:
+
 1. 检查 Workers 状态: Cloudflare Dashboard
 2. 查看 Workers 日志: `wrangler tail`
 3. 验证 KV 命名空间绑定
@@ -154,6 +172,7 @@ openssl s_client -connect api.creepjs.org:443 -servername api.creepjs.org < /dev
 ### 问题：HTTPS 重定向循环
 
 **解决方案**:
+
 1. Cloudflare SSL/TLS 模式改为 "Full (strict)"
 2. 检查源服务器 SSL 证书
 3. 禁用"Always Use HTTPS"（如果源已强制 HTTPS）

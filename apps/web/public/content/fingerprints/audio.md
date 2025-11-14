@@ -19,6 +19,7 @@ Here's how the trick works:
 5. Hashes the unique audio characteristics
 
 **Why this works**: Different sound cards, audio drivers, and processors introduce microscopic variations in the output. Even identical hardware models can differ due to:
+
 - Manufacturing tolerances
 - Driver versions
 - Audio firmware differences
@@ -75,33 +76,33 @@ async function getAudioFingerprint() {
     numberOfInputs: context.destination.numberOfInputs,
     numberOfOutputs: context.destination.numberOfOutputs,
     channelCount: context.destination.channelCount,
-    state: context.state
+    state: context.state,
   };
 }
 ```
 
 ## The Numbers Don't Lie
 
-| Metric | Value | Source | Year |
-|--------|-------|--------|------|
-| **Entropy** | 5.4 bits average | Study of 18,000 machines | 2024 |
-| **Website adoption** | 14% of top 10,000 sites | Princeton report | 2023 |
-| **Crypto exchanges using it** | 89% | Industry analysis | 2023-2025 |
-| **Ad-tech domain usage** | 100% of leading domains | Research | 2023-2025 |
-| **Persistence** | Across reboots, OS upgrades | Technical testing | 2025 |
-| **Processing speed** | Milliseconds | BrowserLeaks | 2025 |
-| **Uniqueness rate** | "Very high entropy" | Multiple studies | 2024-2025 |
-| **User awareness** | Extremely low | Privacy surveys | 2025 |
+| Metric                        | Value                       | Source                   | Year      |
+| ----------------------------- | --------------------------- | ------------------------ | --------- |
+| **Entropy**                   | 5.4 bits average            | Study of 18,000 machines | 2024      |
+| **Website adoption**          | 14% of top 10,000 sites     | Princeton report         | 2023      |
+| **Crypto exchanges using it** | 89%                         | Industry analysis        | 2023-2025 |
+| **Ad-tech domain usage**      | 100% of leading domains     | Research                 | 2023-2025 |
+| **Persistence**               | Across reboots, OS upgrades | Technical testing        | 2025      |
+| **Processing speed**          | Milliseconds                | BrowserLeaks             | 2025      |
+| **Uniqueness rate**           | "Very high entropy"         | Multiple studies         | 2024-2025 |
+| **User awareness**            | Extremely low               | Privacy surveys          | 2025      |
 
 ### AudioContext Entropy Comparison
 
-| Fingerprinting Method | Entropy (bits) | Persistence | Difficulty to Spoof |
-|----------------------|----------------|-------------|---------------------|
-| **Canvas** | 5.7 | High | Medium |
-| **WebGL** | 5.7+ | Very High | Hard |
-| **Audio** | 5.4 | Extremely High | Very Hard |
-| **Fonts** | 7.6 | High | Medium |
-| **Navigator** | 3-5 | Medium | Easy |
+| Fingerprinting Method | Entropy (bits) | Persistence    | Difficulty to Spoof |
+| --------------------- | -------------- | -------------- | ------------------- |
+| **Canvas**            | 5.7            | High           | Medium              |
+| **WebGL**             | 5.7+           | Very High      | Hard                |
+| **Audio**             | 5.4            | Extremely High | Very Hard           |
+| **Fonts**             | 7.6            | High           | Medium              |
+| **Navigator**         | 3-5            | Medium         | Easy                |
 
 Audio fingerprinting's key advantage: **Hardware-level persistence**. Unlike software-based methods, audio fingerprints stay stable even across major system changes.
 
@@ -132,6 +133,7 @@ Audio fingerprinting's key advantage: **Hardware-level persistence**. Unlike sof
 ### The Silent Epidemic
 
 **89% of crypto exchanges use audio fingerprinting.** Why? Because crypto users are often:
+
 - Privacy-conscious (using VPNs, Tor, clearing cookies)
 - High-value targets (managing significant assets)
 - Using multiple accounts (exchanges want to detect this)
@@ -149,6 +151,7 @@ Unlike canvas or font fingerprinting, audio fingerprints are **hardware-dependen
 - **Different OS?** Might be the same fingerprint (same hardware).
 
 The only way to change your audio fingerprint:
+
 - Replace your actual sound card/chip
 - Use a different physical device
 - Use virtualized audio (detectable as suspicious)
@@ -156,16 +159,19 @@ The only way to change your audio fingerprint:
 ### The Background Audio Effect Trap
 
 If you have audio enhancements enabled:
+
 - **Windows**: Dolby Atmos, Spatial Sound, Audio Enhancements
 - **macOS**: Spatial Audio, Head Tracking
 - **Linux**: PulseAudio effects, JACK processing
 
 These create even MORE unique fingerprints because:
+
 - Specific DSP (Digital Signal Processing) algorithms
 - Configuration-dependent processing
 - Commercial audio software signatures
 
 We tested 1,000 users:
+
 - 68% had some form of audio enhancement enabled
 - Each enhancement created sub-fingerprints within the hardware fingerprint
 - Gamers with Dolby Atmos were in a tiny, highly-trackable group
@@ -173,11 +179,13 @@ We tested 1,000 users:
 ### Mobile Devices Are Even More Trackable
 
 Mobile audio fingerprints are extremely stable because:
+
 - Limited sound chip variations (Qualcomm, Apple, MediaTek)
 - Consistent OS audio processing per device model
 - Fewer user configurations/enhancements
 
 An iPhone 14 Pro will have nearly identical audio fingerprint to all other iPhone 14 Pros, BUT:
+
 - Combined with other signals (screen, timezone, etc.) = unique
 - Different iOS versions create detectable variations
 - Accessories (Bluetooth headphones) can add entropy
@@ -187,6 +195,7 @@ An iPhone 14 Pro will have nearly identical audio fingerprint to all other iPhon
 Using a VM to hide your identity? Audio fingerprinting catches you.
 
 Virtual machine audio drivers have telltale signatures:
+
 - **VirtualBox**: `VBOX` in audio device names
 - **VMware**: Suspiciously perfect processing (no natural variance)
 - **QEMU**: Specific audio implementation patterns
@@ -196,6 +205,7 @@ Websites can detect VM usage with ~85% accuracy just from audio fingerprinting.
 ### No Opt-Out Mechanisms
 
 Unlike cookies (which can be blocked) or geolocation (which requires permission), audio fingerprinting:
+
 - **Requires no user permission**
 - **Shows no UI warning**
 - **Can't be "deleted" like cookies**
@@ -203,6 +213,7 @@ Unlike cookies (which can be blocked) or geolocation (which requires permission)
 - **Bypasses Do Not Track settings**
 
 The only "opt-out" is disabling the Web Audio API entirely, which breaks:
+
 - Video conferencing (Zoom, Google Meet, etc.)
 - Browser games with audio
 - Music streaming sites
@@ -213,6 +224,7 @@ The only "opt-out" is disabling the Web Audio API entirely, which breaks:
 If 14% of top 10,000 websites use audio fingerprinting, that's **1,400 major sites actively tracking you this way**. And that was 2023 data. In 2025, adoption is likely higher.
 
 Consider your browsing:
+
 - News sites
 - E-commerce
 - Social media
@@ -223,21 +235,23 @@ You're likely being audio-fingerprinted **dozens of times per day** without know
 
 ## Browser Differences
 
-| Browser | Allows AudioContext | Privacy Protection | Default Behavior |
-|---------|--------------------|--------------------|------------------|
-| **Chrome** | ✅ Full access | ❌ None | Exposes all |
-| **Firefox** | ✅ Full access | ⚠️ RFP can disable | Exposes by default |
-| **Safari** | ✅ Full access | ⚠️ Some limitations | Exposes by default |
-| **Edge** | ✅ Full access | ❌ None | Same as Chrome |
-| **Brave** | ⚠️ Limited | ✅ Blocks/randomizes | Strong protection |
-| **Tor** | 🔒 Disabled | ✅ Maximum | AudioContext blocked |
+| Browser     | Allows AudioContext | Privacy Protection   | Default Behavior     |
+| ----------- | ------------------- | -------------------- | -------------------- |
+| **Chrome**  | ✅ Full access      | ❌ None              | Exposes all          |
+| **Firefox** | ✅ Full access      | ⚠️ RFP can disable   | Exposes by default   |
+| **Safari**  | ✅ Full access      | ⚠️ Some limitations  | Exposes by default   |
+| **Edge**    | ✅ Full access      | ❌ None              | Same as Chrome       |
+| **Brave**   | ⚠️ Limited          | ✅ Blocks/randomizes | Strong protection    |
+| **Tor**     | 🔒 Disabled         | ✅ Maximum           | AudioContext blocked |
 
 ### Browser-Specific Details
 
 **Firefox with Resist Fingerprinting**:
+
 ```
 privacy.resistFingerprinting = true
 ```
+
 This can disable AudioContext fingerprinting, but also breaks legitimate audio functionality.
 
 **Brave**: Adds noise to audio fingerprints or blocks AudioContext entirely in strict mode. Best mainstream browser for audio fingerprint protection.
@@ -255,6 +269,7 @@ This can disable AudioContext fingerprinting, but also breaks legitimate audio f
 ### Tier 2: Advanced Protection
 
 4. **Firefox Audio Blocking**:
+
 ```javascript
 // about:config
 media.autoplay.default = 5 // Block all
@@ -296,7 +311,8 @@ class AudioFingerprinter {
         return { error: 'AudioContext not supported' };
       }
 
-      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      const AudioContextClass =
+        window.AudioContext || window.webkitAudioContext;
 
       // Create offline context (no actual sound output)
       const sampleRate = 44100;
@@ -347,11 +363,10 @@ class AudioFingerprinter {
         state: context.state,
 
         // Hash
-        hash: await this.hashFingerprint(output)
+        hash: await this.hashFingerprint(output),
       };
 
       return fingerprint;
-
     } catch (error) {
       return { error: error.message };
     }
@@ -360,7 +375,7 @@ class AudioFingerprinter {
   static extractSamples(output) {
     // Extract specific sample indices known to vary by hardware
     const indices = [4500, 4600, 4700, 4800, 4900, 5000];
-    return indices.map(i => output[i]);
+    return indices.map((i) => output[i]);
   }
 
   static async hashFingerprint(output) {
@@ -378,19 +393,19 @@ class AudioFingerprinter {
     const data = encoder.encode(dataString);
     const hashBuffer = await crypto.subtle.digest('SHA-256', data);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
   }
 
   // Test for audio fingerprinting attempts
   static monitorAudioFingerprinting() {
     const originalOfflineAudioContext = window.OfflineAudioContext;
 
-    window.OfflineAudioContext = function(...args) {
+    window.OfflineAudioContext = function (...args) {
       console.warn('Audio fingerprinting attempt detected!', {
         channels: args[0],
         length: args[1],
         sampleRate: args[2],
-        stackTrace: new Error().stack
+        stackTrace: new Error().stack,
       });
 
       return new originalOfflineAudioContext(...args);
@@ -410,14 +425,14 @@ AudioFingerprinter.monitorAudioFingerprinting();
 
 ```javascript
 // Detect when websites attempt audio fingerprinting
-(function() {
+(function () {
   const originalOfflineAudioContext = window.OfflineAudioContext;
   const originalAudioContext = window.AudioContext || window.webkitAudioContext;
 
   let fingerprintingAttempts = [];
 
   // Override OfflineAudioContext
-  window.OfflineAudioContext = function(...args) {
+  window.OfflineAudioContext = function (...args) {
     const context = new originalOfflineAudioContext(...args);
 
     fingerprintingAttempts.push({
@@ -425,7 +440,7 @@ AudioFingerprinter.monitorAudioFingerprinting();
       timestamp: Date.now(),
       sampleRate: args[2],
       length: args[1],
-      url: window.location.href
+      url: window.location.href,
     });
 
     console.warn('🎵 Audio fingerprinting detected', fingerprintingAttempts);
@@ -505,6 +520,7 @@ AudioFingerprinter.monitorAudioFingerprinting();
 Test your audio fingerprint at [/fingerprint/audio](/fingerprint/audio).
 
 Discover:
+
 - Your unique audio processing hash
 - AudioContext properties exposed by your browser
 - How your hardware creates a distinct signature
@@ -517,6 +533,7 @@ This is happening silently. See what your hardware reveals.
 **Last Updated**: November 2025 | **Word Count**: 3,180 words
 
 **Sources**:
+
 - [Princeton Web Census: AudioContext Fingerprinting (2023)](https://webtransparency.cs.princeton.edu/webcensus/)
 - [Darkwave Technologies: AudioContext Fingerprinting](https://www.darkwavetech.com/projects/device-fingerprinting/audiocontext-fingerprinting)
 - [Academic Research: AudioContext Browser Fingerprinting (Bachelor's Thesis)](https://is.muni.cz/th/ke5nb/thesis.pdf)

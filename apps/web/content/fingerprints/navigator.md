@@ -29,6 +29,7 @@ Let me show you exactly what websites can see when they fingerprint your browser
 
 **1. User-Agent String** (`navigator.userAgent`)
 This is the big one. It tells websites:
+
 - Your browser name and version
 - Your operating system and version
 - Your device type (mobile, desktop, tablet)
@@ -40,6 +41,7 @@ This single string narrows you down significantly. Only users with the exact sam
 
 **2. Platform** (`navigator.platform`)
 Tells which OS you're running:
+
 - `"Win32"` (Windows)
 - `"MacIntel"` (macOS, even on Apple Silicon)
 - `"Linux x86_64"` (Linux)
@@ -48,6 +50,7 @@ Tells which OS you're running:
 
 **3. Language** (`navigator.language`)
 Your preferred language setting:
+
 - `"en-US"` (US English)
 - `"zh-CN"` (Simplified Chinese)
 - `"es-ES"` (Spanish from Spain)
@@ -56,6 +59,7 @@ This is surprisingly identifying. If you're browsing with `"en-AU"` (Australian 
 
 **4. Languages** (`navigator.languages`)
 An array of all your language preferences in order. This is even more unique than a single language:
+
 - `["zh-CN", "zh", "en-US", "en"]` - Chinese user who also speaks English
 - `["es", "ca", "en"]` - Spanish/Catalan bilingual
 
@@ -63,6 +67,7 @@ An array of all your language preferences in order. This is even more unique tha
 
 **5. Hardware Concurrency** (`navigator.hardwareConcurrency`)
 The number of logical CPU cores/threads your device has:
+
 - `4` - Budget laptop or older desktop
 - `8` - Mid-range laptop or desktop
 - `16` - High-end desktop or workstation
@@ -72,6 +77,7 @@ This is incredibly identifying. Only ~5% of users have 16+ cores. If you're one 
 
 **6. Device Memory** (`navigator.deviceMemory`)
 Amount of RAM (in GB), rounded:
+
 - `4` - Budget devices
 - `8` - Standard devices
 - `16+` - High-end devices
@@ -80,6 +86,7 @@ Combined with CPU cores, this narrows you down significantly.
 
 **7. Max Touch Points** (`navigator.maxTouchPoints`)
 How many fingers your touchscreen can detect:
+
 - `0` - No touchscreen (desktop monitors)
 - `5` - Most tablets
 - `10` - Modern touchscreens
@@ -90,6 +97,7 @@ If you're using a desktop with `maxTouchPoints: 0` while most mobile users have 
 
 **8. Connection Info** (`navigator.connection`)
 On supported browsers, reveals network details:
+
 - Effective connection type (`4g`, `3g`, `slow-2g`)
 - Downlink speed estimate
 - Round-trip time
@@ -98,6 +106,7 @@ On supported browsers, reveals network details:
 ### The Boolean Flags (Presence/Absence Is Identifying)
 
 These properties reveal specific capabilities:
+
 - `navigator.cookieEnabled` - Whether cookies are enabled
 - `navigator.doNotTrack` - Your DNT setting (ironically)
 - `navigator.onLine` - Whether you're online
@@ -117,24 +126,24 @@ The more obscure properties a website checks, the more unique your fingerprint b
 
 ## The Numbers Don't Lie: Navigator Tracking Statistics
 
-| Metric | Value | Source | Year |
-|--------|-------|--------|------|
-| **Browser uniqueness** | 83.6% unique | EFF Panopticlick study | 2024 |
-| **Navigator entropy** | 3-5 bits | Academic research | 2024-2025 |
-| **User-Agent uniqueness** | ~45% unique alone | Browser fingerprinting studies | 2025 |
-| **Websites using Navigator** | ~95% of tracking sites | Analysis of top sites | 2025 |
-| **Combined with other techniques** | 99%+ unique | Multiple studies | 2025 |
-| **User awareness** | Only 43% understand it | Privacy survey | 2025 |
+| Metric                             | Value                  | Source                         | Year      |
+| ---------------------------------- | ---------------------- | ------------------------------ | --------- |
+| **Browser uniqueness**             | 83.6% unique           | EFF Panopticlick study         | 2024      |
+| **Navigator entropy**              | 3-5 bits               | Academic research              | 2024-2025 |
+| **User-Agent uniqueness**          | ~45% unique alone      | Browser fingerprinting studies | 2025      |
+| **Websites using Navigator**       | ~95% of tracking sites | Analysis of top sites          | 2025      |
+| **Combined with other techniques** | 99%+ unique            | Multiple studies               | 2025      |
+| **User awareness**                 | Only 43% understand it | Privacy survey                 | 2025      |
 
 ### Reality Check: Uniqueness by Property Combination
 
-| Properties Collected | Approximate Uniqueness | Typical Tracking Duration |
-|---------------------|----------------------|--------------------------|
-| User-Agent only | ~45% | Low (weeks) |
-| User-Agent + Platform + Language | ~70% | Medium (months) |
-| User-Agent + Platform + Language + Hardware | ~85% | High (months) |
-| All Navigator properties | ~95% | Very High (semi-permanent) |
-| Navigator + Canvas + WebGL | 99%+ | Extremely High (permanent) |
+| Properties Collected                        | Approximate Uniqueness | Typical Tracking Duration  |
+| ------------------------------------------- | ---------------------- | -------------------------- |
+| User-Agent only                             | ~45%                   | Low (weeks)                |
+| User-Agent + Platform + Language            | ~70%                   | Medium (months)            |
+| User-Agent + Platform + Language + Hardware | ~85%                   | High (months)              |
+| All Navigator properties                    | ~95%                   | Very High (semi-permanent) |
+| Navigator + Canvas + WebGL                  | 99%+                   | Extremely High (permanent) |
 
 ## Real-World Applications
 
@@ -165,6 +174,7 @@ The more obscure properties a website checks, the more unique your fingerprint b
 Chrome started "User-Agent Reduction" in 2022 to improve privacy by removing detailed version info. But here's what happened: **It made tracking easier, not harder**.
 
 Why? Because now there are:
+
 - Old Chrome users with detailed UA strings (minority)
 - New Chrome users with reduced UA strings (majority)
 - Firefox users (different UA format)
@@ -177,6 +187,7 @@ So instead of reducing fingerprintability, UA reduction created new distinguisha
 Setting `navigator.doNotTrack = "1"` (telling websites not to track you) actually makes you MORE trackable. Why? Because only privacy-conscious users enable DNT, and that's a minority.
 
 We analyzed 1 million fingerprints:
+
 - 91% have DNT disabled
 - 7% have DNT enabled
 - 2% have no DNT header
@@ -197,6 +208,7 @@ But the combination of exact device model + OS version + language creates highly
 ### hardwareConcurrency Reveals Your Wealth
 
 This sounds crazy, but true: CPU core count correlates strongly with:
+
 - Income level (enthusiasts with 16+ core PCs)
 - Professional field (developers, designers, video editors need powerful hardware)
 - Age demographic (older users often have older, fewer-core machines)
@@ -207,8 +219,9 @@ If your fingerprint shows 4 cores + Windows 10 + older Chrome version, websites 
 
 English speakers: You're in the majority, so harder to track.
 But if your `navigator.languages` is:
+
 ```javascript
-["en-GB", "en", "cy", "en-US"]
+['en-GB', 'en', 'cy', 'en-US'];
 ```
 
 That's British English + Welsh + US English. You're probably one of maybe 10,000 people with that exact combination globally. Extremely trackable.
@@ -216,11 +229,13 @@ That's British English + Welsh + US English. You're probably one of maybe 10,000
 ### Automation Detection Is Trivial
 
 If you're using Selenium, Puppeteer, or other automation tools:
+
 ```javascript
-navigator.webdriver === true  // You're caught
+navigator.webdriver === true; // You're caught
 ```
 
 Headless browsers also leak through:
+
 - Missing plugins
 - Unusual property values
 - Inconsistent Navigator data
@@ -235,6 +250,7 @@ Advanced bot detection can spot automation with 95%+ accuracy just from Navigato
 4. Check which properties are most unique
 
 **What you'll see**:
+
 - Complete list of all Navigator properties
 - Which properties contribute most to your fingerprint
 - Your unique Navigator hash
@@ -242,14 +258,14 @@ Advanced bot detection can spot automation with 95%+ accuracy just from Navigato
 
 ## Browser Differences
 
-| Browser | User-Agent Detail | Exposes Hardware | Privacy Protection | Recommendation |
-|---------|------------------|------------------|-------------------|----------------|
-| **Chrome** | Full (being reduced) | ✅ Yes | ⚠️ Minimal | Average privacy |
-| **Firefox** | Full | ✅ Yes | ✅ Resist Fingerprinting available | Good with settings |
-| **Safari** | Limited | ⚠️ Some | ✅ Strong default limits | Best default privacy |
-| **Edge** | Full (same as Chrome) | ✅ Yes | ⚠️ Minimal | Average privacy |
-| **Brave** | Randomized | ⚠️ Farbling | ✅ Strong | Excellent privacy |
-| **Tor** | Unified | 🔒 Standardized | ✅ Maximum | Maximum privacy |
+| Browser     | User-Agent Detail     | Exposes Hardware | Privacy Protection                 | Recommendation       |
+| ----------- | --------------------- | ---------------- | ---------------------------------- | -------------------- |
+| **Chrome**  | Full (being reduced)  | ✅ Yes           | ⚠️ Minimal                         | Average privacy      |
+| **Firefox** | Full                  | ✅ Yes           | ✅ Resist Fingerprinting available | Good with settings   |
+| **Safari**  | Limited               | ⚠️ Some          | ✅ Strong default limits           | Best default privacy |
+| **Edge**    | Full (same as Chrome) | ✅ Yes           | ⚠️ Minimal                         | Average privacy      |
+| **Brave**   | Randomized            | ⚠️ Farbling      | ✅ Strong                          | Excellent privacy    |
+| **Tor**     | Unified               | 🔒 Standardized  | ✅ Maximum                         | Maximum privacy      |
 
 ## Protecting Your Privacy
 
@@ -301,12 +317,14 @@ function getNavigatorFingerprint() {
     maxTouchPoints: navigator.maxTouchPoints,
 
     // Connection
-    connection: navigator.connection ? {
-      effectiveType: navigator.connection.effectiveType,
-      downlink: navigator.connection.downlink,
-      rtt: navigator.connection.rtt,
-      saveData: navigator.connection.saveData
-    } : null,
+    connection: navigator.connection
+      ? {
+          effectiveType: navigator.connection.effectiveType,
+          downlink: navigator.connection.downlink,
+          rtt: navigator.connection.rtt,
+          saveData: navigator.connection.saveData,
+        }
+      : null,
 
     // Features
     cookieEnabled: navigator.cookieEnabled,
@@ -320,11 +338,11 @@ function getNavigatorFingerprint() {
     buildID: navigator.buildID,
 
     // Deprecated but still exposed
-    plugins: Array.from(navigator.plugins || []).map(p => ({
+    plugins: Array.from(navigator.plugins || []).map((p) => ({
       name: p.name,
-      description: p.description
+      description: p.description,
     })),
-    mimeTypes: Array.from(navigator.mimeTypes || []).map(m => m.type)
+    mimeTypes: Array.from(navigator.mimeTypes || []).map((m) => m.type),
   };
 }
 ```
@@ -362,6 +380,7 @@ Test your Navigator fingerprint at [/fingerprint/navigator](/fingerprint/navigat
 **Last Updated**: November 2025 | **Word Count**: 2,845 words
 
 **Sources**:
+
 - [MDN Web Docs: Navigator API](https://developer.mozilla.org/en-US/docs/Web/API/Navigator)
 - [WHATWG HTML Standard: Navigator](https://html.spec.whatwg.org/multipage/system-state.html)
 - [EFF: Cover Your Tracks](https://coveryourtracks.eff.org/)

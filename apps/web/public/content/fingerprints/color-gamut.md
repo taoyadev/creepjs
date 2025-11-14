@@ -19,8 +19,8 @@ The wider the color gamut, the more vibrant and saturated colors your display ca
 Color gamut detection is dead simple. One line of JavaScript:
 
 ```javascript
-const colorGamuts = ['srgb', 'p3', 'rec2020'].filter(gamut =>
-  matchMedia(`(color-gamut: ${gamut})`).matches
+const colorGamuts = ['srgb', 'p3', 'rec2020'].filter(
+  (gamut) => matchMedia(`(color-gamut: ${gamut})`).matches
 );
 // Result on MacBook Pro: ["srgb", "p3"]
 // Result on standard PC: ["srgb"]
@@ -39,7 +39,7 @@ function getColorGamutFingerprint() {
     // Additional related queries
     colorDepth: screen.colorDepth,
     pixelDepth: screen.pixelDepth,
-    hdr: matchMedia('(dynamic-range: high)').matches
+    hdr: matchMedia('(dynamic-range: high)').matches,
   };
 
   return gamuts;
@@ -58,11 +58,11 @@ The landscape has shifted dramatically. According to industry data from 2024:
 
 However, distribution remains heavily skewed:
 
-| Gamut | Estimated % (2024) | Device Categories |
-|-------|---|---------|
-| **sRGB only** | ~85-88% | Budget laptops, office PCs, older devices, most Windows laptops |
-| **P3** | ~11-14% | Apple devices (all modern iPhones/Macs), high-end Android phones, gaming monitors, creative professional displays |
-| **Rec. 2020** | <1% | Professional HDR monitors ($2000+), reference displays, 8K TVs |
+| Gamut         | Estimated % (2024) | Device Categories                                                                                                 |
+| ------------- | ------------------ | ----------------------------------------------------------------------------------------------------------------- |
+| **sRGB only** | ~85-88%            | Budget laptops, office PCs, older devices, most Windows laptops                                                   |
+| **P3**        | ~11-14%            | Apple devices (all modern iPhones/Macs), high-end Android phones, gaming monitors, creative professional displays |
+| **Rec. 2020** | <1%                | Professional HDR monitors ($2000+), reference displays, 8K TVs                                                    |
 
 **Entropy**: 0.5-1 bit alone, 2-3 bits when combined with 30-bit color depth and HDR support
 
@@ -73,6 +73,7 @@ However, distribution remains heavily skewed:
 P3 support is a massive economic indicator:
 
 **P3-capable devices typically cost:**
+
 - **MacBook Pro**: $1,999 - $6,499
 - **iMac**: $1,299 - $3,899
 - **iPad Pro**: $799 - $2,399
@@ -134,13 +135,13 @@ Combining these signals dramatically increases fingerprint entropy:
 
 ### Browser Differences
 
-| Browser | Accurate P3 Detection | Notes |
-|---------|---------------------|-------|
-| **Safari** | ✅ Yes | Apple-optimized, best P3 support |
-| **Chrome** | ✅ Yes | Accurate on macOS and Windows 10+ |
-| **Firefox** | ✅ Yes | Can be blocked with resistFingerprinting |
-| **Edge** | ✅ Yes | Same as Chrome (Chromium-based) |
-| **Brave** | ⚠️ Randomized | Reports sRGB to protect privacy |
+| Browser     | Accurate P3 Detection | Notes                                    |
+| ----------- | --------------------- | ---------------------------------------- |
+| **Safari**  | ✅ Yes                | Apple-optimized, best P3 support         |
+| **Chrome**  | ✅ Yes                | Accurate on macOS and Windows 10+        |
+| **Firefox** | ✅ Yes                | Can be blocked with resistFingerprinting |
+| **Edge**    | ✅ Yes                | Same as Chrome (Chromium-based)          |
+| **Brave**   | ⚠️ Randomized         | Reports sRGB to protect privacy          |
 
 ## The Privacy Problem
 
@@ -196,6 +197,7 @@ Combined entropy can exceed 10 bits, identifying 1 in 1000+ users.
 ### Legitimate Applications
 
 **Web design optimization:**
+
 ```javascript
 if (matchMedia('(color-gamut: p3)').matches) {
   // Serve wide-gamut images
@@ -204,24 +206,29 @@ if (matchMedia('(color-gamut: p3)').matches) {
 ```
 
 **Gaming:**
+
 - Enable HDR mode for compatible displays
 - Adjust color profiles for accurate rendering
 
 **Photo/video services:**
+
 - Instagram, YouTube serve P3 content to compatible devices
 - Preserve color accuracy for creative professionals
 
 ### Problematic Applications
 
 **Ad targeting:**
+
 - Luxury goods ads for P3 users
 - Budget product ads for sRGB users
 
 **Price discrimination:**
+
 - E-commerce sites charge more to premium device users
 - Travel sites show expensive options first
 
 **Gatekeeping:**
+
 - Professional tools lock features based on display quality
 - Educational platforms assume device quality = ability to pay
 
@@ -230,27 +237,32 @@ if (matchMedia('(color-gamut: p3)').matches) {
 ### Browser-Based Protection
 
 **Firefox resistFingerprinting:**
+
 ```javascript
 // In about:config
-privacy.resistFingerprinting = true
+privacy.resistFingerprinting = true;
 // Forces all color-gamut queries to return false
 ```
 
 **Brave browser:**
+
 - Automatically reports sRGB regardless of actual gamut
 - Blocks color-gamut media queries in strict mode
 
 **Tor Browser:**
+
 - Always reports sRGB
 - Blocks dynamic-range and color-depth queries
 
 ### Extension-Based Solutions
 
 **Canvas Blocker (Firefox):**
+
 - Can spoof color gamut responses
 - May break legitimate color management
 
 **Privacy Badger / uBlock Origin:**
+
 - Can't directly block CSS media queries
 - Can block tracking pixels loaded via color-gamut CSS
 
@@ -265,7 +277,7 @@ console.log({
   rec2020: matchMedia('(color-gamut: rec2020)').matches,
   colorDepth: screen.colorDepth,
   pixelDepth: screen.pixelDepth,
-  hdr: matchMedia('(dynamic-range: high)').matches
+  hdr: matchMedia('(dynamic-range: high)').matches,
 });
 ```
 
@@ -287,6 +299,7 @@ The UHD Alliance specified in 2016 that Ultra HD Premium devices must display at
 - 4K/8K televisions
 
 **Future trends:**
+
 - **Rec. 2020 adoption increasing** - 8K content demands wider gamut
 - **Quantum dot displays** - Approaching full Rec. 2020 coverage
 - **Browser standardization** - W3C working on privacy-preserving color management

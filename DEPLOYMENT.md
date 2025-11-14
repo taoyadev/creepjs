@@ -3,11 +3,13 @@
 ## Cloudflare 账户信息
 
 ### 主账户 (Info@opportunitygreen.com)
+
 - **账户 ID**: `fe394f7c37b25babc4e351d704a6a97c`
 - **API Token**: `kbjmXswH0vV9zMs1uuYSepwH1RAWWJsqgenjAtt8`
 - **邮箱**: info@opportunitygreen.com (rader)
 
 ### API 部署信息
+
 - **API URL**: https://creepjs-api.lively-sound-ed65.workers.dev
 - **Worker 名称**: creepjs-api
 - **KV 命名空间**:
@@ -16,6 +18,7 @@
   - IP_CACHE: `06d882d1a9a946dbaf6204a542d5df58`
 
 ### Web 应用部署信息
+
 - **Pages 项目**: creepjs (待创建)
 - **构建输出**: apps/web/.next
 - **域名**: 待配置
@@ -23,10 +26,12 @@
 ## GitHub 配置
 
 ### Repository
+
 - **用户**: taoyadev
 - **Token**: (已配置在 GitHub Actions Secrets 中)
 
 ### GitHub Actions Secrets
+
 需要在 GitHub 仓库设置中配置以下 secrets：
 
 ```
@@ -39,12 +44,14 @@ CLOUDFLARE_WEB_URL=https://creepjs.pages.dev
 ## 本地开发
 
 ### 环境变量
+
 ```bash
 export CLOUDFLARE_API_TOKEN="kbjmXswH0vV9zMs1uuYSepwH1RAWWJsqgenjAtt8"
 export CLOUDFLARE_ACCOUNT_ID="fe394f7c37b25babc4e351d704a6a97c"
 ```
 
 ### 部署命令
+
 ```bash
 # API 部署
 cd apps/api
@@ -58,6 +65,7 @@ wrangler pages deploy .next --project-name=creepjs --branch=main
 ## 部署状态
 
 ### ✅ 已完成
+
 - [x] API 部署到 Cloudflare Workers
 - [x] KV 命名空间创建并绑定
 - [x] 环境变量配置
@@ -67,11 +75,13 @@ wrangler pages deploy .next --project-name=creepjs --branch=main
 - [x] 安全 token 存储配置
 
 ### 📋 需要手动完成
+
 - [ ] Web 应用手动上传到 Cloudflare Pages
 - [ ] GitHub Secrets 配置（通过 GitHub Dashboard）
 - [ ] 自定义域名配置（可选）
 
 ### 🌐 部署信息
+
 - **API**: https://creepjs-api.lively-sound-ed65.workers.dev ✅
 - **Web Pages 项目**: creepjs (ID: 63fee134-a73a-4a82-9b93-d9ac7256e279) ✅
 - **默认域名**: creepjs-b0x.pages.dev
@@ -101,7 +111,7 @@ wrangler pages deploy .next --project-name=creepjs --branch=main
 
 ---
 
-*最后更新: 2025-11-13*
+_最后更新: 2025-11-13_
 
 ---
 
@@ -408,6 +418,7 @@ npx wrangler kv:namespace create CREEPJS_TOKENS --preview
 ## Support
 
 For issues, check:
+
 - GitHub Actions logs
 - Cloudflare Workers logs: `npx wrangler tail`
 - Cloudflare Pages deployment logs in dashboard

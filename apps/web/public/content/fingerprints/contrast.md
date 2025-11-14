@@ -9,12 +9,14 @@ Let me explain why contrast settings are both incredibly useful for accessibilit
 Contrast is the difference between light and dark elements on your screen. Higher contrast means sharper distinction between text and background. Lower contrast means softer, more subtle differences.
 
 The `prefers-contrast` CSS media query lets websites detect your preference:
+
 - **No preference**: Standard contrast (most people)
 - **More**: Increased contrast for better visibility
 - **Less**: Reduced contrast for light sensitivity
 - **Custom**: User-defined contrast settings (rare)
 
 People adjust contrast for various reasons:
+
 - Low vision conditions (macular degeneration, glaucoma, diabetic retinopathy)
 - Light sensitivity (photophobia, migraines, autism spectrum)
 - Age-related vision changes (presbyopia affects contrast sensitivity)
@@ -31,10 +33,13 @@ Unlike inverted colors, contrast preference has a standardized CSS media query. 
 
 ```javascript
 // Check contrast preference using matchMedia API
-const contrast = matchMedia('(prefers-contrast: more)').matches ? 'more' :
-                 matchMedia('(prefers-contrast: less)').matches ? 'less' :
-                 matchMedia('(prefers-contrast: custom)').matches ? 'custom' :
-                 'no-preference';
+const contrast = matchMedia('(prefers-contrast: more)').matches
+  ? 'more'
+  : matchMedia('(prefers-contrast: less)').matches
+    ? 'less'
+    : matchMedia('(prefers-contrast: custom)').matches
+      ? 'custom'
+      : 'no-preference';
 
 console.log('Contrast preference:', contrast);
 ```
@@ -82,24 +87,24 @@ The intended use is beautiful: websites adapt to your needs automatically. But t
 
 ## Browser and Platform Support
 
-| Browser | Support | Notes |
-|---------|---------|-------|
-| **Chrome/Edge** | Yes (v96+) | Full support since late 2021 |
-| **Firefox** | Yes (v101+) | Implemented mid-2022 |
-| **Safari** | Yes (v14.1+) | macOS 11+ and iOS 14.5+ |
-| **Opera** | Yes (v82+) | Based on Chromium |
-| **Brave** | Partial | May block or randomize for privacy |
-| **Tor Browser** | No | Deliberately not implemented |
+| Browser         | Support      | Notes                              |
+| --------------- | ------------ | ---------------------------------- |
+| **Chrome/Edge** | Yes (v96+)   | Full support since late 2021       |
+| **Firefox**     | Yes (v101+)  | Implemented mid-2022               |
+| **Safari**      | Yes (v14.1+) | macOS 11+ and iOS 14.5+            |
+| **Opera**       | Yes (v82+)   | Based on Chromium                  |
+| **Brave**       | Partial      | May block or randomize for privacy |
+| **Tor Browser** | No           | Deliberately not implemented       |
 
 **Platform Settings:**
 
-| Platform | Location | Options |
-|----------|----------|---------|
-| **Windows** | Settings > Accessibility > Contrast themes | Standard, High, Custom |
-| **macOS** | System Settings > Accessibility > Display > Increase contrast | On/Off toggle |
-| **iOS/iPadOS** | Settings > Accessibility > Display & Text Size > Increase Contrast | On/Off toggle |
-| **Android** | Settings > Accessibility > High contrast text | On/Off (varies by manufacturer) |
-| **Linux** | Desktop environment dependent | Varies widely |
+| Platform       | Location                                                           | Options                         |
+| -------------- | ------------------------------------------------------------------ | ------------------------------- |
+| **Windows**    | Settings > Accessibility > Contrast themes                         | Standard, High, Custom          |
+| **macOS**      | System Settings > Accessibility > Display > Increase contrast      | On/Off toggle                   |
+| **iOS/iPadOS** | Settings > Accessibility > Display & Text Size > Increase Contrast | On/Off toggle                   |
+| **Android**    | Settings > Accessibility > High contrast text                      | On/Off (varies by manufacturer) |
+| **Linux**      | Desktop environment dependent                                      | Varies widely                   |
 
 **Key Insight:** Browser support is excellent (93%+ of modern browsers), which means this fingerprinting vector works for almost everyone.
 
@@ -108,12 +113,14 @@ The intended use is beautiful: websites adapt to your needs automatically. But t
 Here's what the data actually shows:
 
 **Distribution Breakdown:**
+
 - **No preference**: 97.5-98% (the vast majority)
 - **More contrast**: 1.5-2% (vision impairment or strong preference)
 - **Less contrast**: 0.3-0.5% (light sensitivity, photophobia)
 - **Custom**: 0.1-0.2% (advanced users with custom themes)
 
 **Population Context:**
+
 - 2.2 billion people worldwide have vision impairment (WHO 2024)
 - 16% of the global population has a significant disability (1.3 billion people)
 - Among Americans 40+, 12 million have vision impairment
@@ -121,6 +128,7 @@ Here's what the data actually shows:
 
 **Who Uses Increased Contrast:**
 According to accessibility research:
+
 - 45% have diagnosed low vision conditions
 - 30% are elderly users (65+) with age-related vision decline
 - 15% have light sensitivity from medical conditions
@@ -128,6 +136,7 @@ According to accessibility research:
 
 **Browser Analytics:**
 From HTTP Archive and usage studies:
+
 - Only 1.8% of users have `prefers-contrast: more` enabled
 - Less than 0.4% use `prefers-contrast: less`
 - Custom contrast themes are used by <0.2%
@@ -155,6 +164,7 @@ That's 0.23 bits of entropy. Doesn't sound like much, right?
 But here's the problem: it's cumulative. When combined with other signals:
 
 **Example Fingerprint Combination:**
+
 1. Contrast preference (0.23 bits)
 2. Reduced motion setting (0.3 bits)
 3. Forced colors mode (0.5 bits)
@@ -179,12 +189,14 @@ This is where things get ethically messy. Let me be clear about the implications
 ### Medical Information Leakage
 
 Having `prefers-contrast: more` enabled suggests potential conditions:
+
 - **Eye diseases**: Cataracts, glaucoma, macular degeneration, diabetic retinopathy
 - **Age-related**: Presbyopia, reduced contrast sensitivity (typically 50+ years old)
 - **Neurological**: Traumatic brain injury, post-concussion syndrome
 - **Genetic**: Albinism, retinitis pigmentosa
 
 Having `prefers-contrast: less` suggests:
+
 - **Light sensitivity**: Photophobia, chronic migraines, cluster headaches
 - **Autism spectrum**: Sensory processing differences
 - **Eye conditions**: Iritis, corneal abrasions, post-LASIK sensitivity
@@ -202,6 +214,7 @@ Insurance companies could theoretically adjust premiums based on detected health
 
 **Advertising Manipulation:**
 Once you're flagged as having a disability:
+
 - You might see predatory ads for overpriced "accessibility products"
 - Job postings might be hidden (illegal but hard to prove)
 - Housing options could be filtered
@@ -215,6 +228,7 @@ In 2024, researchers found that users with screen readers were shown different j
 How are trackers actually using this?
 
 **Major Fingerprinting Scripts:**
+
 - **FingerprintJS**: Includes contrast preference in fingerprint hash
 - **Canvas fingerprinting**: Combines with visual rendering tests
 - **Third-party analytics**: Google Analytics, Adobe Analytics track this
@@ -222,6 +236,7 @@ How are trackers actually using this?
 
 **Detection in the Wild:**
 A 2024 analysis of top 10,000 websites found:
+
 - 12.3% actively query `prefers-contrast`
 - 8.7% send it to third-party analytics
 - 3.2% include it in explicit fingerprinting scripts
@@ -238,6 +253,7 @@ If you need contrast adjustments but want privacy, here are your options:
 **Option 1: Browser Extensions Instead of OS Settings**
 
 Use browser extensions that modify CSS locally:
+
 - **Dark Reader** (can adjust contrast without OS setting)
 - **High Contrast** (Chrome extension)
 - **Midnight Lizard** (customizable themes)
@@ -246,12 +262,12 @@ These work client-side and can't be detected the same way as OS-level settings.
 
 **Option 2: Privacy-Focused Browsers**
 
-| Browser | Protection Method |
-|---------|------------------|
+| Browser         | Protection Method                                                  |
+| --------------- | ------------------------------------------------------------------ |
 | **Tor Browser** | Blocks `prefers-contrast` entirely, always returns "no-preference" |
-| **Brave** | Randomizes responses or blocks based on Shields settings |
-| **Firefox** | Set `privacy.resistFingerprinting = true` in about:config |
-| **LibreWolf** | Built-in fingerprinting resistance, blocks accessibility queries |
+| **Brave**       | Randomizes responses or blocks based on Shields settings           |
+| **Firefox**     | Set `privacy.resistFingerprinting = true` in about:config          |
+| **LibreWolf**   | Built-in fingerprinting resistance, blocks accessibility queries   |
 
 **Option 3: Per-Site Contrast Adjustment**
 
@@ -260,6 +276,7 @@ Many websites offer built-in accessibility controls. Use those instead of system
 **Option 4: Accept the Tradeoff**
 
 Honestly, if you have a vision condition that requires contrast adjustment, your accessibility matters more than perfect privacy. Use the feature. Just be aware you're more identifiable and take other precautions:
+
 - Use a VPN to hide your IP
 - Clear cookies frequently
 - Use private browsing mode
@@ -270,6 +287,7 @@ Honestly, if you have a vision condition that requires contrast adjustment, your
 **Ethical Guidelines for Respecting Contrast Preferences:**
 
 ✅ **DO:**
+
 ```javascript
 // Use it to improve accessibility
 if (matchMedia('(prefers-contrast: more)').matches) {
@@ -281,6 +299,7 @@ if (matchMedia('(prefers-contrast: more)').matches) {
 ```
 
 ❌ **DON'T:**
+
 ```javascript
 // Don't use for fingerprinting
 const fingerprint = {
@@ -293,6 +312,7 @@ sendToAnalytics(fingerprint); // This is unethical
 ```
 
 **Privacy-Preserving Implementation:**
+
 ```javascript
 // Detect locally, don't transmit
 const contrast = matchMedia('(prefers-contrast: more)').matches;
@@ -315,26 +335,31 @@ The Web Accessibility Initiative states: "Privacy-invasive accessibility detecti
 How are browser makers addressing this?
 
 **Mozilla Firefox:**
+
 - `privacy.resistFingerprinting` mode standardizes all users to "no-preference"
 - Enhanced Tracking Protection blocks third-party fingerprinting scripts
 - Documentation explicitly warns developers against misuse
 
 **Brave:**
+
 - Shields mode randomizes or blocks accessibility queries
 - "Aggressive" fingerprinting protection returns fake values
 - Research blog posts educate users about risks
 
 **Apple Safari:**
+
 - Intelligent Tracking Prevention (ITP) limits fingerprinting
 - Does not block accessibility features (prioritizes accessibility over privacy)
 - Relies on blocking third-party scripts instead
 
 **Google Chrome:**
+
 - Privacy Sandbox aims to replace fingerprinting (but controversial)
 - In 2025, Google permitted fingerprinting within Privacy Sandbox framework
 - Minimal built-in protection; relies on extensions
 
 **Tor Browser:**
+
 - Complete fingerprinting resistance
 - All users appear identical regardless of actual accessibility needs
 - Accessibility sacrificed for privacy (controversial tradeoff)
@@ -344,12 +369,14 @@ How are browser makers addressing this?
 Here's my honest take on contrast preference fingerprinting:
 
 **The Good:**
+
 - Helps millions of people with vision impairments use the web
 - Standardized, well-supported across browsers and platforms
 - Enables automatic, seamless accessibility improvements
 - When used ethically, it's a beautiful example of inclusive design
 
 **The Bad:**
+
 - Reveals potential medical conditions and disability status
 - Adds to fingerprinting entropy, making you more identifiable
 - Can enable discrimination in employment, insurance, advertising

@@ -11,6 +11,7 @@ And in 2025, this technology has exploded. Google now officially permits adverti
 Browser fingerprinting is a technique that websites use to collect information about your browser configuration and device characteristics to create a unique identifier—your "fingerprint." Unlike cookies that can be deleted, your fingerprint is based on your actual hardware and software configuration.
 
 Think of it this way: If I know you're using:
+
 - Chrome version 120
 - On Windows 11
 - With a 2560×1440 display
@@ -91,13 +92,13 @@ When you visit a website, JavaScript code silently collects dozens or hundreds o
 ```javascript
 // Just a tiny sample of what's collected
 const fingerprint = {
-  canvas: getCanvasFingerprint(),      // Graphics rendering
-  webgl: getWebGLFingerprint(),        // GPU information
-  navigator: getNavigatorInfo(),       // Browser details
-  screen: getScreenInfo(),             // Display characteristics
-  fonts: getFontsFingerprint(),        // Installed fonts
-  audio: getAudioFingerprint(),        // Sound card
-  timezone: getTimezoneInfo(),         // Location
+  canvas: getCanvasFingerprint(), // Graphics rendering
+  webgl: getWebGLFingerprint(), // GPU information
+  navigator: getNavigatorInfo(), // Browser details
+  screen: getScreenInfo(), // Display characteristics
+  fonts: getFontsFingerprint(), // Installed fonts
+  audio: getAudioFingerprint(), // Sound card
+  timezone: getTimezoneInfo(), // Location
   // ... and 14 more techniques
 };
 ```
@@ -118,6 +119,7 @@ Final Hash: 3e8f2a9c7b1d5e4f8a2c6d9b3e7f1a5c
 ```
 
 This hash is your fingerprint. It's unique to you and stays the same across:
+
 - Different websites
 - Private/incognito browsing
 - After clearing cookies
@@ -139,22 +141,23 @@ They can share this information to build a comprehensive profile of your browsin
 
 ## The Numbers: Browser Fingerprinting in 2025
 
-| Statistic | Value | Source |
-|-----------|-------|--------|
-| **Browser uniqueness** | 83.6% of browsers are unique | EFF Panopticlick |
-| **Market size** | $4.5 billion by 2031 | Industry projections |
-| **Website adoption** | 10,000+ top sites use it | Multiple studies |
-| **Combined accuracy** | 99%+ identification | Academic research |
-| **Crypto exchange usage** | 89% use audio fingerprinting | Princeton 2023 |
-| **Ad-tech adoption** | 100% of leading ad platforms | Industry analysis |
-| **User awareness** | Only 43% understand it | Privacy surveys |
-| **Tracking persistence** | Survives reboots, OS upgrades | Technical testing |
+| Statistic                 | Value                         | Source               |
+| ------------------------- | ----------------------------- | -------------------- |
+| **Browser uniqueness**    | 83.6% of browsers are unique  | EFF Panopticlick     |
+| **Market size**           | $4.5 billion by 2031          | Industry projections |
+| **Website adoption**      | 10,000+ top sites use it      | Multiple studies     |
+| **Combined accuracy**     | 99%+ identification           | Academic research    |
+| **Crypto exchange usage** | 89% use audio fingerprinting  | Princeton 2023       |
+| **Ad-tech adoption**      | 100% of leading ad platforms  | Industry analysis    |
+| **User awareness**        | Only 43% understand it        | Privacy surveys      |
+| **Tracking persistence**  | Survives reboots, OS upgrades | Technical testing    |
 
 ## Who's Using Browser Fingerprinting?
 
 ### Online Advertising
 
 **Ad networks and data brokers** use fingerprinting to:
+
 - Track you across different websites
 - Build comprehensive behavioral profiles
 - Target ads without cookie consent
@@ -164,6 +167,7 @@ They can share this information to build a comprehensive profile of your browsin
 ### Financial Services
 
 **Banks and payment processors** use fingerprinting for:
+
 - ✅ Fraud detection (legitimate use)
 - ✅ Account takeover prevention
 - ✅ Multi-factor authentication
@@ -172,6 +176,7 @@ They can share this information to build a comprehensive profile of your browsin
 ### E-Commerce
 
 **Online retailers** use fingerprinting to:
+
 - Track shopping behavior across sessions
 - Prevent fraud and chargebacks
 - ⚠️ Dynamic pricing (charging different prices to different users)
@@ -180,6 +185,7 @@ They can share this information to build a comprehensive profile of your browsin
 ### Cryptocurrency Exchanges
 
 **89% of major crypto exchanges** use fingerprinting because:
+
 - Crypto users are privacy-conscious (VPNs, Tor, etc.)
 - Need tracking that survives privacy measures
 - Detect multiple accounts from same user
@@ -188,6 +194,7 @@ They can share this information to build a comprehensive profile of your browsin
 ### Government & Law Enforcement
 
 Some jurisdictions use fingerprinting for:
+
 - Surveillance and monitoring
 - Tracking dissidents and activists
 - Bypassing privacy technologies
@@ -199,6 +206,7 @@ Some jurisdictions use fingerprinting for:
 **Scenario**: You use a VPN to hide your location and browse anonymously.
 
 **What Actually Happens**:
+
 - Your VPN shows you're in Germany (IP address)
 - But your timezone shows `America/New_York` (UTC-5)
 - Your language is `en-US` (American English)
@@ -211,6 +219,7 @@ Some jurisdictions use fingerprinting for:
 **Scenario**: You use incognito/private browsing mode for privacy.
 
 **What Actually Happens**:
+
 - Your canvas fingerprint: `a3f9d8e2` (unchanged)
 - Your WebGL fingerprint: `7f8e9d3c` (unchanged)
 - Your audio fingerprint: `5d7c9b1a` (unchanged)
@@ -227,6 +236,7 @@ Some jurisdictions use fingerprinting for:
 **Day 3**: Visit social media C (browsing photography groups)
 
 **What Happens**: All three sites use the same fingerprinting service. They share your fingerprint and realize:
+
 - Same person visited all three
 - Interested in photography/cameras
 - Technical background (based on browsing patterns)
@@ -235,15 +245,15 @@ Some jurisdictions use fingerprinting for:
 
 ## Why Browser Fingerprinting Is More Dangerous Than Cookies
 
-| Feature | Cookies | Browser Fingerprinting |
-|---------|---------|----------------------|
-| **User Control** | Can be deleted | Can't be deleted (hardware-based) |
-| **Transparency** | Visible in browser tools | Invisible to users |
-| **Persistence** | Until deleted or expired | Months to years |
-| **Cross-Browser** | Separate per browser | Can track across browsers |
-| **Privacy Mode** | Blocked in incognito | Works in incognito |
-| **Legal Requirements** | GDPR/CCPA consent needed | Largely unregulated |
-| **Opt-Out** | Easy (clear cookies) | Difficult (requires special tools) |
+| Feature                | Cookies                  | Browser Fingerprinting             |
+| ---------------------- | ------------------------ | ---------------------------------- |
+| **User Control**       | Can be deleted           | Can't be deleted (hardware-based)  |
+| **Transparency**       | Visible in browser tools | Invisible to users                 |
+| **Persistence**        | Until deleted or expired | Months to years                    |
+| **Cross-Browser**      | Separate per browser     | Can track across browsers          |
+| **Privacy Mode**       | Blocked in incognito     | Works in incognito                 |
+| **Legal Requirements** | GDPR/CCPA consent needed | Largely unregulated                |
+| **Opt-Out**            | Easy (clear cookies)     | Difficult (requires special tools) |
 
 ## How to Protect Yourself
 
@@ -387,6 +397,7 @@ Ready to see your own digital fingerprint? Our interactive playgrounds let you t
 ### Full Fingerprint Analysis
 
 Visit our [Complete Demo](/demo) for a full fingerprint analysis showing:
+
 - Your unique fingerprint ID
 - All 21 techniques combined
 - How unique you are compared to other users

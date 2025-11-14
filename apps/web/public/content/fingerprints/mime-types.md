@@ -7,6 +7,7 @@ Here's something you probably never thought about: the list of file types your b
 Okay, quick computer science lesson. MIME stands for "Multipurpose Internet Mail Extensions" (yeah, it's from the email era). A MIME type is basically a label that tells computers what kind of file they're dealing with.
 
 For example:
+
 - `image/jpeg` - JPEG images
 - `video/mp4` - MP4 videos
 - `application/pdf` - PDF documents
@@ -29,13 +30,13 @@ function getMIMETypesFingerprint() {
       type: navigator.mimeTypes[i].type,
       description: navigator.mimeTypes[i].description,
       suffixes: navigator.mimeTypes[i].suffixes,
-      enabledPlugin: navigator.mimeTypes[i].enabledPlugin?.name
+      enabledPlugin: navigator.mimeTypes[i].enabledPlugin?.name,
     });
   }
 
   return {
     count: types.length,
-    types: types.sort((a, b) => a.type.localeCompare(b.type))
+    types: types.sort((a, b) => a.type.localeCompare(b.type)),
   };
 }
 ```
@@ -47,6 +48,7 @@ On a typical computer from 2015, this might return 30-50 different MIME types. E
 Here's the problem: **everyone's MIME type list was different**. And I mean really different.
 
 Think about it. Your list of installed software is pretty much unique to you. You might have:
+
 - Spotify (audio players)
 - VLC (video codecs)
 - Adobe Acrobat (PDF handling)
@@ -67,17 +69,17 @@ function advancedMimeTypeFingerprint() {
 
   const fingerprint = {
     count: mimeTypes.length,
-    types: mimeTypes.map(m => m.type),
+    types: mimeTypes.map((m) => m.type),
 
     // Check for specific software
-    hasFlash: mimeTypes.some(m => m.type.includes('flash')),
-    hasJava: mimeTypes.some(m => m.type.includes('java')),
-    hasQuickTime: mimeTypes.some(m => m.type.includes('quicktime')),
-    hasSilverlight: mimeTypes.some(m => m.type.includes('silverlight')),
-    hasRealPlayer: mimeTypes.some(m => m.type.includes('real')),
+    hasFlash: mimeTypes.some((m) => m.type.includes('flash')),
+    hasJava: mimeTypes.some((m) => m.type.includes('java')),
+    hasQuickTime: mimeTypes.some((m) => m.type.includes('quicktime')),
+    hasSilverlight: mimeTypes.some((m) => m.type.includes('silverlight')),
+    hasRealPlayer: mimeTypes.some((m) => m.type.includes('real')),
 
     // Calculate a hash of all MIME types
-    hash: hashMimeTypes(mimeTypes.map(m => m.type).sort())
+    hash: hashMimeTypes(mimeTypes.map((m) => m.type).sort()),
   };
 
   return fingerprint;
@@ -85,9 +87,12 @@ function advancedMimeTypeFingerprint() {
 
 function hashMimeTypes(types) {
   // Simple hash function (real trackers use more sophisticated ones)
-  return types.join('|').split('').reduce((hash, char) => {
-    return ((hash << 5) - hash) + char.charCodeAt(0);
-  }, 0);
+  return types
+    .join('|')
+    .split('')
+    .reduce((hash, char) => {
+      return (hash << 5) - hash + char.charCodeAt(0);
+    }, 0);
 }
 ```
 
@@ -98,6 +103,7 @@ This could identify you pretty reliably. If you had a specific combination of pl
 The Electronic Frontier Foundation ran a project called Panopticlick that measured browser fingerprinting in the wild. Their data showed that MIME types contributed to making **83.6% of browsers uniquely identifiable**.
 
 The breakdown was roughly:
+
 - **0-5 MIME types**: Very rare (mostly mobile or heavily restricted browsers)
 - **6-20 MIME types**: Common (standard browser with few plugins)
 - **21-40 MIME types**: Common (browser with several plugins)
@@ -113,6 +119,7 @@ So here's the good news: browsers finally realized this was a massive privacy le
 
 **Chrome 87+ (2020)**
 Chrome started returning a hardcoded, minimal list of MIME types. Instead of exposing your actual plugins, Chrome now returns only:
+
 - `application/pdf` (if PDF viewing is supported)
 - `text/pdf` (if PDF viewing is supported)
 
@@ -137,16 +144,16 @@ According to MDN Web Docs, the MimeType interface is officially deprecated and "
 
 Here's the catch: not everyone is on the latest browser version. According to browser statistics:
 
-| Browser | Version | MIME Types Leaked | Market Share (2024) | Risk Level |
-|---------|---------|------------------|---------------------|------------|
-| Chrome 87+ | Modern | Only PDF | ~63% | Low |
-| Firefox 91+ | Modern | Minimal list | ~3% | Low |
-| Safari 14+ | Modern | Minimal list | ~20% | Low |
-| Edge 87+ | Modern | Only PDF | ~5% | Low |
-| Chrome <87 | Legacy | Full list | ~1% | High |
-| Firefox <91 | Legacy | Full list | ~0.5% | High |
-| Internet Explorer | Legacy | Always empty | ~0.2% | N/A (IE is weird) |
-| Opera <73 | Legacy | Full list | <0.1% | High |
+| Browser           | Version | MIME Types Leaked | Market Share (2024) | Risk Level        |
+| ----------------- | ------- | ----------------- | ------------------- | ----------------- |
+| Chrome 87+        | Modern  | Only PDF          | ~63%                | Low               |
+| Firefox 91+       | Modern  | Minimal list      | ~3%                 | Low               |
+| Safari 14+        | Modern  | Minimal list      | ~20%                | Low               |
+| Edge 87+          | Modern  | Only PDF          | ~5%                 | Low               |
+| Chrome <87        | Legacy  | Full list         | ~1%                 | High              |
+| Firefox <91       | Legacy  | Full list         | ~0.5%               | High              |
+| Internet Explorer | Legacy  | Always empty      | ~0.2%               | N/A (IE is weird) |
+| Opera <73         | Legacy  | Full list         | <0.1%               | High              |
 
 So roughly **91% of users are protected** by modern browser mitigations. But about **2% of users are still vulnerable** to MIME type fingerprinting because they're running outdated browser versions.
 
@@ -165,22 +172,22 @@ Let me show you what a fingerprinting script sees when it runs on different brow
 ```javascript
 // On Chrome 120 (Windows 11)
 console.log(navigator.mimeTypes.length); // 2
-console.log(Array.from(navigator.mimeTypes).map(m => m.type));
+console.log(Array.from(navigator.mimeTypes).map((m) => m.type));
 // Output: ["application/pdf", "text/pdf"]
 
 // On Firefox 121 (macOS Sonoma)
 console.log(navigator.mimeTypes.length); // 2
-console.log(Array.from(navigator.mimeTypes).map(m => m.type));
+console.log(Array.from(navigator.mimeTypes).map((m) => m.type));
 // Output: ["application/pdf", "text/pdf"]
 
 // On Safari 17 (macOS Sonoma)
 console.log(navigator.mimeTypes.length); // 2
-console.log(Array.from(navigator.mimeTypes).map(m => m.type));
+console.log(Array.from(navigator.mimeTypes).map((m) => m.type));
 // Output: ["application/pdf", "text/pdf"]
 
 // On Chrome 85 (Windows 10 - LEGACY)
 console.log(navigator.mimeTypes.length); // 43
-console.log(Array.from(navigator.mimeTypes).map(m => m.type));
+console.log(Array.from(navigator.mimeTypes).map((m) => m.type));
 // Output: ["application/pdf", "application/x-shockwave-flash", "audio/mpeg", "video/mp4", ...]
 ```
 
@@ -191,6 +198,7 @@ See the difference? Modern browsers all return the same hardcoded list (usually 
 Trackers didn't give up. They just adapted their techniques. Instead of relying on `navigator.mimeTypes`, they now use:
 
 ### 1. Feature Detection
+
 Instead of checking if you have a QuickTime plugin via MIME types, they'll try to play a QuickTime video and see if it works:
 
 ```javascript
@@ -201,6 +209,7 @@ function canPlayQuickTime() {
 ```
 
 ### 2. Codec Detection
+
 Modern browsers expose which audio and video codecs they support:
 
 ```javascript
@@ -217,7 +226,7 @@ function detectCodecs() {
     mp3: audio.canPlayType('audio/mpeg'),
     aac: audio.canPlayType('audio/mp4; codecs="mp4a.40.2"'),
     vorbis: audio.canPlayType('audio/ogg; codecs="vorbis"'),
-    opus: audio.canPlayType('audio/ogg; codecs="opus"')
+    opus: audio.canPlayType('audio/ogg; codecs="opus"'),
   };
 }
 ```
@@ -225,23 +234,25 @@ function detectCodecs() {
 This provides similar information (what media formats your system can handle) without relying on the deprecated `navigator.mimeTypes`.
 
 ### 3. PDF Viewer Detection
+
 As we covered in the PDF viewer article, trackers now use `navigator.pdfViewerEnabled` instead of checking for PDF MIME types.
 
 ### 4. Font Detection
+
 Trackers moved to font fingerprinting, which reveals what software you have installed (Adobe fonts, Microsoft Office fonts, etc.) without needing MIME types.
 
 ## Real-World Testing (2024)
 
 I tested `navigator.mimeTypes` on various browser/OS combinations in late 2024. Here's what I found:
 
-| Test | Browser/OS | MIME Types Count | Unique MIME Types | Fingerprinting Risk |
-|------|-----------|------------------|-------------------|---------------------|
-| Test 1 | Chrome 120/Windows 11 | 2 | PDF only | Low |
-| Test 2 | Chrome 120/macOS Sonoma | 2 | PDF only | Low |
-| Test 3 | Firefox 121/Ubuntu 22.04 | 2 | PDF only | Low |
-| Test 4 | Safari 17/macOS Sonoma | 2 | PDF only | Low |
-| Test 5 | Chrome 85/Windows 10 (VM) | 43 | Flash, Java, QuickTime, etc. | High |
-| Test 6 | Firefox 88/Windows 10 (VM) | 38 | Flash, Java, Silverlight, etc. | High |
+| Test   | Browser/OS                 | MIME Types Count | Unique MIME Types              | Fingerprinting Risk |
+| ------ | -------------------------- | ---------------- | ------------------------------ | ------------------- |
+| Test 1 | Chrome 120/Windows 11      | 2                | PDF only                       | Low                 |
+| Test 2 | Chrome 120/macOS Sonoma    | 2                | PDF only                       | Low                 |
+| Test 3 | Firefox 121/Ubuntu 22.04   | 2                | PDF only                       | Low                 |
+| Test 4 | Safari 17/macOS Sonoma     | 2                | PDF only                       | Low                 |
+| Test 5 | Chrome 85/Windows 10 (VM)  | 43               | Flash, Java, QuickTime, etc.   | High                |
+| Test 6 | Firefox 88/Windows 10 (VM) | 38               | Flash, Java, Silverlight, etc. | High                |
 
 The results are clear: **modern browsers have successfully neutered this fingerprinting vector**.
 
@@ -252,6 +263,7 @@ Here's a technical detail that matters: the MDN documentation notes that "own pr
 What does this mean? In older browsers, you could iterate through `navigator.mimeTypes` using a simple `for...in` loop. Now you have to use `Array.from()` or index access. This is a deliberate change to make fingerprinting harder.
 
 Old way (still works):
+
 ```javascript
 for (let i = 0; i < navigator.mimeTypes.length; i++) {
   console.log(navigator.mimeTypes[i].type);
@@ -259,6 +271,7 @@ for (let i = 0; i < navigator.mimeTypes.length; i++) {
 ```
 
 Old way (no longer works):
+
 ```javascript
 for (let type in navigator.mimeTypes) {
   console.log(type); // Won't work in modern browsers
@@ -290,6 +303,7 @@ On iOS, Safari has never exposed many MIME types because iOS doesn't allow brows
 The short answer: **not via MIME types, unless you're on a really old browser**.
 
 The longer answer: while MIME types fingerprinting is mostly dead, trackers have plenty of other techniques:
+
 - Canvas fingerprinting (still very effective)
 - WebGL fingerprinting (reveals your GPU)
 - Audio fingerprinting (hardware differences)
@@ -305,6 +319,7 @@ Killing MIME type enumeration was an important privacy win, but it's just one pi
 Here's an interesting wrinkle: browser extensions can sometimes register MIME type handlers. For example, a password manager might register handlers for certain authentication-related MIME types.
 
 In theory, this could leak information about which extensions you have installed. In practice, modern browsers prevent this by:
+
 1. Not exposing extension-registered MIME types to web pages
 2. Isolating extension capabilities from the main browsing context
 3. Returning the same hardcoded MIME type list regardless of extensions

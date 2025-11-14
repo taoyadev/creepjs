@@ -1,9 +1,23 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import type { FingerprintResult } from '@creepjs/core';
-import { Chrome, Shield, Zap, Check, X, AlertCircle, TrendingUp } from 'lucide-react';
+import {
+  Chrome,
+  Shield,
+  Zap,
+  Check,
+  X,
+  AlertCircle,
+  TrendingUp,
+} from 'lucide-react';
 
 interface BrowserComparisonProps {
   result: FingerprintResult;
@@ -32,16 +46,27 @@ export function BrowserComparison({ result }: BrowserComparisonProps) {
   const currentBrowserAnalysis = useMemo(() => {
     // Detect current browser type from user agent
     const ua = result.data.navigator?.userAgent || '';
-    let browserType: 'chrome' | 'firefox' | 'safari' | 'brave' | 'tor' | 'unknown' = 'unknown';
+    let browserType:
+      | 'chrome'
+      | 'firefox'
+      | 'safari'
+      | 'brave'
+      | 'tor'
+      | 'unknown' = 'unknown';
 
     if (ua.includes('Brave')) browserType = 'brave';
     else if (ua.includes('Firefox')) browserType = 'firefox';
-    else if (ua.includes('Safari') && !ua.includes('Chrome')) browserType = 'safari';
+    else if (ua.includes('Safari') && !ua.includes('Chrome'))
+      browserType = 'safari';
     else if (ua.includes('Chrome')) browserType = 'chrome';
 
     // Analyze current protections
-    const hasWebRTCLeak = !!(result.data.webrtc && result.data.webrtc.candidates.ipv4.length > 0);
-    const hasCanvasProtection = !!(result.data.lies && result.data.lies.liesCount > 2);
+    const hasWebRTCLeak = !!(
+      result.data.webrtc && result.data.webrtc.candidates.ipv4.length > 0
+    );
+    const hasCanvasProtection = !!(
+      result.data.lies && result.data.lies.liesCount > 2
+    );
     const uniqueFonts = result.data.fonts?.available?.length || 0;
 
     return {
@@ -58,7 +83,12 @@ export function BrowserComparison({ result }: BrowserComparisonProps) {
       name: 'Your Current Browser',
       icon: <Chrome className="h-6 w-6" />,
       privacyScore: currentBrowserAnalysis.privacyScore,
-      trackingProtection: currentBrowserAnalysis.privacyScore >= 70 ? 'strict' : currentBrowserAnalysis.privacyScore >= 50 ? 'basic' : 'none',
+      trackingProtection:
+        currentBrowserAnalysis.privacyScore >= 70
+          ? 'strict'
+          : currentBrowserAnalysis.privacyScore >= 50
+            ? 'basic'
+            : 'none',
       features: {
         webrtcLeak: !currentBrowserAnalysis.hasWebRTCLeak,
         canvasProtection: currentBrowserAnalysis.hasCanvasProtection || false,
@@ -70,7 +100,10 @@ export function BrowserComparison({ result }: BrowserComparisonProps) {
       pros: ['Your current configuration', 'Familiar user experience'],
       cons: getDeficiencies(result, currentBrowserAnalysis),
       recommended: currentBrowserAnalysis.privacyScore >= 80,
-      setup: ['This is your current browser', 'Review recommendations below to improve privacy'],
+      setup: [
+        'This is your current browser',
+        'Review recommendations below to improve privacy',
+      ],
     },
     {
       name: 'Brave Browser (Recommended)',
@@ -92,7 +125,10 @@ export function BrowserComparison({ result }: BrowserComparisonProps) {
         'Chromium-based (full compatibility)',
         'Crypto rewards (optional)',
       ],
-      cons: ['Some sites may break with strict shields', 'Smaller market share than Chrome'],
+      cons: [
+        'Some sites may break with strict shields',
+        'Smaller market share than Chrome',
+      ],
       recommended: true,
       setup: [
         'Download from brave.com',
@@ -121,7 +157,11 @@ export function BrowserComparison({ result }: BrowserComparisonProps) {
         'Multi-Account Containers',
         'Strong extension ecosystem',
       ],
-      cons: ['Requires manual configuration', 'Some compatibility issues', 'Performance vs Chrome'],
+      cons: [
+        'Requires manual configuration',
+        'Some compatibility issues',
+        'Performance vs Chrome',
+      ],
       recommended: true,
       setup: [
         'Download Firefox from mozilla.org',
@@ -205,22 +245,25 @@ export function BrowserComparison({ result }: BrowserComparisonProps) {
   return (
     <div className="space-y-6">
       {/* Current Status Card */}
-      <Card className="border-2 border-primary/20 bg-primary/5">
+      <Card className="border-primary/20 bg-primary/5 border-2">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <AlertCircle className="h-5 w-5" />
             Current Browser Analysis
           </CardTitle>
           <CardDescription>
-            Your browser has a privacy score of {currentBrowserAnalysis.privacyScore}/100
+            Your browser has a privacy score of{' '}
+            {currentBrowserAnalysis.privacyScore}/100
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <div className="text-sm font-medium">Detected Browser</div>
-                <div className="text-2xl font-bold capitalize">{currentBrowserAnalysis.browserType}</div>
+                <div className="text-2xl font-bold capitalize">
+                  {currentBrowserAnalysis.browserType}
+                </div>
               </div>
               <div className="space-y-2">
                 <div className="text-sm font-medium">Privacy Level</div>
@@ -243,16 +286,17 @@ export function BrowserComparison({ result }: BrowserComparisonProps) {
             </div>
 
             {currentBrowserAnalysis.privacyScore < 80 && (
-              <div className="p-4 bg-yellow-50 dark:bg-yellow-950/50 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+              <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-950/50">
                 <div className="flex items-start gap-3">
-                  <TrendingUp className="h-5 w-5 text-yellow-600 dark:text-yellow-400 mt-0.5 flex-shrink-0" />
+                  <TrendingUp className="mt-0.5 h-5 w-5 flex-shrink-0 text-yellow-600 dark:text-yellow-400" />
                   <div className="space-y-1 text-sm">
                     <p className="font-medium text-yellow-900 dark:text-yellow-100">
                       Your privacy can be improved
                     </p>
                     <p className="text-yellow-700 dark:text-yellow-300">
-                      Consider switching to a privacy-focused browser or enabling additional protections.
-                      Review the recommendations below.
+                      Consider switching to a privacy-focused browser or
+                      enabling additional protections. Review the
+                      recommendations below.
                     </p>
                   </div>
                 </div>
@@ -264,26 +308,30 @@ export function BrowserComparison({ result }: BrowserComparisonProps) {
 
       {/* Browser Comparison Cards */}
       <div className="space-y-4">
-        <h3 className="text-xl font-bold">Recommended Browsers & Configurations</h3>
+        <h3 className="text-xl font-bold">
+          Recommended Browsers & Configurations
+        </h3>
         <div className="grid gap-4">
           {browserProfiles.map((browser) => (
             <Card
               key={browser.name}
-              className={browser.recommended ? 'border-2 border-green-500/50' : ''}
+              className={
+                browser.recommended ? 'border-2 border-green-500/50' : ''
+              }
             >
               <CardHeader>
                 <CardTitle className="flex items-center gap-3">
                   {browser.icon}
                   <span>{browser.name}</span>
                   {browser.recommended && (
-                    <span className="ml-auto text-xs px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-300 dark:border-green-800">
+                    <span className="ml-auto rounded-full border border-green-300 bg-green-100 px-3 py-1 text-xs text-green-700 dark:border-green-800 dark:bg-green-900/30 dark:text-green-400">
                       RECOMMENDED
                     </span>
                   )}
                 </CardTitle>
                 <CardDescription className="flex items-center gap-4">
                   <span>Privacy Score: {browser.privacyScore}/100</span>
-                  <span className="text-xs px-2 py-1 rounded-full bg-muted">
+                  <span className="bg-muted rounded-full px-2 py-1 text-xs">
                     {browser.trackingProtection.toUpperCase()}
                   </span>
                 </CardDescription>
@@ -291,7 +339,7 @@ export function BrowserComparison({ result }: BrowserComparisonProps) {
               <CardContent className="space-y-4">
                 {/* Privacy Score Bar */}
                 <div className="space-y-2">
-                  <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+                  <div className="bg-muted h-2 w-full overflow-hidden rounded-full">
                     <div
                       className={`h-full rounded-full transition-all duration-500 ${
                         browser.privacyScore >= 80
@@ -306,7 +354,7 @@ export function BrowserComparison({ result }: BrowserComparisonProps) {
                 </div>
 
                 {/* Feature Checklist */}
-                <div className="grid md:grid-cols-2 gap-3">
+                <div className="grid gap-3 md:grid-cols-2">
                   <FeatureItem
                     enabled={browser.features.webrtcLeak}
                     label="WebRTC Leak Protection"
@@ -334,28 +382,28 @@ export function BrowserComparison({ result }: BrowserComparisonProps) {
                 </div>
 
                 {/* Pros & Cons */}
-                <div className="grid md:grid-cols-2 gap-4 pt-2">
+                <div className="grid gap-4 pt-2 md:grid-cols-2">
                   <div className="space-y-2">
-                    <div className="font-semibold text-sm text-green-600 dark:text-green-400">
+                    <div className="text-sm font-semibold text-green-600 dark:text-green-400">
                       Pros:
                     </div>
                     <ul className="space-y-1 text-sm">
                       {browser.pros.map((pro, i) => (
                         <li key={i} className="flex items-start gap-2">
-                          <Check className="h-4 w-4 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
+                          <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600 dark:text-green-400" />
                           <span>{pro}</span>
                         </li>
                       ))}
                     </ul>
                   </div>
                   <div className="space-y-2">
-                    <div className="font-semibold text-sm text-red-600 dark:text-red-400">
+                    <div className="text-sm font-semibold text-red-600 dark:text-red-400">
                       Cons:
                     </div>
                     <ul className="space-y-1 text-sm">
                       {browser.cons.map((con, i) => (
                         <li key={i} className="flex items-start gap-2">
-                          <X className="h-4 w-4 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
+                          <X className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-600 dark:text-red-400" />
                           <span>{con}</span>
                         </li>
                       ))}
@@ -364,9 +412,11 @@ export function BrowserComparison({ result }: BrowserComparisonProps) {
                 </div>
 
                 {/* Setup Instructions */}
-                <div className="space-y-2 p-4 bg-muted/50 rounded-lg">
-                  <div className="font-semibold text-sm">Setup Instructions:</div>
-                  <ol className="space-y-1 text-sm list-decimal list-inside">
+                <div className="bg-muted/50 space-y-2 rounded-lg p-4">
+                  <div className="text-sm font-semibold">
+                    Setup Instructions:
+                  </div>
+                  <ol className="list-inside list-decimal space-y-1 text-sm">
                     {browser.setup.map((step, i) => (
                       <li key={i} className="text-muted-foreground">
                         {step}
@@ -391,39 +441,45 @@ export function BrowserComparison({ result }: BrowserComparisonProps) {
         <CardContent>
           <div className="space-y-3 text-sm">
             <div className="flex items-start gap-3">
-              <Check className="h-4 w-4 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
+              <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600 dark:text-green-400" />
               <div>
-                <strong>Use a VPN</strong> - Hide your real IP address and encrypt traffic
+                <strong>Use a VPN</strong> - Hide your real IP address and
+                encrypt traffic
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <Check className="h-4 w-4 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
+              <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600 dark:text-green-400" />
               <div>
-                <strong>Install privacy extensions</strong> - uBlock Origin, Privacy Badger, Decentraleyes
+                <strong>Install privacy extensions</strong> - uBlock Origin,
+                Privacy Badger, Decentraleyes
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <Check className="h-4 w-4 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
+              <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600 dark:text-green-400" />
               <div>
-                <strong>Disable WebRTC</strong> - Prevents IP address leaks through browser settings
+                <strong>Disable WebRTC</strong> - Prevents IP address leaks
+                through browser settings
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <Check className="h-4 w-4 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
+              <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600 dark:text-green-400" />
               <div>
-                <strong>Use different browsers for different purposes</strong> - Work, personal, sensitive
+                <strong>Use different browsers for different purposes</strong> -
+                Work, personal, sensitive
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <Check className="h-4 w-4 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
+              <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600 dark:text-green-400" />
               <div>
-                <strong>Clear cookies regularly</strong> - Or use containers/profiles to isolate tracking
+                <strong>Clear cookies regularly</strong> - Or use
+                containers/profiles to isolate tracking
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <Check className="h-4 w-4 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
+              <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600 dark:text-green-400" />
               <div>
-                <strong>Keep software updated</strong> - Browser, OS, and security extensions
+                <strong>Keep software updated</strong> - Browser, OS, and
+                security extensions
               </div>
             </div>
           </div>
@@ -457,7 +513,10 @@ function calculatePrivacyScore(result: FingerprintResult): number {
     riskPoints += 10;
   }
   // Canvas fingerprinting not blocked
-  if (result.data.canvas && (!result.data.lies || result.data.lies.liesCount < 2)) {
+  if (
+    result.data.canvas &&
+    (!result.data.lies || result.data.lies.liesCount < 2)
+  ) {
     riskPoints += 10;
   }
   // Many unique fonts (highly identifiable)
@@ -474,7 +533,10 @@ function calculatePrivacyScore(result: FingerprintResult): number {
 
   // Medium risk items (4 points each)
   // Timezone reveals location
-  if (result.data.timezone?.timezone && !result.data.timezone.timezone.includes('UTC')) {
+  if (
+    result.data.timezone?.timezone &&
+    !result.data.timezone.timezone.includes('UTC')
+  ) {
     riskPoints += 4;
   }
   // User Agent exposes info
@@ -510,7 +572,12 @@ function calculatePrivacyScore(result: FingerprintResult): number {
 
 function getDeficiencies(
   result: FingerprintResult,
-  analysis: { hasWebRTCLeak: boolean; hasCanvasProtection: boolean; uniqueFonts: number; privacyScore: number }
+  analysis: {
+    hasWebRTCLeak: boolean;
+    hasCanvasProtection: boolean;
+    uniqueFonts: number;
+    privacyScore: number;
+  }
 ): string[] {
   const deficiencies: string[] = [];
 
@@ -523,7 +590,9 @@ function getDeficiencies(
   }
 
   if (analysis.uniqueFonts > 30) {
-    deficiencies.push(`${analysis.uniqueFonts} unique fonts make you highly identifiable`);
+    deficiencies.push(
+      `${analysis.uniqueFonts} unique fonts make you highly identifiable`
+    );
   }
 
   if (result.data.audio?.hash) {
@@ -534,5 +603,7 @@ function getDeficiencies(
     deficiencies.push('Overall privacy protection is weak');
   }
 
-  return deficiencies.length > 0 ? deficiencies : ['No major deficiencies detected'];
+  return deficiencies.length > 0
+    ? deficiencies
+    : ['No major deficiencies detected'];
 }

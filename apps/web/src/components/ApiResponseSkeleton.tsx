@@ -8,7 +8,7 @@ export function ApiResponseSkeleton() {
         <Skeleton className="h-6 w-32" />
       </CardHeader>
       <CardContent>
-        <div className="space-y-2 rounded bg-muted p-4">
+        <div className="bg-muted space-y-2 rounded p-4">
           <Skeleton className="h-4 w-3/4" />
           <Skeleton className="h-4 w-full" />
           <Skeleton className="h-4 w-5/6" />

@@ -22,18 +22,18 @@ The wild part? Even identical monitors can be distinguished when combined with b
 ```javascript
 const screenFingerprint = {
   // Physical screen dimensions
-  width: screen.width,              // e.g., 2560
-  height: screen.height,            // e.g., 1440
-  availWidth: screen.availWidth,    // Minus taskbar
+  width: screen.width, // e.g., 2560
+  height: screen.height, // e.g., 1440
+  availWidth: screen.availWidth, // Minus taskbar
   availHeight: screen.availHeight,
 
   // Display characteristics
-  colorDepth: screen.colorDepth,    // Usually 24
-  pixelDepth: screen.pixelDepth,    // Usually same as colorDepth
-  devicePixelRatio: window.devicePixelRatio,  // 1, 2, or 3
+  colorDepth: screen.colorDepth, // Usually 24
+  pixelDepth: screen.pixelDepth, // Usually same as colorDepth
+  devicePixelRatio: window.devicePixelRatio, // 1, 2, or 3
 
   // Orientation
-  orientation: screen.orientation?.type,  // 'landscape-primary'
+  orientation: screen.orientation?.type, // 'landscape-primary'
 
   // Window dimensions
   innerWidth: window.innerWidth,
@@ -45,27 +45,27 @@ const screenFingerprint = {
 
 ## The Statistics
 
-| Metric | Value | Source | Year |
-|--------|-------|--------|------|
-| **Unique combinations** | Millions possible | Analysis | 2025 |
-| **Common resolutions** | Top 10 cover only 60% of users | StatCounter | 2025 |
-| **Retina displays** | ~35% of desktop users | Display stats | 2025 |
-| **Multi-monitor setups** | ~15% of users | Hardware surveys | 2025 |
-| **Cannot be spoofed** | Device pixel ratio unfakeable | Technical limitation | 2025 |
-| **Tracking adoption** | 95% of fingerprinting sites use it | Research | 2025 |
+| Metric                   | Value                              | Source               | Year |
+| ------------------------ | ---------------------------------- | -------------------- | ---- |
+| **Unique combinations**  | Millions possible                  | Analysis             | 2025 |
+| **Common resolutions**   | Top 10 cover only 60% of users     | StatCounter          | 2025 |
+| **Retina displays**      | ~35% of desktop users              | Display stats        | 2025 |
+| **Multi-monitor setups** | ~15% of users                      | Hardware surveys     | 2025 |
+| **Cannot be spoofed**    | Device pixel ratio unfakeable      | Technical limitation | 2025 |
+| **Tracking adoption**    | 95% of fingerprinting sites use it | Research             | 2025 |
 
 ### Resolution Distribution (2025)
 
-| Resolution | Market Share | Trackability |
-|------------|--------------|--------------|
-| 1920×1080 | ~22% | Low (common) |
-| 1366×768 | ~18% | Low (common) |
-| 2560×1440 | ~8% | Medium |
-| 3840×2160 (4K) | ~5% | High (less common) |
-| 5120×2880 (5K) | <1% | Very High (rare) |
-| Unusual resolutions | ~47% combined | Variable |
+| Resolution          | Market Share  | Trackability       |
+| ------------------- | ------------- | ------------------ |
+| 1920×1080           | ~22%          | Low (common)       |
+| 1366×768            | ~18%          | Low (common)       |
+| 2560×1440           | ~8%           | Medium             |
+| 3840×2160 (4K)      | ~5%           | High (less common) |
+| 5120×2880 (5K)      | <1%           | Very High (rare)   |
+| Unusual resolutions | ~47% combined | Variable           |
 
-##  What Nobody Tells You
+## What Nobody Tells You
 
 ### The Multi-Monitor Trap
 
@@ -86,34 +86,38 @@ Browser zoom affects `window.innerWidth` and `innerHeight`. If you browse at 110
 ## Real-World Applications
 
 ### ✅ Legitimate
+
 - **Responsive Design**: Serving mobile vs desktop layouts
 - **Media Optimization**: Delivering appropriate image sizes
 - **UX Improvement**: Detecting small screens for simplified interfaces
 
 ### ❌ Privacy-Invasive
+
 - **Cross-Site Tracking**: Following you across websites
 - **Device Fingerprinting**: Part of comprehensive tracking profiles
 - **Ad Targeting**: Combining with other signals for precision advertising
 
 ## Browser Differences
 
-| Browser | Exposes Full Resolution | Pixel Ratio Accurate | Privacy Protection |
-|---------|------------------------|---------------------|-------------------|
-| **Chrome** | ✅ Yes | ✅ Yes | ❌ None |
-| **Firefox** | ✅ Yes | ✅ Yes | ⚠️ Can round values with RFP |
-| **Safari** | ✅ Yes | ✅ Yes | ⚠️ Some limits |
-| **Brave** | ⚠️ Rounded | ⚠️ Randomized | ✅ Active protection |
-| **Tor** | 🔒 Standardized | 🔒 Fixed ratio | ✅ Maximum |
+| Browser     | Exposes Full Resolution | Pixel Ratio Accurate | Privacy Protection           |
+| ----------- | ----------------------- | -------------------- | ---------------------------- |
+| **Chrome**  | ✅ Yes                  | ✅ Yes               | ❌ None                      |
+| **Firefox** | ✅ Yes                  | ✅ Yes               | ⚠️ Can round values with RFP |
+| **Safari**  | ✅ Yes                  | ✅ Yes               | ⚠️ Some limits               |
+| **Brave**   | ⚠️ Rounded              | ⚠️ Randomized        | ✅ Active protection         |
+| **Tor**     | 🔒 Standardized         | 🔒 Fixed ratio       | ✅ Maximum                   |
 
 ## Protection Methods
 
 ### What Works
+
 1. **Use common resolutions**: 1920×1080 is the most anonymous
 2. **Standard zoom**: Keep browser at 100% zoom
 3. **Full-screen browsing**: Hides window size variations
 4. **Tor Browser**: Standardizes all screen properties to common values
 
 ### What Doesn't Work
+
 - **VPNs**: Don't change screen resolution
 - **Private browsing**: Screen stays the same
 - **Resolution spoofing extensions**: Often detectable and create inconsistencies
@@ -138,7 +142,10 @@ function detectScreenSpoofing() {
   const ctx = canvas.getContext('2d');
   const backingStoreRatio = ctx.webkitBackingStorePixelRatio || 1;
 
-  if (window.devicePixelRatio !== backingStoreRatio &&  backingStoreRatio !== 1) {
+  if (
+    window.devicePixelRatio !== backingStoreRatio &&
+    backingStoreRatio !== 1
+  ) {
     return { spoofed: true, reason: 'pixel_ratio_inconsistency' };
   }
 
@@ -169,6 +176,7 @@ Test your screen fingerprint at [/fingerprint/screen](/fingerprint/screen). See 
 **Last Updated**: November 2025 | **Word Count**: 1,240 words
 
 **Sources**:
+
 - [Google Fingerprinting Policy 2025](https://groupbwt.com/blog/google-fingerprinting-policy/)
 - [MDN: Screen API](https://developer.mozilla.org/en-US/docs/Web/API/Screen)
 - [StatCounter: Screen Resolution Stats 2025](https://gs.statcounter.com/screen-resolution-stats)

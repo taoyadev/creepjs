@@ -9,17 +9,18 @@ function getCSSMediaFingerprint() {
     '(prefers-reduced-motion: reduce)',
     '(prefers-contrast: high)',
     '(prefers-reduced-transparency: reduce)',
-    '(inverted-colors: inverted)'
+    '(inverted-colors: inverted)',
   ];
 
-  return queries.map(q => ({
+  return queries.map((q) => ({
     query: q,
-    matches: window.matchMedia(q).matches
+    matches: window.matchMedia(q).matches,
   }));
 }
 ```
 
 Accessibility preferences are especially identifying:
+
 - Dark mode users: ~40%
 - Reduced motion: ~5%
 - High contrast: ~2%

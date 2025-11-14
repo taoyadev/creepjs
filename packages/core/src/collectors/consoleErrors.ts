@@ -5,7 +5,9 @@ import { murmurHash3 } from '../utils/hash';
  * Collect Console Errors pattern fingerprint
  * Tests error stack traces and console behavior
  */
-export function collectConsoleErrorsFingerprint(): ConsoleErrorsFingerprint | undefined {
+export function collectConsoleErrorsFingerprint():
+  | ConsoleErrorsFingerprint
+  | undefined {
   if (typeof console === 'undefined') return undefined;
 
   try {
@@ -45,7 +47,9 @@ export function collectConsoleErrorsFingerprint(): ConsoleErrorsFingerprint | un
     ];
 
     const availableMethods = consoleMethods.filter(
-      method => typeof (console as unknown as Record<string, unknown>)[method] === 'function'
+      (method) =>
+        typeof (console as unknown as Record<string, unknown>)[method] ===
+        'function'
     );
 
     // Test Error constructor

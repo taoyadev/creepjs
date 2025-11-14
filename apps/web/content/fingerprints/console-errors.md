@@ -11,7 +11,7 @@ function getConsoleErrorsFingerprint() {
       message: e.message,
       stack: e.stack,
       name: e.name,
-      engineType: detectEngine(e.stack)
+      engineType: detectEngine(e.stack),
     };
   }
 }

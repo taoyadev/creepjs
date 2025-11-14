@@ -12,7 +12,10 @@ describe('Token route', () => {
     const env = createTestEnv();
     const req = new Request('http://localhost/v1/token', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': '1.1.1.1' },
+      headers: {
+        'Content-Type': 'application/json',
+        'CF-Connecting-IP': '1.1.1.1',
+      },
       body: JSON.stringify({ email: 'test@example.com' }),
     });
 

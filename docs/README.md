@@ -4,12 +4,12 @@
 
 ## Audience Map
 
-| Who you are | Read first | Deep dives |
-|-------------|------------|------------|
-| Product / GTM | [PRD](./PRD.md), [ROADMAP](./ROADMAP.md) | [Deployment](./DEPLOYMENT.md) for launch planning |
-| Platform / Backend | [ARCHITECTURE](./ARCHITECTURE.md) | [DEVELOPMENT](./DEVELOPMENT.md), [SECURITY](./SECURITY.md) |
-| Frontend / SDK | [API](./API.md) overview | [SDK](./SDK.md), [PLAYGROUND](./PLAYGROUND.md) |
-| Site Reliability / Ops | [DEPLOYMENT](./DEPLOYMENT.md) | [SECURITY](./SECURITY.md), [DEVELOPMENT](./DEVELOPMENT.md) |
+| Who you are            | Read first                               | Deep dives                                                 |
+| ---------------------- | ---------------------------------------- | ---------------------------------------------------------- |
+| Product / GTM          | [PRD](./PRD.md), [ROADMAP](./ROADMAP.md) | [Deployment](./DEPLOYMENT.md) for launch planning          |
+| Platform / Backend     | [ARCHITECTURE](./ARCHITECTURE.md)        | [DEVELOPMENT](./DEVELOPMENT.md), [SECURITY](./SECURITY.md) |
+| Frontend / SDK         | [API](./API.md) overview                 | [SDK](./SDK.md), [PLAYGROUND](./PLAYGROUND.md)             |
+| Site Reliability / Ops | [DEPLOYMENT](./DEPLOYMENT.md)            | [SECURITY](./SECURITY.md), [DEVELOPMENT](./DEVELOPMENT.md) |
 
 ## Quick Start Paths
 
@@ -21,19 +21,23 @@
 ## Document Catalog
 
 ### Product Strategy
+
 - [PRD](./PRD.md) — product positioning, personas, KPIs, and release criteria.
 - [ROADMAP](./ROADMAP.md) — phased execution plan with week-by-week deliverables.
 
 ### Architecture & Implementation
+
 - [ARCHITECTURE](./ARCHITECTURE.md) — system diagrams, data flows, and module responsibilities.
 - [DEVELOPMENT](./DEVELOPMENT.md) — tooling, repo layout, scripts, testing, and QA workflow.
 - [SDK](./SDK.md) — SDK API surface, build process, and integration recipes.
 
 ### Operations & Compliance
+
 - [DEPLOYMENT](./DEPLOYMENT.md) — environment prep, Cloudflare commands, rollback, and monitoring.
 - [SECURITY](./SECURITY.md) — threat model, data handling, incident response, and compliance posture.
 
 ### Experience Guides
+
 - [API](./API.md) — HTTP endpoints, payload schemas, and SDK interop notes.
 - [PLAYGROUND](./PLAYGROUND.md) — demo + playground UX, local replication, and debugging tips.
 

@@ -39,7 +39,8 @@ navigator.vendor; // "Google Inc." (Chrome), "Apple Computer, Inc." (Safari), ""
 
 // User agent parsing (yes, still useful despite deprecation)
 const userAgent = navigator.userAgent;
-const isChrome = /Chrome/.test(userAgent) && /Google Inc/.test(navigator.vendor);
+const isChrome =
+  /Chrome/.test(userAgent) && /Google Inc/.test(navigator.vendor);
 const isSafari = /Safari/.test(userAgent) && /Apple/.test(navigator.vendor);
 const isFirefox = /Firefox/.test(userAgent);
 ```
@@ -49,7 +50,10 @@ const isFirefox = /Firefox/.test(userAgent);
 Different engines support different CSS features or implement them with vendor prefixes:
 
 ```javascript
-const supportsWebkitClip = CSS.supports('-webkit-mask-image', 'linear-gradient(black, transparent)');
+const supportsWebkitClip = CSS.supports(
+  '-webkit-mask-image',
+  'linear-gradient(black, transparent)'
+);
 const supportsMozAppearance = CSS.supports('-moz-appearance', 'none');
 ```
 
@@ -58,6 +62,7 @@ const supportsMozAppearance = CSS.supports('-moz-appearance', 'none');
 ### Chromium/Blink Family (79% Market Share)
 
 The Chromium empire includes:
+
 - **Google Chrome** (65% global browser share)
 - **Microsoft Edge** (≈5% share, second-largest browser)
 - **Brave** (privacy-focused, 60M+ users)
@@ -65,6 +70,7 @@ The Chromium empire includes:
 - **Vivaldi** (power user favorite)
 
 **Unique Identifiers**:
+
 - `window.chrome` object exists
 - V8 JavaScript engine behaviors
 - Chromium-specific DevTools protocol
@@ -77,6 +83,7 @@ Fun fact: Even though Edge switched to Chromium in 2020, you can still detect it
 WebKit is essentially just Safari now. Apple enforces WebKit on ALL browsers on iOS - so Chrome on your iPhone is actually just Safari wearing a Chrome costume. Not kidding.
 
 **Unique Identifiers**:
+
 - `window.webkitRequestAnimationFrame`
 - `-webkit-` CSS prefixes
 - Safari-specific rendering behaviors
@@ -89,6 +96,7 @@ Safari on macOS has about 14-16% desktop market share, but iOS Safari dominates 
 Firefox is the last major independent rendering engine. Respect to Mozilla for maintaining true browser diversity, even though their market share has been bleeding for years.
 
 **Unique Identifiers**:
+
 - `window.mozInnerScreenX`
 - `-moz-` CSS prefixes
 - SpiderMonkey JavaScript engine behaviors
@@ -110,6 +118,7 @@ Vendor flavor detection contributes **1.5-2 bits of entropy** to your fingerprin
 - Additional entropy from version detection and specific vendor variations
 
 But here's the key: vendor flavors are NEVER used alone. They're combined with:
+
 - Operating system (platform detection)
 - Screen resolution
 - Installed fonts
@@ -135,6 +144,7 @@ Ever notice how airline tickets cost more when you search on Safari (macOS)? Tha
 ### Behavioral Profiling
 
 Browser choice reveals personality:
+
 - **Chrome users** - Mainstream, convenience-focused (65% of everyone)
 - **Firefox users** - Privacy-conscious, technically savvy (3%)
 - **Safari users** - Apple ecosystem locked-in (16%)
@@ -153,6 +163,7 @@ Brave is Chromium-based but adds fingerprinting randomization and blocks third-p
 
 **3. Browser Compartmentalization**
 Use different browsers for different contexts:
+
 - Firefox for sensitive/personal
 - Chrome for Google services (they'll track you anyway)
 - Brave for general browsing
@@ -162,18 +173,21 @@ Use different browsers for different contexts:
 Modern privacy-focused browsers fight back:
 
 **Brave** randomizes:
+
 - Canvas fingerprints
 - WebGL renderer info
 - Audio context output
 - Font enumeration results
 
 **Firefox** (with `privacy.resistFingerprinting=true`):
+
 - Spoofs timezone to UTC
 - Rounds screen resolution
 - Disables high-precision timers
 - Limits Canvas data extraction
 
 **Tor Browser**:
+
 - Completely standardizes vendor APIs
 - Everyone reports identical Gecko/Firefox
 - Disables WebGL entirely
@@ -194,6 +208,7 @@ Google Analytics uses `navigator.vendor` and `navigator.userAgent` to classify t
 ### Ad Networks
 
 Ad networks combine vendor detection with Canvas fingerprinting to create persistent identifiers. They can track you across:
+
 - Private browsing sessions
 - VPN connections
 - Cookie clearing
@@ -218,6 +233,7 @@ Different engines render identical HTML/CSS slightly differently due to:
 ### Version Fingerprinting
 
 Not just engine type matters - version does too. Websites can detect:
+
 - Chrome 120 vs Chrome 121 via feature detection
 - Firefox 122 vs 123 via buggy behavior differences
 - Safari 17 vs Safari 18 via API availability

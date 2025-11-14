@@ -5,7 +5,9 @@ import { murmurHash3 } from '../utils/hash';
  * Collect MimeTypes list fingerprint
  * Tests browser-supported MIME types
  */
-export function collectMimeTypesFingerprint(): MimeTypesFingerprint | undefined {
+export function collectMimeTypesFingerprint():
+  | MimeTypesFingerprint
+  | undefined {
   if (typeof navigator === 'undefined') return undefined;
 
   try {

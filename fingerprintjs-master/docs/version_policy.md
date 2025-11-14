@@ -14,13 +14,10 @@ You can use it to decide whether a couple of identifiers can be matched together
 Example:
 
 ```js
-if (
-  result1.version.split('.', 2).join('.') ===
-  result2.version.split('.', 2).join('.')
-) {
-  return result1.visitorId === result2.visitorId ? 'same' : 'different'
+if (result1.version.split('.', 2).join('.') === result2.version.split('.', 2).join('.')) {
+    return result1.visitorId === result2.visitorId ? 'same' : 'different'
 } else {
-  return 'unknown'
+    return 'unknown'
 }
 ```
 
@@ -33,11 +30,9 @@ If this is an issue for you, you can implement the following strategy.
 When a new minor or major version is released, install it together with the current version:
 
 ```ts
-const oldFpPromise = import('https://openfpcdn.io/fingerprintjs/v5.1')
-  .then(FingerprintJS => FingerprintJS.load())
+const oldFpPromise = import('https://openfpcdn.io/fingerprintjs/v5.1').then((FingerprintJS) => FingerprintJS.load())
 
-const newFpPromise = import('https://openfpcdn.io/fingerprintjs/v6.0')
-  .then(FingerprintJS => FingerprintJS.load())
+const newFpPromise = import('https://openfpcdn.io/fingerprintjs/v6.0').then((FingerprintJS) => FingerprintJS.load())
 ```
 
 (if you prefer NPM or Yarn, see [this note](https://stackoverflow.com/a/56495651/1118709))
@@ -45,17 +40,16 @@ const newFpPromise = import('https://openfpcdn.io/fingerprintjs/v6.0')
 When you need the visitor identifier, get identifiers from both versions:
 
 ```js
-Promise.all([
-  oldFpPromise.then(fp => fp.get()),
-  newFpPromise.then(fp => fp.get()),
-]).then(([oldResult, newResult]) => {
-  // Handle both the results. For example, send to your server.
-  return fetch(
-    '/visitor'
-      + `?fingerprintV4_1=${encodeURIComponent(oldResult.visitorId)}`
-      + `&fingerprintV5_0=${encodeURIComponent(newResult.visitorId)}`
-  )
-})
+Promise.all([oldFpPromise.then((fp) => fp.get()), newFpPromise.then((fp) => fp.get())]).then(
+    ([oldResult, newResult]) => {
+        // Handle both the results. For example, send to your server.
+        return fetch(
+            '/visitor' +
+                `?fingerprintV4_1=${encodeURIComponent(oldResult.visitorId)}` +
+                `&fingerprintV5_0=${encodeURIComponent(newResult.visitorId)}`,
+        )
+    },
+)
 ```
 
 Make your server search using both the identifiers.

@@ -120,10 +120,12 @@ import { generateFingerprintId } from './utils/hash';
 import { defaultSources } from './sources/registry';
 import { runSources } from './sources/types';
 
-const now = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
+const now = () =>
+  typeof performance !== 'undefined' ? performance.now() : Date.now();
 const DEFAULT_IDLE_DELAY = 12;
 const DEFAULT_CONCURRENCY =
-  typeof navigator !== 'undefined' && typeof navigator.hardwareConcurrency === 'number'
+  typeof navigator !== 'undefined' &&
+  typeof navigator.hardwareConcurrency === 'number'
     ? Math.min(4, Math.max(1, Math.floor(navigator.hardwareConcurrency / 2)))
     : 2;
 
@@ -153,7 +155,10 @@ export async function collectFingerprint(
 
   const data: FingerprintData = {
     ...dataWithoutLies,
-    lies: liesComponent.status === 'success' ? (liesComponent.value as any) : undefined,
+    lies:
+      liesComponent.status === 'success'
+        ? (liesComponent.value as any)
+        : undefined,
   };
 
   const fingerprintId = generateFingerprintId(data);
@@ -173,7 +178,9 @@ export async function collectFingerprint(
   };
 }
 
-function buildFingerprintData(collectors: Record<string, CollectorSummary>): FingerprintData {
+function buildFingerprintData(
+  collectors: Record<string, CollectorSummary>
+): FingerprintData {
   const value = <T>(key: string): T | undefined => {
     const component = collectors[key];
     return component?.status === 'success' ? (component.value as T) : undefined;
@@ -240,7 +247,9 @@ function buildFingerprintData(collectors: Record<string, CollectorSummary>): Fin
   };
 }
 
-async function runLiesComponent(data: FingerprintData): Promise<CollectorSummary> {
+async function runLiesComponent(
+  data: FingerprintData
+): Promise<CollectorSummary> {
   const start = now();
   try {
     const value = await collectLiesFingerprint(data);
@@ -252,17 +261,28 @@ async function runLiesComponent(data: FingerprintData): Promise<CollectorSummary
   } catch (error) {
     return {
       status: 'error',
-      error: error instanceof Error ? error.message : 'Failed to compute lies component',
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Failed to compute lies component',
       duration: now() - start,
     };
   }
 }
 
-function calculateCoverageStats(collectors: Record<string, CollectorSummary>): CollectorCoverage {
+function calculateCoverageStats(
+  collectors: Record<string, CollectorSummary>
+): CollectorCoverage {
   const entries = Object.values(collectors);
-  const successful = entries.filter((component) => component.status === 'success').length;
-  const failed = entries.filter((component) => component.status === 'error').length;
-  const skipped = entries.filter((component) => component.status === 'skipped').length;
+  const successful = entries.filter(
+    (component) => component.status === 'success'
+  ).length;
+  const failed = entries.filter(
+    (component) => component.status === 'error'
+  ).length;
+  const skipped = entries.filter(
+    (component) => component.status === 'skipped'
+  ).length;
   const considered = successful + failed;
   const ratio = considered === 0 ? 0 : successful / considered;
 
@@ -274,7 +294,9 @@ function calculateCoverageStats(collectors: Record<string, CollectorSummary>): C
   };
 }
 
-function buildTimings(collectors: Record<string, CollectorSummary>): CollectorTimings {
+function buildTimings(
+  collectors: Record<string, CollectorSummary>
+): CollectorTimings {
   const timings: CollectorTimings = {};
   for (const [name, component] of Object.entries(collectors)) {
     timings[name] = component.duration;

@@ -5,7 +5,8 @@ import { murmurHash3 } from '../utils/hash';
  * Collect CSS computed styles fingerprint
  */
 export function collectCSSFingerprint(): CSSFingerprint | undefined {
-  if (typeof document === 'undefined' || typeof window === 'undefined') return undefined;
+  if (typeof document === 'undefined' || typeof window === 'undefined')
+    return undefined;
 
   try {
     const div = document.createElement('div');
@@ -20,27 +21,48 @@ export function collectCSSFingerprint(): CSSFingerprint | undefined {
 
     // Collect important CSS properties
     const properties = [
-      'width', 'height', 'display', 'position', 'left',
-      'color', 'font-family', 'font-size', 'line-height',
-      'background-color', 'border-width', 'border-style',
-      'padding', 'margin', 'box-sizing', 'overflow',
-      'text-align', 'vertical-align', 'visibility',
-      'z-index', 'opacity', 'transform', 'transition',
+      'width',
+      'height',
+      'display',
+      'position',
+      'left',
+      'color',
+      'font-family',
+      'font-size',
+      'line-height',
+      'background-color',
+      'border-width',
+      'border-style',
+      'padding',
+      'margin',
+      'box-sizing',
+      'overflow',
+      'text-align',
+      'vertical-align',
+      'visibility',
+      'z-index',
+      'opacity',
+      'transform',
+      'transition',
     ];
 
     const styles: Record<string, string> = {};
-    properties.forEach(prop => {
+    properties.forEach((prop) => {
       styles[prop] = computed.getPropertyValue(prop);
     });
 
     // Get all CSS system fonts
     const systemFonts = [
-      'caption', 'icon', 'menu', 'message-box',
-      'small-caption', 'status-bar',
+      'caption',
+      'icon',
+      'menu',
+      'message-box',
+      'small-caption',
+      'status-bar',
     ];
 
     const fonts: Record<string, string> = {};
-    systemFonts.forEach(font => {
+    systemFonts.forEach((font) => {
       div.style.font = font;
       const fontComputed = window.getComputedStyle(div);
       fonts[font] = fontComputed.font || fontComputed.fontFamily;

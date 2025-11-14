@@ -18,13 +18,16 @@ const screenFrame = {
   height: screen.height,
   availWidth: screen.availWidth,
   availHeight: screen.availHeight,
-  frameTop: screen.height - screen.availHeight - (screen.height - screen.availTop - screen.availHeight),
+  frameTop:
+    screen.height -
+    screen.availHeight -
+    (screen.height - screen.availTop - screen.availHeight),
   frameLeft: screen.availLeft,
   frameRight: screen.width - screen.availWidth - screen.availLeft,
 };
 
 // Example output:
-// { width: 1920, height: 1080, availWidth: 1920, availHeight: 1040, 
+// { width: 1920, height: 1080, availWidth: 1920, availHeight: 1040,
 //   frameTop: 0, frameLeft: 0, frameRight: 0, frameBottom: 40 }
 ```
 
@@ -47,12 +50,12 @@ const screenFrame = {
 
 **Entropy**: Low to Medium (0.5-2 bits)
 
-| Configuration | Prevalence |
-|---------------|------------|
-| Standard Windows (40px bottom) | ~60% |
-| macOS (25px top) | ~15% |
-| Auto-hide taskbar | ~10% |
-| Custom/Linux | ~15% |
+| Configuration                  | Prevalence |
+| ------------------------------ | ---------- |
+| Standard Windows (40px bottom) | ~60%       |
+| macOS (25px top)               | ~15%       |
+| Auto-hide taskbar              | ~10%       |
+| Custom/Linux                   | ~15%       |
 
 **When combined with screen resolution**: Moderate uniqueness
 
@@ -75,11 +78,11 @@ Browsers are implementing protections:
 
 ## Detection Accuracy
 
-| Method | Accuracy | Notes |
-|--------|----------|-------|
-| Screen API | 99% | Direct browser API |
-| CSS Media Queries | 95% | Can be spoofed |
-| Window Positioning | 90% | Detects multi-monitor |
+| Method             | Accuracy | Notes                 |
+| ------------------ | -------- | --------------------- |
+| Screen API         | 99%      | Direct browser API    |
+| CSS Media Queries  | 95%      | Can be spoofed        |
+| Window Positioning | 90%      | Detects multi-monitor |
 
 ## Code Example
 
@@ -109,22 +112,24 @@ function detectTaskbarPosition(frame) {
 
 ## Browser Support
 
-| Browser | Support | Notes |
-|---------|---------|-------|
-| Chrome | ✅ Full | All properties available |
-| Firefox | ✅ Full | Rounded values for privacy |
-| Safari | ✅ Full | Standard behavior |
-| Edge | ✅ Full | Same as Chrome |
-| Mobile | ⚠️ Limited | No taskbar concept |
+| Browser | Support    | Notes                      |
+| ------- | ---------- | -------------------------- |
+| Chrome  | ✅ Full    | All properties available   |
+| Firefox | ✅ Full    | Rounded values for privacy |
+| Safari  | ✅ Full    | Standard behavior          |
+| Edge    | ✅ Full    | Same as Chrome             |
+| Mobile  | ⚠️ Limited | No taskbar concept         |
 
 ## Use Cases
 
 ✅ **Legitimate**:
+
 - Fraud detection (unusual configurations)
 - Bot detection (headless browsers)
 - Display optimization
 
 ❌ **Concerning**:
+
 - Tracking without consent
 - OS-based discrimination
 - Accessibility profiling
@@ -141,12 +146,14 @@ Based on 10M+ samples:
 ## Recommendations
 
 **For Developers**:
+
 1. Combine with other signals (not reliable alone)
 2. Respect privacy settings
 3. Don't make assumptions based on frame alone
 4. Cache results (doesn't change frequently)
 
 **For Users**:
+
 1. Standard configurations reduce uniqueness
 2. Browser privacy modes help (Brave, Tor)
 3. Frame data is hard to block (core browser API)
@@ -164,17 +171,20 @@ Based on 10M+ samples:
 According to recent 2024 research and browser updates:
 
 **Mozilla Firefox 145 (2024):**
+
 - Added Phase 2 anti-fingerprinting protections
 - **Blocks taskbar/dock dimension detection** - Key privacy win
 - Reports available screen resolution as **screen height minus 48 pixels** to prevent accurate taskbar detection
 - Result: Only **20% of Firefox users** can still be uniquely fingerprinted (down from previous levels)
 
 **Google's Policy Reversal (December 2024):**
+
 - Google announced advertisers can now **use fingerprinting for tracking** as Chrome phases out third-party cookies
 - UK's Information Commissioner's Office (ICO) condemned this as **"irresponsible"** - removes user control over personal data
 - Screen frame data is explicitly part of permitted fingerprinting techniques
 
 **Browser Fingerprinting Prevalence:**
+
 - **~25% of the top 10,000 websites** use fingerprinting techniques (2020 study, likely higher now)
 - Screen frame is often combined with canvas, WebGL, and font fingerprinting
 - Typical total entropy: **15-20 bits** when all techniques combined
@@ -196,12 +206,14 @@ function detectMultiMonitor() {
     totalWidth: screen.width + Math.abs(screen.availLeft),
     totalHeight: screen.height + Math.abs(screen.availTop),
     // Infer monitor count (rough estimate)
-    estimatedMonitors: Math.floor((screen.width + Math.abs(screen.availLeft)) / 1920) || 1
+    estimatedMonitors:
+      Math.floor((screen.width + Math.abs(screen.availLeft)) / 1920) || 1,
   };
 }
 ```
 
 **What this reveals:**
+
 - **Professional users**: Developers, traders, designers often use 2-3 monitors
 - **Economic status**: Multi-monitor setups cost $500-2000+
 - **Workspace type**: Home office vs corporate office (different typical setups)
@@ -216,11 +228,11 @@ function detectAccessibilityHints() {
   const frameRight = screen.width - screen.availWidth - screen.availLeft;
 
   return {
-    largeTaskbar: frameBottom > 60,  // Standard is 40px, large icons = 60-80px
+    largeTaskbar: frameBottom > 60, // Standard is 40px, large icons = 60-80px
     verticalTaskbar: frameRight > 60 || screen.availLeft > 60,
-    unusualScaling: (frameBottom % 10) !== 0,  // Non-standard DPI scaling
+    unusualScaling: frameBottom % 10 !== 0, // Non-standard DPI scaling
     // Accessibility inference
-    likelyAccessibility: frameBottom > 80 || frameRight > 80
+    likelyAccessibility: frameBottom > 80 || frameRight > 80,
   };
 }
 ```
@@ -238,9 +250,11 @@ function detectUIScaling() {
 
   const scalingFactor = actualFrame / expectedTaskbar;
 
-  if (scalingFactor >= 1.4 && scalingFactor <= 1.6) return '150% scaling (common for high-DPI)';
+  if (scalingFactor >= 1.4 && scalingFactor <= 1.6)
+    return '150% scaling (common for high-DPI)';
   if (scalingFactor >= 1.2 && scalingFactor <= 1.3) return '125% scaling';
-  if (scalingFactor >= 1.7 && scalingFactor <= 1.8) return '175% scaling (vision assistance)';
+  if (scalingFactor >= 1.7 && scalingFactor <= 1.8)
+    return '175% scaling (vision assistance)';
 
   return 'Standard 100% scaling';
 }
@@ -251,12 +265,14 @@ function detectUIScaling() {
 ### Case Study 1: Corporate vs Consumer Detection
 
 **Corporate Windows Setup:**
+
 - Standard Windows taskbar (40px bottom)
 - Dual monitors (1920x1080 each)
 - Auto-hide disabled (IT policy)
 - Result: `{ frameBottom: 40, multiMonitor: true, autoHide: false }`
 
 **Home User Setup:**
+
 - Auto-hide enabled (more screen space)
 - Single monitor (various resolutions)
 - Custom taskbar position (left/right for vertical monitors)
@@ -283,6 +299,7 @@ function detectMacDockPosition() {
 ```
 
 **Implications:**
+
 - Left/right dock = power user, developer, designer
 - Auto-hide = maximizing screen space, productivity focus
 - Default bottom = casual user
@@ -291,13 +308,13 @@ function detectMacDockPosition() {
 
 Linux frame measurements vary wildly by desktop environment:
 
-| Desktop Environment | Typical Top Panel | Typical Bottom Panel | Uniqueness |
-|---------------------|-------------------|---------------------|------------|
-| **GNOME 40+** | 32px | 0px | Medium |
-| **KDE Plasma** | 0-28px | 44-48px | Medium-High |
-| **XFCE** | 28px | 0-28px | High (very configurable) |
-| **i3/Sway** | 20-30px (custom) | 0px | Very High (unique configs) |
-| **Cinnamon** | 24px | 40px | Medium |
+| Desktop Environment | Typical Top Panel | Typical Bottom Panel | Uniqueness                 |
+| ------------------- | ----------------- | -------------------- | -------------------------- |
+| **GNOME 40+**       | 32px              | 0px                  | Medium                     |
+| **KDE Plasma**      | 0-28px            | 44-48px              | Medium-High                |
+| **XFCE**            | 28px              | 0-28px               | High (very configurable)   |
+| **i3/Sway**         | 20-30px (custom)  | 0px                  | Very High (unique configs) |
+| **Cinnamon**        | 24px              | 40px                 | Medium                     |
 
 **Result:** Linux users are highly fingerprintable due to DE fragmentation and customization culture.
 
@@ -305,26 +322,28 @@ Linux frame measurements vary wildly by desktop environment:
 
 ### Browser Protections (2024-2025)
 
-| Browser | Frame Protection | Effectiveness | Side Effects |
-|---------|-----------------|---------------|--------------|
-| **Firefox 145+** | Reports height - 48px | Good | Breaks some full-screen detection |
-| **Brave** | Slight randomization (±2px) | Medium | Minimal breakage |
-| **Tor Browser** | Fixed standardized values | Excellent | May break responsive design |
-| **Chrome** | None | None | Full exposure |
-| **Safari** | None | None | Full exposure |
-| **Edge** | None (Chromium-based) | None | Full exposure |
+| Browser          | Frame Protection            | Effectiveness | Side Effects                      |
+| ---------------- | --------------------------- | ------------- | --------------------------------- |
+| **Firefox 145+** | Reports height - 48px       | Good          | Breaks some full-screen detection |
+| **Brave**        | Slight randomization (±2px) | Medium        | Minimal breakage                  |
+| **Tor Browser**  | Fixed standardized values   | Excellent     | May break responsive design       |
+| **Chrome**       | None                        | None          | Full exposure                     |
+| **Safari**       | None                        | None          | Full exposure                     |
+| **Edge**         | None (Chromium-based)       | None          | Full exposure                     |
 
 ### Why Protection Is Difficult
 
 Unlike canvas fingerprinting where browsers can inject noise, screen frame has legitimate use cases:
 
 **Legitimate uses:**
+
 - Responsive web design (optimizing for available space)
 - Full-screen video players (avoiding taskbar overlap)
 - Windowing applications (positioning within available area)
 - Accessibility tools (avoiding system UI)
 
 **Protection tradeoffs:**
+
 - Report wrong values → Breaks layouts and positioning
 - Standardize values → Everyone looks identical (good for privacy, bad for UX)
 - Add noise → Random frame sizes seem suspicious and may be more unique
@@ -346,7 +365,7 @@ function robustScreenFingerprint() {
 
     // Cross-validation
     // If frame says Windows but pixelRatio=2, likely macOS Retina (liar detected)
-    consistencyCheck: validateFrameWithDPI()
+    consistencyCheck: validateFrameWithDPI(),
   };
 }
 ```
@@ -358,12 +377,14 @@ Even if browsers lie about frame, inconsistencies between frame and other metric
 ### Legitimate Uses
 
 **Acceptable:**
+
 - Optimizing layout for available screen space
 - Preventing UI occlusion by system taskbars
 - Responsive design breakpoints
 - Full-screen media players
 
 **Example:**
+
 ```javascript
 // Good: Adapting UI to available space
 const availableHeight = screen.availHeight;
@@ -375,12 +396,14 @@ if (availableHeight < 800) {
 ### Problematic Uses
 
 **Unethical:**
+
 - Cross-site tracking without consent
 - OS-based price discrimination
 - Accessibility profiling for discrimination
 - Building persistent user profiles
 
 **Example:**
+
 ```javascript
 // Bad: Fingerprinting for tracking
 const frameHash = hashScreenFrame();
@@ -392,6 +415,7 @@ sendToTracker({ userId: frameHash, timestamp: Date.now() });
 ### GDPR (EU)
 
 Screen frame data likely constitutes personal data under GDPR:
+
 - **Art. 4(1)**: "Personal data" = data relating to identified/identifiable person
 - **Art. 6**: Requires lawful basis (consent, legitimate interest, etc.)
 - **Art. 9**: Accessibility detection may reveal "special category data" (health/disability)
@@ -401,6 +425,7 @@ Screen frame data likely constitutes personal data under GDPR:
 ### CCPA (California)
 
 Screen frame is "personal information" under CCPA:
+
 - Must allow opt-out (Do Not Sell My Personal Information)
 - Must disclose collection practices
 - Users can request deletion (impossible with passive fingerprinting)
@@ -408,6 +433,7 @@ Screen frame is "personal information" under CCPA:
 ### UK ICO Position (2024)
 
 The UK Information Commissioner's Office **rebuked Google** for allowing fingerprinting in Privacy Sandbox:
+
 - Called it **"irresponsible"**
 - Noted it **removes user control** over personal data
 - Implies fingerprinting without consent may violate UK GDPR
@@ -417,17 +443,20 @@ The UK Information Commissioner's Office **rebuked Google** for allowing fingerp
 ### For Users
 
 **Browser-level:**
+
 1. **Use Firefox 145+** - Built-in frame dimension protection
 2. **Use Tor Browser** - Standardizes all screen metrics
 3. **Use Brave** - Adds small random noise
 4. **Disable JavaScript** (nuclear option) - Breaks most websites
 
 **OS-level:**
+
 1. **Standard configurations** - Default taskbar reduces uniqueness
 2. **Avoid multi-monitor** (privacy vs productivity tradeoff)
 3. **Standard scaling** (100% DPI) - Non-standard scaling is identifying
 
 **Virtual machines:**
+
 - Use standardized VM configurations
 - Everyone using same VM image = identical screen frames
 - Tradeoff: Performance overhead, inconvenience
@@ -441,7 +470,7 @@ The UK Information Commissioner's Office **rebuked Google** for allowing fingerp
 function getAvailableSpace() {
   return {
     width: screen.availWidth,
-    height: screen.availHeight
+    height: screen.availHeight,
   };
 }
 
@@ -455,6 +484,7 @@ adaptUIToSpace(space);
 ```
 
 **Privacy-by-design:**
+
 - Only collect when functionally necessary
 - Don't log screen data to analytics
 - Don't combine with other fingerprinting techniques
@@ -486,6 +516,7 @@ Screen frame fingerprinting provides **0.5-2 bits of entropy** alone, but its re
 4. **Persistence**: Hardware-based, can't be cleared like cookies
 
 **Current state (2025):**
+
 - Firefox offers best protection (reports height - 48px)
 - Chrome/Safari/Edge expose full frame data
 - ~25% of top websites use fingerprinting (including screen frame)

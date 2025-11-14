@@ -3,7 +3,9 @@ import type { MediaDevicesFingerprint } from '../types';
 /**
  * Collect Media Devices fingerprint
  */
-export async function collectMediaDevicesFingerprint(): Promise<MediaDevicesFingerprint | undefined> {
+export async function collectMediaDevicesFingerprint(): Promise<
+  MediaDevicesFingerprint | undefined
+> {
   if (typeof navigator === 'undefined' || !navigator.mediaDevices) {
     return undefined;
   }
@@ -13,11 +15,11 @@ export async function collectMediaDevicesFingerprint(): Promise<MediaDevicesFing
 
     return {
       deviceCount: {
-        audioInput: devices.filter(d => d.kind === 'audioinput').length,
-        audioOutput: devices.filter(d => d.kind === 'audiooutput').length,
-        videoInput: devices.filter(d => d.kind === 'videoinput').length,
+        audioInput: devices.filter((d) => d.kind === 'audioinput').length,
+        audioOutput: devices.filter((d) => d.kind === 'audiooutput').length,
+        videoInput: devices.filter((d) => d.kind === 'videoinput').length,
       },
-      devices: devices.map(d => ({
+      devices: devices.map((d) => ({
         kind: d.kind,
         label: d.label || '(no label)',
         groupId: d.groupId,

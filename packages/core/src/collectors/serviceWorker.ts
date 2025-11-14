@@ -20,7 +20,9 @@ function unsupportedFingerprint(): ServiceWorkerFingerprint {
   };
 }
 
-export async function collectServiceWorkerFingerprint(): Promise<ServiceWorkerFingerprint | undefined> {
+export async function collectServiceWorkerFingerprint(): Promise<
+  ServiceWorkerFingerprint | undefined
+> {
   if (typeof navigator === 'undefined') {
     return undefined;
   }
@@ -65,16 +67,21 @@ export async function collectServiceWorkerFingerprint(): Promise<ServiceWorkerFi
     pushManager: 'PushManager' in window,
     sync: 'SyncManager' in window || 'sync' in proto,
     periodicSync: 'PeriodicSyncManager' in window || 'periodicSync' in proto,
-    backgroundFetch: 'BackgroundFetchManager' in window || 'backgroundFetch' in proto,
+    backgroundFetch:
+      'BackgroundFetchManager' in window || 'backgroundFetch' in proto,
     cacheAPI: typeof caches !== 'undefined',
     notifications: typeof Notification !== 'undefined',
-    paymentManager: (typeof window !== 'undefined' && 'PaymentManager' in window) || 'paymentManager' in proto,
+    paymentManager:
+      (typeof window !== 'undefined' && 'PaymentManager' in window) ||
+      'paymentManager' in proto,
     cookieStore: 'CookieStore' in globalThis || 'cookieStore' in proto,
     getRegistrations: typeof sw.getRegistrations === 'function',
   } satisfies ServiceWorkerFingerprint['features'];
 
   const permissions: ServiceWorkerFingerprint['permissions'] = {};
-  const navWithPermissions = navigator as Navigator & { permissions?: Permissions };
+  const navWithPermissions = navigator as Navigator & {
+    permissions?: Permissions;
+  };
   const permissionsApi = navWithPermissions.permissions;
 
   if (permissionsApi?.query) {
@@ -93,7 +100,10 @@ export async function collectServiceWorkerFingerprint(): Promise<ServiceWorkerFi
 
     try {
       const pushPerm = await Promise.race([
-        permissionsApi.query({ name: 'push', userVisibleOnly: true } as PermissionDescriptor),
+        permissionsApi.query({
+          name: 'push',
+          userVisibleOnly: true,
+        } as PermissionDescriptor),
         new Promise<null>((resolve) => setTimeout(() => resolve(null), 100)),
       ]);
       if (pushPerm) {
@@ -113,7 +123,9 @@ export async function collectServiceWorkerFingerprint(): Promise<ServiceWorkerFi
     state,
     features,
     permissions,
-  } satisfies Omit<ServiceWorkerFingerprint, 'hash' | 'scriptURL'> & { scriptURL?: string };
+  } satisfies Omit<ServiceWorkerFingerprint, 'hash' | 'scriptURL'> & {
+    scriptURL?: string;
+  };
 
   const hash = await hashString(payload);
 

@@ -8,7 +8,9 @@ declare global {
 }
 
 class FakeRTCPeerConnection {
-  public onicecandidate: ((event: { candidate: { candidate: string } | null }) => void) | null = null;
+  public onicecandidate:
+    | ((event: { candidate: { candidate: string } | null }) => void)
+    | null = null;
 
   public onicegatheringstatechange: (() => void) | null = null;
 
@@ -28,8 +30,9 @@ class FakeRTCPeerConnection {
     setTimeout(() => {
       this.onicecandidate?.({
         candidate: {
-          candidate: 'candidate:1 1 udp 2122260223 203.0.113.1 3478 typ srflx'
-            + ' raddr 10.0.0.2 rport 8998',
+          candidate:
+            'candidate:1 1 udp 2122260223 203.0.113.1 3478 typ srflx' +
+            ' raddr 10.0.0.2 rport 8998',
         },
       });
       this.iceGatheringState = 'complete';
@@ -66,7 +69,8 @@ describe('browser-mocked collectors', () => {
   });
 
   it('collectWebRTCFingerprint succeeds with mocked RTCPeerConnection', async () => {
-    globalThis.RTCPeerConnection = FakeRTCPeerConnection as unknown as typeof globalThis.RTCPeerConnection;
+    globalThis.RTCPeerConnection =
+      FakeRTCPeerConnection as unknown as typeof globalThis.RTCPeerConnection;
 
     const mediaDevices = {
       getUserMedia: vi.fn().mockResolvedValue(undefined),
@@ -83,7 +87,9 @@ describe('browser-mocked collectors', () => {
     expect(result).toBeDefined();
     expect(result?.supported).toBe(true);
     expect(result?.candidates.local.length).toBeGreaterThan(0);
-    expect(result?.candidates.public.length + result!.candidates.ipv4.length).toBeGreaterThan(0);
+    expect(
+      result?.candidates.public.length + result!.candidates.ipv4.length
+    ).toBeGreaterThan(0);
   });
 
   it('collectServiceWorkerFingerprint resolves data when APIs exist', async () => {

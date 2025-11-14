@@ -1,6 +1,7 @@
 # Tasks: add-user-experience-features
 
 ## 1. Fingerprint Uniqueness Comparison
+
 - [ ] 1.1 Design Cloudflare D1 database schema for fingerprint storage
   - Create `fingerprints` table with columns: `id`, `fingerprint_hash`, `component_hashes` (JSON), `created_at`
   - Add indexes on `fingerprint_hash` and `created_at`
@@ -23,6 +24,7 @@
   - Log deletion count for monitoring
 
 ## 2. Export and Sharing
+
 - [ ] 2.1 Install and configure `@react-pdf/renderer` in `apps/web`
   - Add dependency: `pnpm add @react-pdf/renderer`
   - Create PDF template component in `apps/web/components/pdf/FingerprintReport.tsx`
@@ -53,6 +55,7 @@
   - Delete expired entries, log count
 
 ## 3. Privacy Education Module
+
 - [ ] 3.1 Create education data structure for 21 components
   - JSON file: `apps/web/data/component-education.json`
   - Each component: `{ name, description, whatItReveals, riskLevel, examples, protectionTips }`
@@ -81,6 +84,7 @@
   - GDPR/CCPA compliance statements
 
 ## 4. Browser Compatibility Matrix
+
 - [ ] 4.1 Create static compatibility data file
   - JSON file: `apps/web/data/browser-compatibility.json`
   - Structure: `{ component: { chrome: 'supported', firefox: 'partial', safari: 'blocked', ... } }`
@@ -108,6 +112,7 @@
   - Run weekly via GitHub Actions cron
 
 ## 5. Integration & Testing
+
 - [ ] 5.1 Write unit tests for uniqueness calculation
   - Test percentile ranking algorithm
   - Test component rarity scoring
@@ -130,6 +135,7 @@
   - Ensure all requirements have scenarios
 
 ## 6. Documentation
+
 - [ ] 6.1 Update `docs/FEATURES.md` with new capabilities
   - Document uniqueness comparison feature
   - Explain export and sharing workflows

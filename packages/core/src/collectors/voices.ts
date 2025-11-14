@@ -3,7 +3,9 @@ import type { VoicesFingerprint } from '../types';
 /**
  * Collect Speech Synthesis Voices fingerprint
  */
-export async function collectVoicesFingerprint(): Promise<VoicesFingerprint | undefined> {
+export async function collectVoicesFingerprint(): Promise<
+  VoicesFingerprint | undefined
+> {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
     return undefined;
   }
@@ -27,14 +29,14 @@ export async function collectVoicesFingerprint(): Promise<VoicesFingerprint | un
 
     return {
       count: voices.length,
-      voices: voices.map(voice => ({
+      voices: voices.map((voice) => ({
         name: voice.name,
         lang: voice.lang,
         localService: voice.localService,
         default: voice.default,
         voiceURI: voice.voiceURI,
       })),
-      defaultVoice: voices.find(v => v.default)?.name,
+      defaultVoice: voices.find((v) => v.default)?.name,
     };
   } catch (error) {
     console.error('Voices fingerprinting error:', error);

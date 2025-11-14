@@ -1,7 +1,12 @@
 import type { ReducedMotionPreference } from '../types';
 
-export function collectReducedMotionPreference(): ReducedMotionPreference | undefined {
-  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+export function collectReducedMotionPreference():
+  | ReducedMotionPreference
+  | undefined {
+  if (
+    typeof window === 'undefined' ||
+    typeof window.matchMedia !== 'function'
+  ) {
     return undefined;
   }
 

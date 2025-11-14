@@ -3,14 +3,15 @@ import { Github, Mail } from 'lucide-react';
 
 export function Footer() {
   return (
-    <footer className="border-t bg-background">
+    <footer className="bg-background border-t">
       <div className="container mx-auto px-4 py-8 md:py-12">
         <div className="grid gap-8 md:grid-cols-4">
           {/* About */}
           <div className="space-y-3">
             <h3 className="text-lg font-semibold">CreepJS</h3>
-            <p className="text-sm text-muted-foreground">
-              Educational, privacy-first browser fingerprinting platform for developers.
+            <p className="text-muted-foreground text-sm">
+              Educational, privacy-first browser fingerprinting platform for
+              developers.
             </p>
           </div>
 
@@ -19,17 +20,26 @@ export function Footer() {
             <h3 className="text-sm font-semibold">Product</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/checker" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Link
+                  href="/checker"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
                   Checker
                 </Link>
               </li>
               <li>
-                <Link href="/docs" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Link
+                  href="/docs"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
                   Documentation
                 </Link>
               </li>
               <li>
-                <Link href="/playground" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Link
+                  href="/playground"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
                   API Playground
                 </Link>
               </li>
@@ -51,12 +61,18 @@ export function Footer() {
                 </a>
               </li>
               <li>
-                <Link href="/docs" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Link
+                  href="/docs"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
                   API Reference
                 </Link>
               </li>
               <li>
-                <Link href="/docs" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Link
+                  href="/docs"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
                   Privacy Policy
                 </Link>
               </li>
@@ -88,8 +104,8 @@ export function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-8 pt-8 border-t text-center">
-          <p className="text-sm text-muted-foreground">
+        <div className="mt-8 border-t pt-8 text-center">
+          <p className="text-muted-foreground text-sm">
             &copy; {new Date().getFullYear()} CreepJS. All rights reserved.
           </p>
         </div>

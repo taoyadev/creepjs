@@ -1,6 +1,7 @@
 # Tasks: add-advanced-features
 
 ## 1. Fingerprint History Tracking
+
 - [ ] 1.1 Set up Cloudflare Durable Objects
   - Create Durable Object class `FingerprintHistory`
   - Implement storage API for timeline data
@@ -23,6 +24,7 @@
   - Automatic expiration after 90 days
 
 ## 2. Lie Detection Engine
+
 - [ ] 2.1 Implement consistency validation rules
   - userAgent vs Canvas GPU check
   - Screen resolution vs window dimensions
@@ -47,6 +49,7 @@
   - Edge case handling
 
 ## 3. Risk Scoring Engine
+
 - [ ] 3.1 Design statistical risk model
   - Define risk factors (uniqueness, lie detection failures, VPN, automation)
   - Assign weights to each factor
@@ -69,6 +72,7 @@
   - Tune thresholds for optimal accuracy
 
 ## 4. WebAssembly Acceleration
+
 - [ ] 4.1 Set up Rust + wasm-pack environment
   - Install Rust toolchain
   - Initialize `packages/wasm` package
@@ -95,6 +99,7 @@
   - Confirm 50%+ speedup target
 
 ## 5. Canvas Fingerprint Visualization
+
 - [ ] 5.1 Design "Fingerprint DNA" algorithm
   - Map Canvas hash to color gradient (HSL)
   - Map WebGL params to geometric shapes
@@ -118,6 +123,7 @@
   - Validate social media OG image rendering
 
 ## 6. Privacy Mode Detection
+
 - [ ] 6.1 Implement Tor Browser detection
   - Check navigator.productSub (specific Tor value)
   - Verify timezone is UTC
@@ -141,6 +147,7 @@
   - Validate detection accuracy
 
 ## 7. Integration & Testing
+
 - [ ] 7.1 Test Durable Objects scaling
   - Simulate 10k+ concurrent visitors
   - Verify history storage and retrieval
@@ -169,6 +176,7 @@
   - Resolve any validation errors
 
 ## 8. Documentation
+
 - [ ] 8.1 Document Durable Objects architecture
   - Data model and storage strategy
   - Privacy controls and deletion

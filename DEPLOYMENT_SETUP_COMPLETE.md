@@ -30,11 +30,13 @@ Your repository already has **4 comprehensive workflows** ready:
 **Fixed:** Removed hardcoded `IPINFO_TOKEN` from `apps/api/wrangler.toml`
 
 **Before:**
+
 ```toml
 IPINFO_TOKEN = "1562dc669bda56"  # ❌ Exposed in version control
 ```
 
 **After:**
+
 ```toml
 # IPINFO_TOKEN should be set as a secret, not hardcoded here
 # Set via: wrangler secret put IPINFO_TOKEN
@@ -65,10 +67,10 @@ Visit: https://github.com/taoyadev/creepjs/settings/secrets/actions
 
 Add these 2 secrets:
 
-| Secret Name | Value |
-|------------|-------|
-| `CLOUDFLARE_API_TOKEN` | `kbjmXswH0vV9zMs1uuYSepwH1RAWWJsqgenjAtt8` |
-| `CLOUDFLARE_ACCOUNT_ID` | `fe394f7c37b25babc4e351d704a6a97c` |
+| Secret Name             | Value                                      |
+| ----------------------- | ------------------------------------------ |
+| `CLOUDFLARE_API_TOKEN`  | `kbjmXswH0vV9zMs1uuYSepwH1RAWWJsqgenjAtt8` |
+| `CLOUDFLARE_ACCOUNT_ID` | `fe394f7c37b25babc4e351d704a6a97c`         |
 
 ### Step 2: Verify Cloudflare KV Namespaces (1 minute)
 
@@ -78,6 +80,7 @@ npx wrangler kv:namespace list
 ```
 
 **Expected output:**
+
 ```
 [
   { title: "TOKENS", id: "ae71fcdee0c84e8eb3f14f2270330c57" },
@@ -87,6 +90,7 @@ npx wrangler kv:namespace list
 ```
 
 If missing, create them:
+
 ```bash
 npx wrangler kv:namespace create TOKENS
 npx wrangler kv:namespace create RATE_LIMIT
@@ -146,6 +150,7 @@ git push origin main
 ```
 
 **Monitor progress:**
+
 - GitHub Actions: https://github.com/taoyadev/creepjs/actions
 - Cloudflare Dashboard: https://dash.cloudflare.com
 
@@ -172,6 +177,7 @@ Use this to track your setup:
 ### After First Deployment
 
 **GitHub Actions:**
+
 ```
 ✅ CI - Pre-merge Checks
 ✅ Deploy Web to Cloudflare Pages (Production)
@@ -179,12 +185,14 @@ Use this to track your setup:
 ```
 
 **Cloudflare Pages:**
+
 - Project: `creepjs-web`
 - Status: Live
 - URL: `https://creepjs-web.pages.dev` (or custom domain)
 - Build time: ~15 minutes
 
 **Cloudflare Workers:**
+
 - Worker: `creepjs-api`
 - Status: Active
 - URL: `https://creepjs-api.workers.dev` (or custom domain)
@@ -193,6 +201,7 @@ Use this to track your setup:
 ### Automatic Deployments Going Forward
 
 **When you push to `main`:**
+
 1. CI workflow runs (lint, test, typecheck)
 2. If CI passes:
    - Web deployment workflow deploys to Cloudflare Pages
@@ -201,6 +210,7 @@ Use this to track your setup:
 4. GitHub Actions shows green checkmarks ✓
 
 **When you create a PR:**
+
 1. CI workflow runs
 2. Preview deployments created:
    - Web preview: `https://[branch-name].creepjs-web.pages.dev`
@@ -215,6 +225,7 @@ Use this to track your setup:
 ### Common Issues
 
 #### 1. "KV namespace not bound"
+
 ```bash
 cd apps/api
 npx wrangler kv:namespace list
@@ -222,6 +233,7 @@ npx wrangler kv:namespace list
 ```
 
 #### 2. "Invalid API Token"
+
 ```bash
 # Verify token
 curl "https://api.cloudflare.com/client/v4/accounts/fe394f7c37b25babc4e351d704a6a97c/tokens/verify" \
@@ -230,15 +242,18 @@ curl "https://api.cloudflare.com/client/v4/accounts/fe394f7c37b25babc4e351d704a6
 ```
 
 #### 3. "No project with name 'creepjs-web' found"
+
 - Ensure Cloudflare Pages project exists (Step 4)
 - Verify project name is exactly `creepjs-web`
 
 #### 4. "Health check failed"
+
 - Wait 30-60 seconds for global propagation
 - Check Cloudflare dashboard for deployment status
 - Test manually: `curl https://creepjs-web.pages.dev/`
 
 #### 5. API returns 500 errors
+
 ```bash
 # Check Workers logs
 cd apps/api
@@ -257,25 +272,27 @@ npx wrangler tail
 
 ## 📚 Documentation
 
-| Document | Purpose |
-|----------|---------|
-| `GITHUB_ACTIONS_SETUP.md` | Comprehensive setup guide (11 pages, detailed) |
-| `QUICK_SETUP_SECRETS.md` | Quick reference (2 pages, copy-paste ready) |
-| `DEPLOYMENT_SETUP_COMPLETE.md` | This file - summary and checklist |
-| `docs/DEPLOYMENT.md` | Manual deployment guide (alternative to GitHub Actions) |
-| `docs/API.md` | API documentation |
-| `CLAUDE.md` | Project overview for Claude Code |
+| Document                       | Purpose                                                 |
+| ------------------------------ | ------------------------------------------------------- |
+| `GITHUB_ACTIONS_SETUP.md`      | Comprehensive setup guide (11 pages, detailed)          |
+| `QUICK_SETUP_SECRETS.md`       | Quick reference (2 pages, copy-paste ready)             |
+| `DEPLOYMENT_SETUP_COMPLETE.md` | This file - summary and checklist                       |
+| `docs/DEPLOYMENT.md`           | Manual deployment guide (alternative to GitHub Actions) |
+| `docs/API.md`                  | API documentation                                       |
+| `CLAUDE.md`                    | Project overview for Claude Code                        |
 
 ---
 
 ## 🎉 Next Steps
 
 ### Immediate (Required)
+
 1. Complete Steps 1-5 above to enable auto-deployment
 2. Test first deployment
 3. Verify both web and API are live
 
 ### Soon (Recommended)
+
 1. Set up custom domains:
    - `creepjs.org` → Cloudflare Pages
    - `api.creepjs.org` → Cloudflare Workers
@@ -286,6 +303,7 @@ npx wrangler tail
 3. Configure environment variables in Cloudflare Pages dashboard
 
 ### Later (Optional)
+
 1. Set up monitoring/alerts in Cloudflare
 2. Configure Cloudflare Analytics
 3. Enable Cloudflare Web Analytics for Core Web Vitals
@@ -296,12 +314,14 @@ npx wrangler tail
 ## 🔐 Security Notes
 
 ### ✅ Good Practices Applied
+
 - API tokens stored in GitHub Secrets (encrypted)
 - Removed hardcoded IPINFO_TOKEN from version control
 - Using Cloudflare Workers secrets for sensitive data
 - GITHUB_TOKEN auto-provided (no manual storage needed)
 
 ### ⚠️ Remember
+
 - Never commit `.env` files with real credentials
 - Rotate API tokens periodically
 - Use least-privilege tokens for CI/CD
@@ -311,13 +331,13 @@ npx wrangler tail
 
 ## 📊 Performance Targets
 
-| Metric | Target | How to Monitor |
-|--------|--------|----------------|
-| API response time (p95) | <100ms | Cloudflare Workers Analytics |
-| Web Lighthouse score | >90 | GitHub Actions (on PRs) |
-| Build time (Web) | <15 min | GitHub Actions logs |
-| Build time (API) | <5 min | GitHub Actions logs |
-| Uptime | >99.9% | Cloudflare Analytics |
+| Metric                  | Target  | How to Monitor               |
+| ----------------------- | ------- | ---------------------------- |
+| API response time (p95) | <100ms  | Cloudflare Workers Analytics |
+| Web Lighthouse score    | >90     | GitHub Actions (on PRs)      |
+| Build time (Web)        | <15 min | GitHub Actions logs          |
+| Build time (API)        | <5 min  | GitHub Actions logs          |
+| Uptime                  | >99.9%  | Cloudflare Analytics         |
 
 ---
 
@@ -341,6 +361,7 @@ If you encounter issues:
    - Cloudflare Workers secrets are set (`wrangler secret list`)
 
 4. **Test manually:**
+
    ```bash
    # Test API token
    curl "https://api.cloudflare.com/client/v4/accounts/fe394f7c37b25babc4e351d704a6a97c/tokens/verify" \
@@ -358,6 +379,7 @@ If you encounter issues:
 ## ✨ Summary
 
 You now have:
+
 - ✅ 4 GitHub Actions workflows ready to deploy
 - ✅ Security fix applied (removed hardcoded token)
 - ✅ Comprehensive documentation (2 guides + this summary)
@@ -369,6 +391,7 @@ You now have:
 **Result:** Automatic deployments on every push to `main`, with preview deployments for PRs.
 
 **URLs:**
+
 - GitHub repository: https://github.com/taoyadev/creepjs
 - GitHub Actions: https://github.com/taoyadev/creepjs/actions
 - Cloudflare Dashboard: https://dash.cloudflare.com

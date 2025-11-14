@@ -15,7 +15,11 @@ export function collectLanguages(): LanguagesFingerprint | undefined {
     systemLanguage?: string;
   };
 
-  const primary = nav.language || nav.userLanguage || nav.browserLanguage || nav.systemLanguage;
+  const primary =
+    nav.language ||
+    nav.userLanguage ||
+    nav.browserLanguage ||
+    nav.systemLanguage;
   if (typeof primary === 'string' && primary.length > 0) {
     result.push([primary]);
   }
@@ -24,7 +28,12 @@ export function collectLanguages(): LanguagesFingerprint | undefined {
   if (Array.isArray(languages) && languages.length > 0) {
     result.push([...languages]);
   } else if (typeof languages === 'string' && languages.length > 0) {
-    result.push(languages.split(',').map(lang => lang.trim()).filter(Boolean));
+    result.push(
+      languages
+        .split(',')
+        .map((lang) => lang.trim())
+        .filter(Boolean)
+    );
   }
 
   return result.length > 0 ? result : undefined;

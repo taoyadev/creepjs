@@ -8,7 +8,7 @@ function getHTMLElementFingerprint() {
   return {
     count: keys.length,
     hash: hashKeys(keys),
-    unique: keys.filter(k => isUniqueToThisBrowser(k))
+    unique: keys.filter((k) => isUniqueToThisBrowser(k)),
   };
 }
 ```

@@ -6,7 +6,9 @@ const GENERIC_FONTS = [
   { key: 'monospace', css: 'monospace' },
 ] as const;
 
-export function collectFontPreferencesFingerprint(): FontPreferencesFingerprint | undefined {
+export function collectFontPreferencesFingerprint():
+  | FontPreferencesFingerprint
+  | undefined {
   if (typeof document === 'undefined') {
     return undefined;
   }
@@ -17,7 +19,8 @@ export function collectFontPreferencesFingerprint(): FontPreferencesFingerprint 
   }
 
   const container = document.createElement('div');
-  container.style.cssText = 'position:absolute;left:-9999px;top:-9999px;visibility:hidden;';
+  container.style.cssText =
+    'position:absolute;left:-9999px;top:-9999px;visibility:hidden;';
 
   const result: FontPreferencesFingerprint = {};
 

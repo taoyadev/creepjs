@@ -13,6 +13,7 @@ const cpuClass = navigator.cpuClass;
 In Internet Explorer, this returned a string indicating the CPU architecture:
 
 **Historical Return Values** (IE 4.0 through IE 11):
+
 - `"x86"` - 32-bit Intel/AMD processors
 - `"x64"` - 64-bit Intel/AMD processors (IE on 64-bit Windows)
 - `"ARM"` - ARM processors (Windows RT tablets)
@@ -40,12 +41,14 @@ The cpuClass property emerged during the Browser Wars era (1995-2005) when Micro
 
 **Original Design Intent**:
 Microsoft envisioned cpuClass enabling:
+
 - Server-side delivery of architecture-specific ActiveX controls
 - Client-side selection of optimized JavaScript routines
 - Detection of Windows RT ARM devices for mobile-optimized experiences
 - Enterprise application deployment targeting specific CPU families
 
 **Implementation Timeline**:
+
 - **1997**: IE 4.0 introduces navigator.cpuClass
 - **2001**: Windows XP releases with IE 6.0, standardizing x86 architecture detection
 - **2005**: IE 7.0 adds x64 support for 64-bit Windows Vista
@@ -55,6 +58,7 @@ Microsoft envisioned cpuClass enabling:
 
 **Why Other Browsers Never Adopted It**:
 Netscape, Mozilla Firefox, Safari, and Chrome rejected implementing cpuClass for several reasons:
+
 - Proprietary Microsoft API with no standardization path
 - Privacy concerns about exposing hardware details
 - Limited utility for legitimate feature detection
@@ -89,6 +93,7 @@ This binary classifier contributed approximately 0.5-1.0 bits of entropy during 
 Within the IE user base, cpuClass revealed processor architecture, creating distinct fingerprints:
 
 **IE Market Segmentation** (circa 2015):
+
 - x86 (32-bit Windows): ~60% of IE users
 - x64 (64-bit Windows): ~38% of IE users
 - ARM (Windows RT): ~2% of IE users (Surface RT tablets)
@@ -101,6 +106,7 @@ The ARM value provided particularly strong fingerprinting, as it uniquely identi
 ### 3. Cross-Site Tracking Persistence
 
 Because cpuClass reflected hardware rather than software configuration, it remained stable across:
+
 - Browser updates and version changes
 - Operating system updates (within Windows family)
 - Cookie clearing and cache deletion
@@ -117,6 +123,7 @@ Users had no ability to control or randomize cpuClass values. Unlike cookies (wh
 
 **Socioeconomic Profiling**:
 Processor architecture correlated with device age and cost:
+
 - x86 systems suggested older computers (pre-2010 purchases)
 - x64 indicated newer systems (post-2010) with >4GB RAM capability
 - ARM exclusively identified high-end Microsoft Surface RT devices ($499-$699)
@@ -125,6 +132,7 @@ This enabled income-based profiling and targeted advertising based on purchasing
 
 **Enterprise vs. Consumer Detection**:
 Corporate IT departments often standardized on specific Windows builds, creating fingerprints that identified enterprise users:
+
 - Windows 7 Professional x64 + IE 11 = likely corporate employee
 - Windows RT ARM = consumer early adopter
 - Windows XP x86 + IE 8 = legacy business environment
@@ -146,6 +154,7 @@ Microsoft officially retired IE 11, ending mainstream cpuClass usage. The last o
 
 **Current Browser Status**:
 As of 2025, navigator.cpuClass returns undefined across:
+
 - Chrome/Chromium (all versions)
 - Firefox (all versions)
 - Safari (all versions)
@@ -155,6 +164,7 @@ As of 2025, navigator.cpuClass returns undefined across:
 
 **Legacy Detection in Wild**:
 Despite obsolescence, cpuClass checks persist in legacy fingerprinting scripts and analytics code. Analysis of JavaScript libraries reveals:
+
 - ~5% of older analytics scripts still probe navigator.cpuClass
 - Enterprise web applications from 2010-2015 era may include cpuClass checks
 - Fingerprinting research tools test cpuClass for historical comparison
@@ -187,6 +197,7 @@ const ua = navigator.userAgent;
 ```
 
 Browser vendors are actively reducing user agent entropy through:
+
 - User-Agent Client Hints (UA-CH) requiring explicit permission
 - Freezing legacy user agent strings to common values
 - Removing version and platform details
@@ -196,14 +207,16 @@ Browser vendors are actively reducing user agent entropy through:
 The User-Agent Client Hints API provides granular architecture data with permission controls:
 
 ```javascript
-navigator.userAgentData.getHighEntropyValues(['architecture', 'bitness'])
-  .then(values => {
+navigator.userAgentData
+  .getHighEntropyValues(['architecture', 'bitness'])
+  .then((values) => {
     console.log(values.architecture); // "x86" or "arm"
     console.log(values.bitness); // "32" or "64"
   });
 ```
 
 **Privacy Improvements Over cpuClass**:
+
 - Requires explicit permission request (not passively available)
 - Only available in secure contexts (HTTPS)
 - Browsers can deny requests without user prompting
@@ -231,6 +244,7 @@ During its active period (1997-2020), cpuClass contributed varying entropy depen
 **Peak Entropy Period** (2012-2015):
 IE market share: ~15-20%
 Within IE users:
+
 - x86: 60% → 0.74 bits
 - x64: 38% → 1.40 bits
 - ARM: 2% → 5.64 bits (Windows RT users)
@@ -240,6 +254,7 @@ Combined entropy: ~1.4 bits within IE population, ~3.0 bits when including IE vs
 **Decline Period** (2016-2020):
 IE market share: <10%
 Entropy contribution diminished as:
+
 - Chrome/Firefox dominance reduced IE population
 - Windows RT discontinued (ARM value disappeared)
 - x86/x64 distinction became less meaningful
@@ -251,13 +266,13 @@ Entropy: 0 bits (universally undefined)
 
 The cpuClass saga foreshadowed ongoing tensions around hardware-detecting APIs:
 
-| API | Era | Entropy | Privacy Controls |
-|-----|-----|---------|------------------|
-| navigator.cpuClass | 1997-2020 | 1-3 bits | None (passively exposed) |
+| API                           | Era          | Entropy  | Privacy Controls             |
+| ----------------------------- | ------------ | -------- | ---------------------------- |
+| navigator.cpuClass            | 1997-2020    | 1-3 bits | None (passively exposed)     |
 | navigator.hardwareConcurrency | 2015-present | 2-3 bits | None (standardized exposure) |
-| navigator.deviceMemory | 2018-present | 1-2 bits | None (standardized exposure) |
-| navigator.userAgentData | 2021-present | Variable | Permission-based |
-| WebGL renderer detection | 2011-present | 5-7 bits | None (indirect exposure) |
+| navigator.deviceMemory        | 2018-present | 1-2 bits | None (standardized exposure) |
+| navigator.userAgentData       | 2021-present | Variable | Permission-based             |
+| WebGL renderer detection      | 2011-present | 5-7 bits | None (indirect exposure)     |
 
 The modern hardwareConcurrency (CPU core count) and deviceMemory (RAM) properties provide similar fingerprinting capabilities as cpuClass did, but with web standards backing and broader browser support—illustrating how privacy vs. functionality debates continue.
 
@@ -286,6 +301,7 @@ Contemporary fingerprinting libraries still test navigator.cpuClass for several 
 
 **Legacy Browser Detection**:
 Testing for cpuClass identifies extremely outdated systems still running IE, signaling:
+
 - Unmaintained corporate environments
 - Government agencies with legacy requirements
 - Developing regions with older hardware
@@ -298,7 +314,10 @@ Headless browsers and automation tools (Puppeteer, Playwright, Selenium) may acc
 
 ```javascript
 // Bot detection heuristic
-if (typeof navigator.cpuClass !== 'undefined' && !/Trident/.test(navigator.userAgent)) {
+if (
+  typeof navigator.cpuClass !== 'undefined' &&
+  !/Trident/.test(navigator.userAgent)
+) {
   // cpuClass exists but not running IE = misconfigured automation
   flagAsSuspicious();
 }
@@ -346,6 +365,7 @@ These studies influenced W3C Privacy Interest Group discussions that ultimately 
 The cpuClass property will fade entirely into historical obscurity:
 
 **Remaining Usage** (2025):
+
 - Legacy enterprise applications frozen in maintenance mode
 - Historical fingerprinting research datasets
 - Obsolete JavaScript libraries without active maintenance
@@ -355,6 +375,7 @@ As Internet Explorer usage approaches zero and legacy applications are finally d
 
 **Lasting Impact**:
 The lessons from cpuClass inform ongoing debates about:
+
 - WebGPU renderer enumeration (high-entropy hardware detection)
 - Device Orientation/Motion API restrictions (hardware sensor access)
 - Privacy Budget proposals (limiting total fingerprintable surface)

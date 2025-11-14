@@ -227,7 +227,8 @@ export const DateTimeLocaleStatus = {
   LocaleNotAvailable: -3,
 } as const;
 
-export type DateTimeLocaleStatus = typeof DateTimeLocaleStatus[keyof typeof DateTimeLocaleStatus];
+export type DateTimeLocaleStatus =
+  (typeof DateTimeLocaleStatus)[keyof typeof DateTimeLocaleStatus];
 export type DateTimeLocaleFingerprint = string | DateTimeLocaleStatus;
 
 /**

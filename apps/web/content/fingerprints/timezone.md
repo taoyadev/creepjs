@@ -11,12 +11,14 @@ And it gets worse. Your timezone combined with your language settings and screen
 Timezone fingerprinting involves collecting time-related information from your browser to infer your geographic location and create tracking identifiers. Websites can access:
 
 **Core Timezone Data:**
+
 - **Timezone name**: e.g., "America/Los_Angeles", "Europe/London", "Asia/Shanghai"
 - **UTC offset**: e.g., -8 hours, +0 hours, +8 hours
 - **Daylight Saving Time (DST) status**: Whether DST is currently active
 - **Locale settings**: Date/time formatting preferences
 
 **Related Geolocation Indicators:**
+
 - **Language preferences**: Combined with timezone for geo-inference
 - **Currency formatting**: Regional monetary symbols
 - **Date/number formats**: US uses MM/DD/YYYY, Europe uses DD/MM/YYYY
@@ -53,13 +55,13 @@ function getTimezoneFingerprint() {
     timeFormat: new Intl.DateTimeFormat(navigator.language, {
       hour: 'numeric',
       minute: 'numeric',
-      second: 'numeric'
+      second: 'numeric',
     }).format(now),
 
     // Currency (inferred from locale)
     currency: new Intl.NumberFormat(navigator.language, {
       style: 'currency',
-      currency: 'USD' // Can try multiple currencies
+      currency: 'USD', // Can try multiple currencies
     }).format(1234.56),
 
     // DST detection
@@ -80,26 +82,26 @@ function isDaylightSavingTime(date) {
 
 ## The Statistics
 
-| Metric | Value | Source | Year |
-|--------|-------|--------|------|
-| **Timezone tracking adoption** | Device-level identifier permitted | Google policy | 2025 |
-| **Unique timezone combinations** | 400+ IANA timezones | IANA database | 2025 |
-| **VPN bypass rate** | Timezone reveals real location despite VPN | Research | 2025 |
-| **Combined with language entropy** | Highly identifying | Browser fingerprinting studies | 2025 |
-| **Regulatory concerns** | UK ICO labeled "irresponsible" | Google policy criticism | 2025 |
-| **User awareness** | Low - most don't know | Privacy surveys | 2025 |
+| Metric                             | Value                                      | Source                         | Year |
+| ---------------------------------- | ------------------------------------------ | ------------------------------ | ---- |
+| **Timezone tracking adoption**     | Device-level identifier permitted          | Google policy                  | 2025 |
+| **Unique timezone combinations**   | 400+ IANA timezones                        | IANA database                  | 2025 |
+| **VPN bypass rate**                | Timezone reveals real location despite VPN | Research                       | 2025 |
+| **Combined with language entropy** | Highly identifying                         | Browser fingerprinting studies | 2025 |
+| **Regulatory concerns**            | UK ICO labeled "irresponsible"             | Google policy criticism        | 2025 |
+| **User awareness**                 | Low - most don't know                      | Privacy surveys                | 2025 |
 
 ### Geographic Distribution Reality
 
-| Timezone | Approximate Users | Trackability |
-|----------|------------------|--------------|
-| **America/New_York (ET)** | ~50M+ | Medium (large city) |
-| **America/Chicago (CT)** | ~30M+ | Medium |
-| **America/Los_Angeles (PT)** | ~40M+ | Medium |
-| **Europe/London (GMT)** | ~15M+ | Medium |
-| **Asia/Shanghai (CST)** | ~500M+ | Low (massive population) |
-| **Pacific/Auckland** | ~2M | High (small population) |
-| **Obscure timezones** | <100K each | Extremely High |
+| Timezone                     | Approximate Users | Trackability             |
+| ---------------------------- | ----------------- | ------------------------ |
+| **America/New_York (ET)**    | ~50M+             | Medium (large city)      |
+| **America/Chicago (CT)**     | ~30M+             | Medium                   |
+| **America/Los_Angeles (PT)** | ~40M+             | Medium                   |
+| **Europe/London (GMT)**      | ~15M+             | Medium                   |
+| **Asia/Shanghai (CST)**      | ~500M+            | Low (massive population) |
+| **Pacific/Auckland**         | ~2M               | High (small population)  |
+| **Obscure timezones**        | <100K each        | Extremely High           |
 
 ## Real-World Applications
 
@@ -132,6 +134,7 @@ You pay $10/month for a VPN. You connect to a server in Germany. Websites see a 
 **WRONG.**
 
 Your browser still broadcasts:
+
 - Timezone: `America/New_York` (UTC-5)
 - Language: `en-US`
 - Currency format: `$1,234.56` (US formatting)
@@ -152,6 +155,7 @@ Day 10: America/New_York → "User returned home"
 ```
 
 This is more precise than IP geolocation because:
+
 - Users actively set timezones
 - Timezone changes are deliberate
 - Less prone to VPN/proxy interference
@@ -161,14 +165,17 @@ This is more precise than IP geolocation because:
 DST observance varies globally. This creates fingerprint variations:
 
 **Arizona doesn't observe DST** (except Navajo Nation)
+
 - If you're UTC-7 year-round, you're likely in Arizona
 - This narrows you down to ~7M people
 
 **Indiana's complicated DST history**
+
 - Different rules over the years
 - Historical timezone data can reveal exact location
 
 **Countries without DST**
+
 - China, Japan, India, most of Africa
 - If timezone never changes, highly identifying
 
@@ -178,12 +185,12 @@ We found: **DST patterns create sub-fingerprints within timezones**, adding ~2 b
 
 This combination is devastatingly precise:
 
-| Timezone | Language | Likely Location | Population | Trackability |
-|----------|----------|----------------|-----------|--------------|
-| America/New_York | en-US | New York area | ~20M | Medium |
-| America/New_York | es-ES | NYC Spanish speaker | ~1M | High |
-| Europe/Paris | ar-SA | Arabic speaker in Paris | ~100K | Very High |
-| Asia/Shanghai | en-US | American in China | ~50K | Extremely High |
+| Timezone         | Language | Likely Location         | Population | Trackability   |
+| ---------------- | -------- | ----------------------- | ---------- | -------------- |
+| America/New_York | en-US    | New York area           | ~20M       | Medium         |
+| America/New_York | es-ES    | NYC Spanish speaker     | ~1M        | High           |
+| Europe/Paris     | ar-SA    | Arabic speaker in Paris | ~100K      | Very High      |
+| Asia/Shanghai    | en-US    | American in China       | ~50K       | Extremely High |
 
 An American English speaker in Shanghai is one of maybe 50,000 people. Combined with other fingerprints? Uniquely identifiable.
 
@@ -193,13 +200,13 @@ Different regions format dates/times/numbers differently:
 
 ```javascript
 // US: "12/31/2025, 11:59:59 PM"
-new Intl.DateTimeFormat('en-US').format(new Date())
+new Intl.DateTimeFormat('en-US').format(new Date());
 
 // UK: "31/12/2025, 23:59:59"
-new Intl.DateTimeFormat('en-GB').format(new Date())
+new Intl.DateTimeFormat('en-GB').format(new Date());
 
 // ISO: "2025-12-31, 23:59:59"
-new Intl.DateTimeFormat('sv-SE').format(new Date())
+new Intl.DateTimeFormat('sv-SE').format(new Date());
 ```
 
 Websites can fingerprint based on which format your browser uses. Combined with timezone, this creates hyper-specific profiles.
@@ -212,6 +219,7 @@ Tor Browser sets everyone's timezone to **UTC** to prevent fingerprinting. But t
 - 1% have UTC (Tor users + some servers)
 
 If your timezone is UTC, you're immediately flagged as either:
+
 - A Tor user (privacy-conscious, suspicious)
 - A server/bot (automated traffic)
 - Someone spoofing timezone (also suspicious)
@@ -231,18 +239,19 @@ Yet Google allows it anyway, affecting billions of users globally.
 
 ## Browser Differences
 
-| Browser | Exposes Timezone | Exposes Locale | Privacy Protection |
-|---------|-----------------|----------------|-------------------|
-| **Chrome** | ✅ Full IANA timezone | ✅ All locales | ❌ None |
-| **Firefox** | ✅ Full | ✅ All | ⚠️ RFP can spoof UTC |
-| **Safari** | ✅ Full | ✅ All | ⚠️ Limited restrictions |
-| **Edge** | ✅ Full | ✅ All | ❌ None |
-| **Brave** | ⚠️ Can randomize | ⚠️ Generic | ✅ Timezone spoofing |
-| **Tor** | 🔒 Forced UTC | 🔒 en-US only | ✅ Maximum |
+| Browser     | Exposes Timezone      | Exposes Locale | Privacy Protection      |
+| ----------- | --------------------- | -------------- | ----------------------- |
+| **Chrome**  | ✅ Full IANA timezone | ✅ All locales | ❌ None                 |
+| **Firefox** | ✅ Full               | ✅ All         | ⚠️ RFP can spoof UTC    |
+| **Safari**  | ✅ Full               | ✅ All         | ⚠️ Limited restrictions |
+| **Edge**    | ✅ Full               | ✅ All         | ❌ None                 |
+| **Brave**   | ⚠️ Can randomize      | ⚠️ Generic     | ✅ Timezone spoofing    |
+| **Tor**     | 🔒 Forced UTC         | 🔒 en-US only  | ✅ Maximum              |
 
 ### Firefox Resist Fingerprinting
 
 Enable in `about:config`:
+
 ```
 privacy.resistFingerprinting = true
 privacy.fingerprintingProtection.overrides = "+AllTargets,-JSDateTimeUTC"
@@ -301,10 +310,9 @@ class TimezoneFingerprinter {
       julyOffset: -july.getTimezoneOffset() / 60,
 
       // DST status
-      isDST: now.getTimezoneOffset() < Math.max(
-        january.getTimezoneOffset(),
-        july.getTimezoneOffset()
-      ),
+      isDST:
+        now.getTimezoneOffset() <
+        Math.max(january.getTimezoneOffset(), july.getTimezoneOffset()),
 
       // Locale information
       locale: navigator.language,
@@ -325,29 +333,29 @@ class TimezoneFingerprinter {
     return {
       short: new Intl.DateTimeFormat(navigator.language).format(date),
       medium: new Intl.DateTimeFormat(navigator.language, {
-        dateStyle: 'medium'
+        dateStyle: 'medium',
       }).format(date),
       long: new Intl.DateTimeFormat(navigator.language, {
-        dateStyle: 'long'
-      }).format(date)
+        dateStyle: 'long',
+      }).format(date),
     };
   }
 
   static getTimeFormat(date) {
     return {
       short: new Intl.DateTimeFormat(navigator.language, {
-        timeStyle: 'short'
+        timeStyle: 'short',
       }).format(date),
       medium: new Intl.DateTimeFormat(navigator.language, {
-        timeStyle: 'medium'
+        timeStyle: 'medium',
       }).format(date),
-      use24Hour: this.is24HourFormat()
+      use24Hour: this.is24HourFormat(),
     };
   }
 
   static is24HourFormat() {
     const format = new Intl.DateTimeFormat(navigator.language, {
-      hour: 'numeric'
+      hour: 'numeric',
     }).format(new Date(2000, 0, 1, 13));
     return !format.includes('PM') && !format.includes('AM');
   }
@@ -356,18 +364,18 @@ class TimezoneFingerprinter {
     return {
       decimal: (1.1).toLocaleString(navigator.language),
       thousands: (1000).toLocaleString(navigator.language),
-      negative: (-1).toLocaleString(navigator.language)
+      negative: (-1).toLocaleString(navigator.language),
     };
   }
 
   static getCurrencyFormat() {
     const currencies = ['USD', 'EUR', 'GBP', 'JPY', 'CNY'];
-    return currencies.map(currency => ({
+    return currencies.map((currency) => ({
       code: currency,
       format: new Intl.NumberFormat(navigator.language, {
         style: 'currency',
-        currency
-      }).format(1234.56)
+        currency,
+      }).format(1234.56),
     }));
   }
 
@@ -405,7 +413,7 @@ function detectTimezoneSpoofing() {
     tests.push({
       test: 'offset_mismatch',
       spoofed: true,
-      reason: 'Timezone offset doesn\'t match IANA timezone'
+      reason: "Timezone offset doesn't match IANA timezone",
     });
   }
 
@@ -419,7 +427,7 @@ function detectTimezoneSpoofing() {
     tests.push({
       test: 'date_inconsistency',
       spoofed: true,
-      reason: 'Different timezone values from different APIs'
+      reason: 'Different timezone values from different APIs',
     });
   }
 
@@ -429,13 +437,13 @@ function detectTimezoneSpoofing() {
     tests.push({
       test: 'dst_inconsistency',
       spoofed: true,
-      reason: 'DST behavior doesn\'t match timezone rules'
+      reason: "DST behavior doesn't match timezone rules",
     });
   }
 
   return {
-    spoofed: tests.some(t => t.spoofed),
-    tests
+    spoofed: tests.some((t) => t.spoofed),
+    tests,
   };
 }
 ```
@@ -449,6 +457,7 @@ function detectTimezoneSpoofing() {
 ### Q2: Can I change my browser's timezone without changing my system time?
 
 **Sort of.** You can use:
+
 - Firefox Resist Fingerprinting (forces UTC)
 - Browser extensions (may be detectable)
 - System-level changes (most reliable)
@@ -460,6 +469,7 @@ function detectTimezoneSpoofing() {
 ### Q4: How do websites know if I'm spoofing my timezone?
 
 They check for **inconsistencies**:
+
 - Timezone vs IP geolocation mismatch
 - Different values from different JavaScript APIs
 - Invalid DST behavior
@@ -510,6 +520,7 @@ They check for **inconsistencies**:
 Test your timezone fingerprint at [/fingerprint/timezone](/fingerprint/timezone).
 
 Discover:
+
 - Your exact timezone exposure
 - How unique your timezone + locale combination is
 - Whether your VPN is being bypassed
@@ -520,6 +531,7 @@ Discover:
 **Last Updated**: November 2025 | **Word Count**: 3,156 words
 
 **Sources**:
+
 - [Google Fingerprinting Policy 2025](https://groupbwt.com/blog/google-fingerprinting-policy/)
 - [UK ICO Statement on Google Policy](https://groupbwt.com/blog/google-fingerprinting-policy/)
 - [Geolocation Privacy 2025](https://www.privacyjournal.net/geolocation-privacy/)

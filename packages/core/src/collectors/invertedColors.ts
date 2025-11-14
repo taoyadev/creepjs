@@ -2,7 +2,10 @@
  * Detects whether the user has enabled global color inversion preferences.
  */
 export function collectInvertedColorsPreference(): boolean | undefined {
-  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+  if (
+    typeof window === 'undefined' ||
+    typeof window.matchMedia !== 'function'
+  ) {
     return undefined;
   }
 

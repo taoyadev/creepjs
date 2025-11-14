@@ -1,13 +1,17 @@
 import type { AudioBaseLatencyFingerprint } from '../types';
 
-export async function collectAudioBaseLatencyFingerprint(): Promise<AudioBaseLatencyFingerprint | undefined> {
+export async function collectAudioBaseLatencyFingerprint(): Promise<
+  AudioBaseLatencyFingerprint | undefined
+> {
   if (typeof window === 'undefined') {
     return undefined;
   }
 
   const AudioContextClass =
-    (window as typeof window & { webkitAudioContext?: typeof AudioContext }).AudioContext ||
-    (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    (window as typeof window & { webkitAudioContext?: typeof AudioContext })
+      .AudioContext ||
+    (window as typeof window & { webkitAudioContext?: typeof AudioContext })
+      .webkitAudioContext;
 
   if (!AudioContextClass) {
     return undefined;
@@ -17,9 +21,11 @@ export async function collectAudioBaseLatencyFingerprint(): Promise<AudioBaseLat
   try {
     const fingerprint: AudioBaseLatencyFingerprint = {
       supported: true,
-      baseLatency: (context as AudioContext & { baseLatency?: number }).baseLatency,
+      baseLatency: (context as AudioContext & { baseLatency?: number })
+        .baseLatency,
       // `outputLatency` is experimental and not on the standard AudioContext type
-      outputLatency: (context as AudioContext & { outputLatency?: number }).outputLatency,
+      outputLatency: (context as AudioContext & { outputLatency?: number })
+        .outputLatency,
       sampleRate: context.sampleRate,
     };
 

@@ -151,7 +151,10 @@ export function trackPageView(url?: string) {
  * @param error - Error object or message
  * @param context - Additional context about the error
  */
-export function trackError(error: Error | string, context?: AnalyticsProperties) {
+export function trackError(
+  error: Error | string,
+  context?: AnalyticsProperties
+) {
   const errorMessage = error instanceof Error ? error.message : error;
   const errorStack = error instanceof Error ? error.stack : undefined;
 
@@ -202,7 +205,10 @@ export const analytics = {
     /**
      * Track when a fingerprint is exported
      */
-    fingerprintExported: (props: { format: string; fingerprintId?: string }) => {
+    fingerprintExported: (props: {
+      format: string;
+      fingerprintId?: string;
+    }) => {
       trackEvent('fingerprint_exported', props);
     },
 
@@ -216,14 +222,22 @@ export const analytics = {
     /**
      * Track API calls
      */
-    apiCallMade: (props: { endpoint: string; statusCode?: number; responseTime?: number }) => {
+    apiCallMade: (props: {
+      endpoint: string;
+      statusCode?: number;
+      responseTime?: number;
+    }) => {
       trackEvent('api_call_made', props);
     },
 
     /**
      * Track API errors
      */
-    apiError: (props: { endpoint: string; statusCode: number; errorMessage?: string }) => {
+    apiError: (props: {
+      endpoint: string;
+      statusCode: number;
+      errorMessage?: string;
+    }) => {
       trackEvent('api_error', props);
     },
 
@@ -251,7 +265,10 @@ export const analytics = {
     /**
      * Track when a specific collector is tested
      */
-    collectorTested: (props: { collectorType: string; result?: 'success' | 'error' }) => {
+    collectorTested: (props: {
+      collectorType: string;
+      result?: 'success' | 'error';
+    }) => {
       trackEvent('collector_tested', props);
     },
 
@@ -279,7 +296,10 @@ export const analytics = {
     /**
      * Track search queries
      */
-    searchPerformed: (props: { searchQuery: string; resultsCount?: number }) => {
+    searchPerformed: (props: {
+      searchQuery: string;
+      resultsCount?: number;
+    }) => {
       trackEvent('search_performed', props);
     },
 

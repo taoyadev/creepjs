@@ -55,14 +55,14 @@ Based on DRAM market statistics and device trends:
 
 ### Mobile Devices
 
-| RAM Amount | Market Share | Typical Devices |
-|------------|--------------|-----------------|
-| 2 GB | 8-10% | Budget Android phones, old devices |
-| 4 GB | 35-40% | Entry-level smartphones ($200-$400) |
-| 6 GB | 20-25% | Mid-range devices ($400-$700) |
-| 8 GB | 20-25% | Premium smartphones ($700-$1000) |
-| 12 GB | 5-8% | Flagship phones ($1000+) |
-| 16 GB+ | 2-3% | Gaming phones, premium flagships |
+| RAM Amount | Market Share | Typical Devices                     |
+| ---------- | ------------ | ----------------------------------- |
+| 2 GB       | 8-10%        | Budget Android phones, old devices  |
+| 4 GB       | 35-40%       | Entry-level smartphones ($200-$400) |
+| 6 GB       | 20-25%       | Mid-range devices ($400-$700)       |
+| 8 GB       | 20-25%       | Premium smartphones ($700-$1000)    |
+| 12 GB      | 5-8%         | Flagship phones ($1000+)            |
+| 16 GB+     | 2-3%         | Gaming phones, premium flagships    |
 
 The mobile market is rapidly shifting upward. In 2024, baseline RAM for mid-range phones increased from 8GB to 12GB, driven by AI feature requirements. Chinese and Indian manufacturers led this transition.
 
@@ -70,13 +70,13 @@ Samsung, Xiaomi, and OnePlus flagship models now ship with up to 18GB RAM for "A
 
 ### Desktop/Laptop Devices
 
-| RAM Amount | Market Share | Typical Devices |
-|------------|--------------|-----------------|
-| 4 GB | 10-15% | Budget laptops, Chromebooks, old machines |
-| 8 GB | 40-45% | Standard laptops, most office PCs |
-| 16 GB | 30-35% | Performance laptops, gaming PCs, professionals |
-| 32 GB | 8-10% | Workstations, content creators, developers |
-| 64 GB+ | 2-3% | High-end workstations, servers, Mac Studio/Pro |
+| RAM Amount | Market Share | Typical Devices                                |
+| ---------- | ------------ | ---------------------------------------------- |
+| 4 GB       | 10-15%       | Budget laptops, Chromebooks, old machines      |
+| 8 GB       | 40-45%       | Standard laptops, most office PCs              |
+| 16 GB      | 30-35%       | Performance laptops, gaming PCs, professionals |
+| 32 GB      | 8-10%        | Workstations, content creators, developers     |
+| 64 GB+     | 2-3%         | High-end workstations, servers, Mac Studio/Pro |
 
 Windows 11 requires 4GB minimum, but 8GB is the de facto standard. Apple pushed the market upward by making 16GB standard in M3 MacBook Pros.
 
@@ -94,12 +94,12 @@ Where device memory becomes dangerous is in combination:
 
 **Device Memory + CPU Cores = Device Tier Classification**
 
-| Memory | CPU Cores | Device Type | Percentage |
-|--------|-----------|-------------|-----------|
-| 4 GB | 2-4 | Budget laptop/phone | 15% |
-| 8 GB | 4-6 | Mid-range device | 35% |
-| 16 GB | 8 | High-end laptop | 25% |
-| 32 GB+ | 12-16 | Workstation/Pro | 8% |
+| Memory | CPU Cores | Device Type         | Percentage |
+| ------ | --------- | ------------------- | ---------- |
+| 4 GB   | 2-4       | Budget laptop/phone | 15%        |
+| 8 GB   | 4-6       | Mid-range device    | 35%        |
+| 16 GB  | 8         | High-end laptop     | 25%        |
+| 32 GB+ | 12-16     | Workstation/Pro     | 8%         |
 
 This combination creates **8-12 distinct device profiles** with much higher uniqueness. Combined entropy jumps to 4-5 bits.
 
@@ -126,6 +126,7 @@ RAM amount strongly correlates with device price:
 - **32 GB+**: $2,500+ devices (high income, creative professionals, developers)
 
 Advertisers use this for price discrimination. Research shows premium device users are served higher prices for:
+
 - Flight tickets (+15-25%)
 - Hotel bookings (+10-20%)
 - SaaS subscriptions (+20-30%)
@@ -146,12 +147,14 @@ Job recruitment ads, B2B marketing, and professional service pricing all adjust 
 ### Device Age and Upgrade Cycle
 
 RAM amount reveals device age:
+
 - 2 GB → Device from 2015-2018 (likely 6+ years old)
 - 4 GB → 2018-2020 device (4-6 years old)
 - 8 GB → 2020-2023 device (1-4 years old)
 - 16 GB+ → 2022-2024 device (brand new)
 
 This indicates:
+
 - **Financial stability**: Can you afford new devices?
 - **Technology adoption**: Early adopter vs. late majority
 - **Replacement cycle**: Budget-conscious vs. regular upgrader
@@ -182,6 +185,7 @@ Ad networks use device memory for:
 ### E-Commerce Price Discrimination
 
 Online retailers detected accessing sites from high-RAM devices:
+
 - See higher "recommended" prices
 - Get shown premium product variants first
 - Receive fewer discount offers
@@ -202,6 +206,7 @@ This is actually a legitimate use case, but it shows how pervasive device finger
 ### Web Analytics and Product Decisions
 
 Product managers use device memory data to:
+
 - Determine minimum system requirements
 - Prioritize features for dominant device tiers
 - Optimize asset loading strategies
@@ -221,6 +226,7 @@ Safari also doesn't implement Device Memory API. Apple's WebKit team rejected it
 
 **Brave** (rounds down aggressively):
 Brave implements the API but rounds memory DOWN to the next power of 2 more aggressively:
+
 - 12 GB → reports as 8 GB
 - 20 GB → reports as 16 GB
 - 48 GB → reports as 32 GB
@@ -243,6 +249,7 @@ Extensions like Privacy Badger and uBlock Origin can't block Device Memory API (
 
 **4. VM/Container Isolation**
 Running browsers in VMs or containers with fixed RAM allocation:
+
 - Docker container with 4GB limit → Always reports 4GB
 - VirtualBox VM with 8GB → Always reports 8GB
 
@@ -296,12 +303,14 @@ This reduces uniqueness while still enabling broad device segmentation.
 The Device Memory API was controversial from the start. During standardization, privacy advocates argued:
 
 **Against**:
+
 - Adds fingerprinting surface with no user benefit
 - Websites can feature-detect capabilities without knowing RAM
 - Creates socioeconomic profiling risk
 - Better alternatives exist (Connection Quality API, Performance Observer)
 
 **For**:
+
 - Enables better performance on low-end devices
 - Helps developers test memory-constrained scenarios
 - Quantization reduces fingerprinting risk
@@ -357,6 +366,7 @@ Research by Northeastern University (2020) found major e-commerce sites showing 
 ### Case Study: Premium Content Paywalls
 
 News sites adjust paywall timing based on device tier:
+
 - High RAM (16GB+): Hit paywall after 2 articles
 - Medium RAM (8GB): Hit paywall after 5 articles
 - Low RAM (4GB or less): Hit paywall after 10 articles or never
@@ -366,6 +376,7 @@ Logic: Users with expensive devices have higher willingness to pay.
 ### Case Study: Ad Network Optimization
 
 Google Ads documentation explicitly mentions using Device Memory for ad targeting. Internal Google research showed:
+
 - 16GB+ users: 3.2× higher click-through rate on premium product ads
 - 4GB or less: 2.1× higher engagement with discount/budget ads
 
@@ -376,6 +387,7 @@ This directly informs bidding algorithms and ad creative selection.
 ### Increasing RAM Standardization
 
 As devices converge toward 8-16GB as the standard, device memory becomes LESS useful for fingerprinting. In 2024:
+
 - 8GB is baseline for new laptops
 - 12GB is baseline for flagship phones
 - 16GB is increasingly common for mainstream devices
@@ -385,6 +397,7 @@ This reduces entropy as the distribution flattens.
 ### AI and Memory Requirements
 
 AI features (on-device LLMs, real-time image generation) are driving minimum RAM requirements upward:
+
 - Apple Intelligence requires 8GB+ (blocked on older iPhones)
 - Windows Copilot+ requires 16GB+
 - Google Gemini Nano requires 8GB+ on Android
@@ -394,6 +407,7 @@ This could create new dividing lines: "AI-capable" vs "legacy" devices.
 ### Browser Vendor Response
 
 Expect more browsers to block Device Memory API:
+
 - Firefox and Safari already do
 - Brave may move to reporting fixed values (always 8GB)
 - Chrome unlikely to remove (Google benefits from the data)

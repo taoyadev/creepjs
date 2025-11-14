@@ -15,8 +15,8 @@ Color depth indicates how many bits are used to represent the color of a single 
 
 ```javascript
 const colorDepth = {
-  colorDepth: screen.colorDepth,  // Bits per pixel
-  pixelDepth: screen.pixelDepth,  // Usually same as colorDepth
+  colorDepth: screen.colorDepth, // Bits per pixel
+  pixelDepth: screen.pixelDepth, // Usually same as colorDepth
 };
 
 // Most common outputs:
@@ -29,12 +29,12 @@ const colorDepth = {
 
 Based on 100M+ samples (2024):
 
-| Color Depth | Percentage | Typical Devices |
-|-------------|------------|-----------------|
-| 24-bit | 96.5% | Most PCs, standard monitors |
-| 30-bit | 2.8% | MacBook Pro Retina, high-end displays |
-| 32-bit | 0.5% | Some Windows systems (legacy) |
-| 16-bit | 0.2% | Very old or embedded devices |
+| Color Depth | Percentage | Typical Devices                       |
+| ----------- | ---------- | ------------------------------------- |
+| 24-bit      | 96.5%      | Most PCs, standard monitors           |
+| 30-bit      | 2.8%       | MacBook Pro Retina, high-end displays |
+| 32-bit      | 0.5%       | Some Windows systems (legacy)         |
+| 16-bit      | 0.2%       | Very old or embedded devices          |
 
 **Trend**: 30-bit displays growing (0.5% in 2020 → 2.8% in 2024)
 
@@ -73,6 +73,7 @@ function inferDeviceQuality(colorDepth) {
 ### Professional Use
 
 **30-bit displays** strongly indicate:
+
 - Graphic designers
 - Video editors
 - Photographers
@@ -87,12 +88,13 @@ function inferDeviceQuality(colorDepth) {
 const depth = screen.colorDepth; // 24, 30, etc.
 
 // screen.pixelDepth is a legacy property, usually identical
-const pixel = screen.pixelDepth;  // Same as colorDepth in modern browsers
+const pixel = screen.pixelDepth; // Same as colorDepth in modern browsers
 ```
 
 ### True Color vs. Reported Color
 
 Some systems report 24-bit even with 30-bit capable hardware due to:
+
 - Browser limitations
 - OS configuration
 - Color management settings
@@ -100,11 +102,11 @@ Some systems report 24-bit even with 30-bit capable hardware due to:
 
 ## Detection Accuracy
 
-| Method | Accuracy | Notes |
-|--------|----------|-------|
-| `screen.colorDepth` | 99% | Direct browser API |
-| CSS Media Queries | 90% | `color`, `color-gamut` |
-| Canvas Rendering | 85% | Indirect inference |
+| Method              | Accuracy | Notes                  |
+| ------------------- | -------- | ---------------------- |
+| `screen.colorDepth` | 99%      | Direct browser API     |
+| CSS Media Queries   | 90%      | `color`, `color-gamut` |
+| Canvas Rendering    | 85%      | Indirect inference     |
 
 ## Privacy Implications
 
@@ -116,6 +118,7 @@ Some systems report 24-bit even with 30-bit capable hardware due to:
 ### High Correlation Risk
 
 When combined with:
+
 - **Screen Resolution** (6016×1692 + 30-bit = very unique)
 - **Color Gamut** (P3 + 30-bit = premium device)
 - **Platform** (macOS + 30-bit = likely MacBook Pro)
@@ -125,6 +128,7 @@ When combined with:
 ### Socioeconomic Profiling
 
 30-bit displays cost $500-$6000:
+
 - **Price discrimination**: Charge more for detected premium users
 - **Targeted ads**: Luxury goods for high-end devices
 - **Content filtering**: Different content for different income levels
@@ -133,12 +137,12 @@ When combined with:
 
 ### Browser Protections
 
-| Browser | Protection | Effectiveness |
-|---------|------------|---------------|
-| Tor Browser | Fixed to 24-bit | High |
-| Brave | Reports 24-bit (rounds down) | Medium |
-| Firefox Privacy Mode | No changes | None |
-| Standard Chrome/Safari | No changes | None |
+| Browser                | Protection                   | Effectiveness |
+| ---------------------- | ---------------------------- | ------------- |
+| Tor Browser            | Fixed to 24-bit              | High          |
+| Brave                  | Reports 24-bit (rounds down) | Medium        |
+| Firefox Privacy Mode   | No changes                   | None          |
+| Standard Chrome/Safari | No changes                   | None          |
 
 ### User Actions
 
@@ -152,17 +156,19 @@ When combined with:
 ```javascript
 function getColorDepthInfo() {
   const depth = screen.colorDepth;
-  
+
   return {
     colorDepth: depth,
     pixelDepth: screen.pixelDepth,
     bitsPerChannel: depth / 3, // Approximate (assumes RGB)
     totalColors: Math.pow(2, depth),
-    category: depth >= 30 ? 'premium' : 
-              depth === 24 ? 'standard' : 'legacy',
-    displayType: depth === 30 ? '10-bit (HDR capable)' :
-                 depth === 24 ? '8-bit (standard)' :
-                 'Other',
+    category: depth >= 30 ? 'premium' : depth === 24 ? 'standard' : 'legacy',
+    displayType:
+      depth === 30
+        ? '10-bit (HDR capable)'
+        : depth === 24
+          ? '8-bit (standard)'
+          : 'Other',
   };
 }
 
@@ -182,6 +188,7 @@ function getColorDepthInfo() {
 ### Color Gamut
 
 Often correlated with color depth:
+
 - **24-bit** → sRGB color space (most common)
 - **30-bit** → P3 or Rec. 2020 color space
 
@@ -190,30 +197,33 @@ See [Color Gamut Fingerprinting](/fingerprint/color-gamut) for details.
 ### HDR Support
 
 30-bit displays often support HDR:
+
 - **HDR10**: Requires 10-bit per channel
 - **Dolby Vision**: Requires 12-bit per channel
 
 ## Browser Support
 
-| Browser | API Support | Accuracy |
-|---------|------------|----------|
-| Chrome 1+ | ✅ Full | 100% |
-| Firefox 1+ | ✅ Full | 100% |
-| Safari 3+ | ✅ Full | 100% |
-| Edge 12+ | ✅ Full | 100% |
-| Mobile | ✅ Full | 100% |
+| Browser    | API Support | Accuracy |
+| ---------- | ----------- | -------- |
+| Chrome 1+  | ✅ Full     | 100%     |
+| Firefox 1+ | ✅ Full     | 100%     |
+| Safari 3+  | ✅ Full     | 100%     |
+| Edge 12+   | ✅ Full     | 100%     |
+| Mobile     | ✅ Full     | 100%     |
 
-*One of the oldest and most stable fingerprinting signals.*
+_One of the oldest and most stable fingerprinting signals._
 
 ## Use Cases
 
 ✅ **Legitimate**:
+
 - **Image Optimization**: Serve higher quality images to capable displays
 - **Video Streaming**: Adjust bitrate based on display capability
 - **Design Tools**: Enable advanced color features
 - **Fraud Detection**: Detect emulated environments
 
 ❌ **Concerning**:
+
 - **Price Discrimination**: Charge more for premium devices
 - **Fingerprinting**: Part of device fingerprint
 - **Profiling**: Infer user income/profession
@@ -221,12 +231,14 @@ See [Color Gamut Fingerprinting](/fingerprint/color-gamut) for details.
 ## Recommendations
 
 **For Developers**:
+
 1. Don't rely solely on color depth for important decisions
 2. Combine with color gamut for accurate capability detection
 3. Always provide fallbacks for 24-bit displays
 4. Use media queries for progressive enhancement
 
 **For Privacy-Conscious Users**:
+
 1. Use Tor Browser (always reports 24-bit)
 2. Use Brave (may round down to 24-bit)
 3. Awareness: Not much you can do to change this
@@ -240,4 +252,4 @@ See [Color Gamut Fingerprinting](/fingerprint/color-gamut) for details.
 
 ---
 
-*Last updated: January 2025 | Data source: 100M+ browser samples*
+_Last updated: January 2025 | Data source: 100M+ browser samples_

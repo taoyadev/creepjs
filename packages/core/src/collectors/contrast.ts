@@ -1,9 +1,17 @@
 import type { ContrastPreference } from '../types';
 
-const CONTRAST_OPTIONS: ContrastPreference[] = ['more', 'less', 'custom', 'no-preference'];
+const CONTRAST_OPTIONS: ContrastPreference[] = [
+  'more',
+  'less',
+  'custom',
+  'no-preference',
+];
 
 export function collectContrastPreference(): ContrastPreference | undefined {
-  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+  if (
+    typeof window === 'undefined' ||
+    typeof window.matchMedia !== 'function'
+  ) {
     return undefined;
   }
 

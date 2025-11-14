@@ -1,6 +1,7 @@
 # Tasks: add-deployment-infrastructure
 
 ## 1. CI/CD Pipeline Setup
+
 - [ ] 1.1 Create `.github/workflows/deploy-api.yml` for Cloudflare Workers deployment
   - Trigger on push to `main` and pull requests
   - Run lint, test, and build steps before deployment
@@ -20,6 +21,7 @@
   - Environment-specific secrets (staging vs production)
 
 ## 2. Environment Management Scripts
+
 - [ ] 2.1 Create `scripts/setup-kv.sh` for automated KV namespace creation
   - Create `creepjs_tokens_prod` namespace
   - Create `creepjs_ratelimit_prod` namespace
@@ -40,6 +42,7 @@
   - Document each variable in README
 
 ## 3. SEO Optimization
+
 - [ ] 3.1 Configure Next.js metadata API in `apps/web/app/layout.tsx`
   - Add global metadata (title, description, keywords)
   - Configure Open Graph tags (og:image, og:title, og:description)
@@ -68,6 +71,7 @@
   - SoftwareApplication schema (SDK)
 
 ## 4. Analytics Integration
+
 - [ ] 4.1 Create Cloudflare Web Analytics beacon in `apps/web/app/layout.tsx`
   - Add beacon script tag
   - Configure site ID from environment variable
@@ -87,6 +91,7 @@
   - Document dashboard access in README
 
 ## 5. Integration & Testing
+
 - [ ] 5.1 Test GitHub Actions workflows locally with `act` (optional)
   - Verify `deploy-api.yml` workflow steps
   - Verify `deploy-web.yml` workflow steps
@@ -109,6 +114,7 @@
   - Ensure all requirements have scenarios
 
 ## 6. Documentation
+
 - [ ] 6.1 Update `docs/DEPLOYMENT.md` with deployment procedures
   - How to deploy manually with Wrangler
   - How to trigger automated deployments

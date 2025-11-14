@@ -19,9 +19,9 @@ export default function robots(): MetadataRoute.Robots {
         allow: '/',
         // Disallow admin/internal paths if they exist
         disallow: [
-          '/api/*',        // API routes (not meant for indexing)
-          '/_next/*',      // Next.js internal files
-          '/static/*',     // Static assets handled separately
+          '/api/*', // API routes (not meant for indexing)
+          '/_next/*', // Next.js internal files
+          '/static/*', // Static assets handled separately
         ],
       },
       // Specific rules for Google bot
@@ -41,12 +41,7 @@ export default function robots(): MetadataRoute.Robots {
       },
       // Block bad bots (aggressive scrapers, known bad actors)
       {
-        userAgent: [
-          'AhrefsBot',
-          'SemrushBot',
-          'DotBot',
-          'MJ12bot',
-        ],
+        userAgent: ['AhrefsBot', 'SemrushBot', 'DotBot', 'MJ12bot'],
         disallow: '/',
       },
     ],

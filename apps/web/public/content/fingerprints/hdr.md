@@ -19,7 +19,7 @@ const hdrCapabilities = {
   dynamicRange: matchMedia('(dynamic-range: high)').matches,
   videoDynamicRange: matchMedia('(video-dynamic-range: high)').matches,
   colorGamut: matchMedia('(color-gamut: p3)').matches,
-  colorDepth: screen.colorDepth
+  colorDepth: screen.colorDepth,
 };
 ```
 
@@ -47,18 +47,21 @@ These statistics suggest that HDR detection currently segments approximately 5-8
 HDR support creates distinct device fingerprints across several premium categories:
 
 **Professional Workstations**:
+
 - Apple MacBook Pro 14"/16" (2021 and later models with Liquid Retina XDR)
 - Pro Display XDR ($4,999 reference monitor)
 - High-end Windows laptops with OLED panels (Dell XPS, HP Spectre)
 - Professional color-grading monitors (ASUS ProArt, BenQ SW series)
 
 **Consumer Devices**:
+
 - Flagship smartphones (iPhone 12 Pro and later, Samsung Galaxy S21+)
 - Premium tablets (iPad Pro 12.9" with mini-LED)
 - High-end gaming monitors (ASUS ROG Swift PG32UQX, Acer Predator X27)
 - OLED laptops (Samsung Galaxy Book, Lenovo Yoga series)
 
 **Enterprise Hardware**:
+
 - Creative professional displays (LG UltraFine series)
 - Medical imaging monitors (Barco, EIZO RadiForce)
 - Broadcast production monitors (Sony BVM-HX series)
@@ -96,16 +99,19 @@ HDR fingerprinting enables several concerning tracking and profiling capabilitie
 Privacy-conscious users face limited options for defeating HDR fingerprinting:
 
 **Browser-Level Mitigation**:
+
 - Tor Browser reports standard dynamic range on all connections, normalizing HDR users to the majority
 - Brave Browser's fingerprinting protection randomizes or blocks dynamic-range queries in strict mode
 - Firefox's resistFingerprinting preference (about:config) forces standard range reporting
 
 **Extension-Based Blocking**:
+
 - CanvasBlocker can intercept matchMedia() calls and force standard range
 - Privacy Badger and uBlock Origin do not currently block dynamic-range queries
 - Custom JavaScript injection can override matchMedia() to always return false for HDR
 
 **Display-Level Workarounds**:
+
 - macOS/Windows HDR toggle (disables system-wide HDR)
 - Browser zoom/scaling (does not affect media query results)
 - Color profile changes (do not prevent HDR detection)
@@ -151,7 +157,7 @@ const deviceProfile = {
   p3: matchMedia('(color-gamut: p3)').matches,
   resolution: `${screen.width}x${screen.height}`,
   pixelRatio: window.devicePixelRatio,
-  colorDepth: screen.colorDepth
+  colorDepth: screen.colorDepth,
 };
 // Hash combines to create unique device signature
 ```

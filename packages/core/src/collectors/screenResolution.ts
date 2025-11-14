@@ -2,7 +2,9 @@ import type { ScreenResolutionFingerprint } from '../types';
 
 const parseDimension = (value: unknown): number | null => {
   const numeric = typeof value === 'string' ? Number(value) : (value as number);
-  return typeof numeric === 'number' && Number.isFinite(numeric) ? numeric : null;
+  return typeof numeric === 'number' && Number.isFinite(numeric)
+    ? numeric
+    : null;
 };
 
 const isSafari17PrivateMode = (): boolean => {
@@ -28,7 +30,9 @@ const isSafari17PrivateMode = (): boolean => {
  * Returns the sorted screen resolution tuple (width >= height) when reliable.
  * Safari 17 private browsing always reports dynamic document size, so we skip there.
  */
-export function collectScreenResolution(): ScreenResolutionFingerprint | undefined {
+export function collectScreenResolution():
+  | ScreenResolutionFingerprint
+  | undefined {
   if (typeof window === 'undefined' || typeof window.screen === 'undefined') {
     return undefined;
   }

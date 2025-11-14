@@ -40,11 +40,22 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="manifest" href="/site.webmanifest" />
-        <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
-        <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)" />
+        <meta
+          name="theme-color"
+          content="#ffffff"
+          media="(prefers-color-scheme: light)"
+        />
+        <meta
+          name="theme-color"
+          content="#0f172a"
+          media="(prefers-color-scheme: dark)"
+        />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta
+          name="apple-mobile-web-app-status-bar-style"
+          content="black-translucent"
+        />
         <meta name="apple-mobile-web-app-title" content="CreepJS 2.0" />
       </head>
       <body className={inter.className}>
@@ -55,15 +66,17 @@ export default function RootLayout({
 
             {/* Main content - Loads with Suspense */}
             <main className="flex-1">
-              <Suspense fallback={
-                <div className="container mx-auto px-4 py-8">
-                  <div className="animate-pulse space-y-4">
-                    <div className="h-8 bg-gray-200 dark:bg-gray-800 rounded w-3/4"></div>
-                    <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-full"></div>
-                    <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-5/6"></div>
+              <Suspense
+                fallback={
+                  <div className="container mx-auto px-4 py-8">
+                    <div className="animate-pulse space-y-4">
+                      <div className="h-8 w-3/4 rounded bg-gray-200 dark:bg-gray-800"></div>
+                      <div className="h-4 w-full rounded bg-gray-200 dark:bg-gray-800"></div>
+                      <div className="h-4 w-5/6 rounded bg-gray-200 dark:bg-gray-800"></div>
+                    </div>
                   </div>
-                </div>
-              }>
+                }
+              >
                 {children}
               </Suspense>
             </main>

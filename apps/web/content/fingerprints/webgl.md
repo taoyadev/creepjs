@@ -33,7 +33,8 @@ The website creates an invisible WebGL rendering context—basically a virtual c
 
 ```javascript
 const canvas = document.createElement('canvas');
-const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+const gl =
+  canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
 ```
 
 ### Step 2: Querying GPU Parameters
@@ -58,7 +59,7 @@ const renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
 const vendor = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL);
 
 console.log(renderer); // "NVIDIA GeForce RTX 4090"
-console.log(vendor);   // "NVIDIA Corporation"
+console.log(vendor); // "NVIDIA Corporation"
 ```
 
 This was originally meant for debugging, but it's become a gold mine for trackers.
@@ -81,24 +82,24 @@ All this data gets combined into a unique hash. Your WebGL fingerprint.
 
 Here's the data that should make you pay attention:
 
-| Metric | Value | Source | Year |
-|--------|-------|--------|------|
-| **Classification accuracy** | 98% in 150ms | Academic research | 2025 |
-| **Entropy bits** | 5.7+ bits (renderer alone) | Fingerprinting studies | 2024-2025 |
-| **Tracking duration boost** | 67% median improvement | GPU fingerprinting research (2,550 devices) | 2024 |
-| **Browser support** | 97%+ of all browsers | Can I Use WebGL | 2025 |
-| **WebGPU adoption** | Chrome 113+, Firefox 113+ | Browser vendors | 2025 |
-| **Unique GPU configurations** | 1,605 distinct from 2,550 devices | Research study | 2024 |
-| **Combined fingerprint entropy** | 14-18 bits total | Fingerprinting analysis | 2025 |
+| Metric                           | Value                             | Source                                      | Year      |
+| -------------------------------- | --------------------------------- | ------------------------------------------- | --------- |
+| **Classification accuracy**      | 98% in 150ms                      | Academic research                           | 2025      |
+| **Entropy bits**                 | 5.7+ bits (renderer alone)        | Fingerprinting studies                      | 2024-2025 |
+| **Tracking duration boost**      | 67% median improvement            | GPU fingerprinting research (2,550 devices) | 2024      |
+| **Browser support**              | 97%+ of all browsers              | Can I Use WebGL                             | 2025      |
+| **WebGPU adoption**              | Chrome 113+, Firefox 113+         | Browser vendors                             | 2025      |
+| **Unique GPU configurations**    | 1,605 distinct from 2,550 devices | Research study                              | 2024      |
+| **Combined fingerprint entropy** | 14-18 bits total                  | Fingerprinting analysis                     | 2025      |
 
 ### What This Means in Practice
 
-| Scenario | Tracking Success Rate | Persistence | Notes |
-|----------|----------------------|-------------|-------|
-| **WebGL alone** | ~85-90% | High (months to years) | Changes only with GPU/driver updates |
-| **WebGL + Canvas** | ~95-98% | Very High | Semi-permanent identifier |
-| **WebGL + Full Suite** | 99%+ | Extremely High | Virtually impossible to randomize |
-| **Mobile devices** | ~92-95% | High | Fewer GPU variations, easier to track |
+| Scenario               | Tracking Success Rate | Persistence            | Notes                                 |
+| ---------------------- | --------------------- | ---------------------- | ------------------------------------- |
+| **WebGL alone**        | ~85-90%               | High (months to years) | Changes only with GPU/driver updates  |
+| **WebGL + Canvas**     | ~95-98%               | Very High              | Semi-permanent identifier             |
+| **WebGL + Full Suite** | 99%+                  | Extremely High         | Virtually impossible to randomize     |
+| **Mobile devices**     | ~92-95%               | High                   | Fewer GPU variations, easier to track |
 
 ## Real-World Applications: The Double-Edged Sword
 
@@ -208,6 +209,7 @@ Want to see what your GPU is revealing? Here's how:
 5. **Enable Privacy Settings**: Turn on Firefox's `privacy.resistFingerprinting` and see what changes
 
 **Expected Output**: Something like:
+
 ```
 Renderer: NVIDIA GeForce RTX 4090
 Vendor: NVIDIA Corporation
@@ -221,18 +223,19 @@ Fingerprint Hash: 7f8e9d3c2b4a6e1f8d0c9b7a5e3f1d2c
 
 Different browsers handle WebGL fingerprinting very differently:
 
-| Browser | Reveals GPU Info | Allows Unmasking | Privacy Protection | WebGPU Support | Recommendation |
-|---------|------------------|------------------|-------------------|----------------|----------------|
-| **Chrome** | ✅ Full | ✅ Yes | ❌ None by default | ✅ Yes (113+) | Worst for privacy |
-| **Edge** | ✅ Full | ✅ Yes | ❌ None | ✅ Yes (113+) | Same as Chrome |
-| **Firefox** | ⚠️ Can limit | ⚠️ Blockable | ✅ resistFingerprinting option | ✅ Yes (113+) | Good with tweaks |
-| **Safari** | ⚠️ Limited | ⚠️ Restricted | ✅ Built-in limits | ❌ Not yet | Best default privacy |
-| **Brave** | ⚠️ Randomized | ⚠️ Blocked | ✅ Aggressive blocking | ⚠️ Limited | Excellent privacy |
-| **Tor Browser** | 🔒 Blocked | ❌ No | ✅ Maximum | ❌ No | Maximum privacy |
+| Browser         | Reveals GPU Info | Allows Unmasking | Privacy Protection             | WebGPU Support | Recommendation       |
+| --------------- | ---------------- | ---------------- | ------------------------------ | -------------- | -------------------- |
+| **Chrome**      | ✅ Full          | ✅ Yes           | ❌ None by default             | ✅ Yes (113+)  | Worst for privacy    |
+| **Edge**        | ✅ Full          | ✅ Yes           | ❌ None                        | ✅ Yes (113+)  | Same as Chrome       |
+| **Firefox**     | ⚠️ Can limit     | ⚠️ Blockable     | ✅ resistFingerprinting option | ✅ Yes (113+)  | Good with tweaks     |
+| **Safari**      | ⚠️ Limited       | ⚠️ Restricted    | ✅ Built-in limits             | ❌ Not yet     | Best default privacy |
+| **Brave**       | ⚠️ Randomized    | ⚠️ Blocked       | ✅ Aggressive blocking         | ⚠️ Limited     | Excellent privacy    |
+| **Tor Browser** | 🔒 Blocked       | ❌ No            | ✅ Maximum                     | ❌ No          | Maximum privacy      |
 
 ### Browser-Specific Behaviors
 
 **Chrome/Chromium (Including Edge)**:
+
 - Reveals full GPU information by default
 - ANGLE rendering engine on Windows (translates OpenGL to DirectX)
 - No built-in fingerprint protection
@@ -240,6 +243,7 @@ Different browsers handle WebGL fingerprinting very differently:
 - **Privacy Score**: 2/10
 
 **Firefox**:
+
 - Can enable `privacy.resistFingerprinting` in `about:config`
 - When enabled, disables `WEBGL_debug_renderer_info` extension
 - Returns generic "Mesa OffscreenCanvas" renderer
@@ -247,6 +251,7 @@ Different browsers handle WebGL fingerprinting very differently:
 - **Privacy Score**: 7/10 (with settings), 4/10 (default)
 
 **Safari**:
+
 - Uses Metal API instead of OpenGL on macOS
 - Restricts access to GPU details by default
 - Returns generic renderer names
@@ -254,6 +259,7 @@ Different browsers handle WebGL fingerprinting very differently:
 - **Privacy Score**: 8/10
 
 **Brave**:
+
 - Randomizes WebGL parameters by default
 - Blocks unmasking attempts
 - Farbling (adding noise) to WebGL data
@@ -261,6 +267,7 @@ Different browsers handle WebGL fingerprinting very differently:
 - **Privacy Score**: 9/10
 
 **Tor Browser**:
+
 - Disables WebGL entirely by default
 - Can be enabled but returns standardized values
 - All Tor users have identical fingerprints
@@ -277,6 +284,7 @@ These browsers have the best default privacy without you needing to do anything.
 
 **2. Disable WebGL for High-Risk Browsing**
 In Firefox, you can disable WebGL entirely:
+
 - Go to `about:config`
 - Set `webgl.disabled` to `true`
 - Warning: This breaks Google Maps 3D, many data visualizations, and browser games
@@ -288,6 +296,7 @@ Keep your browser updated for security, but don't be the first to update. Being 
 
 **4. Firefox with Privacy Settings**
 Enable fingerprint resistance:
+
 - `privacy.resistFingerprinting` = `true`
 - `privacy.resistFingerprinting.block_mozAddonManager` = `true`
 - `webgl.enable-debug-renderer-info` = `false`
@@ -296,6 +305,7 @@ This makes you look like every other privacy-conscious Firefox user.
 
 **5. Use Common Hardware**
 If you're buying new hardware and care about privacy:
+
 - Choose Intel integrated graphics over discrete GPUs
 - Pick popular laptop models (Dell XPS, ThinkPad, MacBook)
 - Avoid exotic or cutting-edge GPUs
@@ -310,6 +320,7 @@ Use a VM with software rendering (Mesa LLVMpipe) which looks like millions of ot
 
 **8. Browser Compartmentalization**
 Use different browsers for different activities:
+
 - Brave for general browsing
 - Firefox with fingerprint protection for shopping
 - Tor for sensitive research
@@ -332,7 +343,8 @@ If you're building WebGL fingerprinting (for security) or trying to understand h
 ```javascript
 function getWebGLFingerprint() {
   const canvas = document.createElement('canvas');
-  const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+  const gl =
+    canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
 
   if (!gl) return { error: 'WebGL not supported' };
 
@@ -340,14 +352,14 @@ function getWebGLFingerprint() {
 
   const fingerprint = {
     // Unmasked renderer (exact GPU model)
-    renderer: debugInfo ?
-      gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) :
-      gl.getParameter(gl.RENDERER),
+    renderer: debugInfo
+      ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL)
+      : gl.getParameter(gl.RENDERER),
 
     // Vendor
-    vendor: debugInfo ?
-      gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) :
-      gl.getParameter(gl.VENDOR),
+    vendor: debugInfo
+      ? gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL)
+      : gl.getParameter(gl.VENDOR),
 
     // Version info
     version: gl.getParameter(gl.VERSION),
@@ -355,11 +367,15 @@ function getWebGLFingerprint() {
 
     // Capabilities
     maxTextureSize: gl.getParameter(gl.MAX_TEXTURE_SIZE),
-    maxCombinedTextureImageUnits: gl.getParameter(gl.MAX_COMBINED_TEXTURE_IMAGE_UNITS),
+    maxCombinedTextureImageUnits: gl.getParameter(
+      gl.MAX_COMBINED_TEXTURE_IMAGE_UNITS
+    ),
     maxCubeMapTextureSize: gl.getParameter(gl.MAX_CUBE_MAP_TEXTURE_SIZE),
     maxRenderbufferSize: gl.getParameter(gl.MAX_RENDERBUFFER_SIZE),
     maxVertexAttribs: gl.getParameter(gl.MAX_VERTEX_ATTRIBS),
-    maxVertexTextureImageUnits: gl.getParameter(gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS),
+    maxVertexTextureImageUnits: gl.getParameter(
+      gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS
+    ),
     maxVaryingVectors: gl.getParameter(gl.MAX_VARYING_VECTORS),
     maxFragmentUniformVectors: gl.getParameter(gl.MAX_FRAGMENT_UNIFORM_VECTORS),
     maxVertexUniformVectors: gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS),
@@ -374,14 +390,20 @@ function getWebGLFingerprint() {
     // Precision formats
     vertexShaderPrecision: {
       highFloat: gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.HIGH_FLOAT),
-      mediumFloat: gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.MEDIUM_FLOAT),
+      mediumFloat: gl.getShaderPrecisionFormat(
+        gl.VERTEX_SHADER,
+        gl.MEDIUM_FLOAT
+      ),
       lowFloat: gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.LOW_FLOAT),
     },
     fragmentShaderPrecision: {
       highFloat: gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_FLOAT),
-      mediumFloat: gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.MEDIUM_FLOAT),
+      mediumFloat: gl.getShaderPrecisionFormat(
+        gl.FRAGMENT_SHADER,
+        gl.MEDIUM_FLOAT
+      ),
       lowFloat: gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.LOW_FLOAT),
-    }
+    },
   };
 
   return fingerprint;
@@ -423,7 +445,7 @@ function getShaderFingerprint(gl) {
 
   return {
     executionTime,
-    pixelHash: hashPixels(pixels)
+    pixelHash: hashPixels(pixels),
   };
 }
 ```
@@ -438,22 +460,26 @@ function detectVirtualGPU(fingerprint) {
     'SVGA3D',
     'Gallium',
     'llvmpipe',
-    'Microsoft Basic Render Driver'
+    'Microsoft Basic Render Driver',
   ];
 
   const rendererLower = fingerprint.renderer.toLowerCase();
   const vendorLower = fingerprint.vendor.toLowerCase();
 
   for (const indicator of vmIndicators) {
-    if (rendererLower.includes(indicator.toLowerCase()) ||
-        vendorLower.includes(indicator.toLowerCase())) {
+    if (
+      rendererLower.includes(indicator.toLowerCase()) ||
+      vendorLower.includes(indicator.toLowerCase())
+    ) {
       return { isVM: true, indicator };
     }
   }
 
   // Check for suspiciously perfect values
-  if (fingerprint.maxTextureSize === 16384 &&
-      fingerprint.extensions.length < 20) {
+  if (
+    fingerprint.maxTextureSize === 16384 &&
+    fingerprint.extensions.length < 20
+  ) {
     return { isVM: true, indicator: 'suspicious_parameters' };
   }
 
@@ -470,6 +496,7 @@ You can disable WebGL entirely, but this breaks a lot of modern websites (Google
 ### Q2: Does WebGL fingerprinting work on mobile devices?
 
 Absolutely. In fact, mobile devices are often easier to fingerprint because:
+
 - Fewer GPU variations (mostly Apple, Qualcomm, ARM Mali)
 - Consistent configurations within device models
 - iOS devices especially have very uniform GPU setups
@@ -481,6 +508,7 @@ Yes, significantly. WebGPU exposes much more detailed hardware information than 
 ### Q4: Can anti-fingerprinting extensions protect me from WebGL tracking?
 
 Most extensions either:
+
 - Block WebGL entirely (breaks sites)
 - Randomize values (often detectable)
 - Return fake values (creates a new unique fingerprint)
@@ -490,6 +518,7 @@ Brave's built-in protection is currently the most effective approach that doesn'
 ### Q5: How long does my WebGL fingerprint stay the same?
 
 It changes when you:
+
 - Update GPU drivers (every few weeks/months)
 - Update your browser (every 4-6 weeks)
 - Upgrade your OS (every year or so)
@@ -504,6 +533,7 @@ Easier. High-end GPUs (RTX 4090, RX 7900 XTX) are rare (2-3% of users), making y
 ### Q7: Is there a way to have WebGL functionality without being fingerprinted?
 
 Not really. The very act of using WebGL reveals hardware details. Your best bet is:
+
 - Use browsers that randomize WebGL data (Brave)
 - Accept that WebGL sites can fingerprint you
 - Use Tor Browser for activities where anonymity is critical (but WebGL will be disabled)
@@ -525,6 +555,7 @@ Here's where this technology is heading:
 ### WebGPU Adoption
 
 By end of 2025, expect:
+
 - 70%+ browser support for WebGPU
 - Even more detailed hardware fingerprints
 - New tracking techniques exploiting compute shaders
@@ -537,6 +568,7 @@ The EU's ePrivacy Regulation (if passed in 2025-2026) may require explicit conse
 ### Machine Learning Defense
 
 New ML models can:
+
 - Detect spoofed/randomized fingerprints with 95%+ accuracy
 - Correlate fingerprints across updates (linking old and new IDs)
 - Identify VMs and anti-fingerprinting tools
@@ -548,6 +580,7 @@ The arms race escalates.
 Ready to see exactly what your GPU is revealing? Visit our [WebGL Fingerprinting Playground](/fingerprint/webgl) and run a live test.
 
 You'll discover:
+
 - Your exact GPU model and vendor
 - All WebGL parameters being collected
 - Your unique WebGL hash
@@ -561,6 +594,7 @@ Takes 10 seconds. The results might surprise you.
 **Last Updated**: November 2025 | **Word Count**: 4,287 words | **Reading Time**: ~16 minutes
 
 **Sources**:
+
 - [BrowserLeaks WebGL Report](https://browserleaks.com/webgl)
 - [MDN Web Docs: WEBGL_debug_renderer_info](https://developer.mozilla.org/en-US/docs/Web/API/WEBGL_debug_renderer_info)
 - [Academic Research: GPU Fingerprinting 2025](https://github.com/Myronfr/RISC-Fingerprinting2025)

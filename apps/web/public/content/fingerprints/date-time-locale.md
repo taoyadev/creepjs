@@ -46,13 +46,13 @@ const dateFormatEU = new Intl.DateTimeFormat('en-GB').format(new Date());
 
 According to research from 2024-2025, **83.6% of browsers have unique fingerprints** when combining timezone with other browser attributes. Here's why:
 
-| Attribute | Possible Values | Entropy Contribution |
-|-----------|----------------|---------------------|
-| **Timezone** | 400+ valid IANA zones | 8-9 bits |
-| **Locale** | 50+ common locales | 5-6 bits |
-| **Calendar** | 10+ types (gregory, chinese, islamic, buddhist, etc.) | 3-4 bits |
-| **Numbering System** | 20+ systems (latn, arab, hans, etc.) | 4-5 bits |
-| **Hour Cycle** | 2 options (h12, h23) | 1 bit |
+| Attribute            | Possible Values                                       | Entropy Contribution |
+| -------------------- | ----------------------------------------------------- | -------------------- |
+| **Timezone**         | 400+ valid IANA zones                                 | 8-9 bits             |
+| **Locale**           | 50+ common locales                                    | 5-6 bits             |
+| **Calendar**         | 10+ types (gregory, chinese, islamic, buddhist, etc.) | 3-4 bits             |
+| **Numbering System** | 20+ systems (latn, arab, hans, etc.)                  | 4-5 bits             |
+| **Hour Cycle**       | 2 options (h12, h23)                                  | 1 bit                |
 
 **Combined Entropy**: 8-10 bits alone, but when mixed with other signals (screen resolution, fonts, canvas), uniqueness skyrockets to over 90%.
 
@@ -104,12 +104,12 @@ Advertisers, political campaigns, and yes, even governments could use this for t
 
 ### Privacy-Focused Browsers
 
-| Browser | Timezone Behavior | Privacy Level |
-|---------|------------------|--------------|
-| **Tor Browser** | Always UTC | Very High |
-| **Brave** | Real timezone (considering randomization as of 2024) | Medium |
-| **Firefox (Resist Fingerprinting mode)** | Rounds to nearest hour or spoofs timezone | Medium-High |
-| **Standard Chrome/Safari** | Real timezone, no protection | None |
+| Browser                                  | Timezone Behavior                                    | Privacy Level |
+| ---------------------------------------- | ---------------------------------------------------- | ------------- |
+| **Tor Browser**                          | Always UTC                                           | Very High     |
+| **Brave**                                | Real timezone (considering randomization as of 2024) | Medium        |
+| **Firefox (Resist Fingerprinting mode)** | Rounds to nearest hour or spoofs timezone            | Medium-High   |
+| **Standard Chrome/Safari**               | Real timezone, no protection                         | None          |
 
 **Why Tor is bulletproof**: Every Tor Browser user shows `en-US` locale and `UTC` timezone, creating a massive anonymity set. You're literally hiding in a crowd of millions.
 
@@ -118,11 +118,13 @@ Advertisers, political campaigns, and yes, even governments could use this for t
 ### Firefox's Resist Fingerprinting Mode
 
 Firefox has a hidden setting `privacy.resistFingerprinting` that:
+
 - Spoofs timezone to UTC (or rounds to nearest hour)
 - Standardizes locale to `en-US`
 - Disables high-resolution timestamps
 
 Activate it:
+
 1. Go to `about:config`
 2. Set `privacy.resistFingerprinting` to `true`
 3. Restart browser
@@ -176,6 +178,7 @@ This was a massive shift. Previously, Google's ad policies restricted fingerprin
 ### The Painful Truth
 
 Want real anonymity? You need to **sacrifice user experience**. Setting your timezone to UTC means:
+
 - Event times display wrong
 - Date formats break
 - Localized content disappears

@@ -1,7 +1,12 @@
 import type { ReducedTransparencyPreference } from '../types';
 
-export function collectReducedTransparencyPreference(): ReducedTransparencyPreference | undefined {
-  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+export function collectReducedTransparencyPreference():
+  | ReducedTransparencyPreference
+  | undefined {
+  if (
+    typeof window === 'undefined' ||
+    typeof window.matchMedia !== 'function'
+  ) {
     return undefined;
   }
 
@@ -9,7 +14,9 @@ export function collectReducedTransparencyPreference(): ReducedTransparencyPrefe
     return 'reduce';
   }
 
-  if (window.matchMedia('(prefers-reduced-transparency: no-preference)').matches) {
+  if (
+    window.matchMedia('(prefers-reduced-transparency: no-preference)').matches
+  ) {
     return 'no-preference';
   }
 

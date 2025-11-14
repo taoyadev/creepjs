@@ -1,7 +1,10 @@
 import type { HDRStatus } from '../types';
 
 export function collectHDRStatus(): HDRStatus | undefined {
-  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+  if (
+    typeof window === 'undefined' ||
+    typeof window.matchMedia !== 'function'
+  ) {
     return undefined;
   }
 

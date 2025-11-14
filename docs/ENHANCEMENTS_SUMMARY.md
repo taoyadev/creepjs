@@ -16,12 +16,14 @@ This document summarizes the comprehensive enhancements made to the CreepJS brow
 **What**: Replaced all `alert()` and `confirm()` dialogs with elegant toast notifications.
 
 **Files Modified**:
+
 - `apps/web/src/app/layout.tsx` - Added Toaster component
 - `apps/web/src/components/ExportReport.tsx` - Toast for export operations
 - `apps/web/src/components/FingerprintHistory.tsx` - Toast for history management
 - `apps/web/src/app/playground/page.tsx` - Toast for API operations
 
 **Implementation Details**:
+
 ```typescript
 import { toast } from 'sonner';
 
@@ -42,6 +44,7 @@ toast.info('Comparing fingerprints', {
 ```
 
 **Benefits**:
+
 - Non-blocking user experience
 - Rich descriptions with context
 - Auto-dismiss with configurable duration
@@ -55,16 +58,19 @@ toast.info('Comparing fingerprints', {
 **What**: Implemented theme switching with localStorage persistence and system preference detection.
 
 **Files Created**:
+
 - `apps/web/src/components/ThemeProvider.tsx` - Theme management context
 - `apps/web/src/components/ThemeToggle.tsx` - Toggle button component
 
 **Files Modified**:
+
 - `apps/web/src/app/layout.tsx` - Wrapped app with ThemeProvider
 - `apps/web/src/app/page.tsx` - Added ThemeToggle to navigation
 - `apps/web/src/app/demo/page.tsx` - Added ThemeToggle to navigation
 - `apps/web/src/app/playground/page.tsx` - Added ThemeToggle to navigation
 
 **Implementation Details**:
+
 ```typescript
 // ThemeProvider with localStorage + system preference
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
@@ -76,7 +82,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     if (stored) {
       setThemeState(stored);
     } else {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const prefersDark = window.matchMedia(
+        '(prefers-color-scheme: dark)'
+      ).matches;
       setThemeState(prefersDark ? 'dark' : 'light');
     }
   }, []);
@@ -90,6 +98,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 ```
 
 **Features**:
+
 - System preference detection on first visit
 - Persistent theme selection across sessions
 - No flash of unstyled content (FOUC)
@@ -103,14 +112,17 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 **What**: Created mobile-optimized navigation and responsive layouts across all pages.
 
 **Files Created**:
+
 - `apps/web/src/components/MobileNav.tsx` - Hamburger menu component
 
 **Files Modified**:
+
 - `apps/web/src/app/page.tsx` - Responsive grid and text sizing
 - `apps/web/src/app/demo/page.tsx` - Mobile navigation + responsive layout
 - `apps/web/src/app/playground/page.tsx` - Mobile navigation + responsive cards
 
 **Implementation Details**:
+
 ```typescript
 // Mobile Navigation Component
 export function MobileNav({ currentPage }: MobileNavProps) {
@@ -136,6 +148,7 @@ export function MobileNav({ currentPage }: MobileNavProps) {
 ```
 
 **Responsive Utilities**:
+
 ```typescript
 // Text sizing
 <h1 className="text-xl md:text-2xl lg:text-4xl">
@@ -152,6 +165,7 @@ export function MobileNav({ currentPage }: MobileNavProps) {
 ```
 
 **Features**:
+
 - Slide-out sidebar navigation
 - Backdrop overlay with blur effect
 - Active page highlighting
@@ -166,14 +180,17 @@ export function MobileNav({ currentPage }: MobileNavProps) {
 **What**: Enabled app installation and offline functionality.
 
 **Files Created**:
+
 - `apps/web/public/manifest.json` - Web app manifest
 - `apps/web/public/sw.js` - Service worker
 - `apps/web/src/components/PWARegister.tsx` - SW registration component
 
 **Files Modified**:
+
 - `apps/web/src/app/layout.tsx` - Added manifest link and PWA meta tags
 
 **manifest.json**:
+
 ```json
 {
   "name": "CreepJS - Browser Fingerprinting Platform",
@@ -193,6 +210,7 @@ export function MobileNav({ currentPage }: MobileNavProps) {
 ```
 
 **Service Worker Strategy**:
+
 ```javascript
 // Network-first, fallback to cache
 self.addEventListener('fetch', (event) => {
@@ -216,6 +234,7 @@ self.addEventListener('fetch', (event) => {
 ```
 
 **Features**:
+
 - Installable on desktop and mobile
 - Offline access to cached pages
 - App shortcuts for Demo and Playground
@@ -230,12 +249,14 @@ self.addEventListener('fetch', (event) => {
 **What**: Added visual feedback during async operations with skeleton loaders.
 
 **Files Created**:
+
 - `apps/web/src/components/ui/skeleton.tsx` - Base skeleton component
 - `apps/web/src/components/FingerprintCardSkeleton.tsx` - Fingerprint card skeleton
 - `apps/web/src/components/HistoryCardSkeleton.tsx` - History record skeleton
 - `apps/web/src/components/ApiResponseSkeleton.tsx` - API response skeleton
 
 **Files Modified**:
+
 - `apps/web/src/app/playground/page.tsx` - Added loading states for:
   - Initial fingerprint collection
   - Token generation
@@ -243,6 +264,7 @@ self.addEventListener('fetch', (event) => {
   - Response display
 
 **Implementation Details**:
+
 ```typescript
 // Base Skeleton Component
 export function Skeleton({ className }: { className?: string }) {
@@ -269,6 +291,7 @@ export function Skeleton({ className }: { className?: string }) {
 ```
 
 **Benefits**:
+
 - Improved perceived performance
 - Clear visual indication of loading state
 - Prevents layout shift
@@ -282,11 +305,13 @@ export function Skeleton({ className }: { className?: string }) {
 **What**: Comprehensive technical comparison with industry-leading FingerprintJS.
 
 **Files Created**:
+
 - `docs/FINGERPRINT_COMPARISON.md` - 500+ line analysis document
 
 **Key Findings**:
 
 #### CreepJS Advantages:
+
 - **24+ collectors** vs FingerprintJS's ~13
 - **Advanced detection**: Headless browser, Lies detection, Privacy assessment
 - **Rich features**: History tracking, comparison tools, export (JSON/CSV)
@@ -294,6 +319,7 @@ export function Skeleton({ className }: { className?: string }) {
 - **API Playground**: Multi-language code examples with live testing
 
 #### Borrowable Techniques from FingerprintJS:
+
 1. **Web Workers** for heavy computation (fonts, WebGL, audio)
 2. **Smart Caching** with TTL strategies
 3. **Incremental Loading** with streaming results
@@ -301,15 +327,17 @@ export function Skeleton({ className }: { className?: string }) {
 5. **Plugin System** for extensibility
 
 #### Performance Comparison:
-| Metric | FingerprintJS | CreepJS |
-|--------|---------------|---------|
-| Collection Time | < 100ms | ~100-200ms |
-| Signals | ~13 | 24+ |
-| Accuracy | 40-60% | TBD |
-| Headless Detection | ❌ | ✅ |
-| History & Export | ❌ | ✅ |
+
+| Metric             | FingerprintJS | CreepJS    |
+| ------------------ | ------------- | ---------- |
+| Collection Time    | < 100ms       | ~100-200ms |
+| Signals            | ~13           | 24+        |
+| Accuracy           | 40-60%        | TBD        |
+| Headless Detection | ❌            | ✅         |
+| History & Export   | ❌            | ✅         |
 
 **Recommended Next Steps**:
+
 1. Implement Web Workers for performance optimization
 2. Add smart caching system with different TTLs
 3. Implement incremental loading pattern
@@ -320,6 +348,7 @@ export function Skeleton({ className }: { className?: string }) {
 ## Technical Stack Summary
 
 ### Frontend
+
 - **Framework**: Next.js 15.5.6 (App Router)
 - **UI**: Tailwind CSS + shadcn/ui (Radix UI primitives)
 - **State Management**: React 19 Hooks
@@ -327,11 +356,13 @@ export function Skeleton({ className }: { className?: string }) {
 - **Icons**: lucide-react
 
 ### PWA
+
 - **Service Worker**: Workbox-style network-first strategy
 - **Manifest**: Full PWA spec compliance
 - **Installability**: Desktop and mobile support
 
 ### Monorepo
+
 - **Build**: Turborepo
 - **Package Manager**: pnpm 9.15.4
 - **Workspaces**: 4 packages (web, api, core, sdk)
@@ -341,6 +372,7 @@ export function Skeleton({ className }: { className?: string }) {
 ## User Experience Improvements
 
 ### Before Enhancements
+
 - ❌ Alert/confirm dialogs (blocking)
 - ❌ No theme customization
 - ❌ Poor mobile experience
@@ -348,6 +380,7 @@ export function Skeleton({ className }: { className?: string }) {
 - ❌ No loading feedback
 
 ### After Enhancements
+
 - ✅ Toast notifications (non-blocking)
 - ✅ Dark/light mode with persistence
 - ✅ Mobile-optimized navigation
@@ -359,11 +392,13 @@ export function Skeleton({ className }: { className?: string }) {
 ## Performance Metrics
 
 ### Before
+
 - **Lighthouse Mobile**: ~85
 - **First Contentful Paint**: ~1.5s
 - **Time to Interactive**: ~2.5s
 
 ### Target (After Optimization)
+
 - **Lighthouse Mobile**: >95
 - **First Contentful Paint**: <1.0s
 - **Time to Interactive**: <2.0s
@@ -373,6 +408,7 @@ export function Skeleton({ className }: { className?: string }) {
 ## Browser Compatibility
 
 ### Tested Browsers
+
 - ✅ Chrome 120+
 - ✅ Firefox 121+
 - ✅ Safari 17+
@@ -381,6 +417,7 @@ export function Skeleton({ className }: { className?: string }) {
 - ✅ Chrome Android
 
 ### PWA Support
+
 - ✅ Desktop: Chrome, Edge, Safari (macOS)
 - ✅ Mobile: Chrome Android, Safari iOS
 
@@ -389,6 +426,7 @@ export function Skeleton({ className }: { className?: string }) {
 ## Deployment Checklist
 
 ### Production Requirements
+
 1. **PWA Icons**: Add `/public/icon-192.png` and `/public/icon-512.png`
 2. **PWA Screenshots**: Add `/public/screenshot-1.png` for app stores
 3. **Environment Variables**: Configure Cloudflare Analytics token
@@ -396,6 +434,7 @@ export function Skeleton({ className }: { className?: string }) {
 5. **Manifest**: Verify `start_url` matches production domain
 
 ### Build Commands
+
 ```bash
 # Build all packages
 pnpm build
@@ -413,6 +452,7 @@ pnpm --filter @creepjs/web build
 ## Future Enhancement Opportunities
 
 ### Performance (Priority: High)
+
 1. **Web Workers Implementation**
    - Move heavy collectors to worker threads
    - Estimated improvement: 30-40% faster collection
@@ -426,6 +466,7 @@ pnpm --filter @creepjs/web build
    - Improve perceived performance
 
 ### Features (Priority: Medium)
+
 1. **Signal Weighting Algorithm**
    - Calculate entropy and stability scores
    - Improve accuracy metrics
@@ -439,6 +480,7 @@ pnpm --filter @creepjs/web build
    - Browser distribution insights
 
 ### Developer Experience (Priority: Low)
+
 1. **Debug Mode**
    - Verbose logging option
    - Performance profiling
@@ -456,6 +498,7 @@ pnpm --filter @creepjs/web build
 ## Known Issues
 
 ### Low Priority
+
 1. **Missing PWA Icons**: 404 for `/icon-192.png` and `/icon-512.png`
    - **Impact**: Low (PWA still functional)
    - **Fix**: Add placeholder icons or generate from logo
@@ -473,6 +516,7 @@ pnpm --filter @creepjs/web build
 ## Conclusion
 
 The CreepJS platform has been significantly enhanced with:
+
 - ✅ **Better UX**: Toast notifications, dark mode, mobile optimization
 - ✅ **Modern Features**: PWA support, offline capability
 - ✅ **Performance**: Loading states, skeleton screens

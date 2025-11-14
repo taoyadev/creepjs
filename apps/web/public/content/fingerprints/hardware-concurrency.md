@@ -30,6 +30,7 @@ Here's where it gets interesting. The CPU market just went through a huge shake-
 ### Historical Baseline (Pre-2024)
 
 According to **Firefox Hardware Report** data, the old norm was:
+
 - **70% of Firefox users had exactly 2 cores** (dual-core dominance)
 - 4% had 1 core (ancient devices or mobile)
 - Only 26% had 4+ cores
@@ -40,14 +41,14 @@ This was the era of "good enough" computing. Dual-core was mainstream.
 
 **CPU-Z's Q1 2025 validation data** shows everything changed:
 
-| Core Count | Market Share | Change from 2024 | Typical Devices |
-|------------|-------------|------------------|-----------------|
-| **8 cores** | **24.7%** | +32.6% ⬆️ | **Now #1** - Gaming laptops, M3 MacBooks, Ryzen 7 |
-| **6 cores** | 22.5% | -6.9% ⬇️ | Modern mainstream laptops, M2 MacBook Air |
-| 4 cores | ~20% | Declining | Mid-range devices, older MacBooks |
-| 2 cores | ~15% | Plummeting | Budget laptops, old phones, enterprise desktops |
-| 12 cores | ~10% | Growing | Mac Studio M2 Pro, AMD Ryzen 9, Intel i9 |
-| 16+ cores | ~8% | Growing fast | Workstations, Threadripper, Mac Studio M2 Max/Ultra |
+| Core Count  | Market Share | Change from 2024 | Typical Devices                                     |
+| ----------- | ------------ | ---------------- | --------------------------------------------------- |
+| **8 cores** | **24.7%**    | +32.6% ⬆️        | **Now #1** - Gaming laptops, M3 MacBooks, Ryzen 7   |
+| **6 cores** | 22.5%        | -6.9% ⬇️         | Modern mainstream laptops, M2 MacBook Air           |
+| 4 cores     | ~20%         | Declining        | Mid-range devices, older MacBooks                   |
+| 2 cores     | ~15%         | Plummeting       | Budget laptops, old phones, enterprise desktops     |
+| 12 cores    | ~10%         | Growing          | Mac Studio M2 Pro, AMD Ryzen 9, Intel i9            |
+| 16+ cores   | ~8%          | Growing fast     | Workstations, Threadripper, Mac Studio M2 Max/Ultra |
 
 **What happened?** Apple Silicon (M2/M3 chips with 8+ cores), AMD's Ryzen dominance, and Intel finally catching up made 8-core CPUs **the new normal** in 2024-2025. The 32.6% increase in 8-core adoption in ONE YEAR is absolutely wild.
 
@@ -60,27 +61,24 @@ Navigator.hardwareConcurrency provides **2-3 bits of entropy** on its own, but t
 ```javascript
 // Pseudo-code showing how trackers think
 if (cores === 2) {
-  deviceTier = "Budget or ancient";
-  likelyPrice = "$0-$500";
-  purchaseYear = "2018-2020 or earlier";
-}
-else if (cores === 4) {
-  deviceTier = "Mainstream";
-  likelyPrice = "$500-$900";
-  purchaseYear = "2020-2022";
-}
-else if (cores === 8) {
-  deviceTier = "Premium";
-  likelyPrice = "$1200-$2500";
-  purchaseYear = "2023-2025";
-  if (platform.includes("Mac")) {
-    device = "MacBook Pro M3/M2 or iMac";
+  deviceTier = 'Budget or ancient';
+  likelyPrice = '$0-$500';
+  purchaseYear = '2018-2020 or earlier';
+} else if (cores === 4) {
+  deviceTier = 'Mainstream';
+  likelyPrice = '$500-$900';
+  purchaseYear = '2020-2022';
+} else if (cores === 8) {
+  deviceTier = 'Premium';
+  likelyPrice = '$1200-$2500';
+  purchaseYear = '2023-2025';
+  if (platform.includes('Mac')) {
+    device = 'MacBook Pro M3/M2 or iMac';
   }
-}
-else if (cores >= 12) {
-  deviceTier = "Professional/Workstation";
-  likelyPrice = "$2500-$10,000+";
-  professions = ["Software dev", "Video editor", "3D artist", "Data scientist"];
+} else if (cores >= 12) {
+  deviceTier = 'Professional/Workstation';
+  likelyPrice = '$2500-$10,000+';
+  professions = ['Software dev', 'Video editor', '3D artist', 'Data scientist'];
 }
 ```
 
@@ -98,6 +96,7 @@ else if (cores >= 12) {
 ## Browser Support and Accuracy
 
 The navigator.hardwareConcurrency API has been supported since:
+
 - **Chrome 37** (2014)
 - **Firefox 48** (2016)
 - **Safari 10.1** (2017)
@@ -106,6 +105,7 @@ The navigator.hardwareConcurrency API has been supported since:
 **Accuracy**: 99.9% - This API accurately reports logical core counts (including hyperthreading). If you have a 4-core CPU with hyperthreading, it reports 8.
 
 **Caveats**:
+
 - May return `undefined` on very old browsers (pre-2014)
 - Can be capped by browser security settings
 - May not reflect actual available cores if OS limits allocation
@@ -125,6 +125,7 @@ Here's the uncomfortable truth: **Hardware information is extremely stable**. Yo
 ### Cross-Site Tracking
 
 Imagine this scenario:
+
 - You visit SiteA (shopping) with 8 cores
 - You visit SiteB (social media) with 8 cores
 - Third-party tracker on both sites: "Hey, that's probably the same 8-core device!"
@@ -164,6 +165,7 @@ According to **Mozilla Bugzilla #1360039**, Firefox chose 2 cores because it's "
 ### Brave Browser: Randomization
 
 Brave takes a different approach. **As of version 1.39+**, Brave applies **slight randomization** to hardware info, but it's minimal:
+
 - 8 cores might report as 8, 7, or 9
 - Not enough to break web apps
 - Just enough to add noise
@@ -186,11 +188,11 @@ async function estimateCores() {
   }
 
   // Measure throughput
-  const results = await Promise.all(workers.map(w => w.execute()));
+  const results = await Promise.all(workers.map((w) => w.execute()));
   const duration = performance.now() - start;
 
   // Math: If duration scales linearly, few cores. If parallel, many cores.
-  const estimatedCores = Math.round(32 * idealTime / duration);
+  const estimatedCores = Math.round((32 * idealTime) / duration);
 
   return estimatedCores;
 }
@@ -207,6 +209,7 @@ Let's look at what security researchers have found:
 ### IEEE Conference Publication (2017): "Estimating CPU Features by Browser Fingerprinting"
 
 This landmark paper showed you can fingerprint CPUs down to **specific models** using:
+
 1. navigator.hardwareConcurrency (core count)
 2. Performance timing of JavaScript operations
 3. Float precision quirks
@@ -217,6 +220,7 @@ This landmark paper showed you can fingerprint CPUs down to **specific models** 
 ### NDSS Symposium (2017): "Browser Fingerprinting via OS and Hardware Level Features"
 
 Found that hardware concurrency combined with other hardware APIs creates **"super cookies"** that survive:
+
 - Private/incognito mode
 - Cookie clearing
 - VPN usage
@@ -227,11 +231,13 @@ Found that hardware concurrency combined with other hardware APIs creates **"sup
 ## Real-World Usage Statistics
 
 From **FP-tracer's 2024 study** analyzing 911 domains:
+
 - **7.2% of websites** check navigator.hardwareConcurrency
 - Of those, **68% are tracking scripts** (ads, analytics)
 - **32% are legitimate** (video streaming quality, WebAssembly optimization)
 
 From **Slido's analysis of 500,000 browser fingerprints** (Medium blog):
+
 - Hardware concurrency was **stable across sessions** for 99.7% of users
 - Combined with screen resolution + user agent → **92.3% unique** fingerprints
 - Users with unusual core counts (3, 5, 20+) were **100% unique**
@@ -267,12 +273,14 @@ From **Slido's analysis of 500,000 browser fingerprints** (Medium blog):
 To be fair, not all uses of navigator.hardwareConcurrency are evil:
 
 **✅ Good Reasons:**
+
 - **Video encoding/streaming**: YouTube adjusts quality and encoding threads based on CPU cores
 - **WebAssembly apps**: Games and CAD software optimize thread count
 - **Web Workers**: React, Angular, Vue use this to parallelize rendering
 - **Performance monitoring**: Developers use this to understand user device capabilities
 
 **❌ Problematic Reasons:**
+
 - **Cross-site tracking**: Building persistent device IDs
 - **Price discrimination**: Showing higher prices to users with expensive hardware
 - **Ad targeting**: "This person has a Mac Studio (16 cores) → show luxury ads"
@@ -283,6 +291,7 @@ To be fair, not all uses of navigator.hardwareConcurrency are evil:
 Navigator.hardwareConcurrency is a **double-edged sword**. It helps websites optimize performance but also enables precise hardware fingerprinting. Here's my honest take:
 
 **The Reality Check:**
+
 - Your CPU core count is public information to every website
 - It's stable for 3-5 years (your device lifespan)
 - Combined with 2-3 other metrics, you're 90%+ unique
@@ -301,6 +310,7 @@ The web doesn't have to be a surveillance nightmare, but right now, every site k
 ---
 
 **Sources:**
+
 - [Firefox Hardware Report](https://data.firefox.com/dashboard/hardware) - Historical CPU core distribution data
 - [CPU-Z Q1 2025 Statistics](https://www.techpowerup.com/335055/eight-core-cpus-become-the-most-popular-choice-of-pc-users-cpu-z-stats-show) - 8-core CPUs now 24.7% market share
 - [Mozilla Bugzilla #1360039](https://bugzilla.mozilla.org/show_bug.cgi?id=1360039) - Firefox spoofing to 2 cores discussion

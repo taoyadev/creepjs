@@ -8,6 +8,10 @@ export const metadata: Metadata = generateMetadata({
   path: '/docs',
 });
 
-export default function DocsLayout({ children }: { children: React.ReactNode }) {
+export default function DocsLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return children;
 }

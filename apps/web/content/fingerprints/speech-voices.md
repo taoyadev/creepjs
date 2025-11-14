@@ -17,31 +17,32 @@ function getSpeechVoicesFingerprint() {
 
   return {
     count: voices.length,
-    voices: voices.map(v => ({
+    voices: voices.map((v) => ({
       name: v.name,
       lang: v.lang,
       default: v.default,
-      localService: v.localService
+      localService: v.localService,
     })),
-    hash: hashVoices(voices)
+    hash: hashVoices(voices),
   };
 }
 ```
 
 ## The Statistics
 
-| Metric | Value |
-|--------|-------|
-| **Default Windows voices** | 8-15 |
-| **macOS voices** | 40-80 (many languages) |
-| **Linux** | Highly variable |
-| **Trackability** | Medium-High entropy |
+| Metric                     | Value                  |
+| -------------------------- | ---------------------- |
+| **Default Windows voices** | 8-15                   |
+| **macOS voices**           | 40-80 (many languages) |
+| **Linux**                  | Highly variable        |
+| **Trackability**           | Medium-High entropy    |
 
 ## What Nobody Tells You
 
 ### The Multilingual Trap
 
 If you have language packs installed:
+
 - Spanish TTS + English TTS + French TTS = highly unique
 - Only bilingual/multilingual users have this combination
 - Reveals linguistic background
@@ -49,11 +50,13 @@ If you have language packs installed:
 ### Accessibility Software Detection
 
 Screen reader users have specialized voices:
+
 - JAWS voices
 - NVDA voices
 - VoiceOver (macOS/iOS)
 
 This reveals use of accessibility software, which is:
+
 - Protected information under disability laws
 - Highly identifying (small user percentage)
 - Ethically questionable to fingerprint
@@ -64,12 +67,12 @@ macOS includes 40-80+ voices by default across dozens of languages. The exact co
 
 ## Browser Differences
 
-| Browser | Exposes Voices | Privacy Protection |
-|---------|---------------|-------------------|
-| **Chrome** | ✅ All | None |
-| **Firefox** | ✅ All | RFP can limit |
-| **Safari** | ✅ All (macOS rich set) | None |
-| **Brave** | ⚠️ Limited | Better |
+| Browser     | Exposes Voices          | Privacy Protection |
+| ----------- | ----------------------- | ------------------ |
+| **Chrome**  | ✅ All                  | None               |
+| **Firefox** | ✅ All                  | RFP can limit      |
+| **Safari**  | ✅ All (macOS rich set) | None               |
+| **Brave**   | ⚠️ Limited              | Better             |
 
 ## Protection
 

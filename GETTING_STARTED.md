@@ -25,6 +25,7 @@ pnpm run build
 ```
 
 This uses Turborepo to build packages in the correct order:
+
 1. `@creepjs/core` (fingerprinting engine)
 2. `@creepjs/sdk` (browser SDK)
 3. `@creepjs/api` (Cloudflare Workers API)
@@ -35,20 +36,25 @@ This uses Turborepo to build packages in the correct order:
 In separate terminals:
 
 **Terminal 1 - API Server**:
+
 ```bash
 cd apps/api
 pnpm dev
 ```
+
 API will run on `http://localhost:8787`
 
 **Terminal 2 - Web Server**:
+
 ```bash
 cd apps/web
 pnpm dev
 ```
+
 Website will run on `http://localhost:3000`
 
 Or use Turborepo to run all dev servers at once:
+
 ```bash
 pnpm dev
 ```
@@ -56,6 +62,7 @@ pnpm dev
 ### 4. Visit the Demo
 
 Open your browser to:
+
 - **Landing Page**: http://localhost:3000
 - **Live Demo**: http://localhost:3000/demo
 - **Documentation**: http://localhost:3000/docs
@@ -137,22 +144,26 @@ pnpm typecheck
 ### In a separate project
 
 1. Build the SDK:
+
 ```bash
 cd packages/sdk
 pnpm build
 ```
 
 2. Link it locally:
+
 ```bash
 pnpm link --global
 ```
 
 3. In your project:
+
 ```bash
 pnpm link --global @creepjs/sdk
 ```
 
 4. Use it:
+
 ```typescript
 import { getFingerprint } from '@creepjs/sdk';
 
@@ -225,6 +236,7 @@ Your API will be deployed to Cloudflare Workers!
 
 1. Install Vercel CLI: `pnpm add -g vercel`
 2. Deploy:
+
 ```bash
 cd apps/web
 vercel
@@ -237,17 +249,20 @@ vercel
 If you encounter build errors:
 
 1. Clean the project:
+
 ```bash
 pnpm clean
 ```
 
 2. Delete node_modules and reinstall:
+
 ```bash
 rm -rf node_modules packages/*/node_modules apps/*/node_modules
 pnpm install
 ```
 
 3. Rebuild:
+
 ```bash
 pnpm build
 ```

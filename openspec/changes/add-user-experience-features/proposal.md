@@ -1,9 +1,11 @@
 # Change Proposal: add-user-experience-features
 
 ## Summary
+
 Enhance user engagement and educational value of CreepJS.org by adding fingerprint uniqueness comparison, export/sharing capabilities, privacy education modules, and browser compatibility matrix. These features transform the platform from a simple demo into an interactive learning experience that helps users understand browser fingerprinting's implications and capabilities.
 
 ## Motivation
+
 - Current demo shows fingerprint data but doesn't explain what makes each user unique or how rare their configuration is
 - Users cannot save or share their fingerprint results, limiting virality and educational use cases (e.g., classroom demos)
 - Privacy concerns around fingerprinting are not addressed—users need education on what data reveals and how to protect themselves
@@ -13,6 +15,7 @@ Enhance user engagement and educational value of CreepJS.org by adding fingerpri
 ## Scope
 
 ### 1. Fingerprint Uniqueness Comparison
+
 - **Percentile ranking system**:
   - Compare user's fingerprint against anonymized database
   - Display "Your fingerprint is 1-in-X unique" messaging
@@ -26,6 +29,7 @@ Enhance user engagement and educational value of CreepJS.org by adding fingerpri
   - Bar chart comparing user's configuration to population average
 
 ### 2. Export and Sharing
+
 - **PDF export**:
   - Generate professional PDF report with all 21 fingerprint components
   - Include explanatory text for each component
@@ -42,6 +46,7 @@ Enhance user engagement and educational value of CreepJS.org by adding fingerpri
   - Optimize for social media sharing (1200x630px for OG images)
 
 ### 3. Privacy Education Module
+
 - **Interactive tutorial**:
   - Step-by-step walkthrough explaining each fingerprint component
   - "What does this reveal?" explanations (e.g., Canvas reveals GPU model)
@@ -61,6 +66,7 @@ Enhance user engagement and educational value of CreepJS.org by adding fingerpri
   - Link to privacy policy and GDPR compliance details
 
 ### 4. Browser Compatibility Matrix
+
 - **Real-time feature detection**:
   - Run all 21 collectors in current browser
   - Display supported/unsupported/degraded status for each
@@ -75,6 +81,7 @@ Enhance user engagement and educational value of CreepJS.org by adding fingerpri
   - Link to polyfill recommendations
 
 ## Out of Scope
+
 - Machine learning for uniqueness prediction—use simple statistical ranking for MVP
 - User accounts or authentication for saving fingerprints—share links only
 - Multi-language support for education modules—English only initially
@@ -82,6 +89,7 @@ Enhance user engagement and educational value of CreepJS.org by adding fingerpri
 - Export formats beyond PDF/PNG/SVG (JSON, CSV)—can add later if requested
 
 ## Risks & Mitigations
+
 - **D1 database costs**: Monitor query volume; D1 free tier provides 100k rows/5M reads per day—should suffice for MVP
 - **Share link abuse**: Implement rate limiting on link creation (max 10/day per IP) and automatic expiration (30 days)
 - **PDF generation performance**: Generate PDFs client-side to avoid server load; fallback to server-side if client lacks support
@@ -89,6 +97,7 @@ Enhance user engagement and educational value of CreepJS.org by adding fingerpri
 - **Browser compatibility data staleness**: Automate browser testing with Playwright to keep matrix updated
 
 ## Success Criteria
+
 - Uniqueness comparison displays "1-in-X" messaging with percentile rank within 2 seconds of fingerprint generation
 - PDF export downloads successfully in Chrome, Firefox, Safari with all components rendered
 - Share links expire after 30 days and show read-only fingerprint data correctly

@@ -4,13 +4,21 @@ import { murmurHash3 } from '../utils/hash';
 /**
  * Collect Audio Context fingerprint
  */
-export function collectAudioFingerprint(): Promise<AudioFingerprint | undefined> | undefined {
-  if (typeof window === 'undefined' || !('AudioContext' in window || 'webkitAudioContext' in window)) {
+export function collectAudioFingerprint():
+  | Promise<AudioFingerprint | undefined>
+  | undefined {
+  if (
+    typeof window === 'undefined' ||
+    !('AudioContext' in window || 'webkitAudioContext' in window)
+  ) {
     return undefined;
   }
 
   try {
-    const AudioContextClass = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    const AudioContextClass =
+      window.AudioContext ||
+      (window as typeof window & { webkitAudioContext?: typeof AudioContext })
+        .webkitAudioContext;
     if (!AudioContextClass) return undefined;
 
     const context = new AudioContextClass();

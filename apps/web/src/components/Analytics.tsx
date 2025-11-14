@@ -72,7 +72,9 @@ export function trackAnalyticsEvent(
 export function trackPageView(url?: string) {
   if (typeof window !== 'undefined' && (window as any).__cfBeacon) {
     try {
-      (window as any).__cfBeacon('trackPageview', { url: url || window.location.href });
+      (window as any).__cfBeacon('trackPageview', {
+        url: url || window.location.href,
+      });
     } catch (error) {
       console.warn('[Analytics] Failed to track page view:', error);
     }

@@ -23,6 +23,7 @@ There are two main techniques websites use to fingerprint your fonts:
 This is the most common method. Here's the step-by-step:
 
 **Step 1**: Create an invisible HTML element with text
+
 ```html
 <span id="test" style="position:absolute; visibility:hidden; font-size:72px;">
   mmmmmmmmmmlli
@@ -30,6 +31,7 @@ This is the most common method. Here's the step-by-step:
 ```
 
 **Step 2**: Set a default fallback font and measure width
+
 ```javascript
 const span = document.getElementById('test');
 span.style.fontFamily = 'Arial';
@@ -37,6 +39,7 @@ const defaultWidth = span.offsetWidth;
 ```
 
 **Step 3**: Test for a specific font
+
 ```javascript
 span.style.fontFamily = 'Comic Sans MS, Arial';
 const testWidth = span.offsetWidth;
@@ -50,6 +53,7 @@ if (testWidth !== defaultWidth) {
 **Step 4**: Repeat for hundreds of fonts
 
 Websites typically test a curated list of known fonts:
+
 - System fonts (Arial, Times New Roman, Courier)
 - Microsoft Office fonts (Calibri, Cambria, Candara)
 - Adobe fonts (Myriad Pro, Minion Pro)
@@ -60,6 +64,7 @@ Websites typically test a curated list of known fonts:
 **Step 5**: Hash the results
 
 The combination of installed fonts becomes your fingerprint:
+
 ```javascript
 const fontHash = hashFunction(fonts.sort().join(','));
 // Result: "a7f3e9d2c8b4a1f6"
@@ -73,12 +78,12 @@ This more sophisticated method uses specific Unicode characters that render very
 const testChars = ['啊', '🎨', '∞', '█', '🏴'];
 const measurements = [];
 
-testChars.forEach(char => {
+testChars.forEach((char) => {
   const span = createHiddenSpan(char);
   span.style.fontFamily = '"Font Name", serif';
   measurements.push({
     width: span.offsetWidth,
-    height: span.offsetHeight
+    height: span.offsetHeight,
   });
 });
 
@@ -89,25 +94,25 @@ Why this works: Complex Unicode glyphs (CJK characters, emoji, mathematical symb
 
 ## The Numbers Don't Lie: Font Fingerprinting Statistics
 
-| Metric | Value | Source | Year |
-|--------|-------|--------|------|
-| **Entropy (font metrics alone)** | 7.6 bits | Academic research | 2015/2024 |
-| **Entropy (fonts + User-Agent)** | 8.1 bits | Same study | 2015/2024 |
-| **Unique identification rate** | 34% (fonts alone) | 349/1,024 users | 2015 |
-| **Measurement speed** | Milliseconds | BrowserLeaks | 2025 |
-| **Glyphs needed for full coverage** | 43 Unicode characters | Research analysis | 2024 |
-| **Total Unicode chars tested** | 125,000+ examined | Comprehensive study | 2024 |
-| **Websites using font fingerprinting** | 3,000+ of top sites | Canvas tracking research | 2025 |
+| Metric                                 | Value                 | Source                   | Year      |
+| -------------------------------------- | --------------------- | ------------------------ | --------- |
+| **Entropy (font metrics alone)**       | 7.6 bits              | Academic research        | 2015/2024 |
+| **Entropy (fonts + User-Agent)**       | 8.1 bits              | Same study               | 2015/2024 |
+| **Unique identification rate**         | 34% (fonts alone)     | 349/1,024 users          | 2015      |
+| **Measurement speed**                  | Milliseconds          | BrowserLeaks             | 2025      |
+| **Glyphs needed for full coverage**    | 43 Unicode characters | Research analysis        | 2024      |
+| **Total Unicode chars tested**         | 125,000+ examined     | Comprehensive study      | 2024      |
+| **Websites using font fingerprinting** | 3,000+ of top sites   | Canvas tracking research | 2025      |
 
 ### Font Presence by User Type
 
-| User Profile | Typical Font Count | Uniqueness Level |
-|--------------|-------------------|------------------|
-| **Default OS install** | 50-150 | Low (common) |
-| **Office suite installed** | 200-350 | Medium |
-| **Adobe Creative Cloud** | 500-1,000+ | High (professional) |
-| **Typography enthusiast** | 1,000-5,000+ | Extremely High (rare) |
-| **Developer setup** | 100-300 | Medium-High |
+| User Profile               | Typical Font Count | Uniqueness Level      |
+| -------------------------- | ------------------ | --------------------- |
+| **Default OS install**     | 50-150             | Low (common)          |
+| **Office suite installed** | 200-350            | Medium                |
+| **Adobe Creative Cloud**   | 500-1,000+         | High (professional)   |
+| **Typography enthusiast**  | 1,000-5,000+       | Extremely High (rare) |
+| **Developer setup**        | 100-300            | Medium-High           |
 
 ## Real-World Applications
 
@@ -135,6 +140,7 @@ Why this works: Complex Unicode glyphs (CJK characters, emoji, mathematical symb
 ### The Adobe Creative Cloud Tax
 
 If you're a designer or creative professional with Adobe CC, you're broadcasting that fact to every website you visit. Adobe installs **500+ fonts** by default, including:
+
 - Entire Adobe Originals library
 - Monotype fonts
 - Professional typefaces
@@ -144,12 +150,14 @@ We analyzed 10,000 fingerprints and found: **Only 2.3% had Adobe CC fonts**. If 
 ### The Microsoft Office Tells
 
 Installing Microsoft Office adds 150+ fonts. But here's the twist: Different Office versions install different fonts:
+
 - Office 2010: Calibri, Cambria, Candara
 - Office 2013: Adds Gabriola, Segoe UI
 - Office 2016: Adds Sitka fonts
 - Office 2019/365: Adds Grandview, Seaford, newer variants
 
 Websites can determine **your exact Office version** by checking which fonts are present. This reveals:
+
 - When you last bought Office (date range)
 - Whether you pirate software (cracked versions often have incomplete font sets)
 - Your update cadence (security-conscious users update regularly)
@@ -157,6 +165,7 @@ Websites can determine **your exact Office version** by checking which fonts are
 ### The Linux User Curse (Again)
 
 Linux users are easier to track through fonts because:
+
 - Vastly different default font packages (Ubuntu vs Fedora vs Arch)
 - Custom font installations are common (developer setups)
 - Lack of commercial fonts (no Office, no Adobe by default)
@@ -169,6 +178,7 @@ If your font fingerprint shows `DejaVu Sans Mono + Liberation Mono + Noto fonts`
 Even if two users have the same fonts installed, **rendering differences create sub-fingerprints**:
 
 Different operating systems render fonts differently:
+
 - **Windows**: ClearType with DirectWrite
 - **macOS**: Core Text with Quartz
 - **Linux**: FreeType with various hinting levels
@@ -180,6 +190,7 @@ The exact same font will have slightly different metrics across OS. A website ca
 Some privacy extensions block font enumeration. But this creates a new unique fingerprint: "User who blocks font detection."
 
 We tested this:
+
 - 94% of users allow font detection
 - 5% block it (privacy-conscious minority)
 - 1% have partial blocking (inconsistent)
@@ -190,14 +201,14 @@ If you're in that 5%, you're more identifiable than the 94% majority. Once again
 
 Emoji rendering is a subset of font fingerprinting, and it's surprisingly identifying:
 
-| OS | Emoji Font | Example 🎨 |
-|----|-----------|-----------|
-| **Windows 11** | Segoe UI Emoji (3D style) | Distinct 3D rendering |
-| **Windows 10** | Segoe UI Emoji (flat) | 2D rendering |
-| **macOS** | Apple Color Emoji | Apple's design language |
-| **iOS** | Apple Color Emoji | Same as macOS |
-| **Android** | Noto Color Emoji | Google's blob/modern style |
-| **Linux** | Various (Noto, DejaVu, etc.) | Highly variable |
+| OS             | Emoji Font                   | Example 🎨                 |
+| -------------- | ---------------------------- | -------------------------- |
+| **Windows 11** | Segoe UI Emoji (3D style)    | Distinct 3D rendering      |
+| **Windows 10** | Segoe UI Emoji (flat)        | 2D rendering               |
+| **macOS**      | Apple Color Emoji            | Apple's design language    |
+| **iOS**        | Apple Color Emoji            | Same as macOS              |
+| **Android**    | Noto Color Emoji             | Google's blob/modern style |
+| **Linux**      | Various (Noto, DejaVu, etc.) | Highly variable            |
 
 Websites can render an emoji, measure its dimensions, and know your OS with 90%+ accuracy. Combined with other font metrics, this is extremely identifying.
 
@@ -211,6 +222,7 @@ Websites can render an emoji, measure its dimensions, and know your OS with 90%+
    - Operating systems
 
 **What you'll see**:
+
 - Complete list of detected fonts
 - Which fonts are most unique/identifying
 - Your font fingerprint hash
@@ -218,14 +230,14 @@ Websites can render an emoji, measure its dimensions, and know your OS with 90%+
 
 ## Browser Differences
 
-| Browser | Default Behavior | Privacy Protection | Font Blocking |
-|---------|-----------------|-------------------|---------------|
-| **Chrome** | Exposes all fonts | ❌ None | No |
-| **Firefox** | Exposes all fonts | ⚠️ RFP limits list | Optional (about:config) |
-| **Safari** | Limited font access | ✅ Restricts some | Partial |
-| **Edge** | Exposes all fonts | ❌ None | No |
-| **Brave** | ⚠️ Returns common set | ✅ Farbling enabled | Yes (default) |
-| **Tor** | 🔒 Standardized list | ✅ Maximum | Yes (strict) |
+| Browser     | Default Behavior      | Privacy Protection  | Font Blocking           |
+| ----------- | --------------------- | ------------------- | ----------------------- |
+| **Chrome**  | Exposes all fonts     | ❌ None             | No                      |
+| **Firefox** | Exposes all fonts     | ⚠️ RFP limits list  | Optional (about:config) |
+| **Safari**  | Limited font access   | ✅ Restricts some   | Partial                 |
+| **Edge**    | Exposes all fonts     | ❌ None             | No                      |
+| **Brave**   | ⚠️ Returns common set | ✅ Farbling enabled | Yes (default)           |
+| **Tor**     | 🔒 Standardized list  | ✅ Maximum          | Yes (strict)            |
 
 ### Browser-Specific Details
 
@@ -279,25 +291,59 @@ class FontFingerprinter {
     this.baseFonts = ['monospace', 'sans-serif', 'serif'];
     this.testFonts = [
       // Windows fonts
-      'Arial', 'Calibri', 'Cambria', 'Consolas', 'Courier New', 'Georgia',
-      'Impact', 'Times New Roman', 'Trebuchet MS', 'Verdana',
+      'Arial',
+      'Calibri',
+      'Cambria',
+      'Consolas',
+      'Courier New',
+      'Georgia',
+      'Impact',
+      'Times New Roman',
+      'Trebuchet MS',
+      'Verdana',
 
       // macOS fonts
-      'American Typewriter', 'Andale Mono', 'Arial', 'Avenir', 'Baskerville',
-      'Courier', 'Geneva', 'Georgia', 'Helvetica', 'Helvetica Neue',
-      'Impact', 'Monaco', 'Palatino', 'Times', 'Times New Roman',
+      'American Typewriter',
+      'Andale Mono',
+      'Arial',
+      'Avenir',
+      'Baskerville',
+      'Courier',
+      'Geneva',
+      'Georgia',
+      'Helvetica',
+      'Helvetica Neue',
+      'Impact',
+      'Monaco',
+      'Palatino',
+      'Times',
+      'Times New Roman',
 
       // Adobe fonts
-      'Adobe Caslon Pro', 'Adobe Garamond Pro', 'Myriad Pro', 'Minion Pro',
+      'Adobe Caslon Pro',
+      'Adobe Garamond Pro',
+      'Myriad Pro',
+      'Minion Pro',
 
       // Google Fonts (if embedded)
-      'Roboto', 'Open Sans', 'Lato', 'Montserrat', 'Raleway',
+      'Roboto',
+      'Open Sans',
+      'Lato',
+      'Montserrat',
+      'Raleway',
 
       // Office fonts
-      'Calibri', 'Cambria', 'Candara', 'Comic Sans MS', 'Consolas',
+      'Calibri',
+      'Cambria',
+      'Candara',
+      'Comic Sans MS',
+      'Consolas',
 
       // Developer fonts
-      'Fira Code', 'JetBrains Mono', 'Source Code Pro', 'Ubuntu Mono',
+      'Fira Code',
+      'JetBrains Mono',
+      'Source Code Pro',
+      'Ubuntu Mono',
     ];
 
     this.testString = 'mmmmmmmmmmlli';
@@ -325,7 +371,7 @@ class FontFingerprinter {
     const span = this.createTestElement(fontFamily);
     const metrics = {
       width: span.offsetWidth,
-      height: span.offsetHeight
+      height: span.offsetHeight,
     };
     document.body.removeChild(span);
     return metrics;
@@ -333,18 +379,20 @@ class FontFingerprinter {
 
   // Check if font is installed
   isFontInstalled(fontName) {
-    const baseMetrics = this.baseFonts.map(base =>
+    const baseMetrics = this.baseFonts.map((base) =>
       this.measureFont(`${base}`)
     );
 
-    const testMetrics = this.baseFonts.map(base =>
+    const testMetrics = this.baseFonts.map((base) =>
       this.measureFont(`"${fontName}", ${base}`)
     );
 
     // If any measurement differs, font is installed
     for (let i = 0; i < baseMetrics.length; i++) {
-      if (baseMetrics[i].width !== testMetrics[i].width ||
-          baseMetrics[i].height !== testMetrics[i].height) {
+      if (
+        baseMetrics[i].width !== testMetrics[i].width ||
+        baseMetrics[i].height !== testMetrics[i].height
+      ) {
         return true;
       }
     }
@@ -364,7 +412,7 @@ class FontFingerprinter {
     const fingerprint = {
       fonts: installedFonts,
       count: installedFonts.length,
-      hash: await this.hashFonts(installedFonts)
+      hash: await this.hashFonts(installedFonts),
     };
 
     return fingerprint;
@@ -377,7 +425,7 @@ class FontFingerprinter {
     const data = encoder.encode(fontString);
     const hashBuffer = await crypto.subtle.digest('SHA-256', data);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
   }
 }
 
@@ -396,13 +444,16 @@ function detectFontFingerprinting() {
   const observer = new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
       mutation.addedNodes.forEach((node) => {
-        if (node.nodeType === 1) { // Element node
+        if (node.nodeType === 1) {
+          // Element node
           const style = window.getComputedStyle(node);
 
           // Check for fingerprinting patterns
-          if (style.position === 'absolute' &&
-              (style.left === '-9999px' || style.visibility === 'hidden') &&
-              parseInt(style.fontSize) > 50) {
+          if (
+            style.position === 'absolute' &&
+            (style.left === '-9999px' || style.visibility === 'hidden') &&
+            parseInt(style.fontSize) > 50
+          ) {
             console.warn('Potential font fingerprinting detected!', node);
           }
         }
@@ -412,7 +463,7 @@ function detectFontFingerprinting() {
 
   observer.observe(document.body, {
     childList: true,
-    subtree: true
+    subtree: true,
   });
 }
 ```
@@ -476,6 +527,7 @@ Traditional measurement-based fingerprinting requires JavaScript. However, CSS-b
 ## Try It Now: Test Your Font Fingerprint
 
 Visit our [Font Detection Playground](/fingerprint/fonts) and discover:
+
 - Exactly which fonts your browser exposes
 - How unique your font configuration is
 - Whether you're in a high-privacy-risk category (Adobe/Office fonts)
@@ -488,6 +540,7 @@ Knowledge is power. See what you're broadcasting.
 **Last Updated**: November 2025 | **Word Count**: 3,247 words | **Reading Time**: ~12 minutes
 
 **Sources**:
+
 - [Academic Research: Fingerprinting Web Users Through Font Metrics (2015)](https://www.bamsoftware.com/papers/fontfp.pdf)
 - [BrowserLeaks: Font Fingerprinting](https://browserleaks.com/fonts)
 - [SpringerLink: Font Metrics Fingerprinting](https://link.springer.com/chapter/10.1007/978-3-662-47854-7_7)

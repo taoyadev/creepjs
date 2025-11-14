@@ -1,9 +1,11 @@
 # Change Proposal: add-deployment-infrastructure
 
 ## Summary
+
 Establish production-ready deployment infrastructure for CreepJS.org, including automated CI/CD pipelines, SEO optimization, and privacy-friendly analytics integration. This change enables the project to launch publicly with zero-touch deployments, strong organic discoverability, and usage insights without compromising user privacy.
 
 ## Motivation
+
 - Current project has working code but no deployment automation—manual deployments are error-prone and slow iteration
 - Public launch requires SEO optimization to drive organic traffic from developers searching for fingerprinting solutions
 - Need visibility into user engagement and API usage without tracking cookies or PII
@@ -13,6 +15,7 @@ Establish production-ready deployment infrastructure for CreepJS.org, including 
 ## Scope
 
 ### 1. CI/CD Automation
+
 - **GitHub Actions workflows** for automated deployments:
   - Workers API → Cloudflare Workers (on push to `main`)
   - Web app → Cloudflare Pages (on push to `main`)
@@ -28,6 +31,7 @@ Establish production-ready deployment infrastructure for CreepJS.org, including 
   - TypeScript compilation with zero errors
 
 ### 2. SEO Optimization
+
 - **Next.js metadata API integration**:
   - Dynamic meta tags (title, description, keywords)
   - Open Graph tags for social sharing (Twitter, LinkedIn, Facebook)
@@ -45,6 +49,7 @@ Establish production-ready deployment infrastructure for CreepJS.org, including 
   - SoftwareApplication schema for SDK
 
 ### 3. Analytics Integration
+
 - **Cloudflare Web Analytics**:
   - Zero-cookie tracking (GDPR/CCPA compliant)
   - Page views and visitor counts
@@ -60,6 +65,7 @@ Establish production-ready deployment infrastructure for CreepJS.org, including 
   - Custom metrics visualization (optional future enhancement)
 
 ## Out of Scope
+
 - Paid analytics platforms (Posthog, Mixpanel, etc.)—stick to Cloudflare free tier
 - A/B testing or feature flags
 - Error monitoring (Sentry)—defer to future change
@@ -67,6 +73,7 @@ Establish production-ready deployment infrastructure for CreepJS.org, including 
 - Custom domain SSL setup (assume Cloudflare handles this)
 
 ## Risks & Mitigations
+
 - **Deployment failures**: Implement health checks and automated rollback on API errors
 - **KV quota limits**: Monitor usage and alert at 80% capacity; upgrade plan if needed
 - **SEO indexing delays**: Submit sitemap to Google Search Console manually on launch
@@ -74,6 +81,7 @@ Establish production-ready deployment infrastructure for CreepJS.org, including 
 - **Secrets exposure**: Use GitHub encrypted secrets and Wrangler secrets; never commit credentials
 
 ## Success Criteria
+
 - `git push` to `main` triggers automatic deployment to Cloudflare (Workers + Pages) within 5 minutes
 - `/sitemap.xml` and `/robots.txt` return valid responses
 - Open Graph previews render correctly on Twitter/LinkedIn

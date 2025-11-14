@@ -14,7 +14,7 @@ function getMathFingerprint() {
     acosh: Math.acosh(1e308),
     atanh: Math.atanh(0.5),
     expm1: Math.expm1(1),
-    cbrt: Math.cbrt(100)
+    cbrt: Math.cbrt(100),
   };
 }
 ```

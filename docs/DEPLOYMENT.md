@@ -43,6 +43,7 @@ git push origin main
 ```
 
 **Automatic deployment via GitHub Actions:**
+
 - API deploys to Cloudflare Workers at `api.creepjs.org`
 - Web deploys to Cloudflare Pages at `creepjs.org`
 - Health checks run automatically
@@ -78,22 +79,22 @@ git push origin main
 
 ### Services & URLs
 
-| Service | URL | Technology |
-|---------|-----|------------|
-| Web App | https://creepjs.org | Next.js 15 (App Router) + Cloudflare Pages |
-| API | https://api.creepjs.org | Hono.js + Cloudflare Workers |
-| Tokens Storage | KV Namespace | Cloudflare Workers KV |
-| Rate Limiting | KV Namespace | Cloudflare Workers KV |
-| Analytics | Built-in | Cloudflare Web Analytics |
+| Service        | URL                     | Technology                                 |
+| -------------- | ----------------------- | ------------------------------------------ |
+| Web App        | https://creepjs.org     | Next.js 15 (App Router) + Cloudflare Pages |
+| API            | https://api.creepjs.org | Hono.js + Cloudflare Workers               |
+| Tokens Storage | KV Namespace            | Cloudflare Workers KV                      |
+| Rate Limiting  | KV Namespace            | Cloudflare Workers KV                      |
+| Analytics      | Built-in                | Cloudflare Web Analytics                   |
 
 ### Cost Estimate
 
-| Service | Free Tier | Paid (if needed) |
-|---------|-----------|------------------|
-| Cloudflare Workers | 100K requests/day | $5/month (10M requests) |
-| Cloudflare Pages | Unlimited | $0 |
-| Cloudflare KV | 100K reads/day, 1K writes/day | $0.50/GB stored |
-| GitHub Actions | 2,000 minutes/month | $0.008/minute |
+| Service            | Free Tier                     | Paid (if needed)        |
+| ------------------ | ----------------------------- | ----------------------- |
+| Cloudflare Workers | 100K requests/day             | $5/month (10M requests) |
+| Cloudflare Pages   | Unlimited                     | $0                      |
+| Cloudflare KV      | 100K reads/day, 1K writes/day | $0.50/GB stored         |
+| GitHub Actions     | 2,000 minutes/month           | $0.008/minute           |
 
 ---
 
@@ -161,11 +162,13 @@ cp apps/api/.dev.vars.example apps/api/.dev.vars
 ```
 
 **Required environment variables:**
+
 - `NEXT_PUBLIC_API_URL` - API base URL
 - `NEXT_PUBLIC_SITE_URL` - Site URL for SEO
 - `IPINFO_TOKEN` - IPInfo.io API token (for /api/my-ip route)
 
 **Optional variables:**
+
 - `NEXT_PUBLIC_CF_ANALYTICS_TOKEN` - Cloudflare Web Analytics token
 - `NEXT_PUBLIC_DEBUG_ANALYTICS` - Enable analytics debugging
 
@@ -174,6 +177,7 @@ cp apps/api/.dev.vars.example apps/api/.dev.vars
 See detailed instructions in `.github/SECRETS.md`
 
 **Required secrets:**
+
 ```bash
 # In GitHub repository: Settings → Secrets → Actions
 
@@ -210,12 +214,14 @@ wrangler login
 ```
 
 The script automatically:
+
 - Creates `TOKENS` and `RATE_LIMIT` KV namespaces
 - Updates `apps/api/wrangler.toml` with namespace IDs
 - Backs up existing configuration
 - Offers interactive testing
 
 **For staging/preview environments:**
+
 ```bash
 ./scripts/setup-kv.sh staging
 ./scripts/setup-kv.sh preview
@@ -244,6 +250,7 @@ Three automated workflows are configured:
 **Triggers:** Pull requests, pushes to main/develop
 
 **Jobs:**
+
 - **Lint** - ESLint + Prettier checks
 - **Type Check** - TypeScript validation
 - **Test** - Unit tests for all packages
@@ -258,6 +265,7 @@ Three automated workflows are configured:
 **Triggers:** Push to main branch
 
 **Steps:**
+
 1. Install dependencies
 2. Build API package
 3. Deploy to Cloudflare Workers
@@ -273,6 +281,7 @@ Three automated workflows are configured:
 **Triggers:** Push to main branch
 
 **Steps:**
+
 1. Install dependencies
 2. Build Next.js app
 3. Deploy to Cloudflare Pages
@@ -311,10 +320,12 @@ git push origin feature/my-feature
 ### PR Preview Deployments
 
 **Automatic preview URLs:**
+
 - Web: `https://<branch-name>.creepjs.pages.dev`
 - API: Workers preview deployment
 
 **Features:**
+
 - Isolated environment per PR
 - Lighthouse performance report
 - Automatic cleanup when PR is closed
@@ -385,6 +396,7 @@ Verify deployment with the automated health check script:
 ```
 
 **Tests performed:**
+
 - API root endpoint
 - CORS headers
 - Token generation
@@ -397,11 +409,11 @@ Verify deployment with the automated health check script:
 
 Verify DNS records in Cloudflare Dashboard:
 
-| Type | Name | Target | Proxy |
-|------|------|--------|-------|
-| A/CNAME | @ | (Pages auto-configured) | ✅ Proxied |
-| CNAME | www | creepjs.org | ✅ Proxied |
-| CNAME | api | (Workers auto-configured) | ✅ Proxied |
+| Type    | Name | Target                    | Proxy      |
+| ------- | ---- | ------------------------- | ---------- |
+| A/CNAME | @    | (Pages auto-configured)   | ✅ Proxied |
+| CNAME   | www  | creepjs.org               | ✅ Proxied |
+| CNAME   | api  | (Workers auto-configured) | ✅ Proxied |
 
 ### SEO Verification
 
@@ -428,6 +440,7 @@ curl https://creepjs.org | grep 'application/ld+json'
    - Copy the site token
 
 2. Add to environment variables:
+
    ```bash
    # In Cloudflare Pages Settings → Environment Variables
    NEXT_PUBLIC_CF_ANALYTICS_TOKEN=<your_token>
@@ -445,6 +458,7 @@ curl https://creepjs.org | grep 'application/ld+json'
 ### Cloudflare Analytics
 
 **Metrics available:**
+
 - Page views and unique visitors
 - Geographic distribution
 - Bandwidth usage
@@ -456,6 +470,7 @@ curl https://creepjs.org | grep 'application/ld+json'
 ### Workers Analytics
 
 **Metrics available:**
+
 - Request count
 - CPU time
 - KV operations
@@ -467,6 +482,7 @@ curl https://creepjs.org | grep 'application/ld+json'
 ### Custom Events
 
 The analytics library (`src/lib/analytics.ts`) tracks:
+
 - Fingerprint generation
 - API token requests
 - Button clicks
@@ -480,6 +496,7 @@ The analytics library (`src/lib/analytics.ts`) tracks:
 Set up external monitoring:
 
 **UptimeRobot** (free):
+
 ```
 Monitor: https://api.creepjs.org
 Interval: 5 minutes
@@ -487,6 +504,7 @@ Alert: Email/Slack/Webhook
 ```
 
 **Better Uptime** (free tier):
+
 ```
 Monitor: https://api.creepjs.org
 Interval: 3 minutes
@@ -502,6 +520,7 @@ Alert: Email/Slack/Discord/PagerDuty
 **Issue:** `Error: A request to the Cloudflare API failed`
 
 **Solutions:**
+
 1. Verify `CLOUDFLARE_API_TOKEN` in GitHub Secrets
 2. Check token permissions (Workers Scripts - Edit required)
 3. Ensure token hasn't expired
@@ -512,6 +531,7 @@ Alert: Email/Slack/Discord/PagerDuty
 **Issue:** Health check returns 404 or 500
 
 **Solutions:**
+
 1. Check Workers logs: `wrangler tail`
 2. Verify KV namespaces are bound in `wrangler.toml`
 3. Test locally: `wrangler dev` then `curl http://localhost:8787`
@@ -522,6 +542,7 @@ Alert: Email/Slack/Discord/PagerDuty
 **Issue:** `KV.get is not a function`
 
 **Solutions:**
+
 1. Verify `[[kv_namespaces]]` in `apps/api/wrangler.toml`
 2. Ensure namespace IDs are correct (not placeholder values)
 3. Re-run setup: `./scripts/setup-kv.sh production`
@@ -531,6 +552,7 @@ Alert: Email/Slack/Discord/PagerDuty
 **Issue:** `Type errors` or `Build failed`
 
 **Solutions:**
+
 1. Run locally: `pnpm build`
 2. Check TypeScript errors: `pnpm typecheck`
 3. Verify all dependencies: `pnpm install`
@@ -541,6 +563,7 @@ Alert: Email/Slack/Discord/PagerDuty
 **Issue:** `Access-Control-Allow-Origin header missing`
 
 **Solutions:**
+
 1. Check CORS middleware in `apps/api/src/middleware/cors.ts`
 2. Verify `CORS_ORIGIN` in `wrangler.toml` vars section
 3. Test preflight: `curl -X OPTIONS -H "Origin: https://creepjs.org" https://api.creepjs.org/v1/fingerprint`
@@ -548,6 +571,7 @@ Alert: Email/Slack/Discord/PagerDuty
 ### Rollback Procedure
 
 **API (Workers):**
+
 ```bash
 # List deployments
 wrangler deployments list
@@ -560,6 +584,7 @@ wrangler rollback --message "Rollback to stable version"
 ```
 
 **Web (Pages):**
+
 1. Dashboard → Pages → creepjs-web → Deployments
 2. Find stable deployment
 3. Click "..." → "Rollback to this deployment"

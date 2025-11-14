@@ -121,13 +121,13 @@ Clearly inform users:
 const respectPrivacy = () => {
   // Do Not Track
   if (navigator.doNotTrack === '1') return false;
-  
+
   // Global Privacy Control
   if (navigator.globalPrivacyControl) return false;
-  
+
   // Private browsing mode detection
   if (isPrivateMode()) return false;
-  
+
   return true;
 };
 ```
@@ -137,6 +137,7 @@ const respectPrivacy = () => {
 ### Acceptable Use
 
 ✅ **Allowed**:
+
 - Fraud detection and prevention
 - Account security (detect multiple accounts)
 - Bot detection
@@ -146,6 +147,7 @@ const respectPrivacy = () => {
 ### Prohibited Use
 
 ❌ **Not Allowed**:
+
 - User tracking without consent
 - Privacy invasion
 - Discrimination
@@ -179,5 +181,6 @@ If a security incident occurs:
 ## Contact
 
 For security issues:
+
 - **Email**: hello@creepjs.org
 - **Bug Bounty**: (Coming soon)

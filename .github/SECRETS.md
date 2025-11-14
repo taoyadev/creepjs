@@ -7,9 +7,11 @@ This document describes all secrets required for CI/CD workflows in the CreepJS 
 ### Cloudflare Credentials
 
 #### `CLOUDFLARE_API_TOKEN`
+
 **Purpose**: Authenticate Wrangler CLI and Cloudflare Pages deployments
 
 **How to obtain**:
+
 1. Log in to [Cloudflare Dashboard](https://dash.cloudflare.com)
 2. Navigate to **My Profile** → **API Tokens**
 3. Click **Create Token**
@@ -28,9 +30,11 @@ This document describes all secrets required for CI/CD workflows in the CreepJS 
 ---
 
 #### `CLOUDFLARE_ACCOUNT_ID`
+
 **Purpose**: Identify your Cloudflare account for deployments
 
 **How to obtain**:
+
 1. Log in to [Cloudflare Dashboard](https://dash.cloudflare.com)
 2. Select your domain (`creepjs.org`)
 3. Scroll down to **Account ID** in the right sidebar
@@ -44,9 +48,11 @@ This document describes all secrets required for CI/CD workflows in the CreepJS 
 ### Optional: Test API Token
 
 #### `TEST_API_TOKEN`
+
 **Purpose**: Test the fingerprint API endpoint during health checks
 
 **How to obtain**:
+
 1. Generate a test token using the CreepJS token generation endpoint:
    ```bash
    curl -X POST https://api.creepjs.org/v1/token \
@@ -69,10 +75,12 @@ This document describes all secrets required for CI/CD workflows in the CreepJS 
 If you want to use a staging environment with separate resources:
 
 #### `CLOUDFLARE_API_TOKEN_STAGING`
+
 - Same format as production token
 - Should have permissions for staging Workers and Pages
 
 #### `CLOUDFLARE_ACCOUNT_ID_STAGING`
+
 - Can be same as production if using same account
 - Different if using separate staging account
 
@@ -121,6 +129,7 @@ After adding secrets, verify they work:
    - Successful authentication will show `✅` in deployment step
 
 3. **Test deployment**:
+
    ```bash
    # Test API health endpoint
    curl https://api.creepjs.org/
@@ -134,6 +143,7 @@ After adding secrets, verify they work:
 ## Security Best Practices
 
 ### ✅ Do's
+
 - ✅ Use environment secrets for production deployments
 - ✅ Rotate API tokens every 90 days
 - ✅ Limit token permissions to minimum required
@@ -142,6 +152,7 @@ After adding secrets, verify they work:
 - ✅ Review token activity in Cloudflare dashboard regularly
 
 ### ❌ Don'ts
+
 - ❌ Never commit secrets to code repository
 - ❌ Never share secrets in pull request comments
 - ❌ Never use production secrets in local development
@@ -153,20 +164,26 @@ After adding secrets, verify they work:
 ## Troubleshooting
 
 ### "Unauthorized" errors in deployment
+
 **Solution**:
+
 1. Check token is correctly copied (no extra spaces)
 2. Verify token hasn't expired
 3. Ensure token has correct permissions (Workers Scripts - Edit)
 4. Regenerate token if needed
 
 ### "Account ID not found" errors
+
 **Solution**:
+
 1. Verify account ID is 32 characters
 2. Check you're using the correct Cloudflare account
 3. Ensure account has Workers enabled
 
 ### Health check fails after deployment
+
 **Solution**:
+
 1. Wait 30-60 seconds for DNS propagation
 2. Check Wrangler deployment logs for errors
 3. Verify routes are correctly configured in `wrangler.toml`
@@ -178,11 +195,11 @@ After adding secrets, verify they work:
 
 Recommended rotation schedule:
 
-| Secret | Rotation Frequency | Next Rotation |
-|--------|-------------------|---------------|
-| `CLOUDFLARE_API_TOKEN` | Every 90 days | Track in your calendar |
-| `CLOUDFLARE_ACCOUNT_ID` | Never (unless account changes) | N/A |
-| `TEST_API_TOKEN` | Every 30 days | Track in your calendar |
+| Secret                  | Rotation Frequency             | Next Rotation          |
+| ----------------------- | ------------------------------ | ---------------------- |
+| `CLOUDFLARE_API_TOKEN`  | Every 90 days                  | Track in your calendar |
+| `CLOUDFLARE_ACCOUNT_ID` | Never (unless account changes) | N/A                    |
+| `TEST_API_TOKEN`        | Every 30 days                  | Track in your calendar |
 
 ---
 

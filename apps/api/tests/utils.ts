@@ -33,7 +33,7 @@ export const createMockKV = (
       const type =
         typeof typeOrOptions === 'string'
           ? typeOrOptions
-          : typeOrOptions?.type ?? 'text';
+          : (typeOrOptions?.type ?? 'text');
 
       if (type === 'json') {
         return JSON.parse(entry.value);

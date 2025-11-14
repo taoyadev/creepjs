@@ -49,9 +49,9 @@ For each filter in the list mentioned above, do the following steps:
 
 1. Go to the ab blocker settings, turn on only this filter, make sure the new filter set is applied (click the refresh button in the ad blocker settings and wait a couple seconds).
 2. Return to the browser, refresh the page (make sure the field content has changed). It will show which CSS selectors are blocked by the current filter.
-    If the list is empty, try refreshing the page or opening it on another platform.
+   If the list is empty, try refreshing the page or opening it on another platform.
 3. Save the content of the field to a `.txt` file in the `resources/content_blocking/blocked_selectors` directory.
-    The file names will be names of the filters in the entropy source; see its source code to know the correct names.
+   The file names will be names of the filters in the entropy source; see its source code to know the correct names.
 
 After that, you will get the list of files that matches the current list of filters in the entropy source code.
 

@@ -19,9 +19,9 @@ function detectBrowserFeatures() {
   const properties = Object.getOwnPropertyNames(HTMLElement.prototype);
 
   return {
-    totalProperties: properties.length,      // How many features?
-    uniqueProperties: findUniqueOnes(properties),  // Which are unique to your browser?
-    fingerprint: hashAllProperties(properties)     // Create unique ID
+    totalProperties: properties.length, // How many features?
+    uniqueProperties: findUniqueOnes(properties), // Which are unique to your browser?
+    fingerprint: hashAllProperties(properties), // Create unique ID
   };
 }
 ```
@@ -32,11 +32,11 @@ When you run code like this, **Chrome might show 250 properties, Firefox might s
 
 According to recent 2024-2025 research studies analyzing fingerprinting behavior across **988,220 websites**, here's what we found:
 
-| Detection Method | Accuracy | Usage Rate |
-|-----------------|----------|------------|
-| HTML Element API Enumeration | 85-90% | 0.78% of websites |
-| Combined with Canvas/Audio | 90.5-95.5% | 4.26% of fingerprinting scripts |
-| Multi-layered Detection (2025) | 95%+ | Growing rapidly |
+| Detection Method               | Accuracy   | Usage Rate                      |
+| ------------------------------ | ---------- | ------------------------------- |
+| HTML Element API Enumeration   | 85-90%     | 0.78% of websites               |
+| Combined with Canvas/Audio     | 90.5-95.5% | 4.26% of fingerprinting scripts |
+| Multi-layered Detection (2025) | 95%+       | Growing rapidly                 |
 
 **Source**: [FProbe Study 2024](https://arxiv.org/html/2502.14326v1), analyzing 2.3M+ JavaScript files
 
@@ -64,19 +64,19 @@ Let's talk about what websites actually see when they inspect your browser:
 // Real properties that differ across browsers
 const detectableProperties = {
   // Standard properties (everyone has these)
-  'innerHTML': 'standard',
-  'classList': 'standard',
-  'dataset': 'standard',
+  innerHTML: 'standard',
+  classList: 'standard',
+  dataset: 'standard',
 
   // Browser-specific properties
-  'webkitRequestFullscreen': 'Chrome/Safari only',
-  'mozRequestFullScreen': 'Firefox only',
-  'msMatchesSelector': 'Old IE/Edge only',
+  webkitRequestFullscreen: 'Chrome/Safari only',
+  mozRequestFullScreen: 'Firefox only',
+  msMatchesSelector: 'Old IE/Edge only',
 
   // Modern experimental features
-  'getAnimations': 'Chrome/Firefox (recent versions)',
-  'attachShadow': 'Modern browsers (support varies)',
-  'requestPointerLock': 'Gaming-focused browsers'
+  getAnimations: 'Chrome/Firefox (recent versions)',
+  attachShadow: 'Modern browsers (support varies)',
+  requestPointerLock: 'Gaming-focused browsers',
 };
 ```
 
@@ -90,14 +90,14 @@ Think about it like this: If Browser A has properties 1, 2, 3, 4, 5, and Browser
 
 Here's what different browsers expose (2025 data):
 
-| Browser | Property Count | Unique Properties | Fingerprint Entropy |
-|---------|---------------|-------------------|---------------------|
-| Chrome 131 | 247 properties | 12 Chrome-only | 8.2 bits |
-| Firefox 134 | 231 properties | 8 Firefox-only | 7.9 bits |
-| Safari 18 | 225 properties | 15 Safari-only | 8.5 bits |
-| Edge 131 | 249 properties | 6 Edge-specific | 8.1 bits |
-| Brave | 245 properties (randomized) | Varies | 6.8 bits (privacy mode) |
-| Tor Browser | 220 properties (standardized) | Minimized | 4.2 bits (maximum privacy) |
+| Browser     | Property Count                | Unique Properties | Fingerprint Entropy        |
+| ----------- | ----------------------------- | ----------------- | -------------------------- |
+| Chrome 131  | 247 properties                | 12 Chrome-only    | 8.2 bits                   |
+| Firefox 134 | 231 properties                | 8 Firefox-only    | 7.9 bits                   |
+| Safari 18   | 225 properties                | 15 Safari-only    | 8.5 bits                   |
+| Edge 131    | 249 properties                | 6 Edge-specific   | 8.1 bits                   |
+| Brave       | 245 properties (randomized)   | Varies            | 6.8 bits (privacy mode)    |
+| Tor Browser | 220 properties (standardized) | Minimized         | 4.2 bits (maximum privacy) |
 
 **Entropy** means "how unique" – higher numbers = easier to track you.
 
@@ -110,10 +110,10 @@ Let me show you how this plays out in reality:
 ```javascript
 // Properties that scream "I'm Chrome!"
 const chromeSignals = [
-  'chrome' in window,                    // Chrome object exists
-  'webkitRequestFullscreen' in element,  // WebKit prefix
-  'getAnimations' in element,            // Modern API support
-  Object.keys(HTMLElement.prototype).length === 247  // Exact count
+  'chrome' in window, // Chrome object exists
+  'webkitRequestFullscreen' in element, // WebKit prefix
+  'getAnimations' in element, // Modern API support
+  Object.keys(HTMLElement.prototype).length === 247, // Exact count
 ];
 ```
 
@@ -124,10 +124,10 @@ If all these check out: **95% confidence you're Chrome**.
 ```javascript
 // Properties that scream "I'm Firefox!"
 const firefoxSignals = [
-  'InstallTrigger' in window,           // Legacy Firefox object
-  'mozRequestFullScreen' in element,    // Mozilla prefix
-  'oscpu' in navigator,                 // Firefox-specific
-  Object.keys(HTMLElement.prototype).length === 231
+  'InstallTrigger' in window, // Legacy Firefox object
+  'mozRequestFullScreen' in element, // Mozilla prefix
+  'oscpu' in navigator, // Firefox-specific
+  Object.keys(HTMLElement.prototype).length === 231,
 ];
 ```
 
@@ -136,6 +136,7 @@ If all match: **92% confidence you're Firefox**.
 ### Example 3: The Privacy-Conscious User
 
 If you're using **Brave** or **Tor Browser**, they try to look "generic" by:
+
 - Removing unique properties
 - Randomizing property counts slightly
 - Blocking certain API access
@@ -165,10 +166,10 @@ const originalDescriptor = Object.getOwnPropertyDescriptor(
 );
 
 Object.defineProperty(HTMLElement.prototype, 'offsetHeight', {
-  get: function() {
+  get: function () {
     console.warn('🚨 Website accessed offsetHeight - possible fingerprinting!');
     return originalDescriptor.get.call(this);
-  }
+  },
 });
 ```
 
@@ -204,12 +205,12 @@ Look, I get it. Websites need to prevent fraud and bot attacks. But here's my ta
 
 Let's wrap up with hard numbers from recent studies:
 
-| Study | Year | Websites Analyzed | Fingerprinting Detected |
-|-------|------|-------------------|------------------------|
-| FProbe Study | 2024 | 988,220 | 0.78% (explicit) |
-| FP-tracer Analysis | 2024 | 911 domains | 95% (moderate activity) |
-| Princeton Web Census | 2024 | Top 100K sites | 12.3% (confirmed) |
-| Stytch Security Report | 2025 | Enterprise sites | 67% (fraud prevention) |
+| Study                  | Year | Websites Analyzed | Fingerprinting Detected |
+| ---------------------- | ---- | ----------------- | ----------------------- |
+| FProbe Study           | 2024 | 988,220           | 0.78% (explicit)        |
+| FP-tracer Analysis     | 2024 | 911 domains       | 95% (moderate activity) |
+| Princeton Web Census   | 2024 | Top 100K sites    | 12.3% (confirmed)       |
+| Stytch Security Report | 2025 | Enterprise sites  | 67% (fraud prevention)  |
 
 **The Reality**: Usage varies wildly depending on how aggressively you look for it. Explicit fingerprinting scripts? Rare. Subtle API checks combined with other techniques? **Everywhere**.
 
@@ -226,6 +227,7 @@ The web doesn't have to be a surveillance nightmare. But right now, every site y
 ---
 
 **Sources:**
+
 - [Browser Fingerprint Detection 2025 Study](https://arxiv.org/html/2502.14326v1) - Academic research analyzing 988K+ websites
 - [FP-tracer Framework Analysis](https://petsymposium.org/popets/2024/popets-2024-0092.pdf) - 62 detection sources, 911 domains
 - [Coronium Developer Guide 2025](https://www.coronium.io/blog/browser-fingerprint-detection-guide) - Industry best practices

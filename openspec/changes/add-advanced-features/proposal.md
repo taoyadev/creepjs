@@ -1,9 +1,11 @@
 # Change Proposal: add-advanced-features
 
 ## Summary
+
 Implement advanced intelligence features that differentiate CreepJS from competitors: fingerprint history tracking, lie detection (inconsistency analysis), risk scoring with ML, WebAssembly performance optimization, artistic fingerprint visualization, and privacy mode detection (Tor, VPNs). These features enable enterprise use cases like fraud prevention while maintaining educational value.
 
 ## Motivation
+
 - Competitors (Fingerprint.com, FingerprintJS Pro) offer fraud detection and tracking—we lack these capabilities
 - Current fingerprinting is CPU-intensive (Canvas, Audio)—WASM can provide 50%+ speedup
 - No historical tracking—can't detect account takeovers or session hijacking
@@ -13,6 +15,7 @@ Implement advanced intelligence features that differentiate CreepJS from competi
 ## Scope
 
 ### 1. Fingerprint History Tracking (Cloudflare Durable Objects)
+
 - **Persistent storage** per visitor ID (Durable Objects)
 - **Timeline view** showing fingerprint changes over time
 - **Anomaly detection**: Alert when fingerprint changes dramatically (possible account takeover)
@@ -20,6 +23,7 @@ Implement advanced intelligence features that differentiate CreepJS from competi
 - **Privacy controls**: User can opt out, delete history
 
 ### 2. Lie Detection Engine
+
 - **Inconsistency checks** (20+ rules):
   - userAgent vs Canvas GPU mismatch
   - Screen resolution vs reported dimensions
@@ -32,6 +36,7 @@ Implement advanced intelligence features that differentiate CreepJS from competi
 - **Confidence score** (0-100): How trustworthy is the fingerprint?
 
 ### 3. Risk Scoring Engine
+
 - **Statistical model**: Compare fingerprint to known fraud patterns
 - **Cloudflare Workers AI** integration (optional ML model):
   - Train on labeled dataset (fraud vs legitimate)
@@ -45,6 +50,7 @@ Implement advanced intelligence features that differentiate CreepJS from competi
 - **Output**: Risk score (0-100) + explanation
 
 ### 4. WebAssembly Acceleration
+
 - **Rust-based collectors** for heavy operations:
   - Canvas image hashing (replace JS MurmurHash)
   - Audio signal processing
@@ -54,6 +60,7 @@ Implement advanced intelligence features that differentiate CreepJS from competi
 - **Target**: 50% faster fingerprint generation
 
 ### 5. Canvas Fingerprint Visualization ("Fingerprint DNA")
+
 - **Algorithm**: Convert fingerprint components to unique SVG art
   - Canvas hash → Color gradient
   - WebGL parameters → Shape patterns
@@ -63,6 +70,7 @@ Implement advanced intelligence features that differentiate CreepJS from competi
 - **Animation** (optional): Smooth transitions between fingerprints
 
 ### 6. Privacy Mode Detection
+
 - **Tor Browser identification**:
   - Check for Tor-specific navigator properties
   - Detect timezone spoofing (always UTC)
@@ -77,12 +85,14 @@ Implement advanced intelligence features that differentiate CreepJS from competi
   - Firefox Resist Fingerprinting mode
 
 ## Out of Scope
+
 - Real-time fraud blocking—educational platform, not security product (yet)
 - User accounts for storing history—use anonymous Durable Object IDs
 - Training ML models from scratch—use pre-trained Workers AI models
 - Mobile app fingerprinting—web only for now
 
 ## Risks & Mitigations
+
 - **Durable Objects cost**: Monitor usage; DO free tier provides 1M requests/month—should suffice for MVP
 - **WASM bundle size**: Keep WASM <100KB; use code splitting
 - **Workers AI quota**: Free tier limited; implement fallback to rule-based scoring
@@ -90,6 +100,7 @@ Implement advanced intelligence features that differentiate CreepJS from competi
 - **Lie detection false positives**: Tune thresholds conservatively; provide explanations
 
 ## Success Criteria
+
 - Fingerprint history stores >1000 visitor timelines in Durable Objects
 - Lie detection identifies Canvas Blocker with 95%+ accuracy
 - Risk scoring model achieves >80% precision on test dataset

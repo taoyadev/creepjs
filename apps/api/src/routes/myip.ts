@@ -44,7 +44,8 @@ app.get('/', async (c) => {
     const xRealIp = c.req.header('x-real-ip');
 
     // Priority: CF-Connecting-IP > X-Real-IP > X-Forwarded-For
-    let clientIp = cfConnectingIp || xRealIp || xForwardedFor?.split(',')[0] || '127.0.0.1';
+    let clientIp =
+      cfConnectingIp || xRealIp || xForwardedFor?.split(',')[0] || '127.0.0.1';
     clientIp = clientIp.trim();
 
     console.log('Detected client IP:', clientIp);
@@ -65,16 +66,19 @@ app.get('/', async (c) => {
 
     // Fetch from IPInfo.io API
     const token = c.env.IPINFO_TOKEN;
-    const ipinfoUrl = clientIp === '::1' || clientIp === '127.0.0.1' || clientIp.startsWith('192.168.')
-      ? `https://ipinfo.io/json?token=${token}` // Auto-detect for local IPs
-      : `https://ipinfo.io/${clientIp}?token=${token}`;
+    const ipinfoUrl =
+      clientIp === '::1' ||
+      clientIp === '127.0.0.1' ||
+      clientIp.startsWith('192.168.')
+        ? `https://ipinfo.io/json?token=${token}` // Auto-detect for local IPs
+        : `https://ipinfo.io/${clientIp}?token=${token}`;
 
     console.log('Fetching from:', ipinfoUrl);
 
     const response = await fetch(ipinfoUrl, {
       method: 'GET',
       headers: {
-        'Accept': 'application/json',
+        Accept: 'application/json',
       },
     });
 
@@ -88,7 +92,9 @@ app.get('/', async (c) => {
     // Transform data
     const [latitudeRaw, longitudeRaw] = data.loc?.split(',') ?? [];
     const latitude = latitudeRaw ? Number.parseFloat(latitudeRaw) : undefined;
-    const longitude = longitudeRaw ? Number.parseFloat(longitudeRaw) : undefined;
+    const longitude = longitudeRaw
+      ? Number.parseFloat(longitudeRaw)
+      : undefined;
 
     const asMatch = data.org?.match(/^AS(\d+)/);
     const organization = data.org?.replace(/^AS\d+\s+/, '').trim();

@@ -13,6 +13,7 @@ Here's the thing: different browsers implement the contentWindow object with dif
 ### The contentWindow Object
 
 The contentWindow object represents the window object of the iframe. It includes:
+
 - **Global properties**: Things like `window.innerWidth`, `window.screen`, etc.
 - **JavaScript APIs**: Functions and objects the browser exposes
 - **Security features**: Sandboxing attributes, permissions policies
@@ -41,7 +42,7 @@ function getContentWindowFingerprint() {
     propertyCount: 0,
     uniqueProperties: [],
     securityFeatures: {},
-    apiSupport: {}
+    apiSupport: {},
   };
 
   // Count and catalog properties
@@ -51,13 +52,18 @@ function getContentWindowFingerprint() {
 
     // Look for browser-specific properties
     const uniqueProps = [
-      'chrome', 'safari', 'InstallTrigger', // Browser detection
-      'ApplePaySession', 'openDatabase', // Apple-specific
-      'webkitStorageInfo', 'webkitNotifications', // WebKit prefix
-      'mozInnerScreenX', 'mozRTCPeerConnection' // Mozilla-specific
+      'chrome',
+      'safari',
+      'InstallTrigger', // Browser detection
+      'ApplePaySession',
+      'openDatabase', // Apple-specific
+      'webkitStorageInfo',
+      'webkitNotifications', // WebKit prefix
+      'mozInnerScreenX',
+      'mozRTCPeerConnection', // Mozilla-specific
     ];
 
-    uniqueProps.forEach(prop => {
+    uniqueProps.forEach((prop) => {
       if (prop in win) {
         fingerprint.uniqueProperties.push(prop);
       }
@@ -67,7 +73,7 @@ function getContentWindowFingerprint() {
     fingerprint.securityFeatures = {
       crossOriginIsolated: win.crossOriginIsolated || false,
       isSecureContext: win.isSecureContext || false,
-      trustedTypes: 'trustedTypes' in win
+      trustedTypes: 'trustedTypes' in win,
     };
 
     // Test API availability
@@ -76,9 +82,8 @@ function getContentWindowFingerprint() {
       clipboard: 'clipboard' in win.navigator,
       usb: 'usb' in win.navigator,
       bluetooth: 'bluetooth' in win.navigator,
-      geolocation: 'geolocation' in win.navigator
+      geolocation: 'geolocation' in win.navigator,
     };
-
   } catch (e) {
     fingerprint.error = e.message;
   } finally {
@@ -100,7 +105,8 @@ Sophisticated trackers go much deeper:
 // Advanced content window fingerprinting
 function advancedContentWindowFingerprint() {
   const iframe = document.createElement('iframe');
-  iframe.style.cssText = 'position:absolute; left:-9999px; width:1px; height:1px;';
+  iframe.style.cssText =
+    'position:absolute; left:-9999px; width:1px; height:1px;';
   iframe.sandbox = 'allow-same-origin allow-scripts';
   document.body.appendChild(iframe);
 
@@ -110,7 +116,7 @@ function advancedContentWindowFingerprint() {
     navigatorProperties: {},
     prototypeChain: [],
     constructors: [],
-    securityPolicies: {}
+    securityPolicies: {},
   };
 
   try {
@@ -121,7 +127,7 @@ function advancedContentWindowFingerprint() {
       results.prototypeChain.push({
         depth: depth,
         constructor: proto.constructor ? proto.constructor.name : 'unknown',
-        ownPropertyCount: Object.getOwnPropertyNames(proto).length
+        ownPropertyCount: Object.getOwnPropertyNames(proto).length,
       });
       proto = Object.getPrototypeOf(proto);
       depth++;
@@ -129,18 +135,24 @@ function advancedContentWindowFingerprint() {
 
     // 2. Check for browser-specific constructors
     const constructorsToCheck = [
-      'chrome', 'safari', 'opr', 'InstallTrigger',
-      'HTMLDocument', 'HTMLElement',
-      'PerformanceObserver', 'IntersectionObserver',
-      'ResizeObserver', 'MutationObserver'
+      'chrome',
+      'safari',
+      'opr',
+      'InstallTrigger',
+      'HTMLDocument',
+      'HTMLElement',
+      'PerformanceObserver',
+      'IntersectionObserver',
+      'ResizeObserver',
+      'MutationObserver',
     ];
 
-    constructorsToCheck.forEach(name => {
+    constructorsToCheck.forEach((name) => {
       if (name in win) {
         results.constructors.push({
           name: name,
           type: typeof win[name],
-          isFunction: typeof win[name] === 'function'
+          isFunction: typeof win[name] === 'function',
         });
       }
     });
@@ -150,7 +162,7 @@ function advancedContentWindowFingerprint() {
       sandboxFlags: iframe.sandbox.toString(),
       origin: win.origin || 'unknown',
       crossOriginIsolated: win.crossOriginIsolated || false,
-      credentialless: 'credentialless' in iframe
+      credentialless: 'credentialless' in iframe,
     };
 
     // 4. Navigator object differences
@@ -163,8 +175,8 @@ function advancedContentWindowFingerprint() {
         hasVendorSpecific: {
           webdriver: 'webdriver' in win.navigator,
           brave: 'brave' in win.navigator,
-          connection: 'connection' in win.navigator
-        }
+          connection: 'connection' in win.navigator,
+        },
       };
     }
 
@@ -177,7 +189,6 @@ function advancedContentWindowFingerprint() {
     // 6. Check for isolated worlds (Chrome extension APIs)
     results.windowProperties.hasExtensionAPIs =
       'chrome' in win && win.chrome && 'runtime' in win.chrome;
-
   } catch (e) {
     results.error = e.toString();
   } finally {
@@ -189,6 +200,7 @@ function advancedContentWindowFingerprint() {
 ```
 
 This advanced version checks:
+
 - The complete prototype chain of the window object
 - Browser-specific constructors and global objects
 - Sandbox security behavior
@@ -203,13 +215,13 @@ Content window fingerprinting became more relevant in 2024-2025 as privacy regul
 
 ### Detection Effectiveness (2024-2025 Data)
 
-| Metric | Value | Source |
-|--------|-------|--------|
-| Browser identification accuracy | 75-85% | Combined with user agent |
-| Unique iframe property patterns | 50-100 variations | Depends on browser + version |
-| Stability across sessions | High (90%+) | Properties rarely change |
-| Resistance to privacy mode | High | Incognito doesn't hide window properties |
-| Detection by privacy tools | Low (<10%) | Most blockers ignore this vector |
+| Metric                          | Value             | Source                                   |
+| ------------------------------- | ----------------- | ---------------------------------------- |
+| Browser identification accuracy | 75-85%            | Combined with user agent                 |
+| Unique iframe property patterns | 50-100 variations | Depends on browser + version             |
+| Stability across sessions       | High (90%+)       | Properties rarely change                 |
+| Resistance to privacy mode      | High              | Incognito doesn't hide window properties |
+| Detection by privacy tools      | Low (<10%)        | Most blockers ignore this vector         |
 
 ### Browser Behavior Analysis
 
@@ -225,24 +237,24 @@ Here's how different browsers handle iframe contentWindow objects as of 2024-202
 
 ### Property Count Comparison
 
-| Browser | Version | contentWindow Properties | Unique Properties | Sandbox Support |
-|---------|---------|--------------------------|-------------------|-----------------|
-| Chrome | 130+ | 350-380 properties | `chrome` object, Credential Management API | Full |
-| Firefox | 132+ | 320-340 properties | `InstallTrigger`, `mozRTCPeerConnection` | Full |
-| Safari | 18+ | 340-360 properties | `ApplePaySession`, `webkit` prefixes | Full |
-| Brave | 1.73+ | 350-370 properties | `brave` object, farbled values | Full + Enhanced |
-| Edge | 130+ | 350-380 properties | Similar to Chrome (both Chromium) | Full |
+| Browser | Version | contentWindow Properties | Unique Properties                          | Sandbox Support |
+| ------- | ------- | ------------------------ | ------------------------------------------ | --------------- |
+| Chrome  | 130+    | 350-380 properties       | `chrome` object, Credential Management API | Full            |
+| Firefox | 132+    | 320-340 properties       | `InstallTrigger`, `mozRTCPeerConnection`   | Full            |
+| Safari  | 18+     | 340-360 properties       | `ApplePaySession`, `webkit` prefixes       | Full            |
+| Brave   | 1.73+   | 350-370 properties       | `brave` object, farbled values             | Full + Enhanced |
+| Edge    | 130+    | 350-380 properties       | Similar to Chrome (both Chromium)          | Full            |
 
 ### Vendor-Specific Properties
 
 Different browsers expose unique global objects in iframe windows:
 
 **Chrome/Chromium:**
+
 ```javascript
 // Chrome-specific detection
-const isChrome = 'chrome' in window &&
-                 window.chrome &&
-                 'loadTimes' in window.chrome;
+const isChrome =
+  'chrome' in window && window.chrome && 'loadTimes' in window.chrome;
 
 // Chromium also exposes:
 // - window.chrome.webstore (if on Chrome Web Store)
@@ -251,10 +263,10 @@ const isChrome = 'chrome' in window &&
 ```
 
 **Firefox:**
+
 ```javascript
 // Firefox-specific detection
-const isFirefox = 'InstallTrigger' in window ||
-                  'mozInnerScreenX' in window;
+const isFirefox = 'InstallTrigger' in window || 'mozInnerScreenX' in window;
 
 // Firefox also has:
 // - window.sidebar (legacy)
@@ -263,10 +275,10 @@ const isFirefox = 'InstallTrigger' in window ||
 ```
 
 **Safari:**
+
 ```javascript
 // Safari-specific detection
-const isSafari = 'ApplePaySession' in window &&
-                 'safari' in window;
+const isSafari = 'ApplePaySession' in window && 'safari' in window;
 
 // Safari also exposes:
 // - window.safari.pushNotification
@@ -275,10 +287,10 @@ const isSafari = 'ApplePaySession' in window &&
 ```
 
 **Brave:**
+
 ```javascript
 // Brave-specific detection
-const isBrave = 'brave' in navigator &&
-                navigator.brave.isBrave !== undefined;
+const isBrave = 'brave' in navigator && navigator.brave.isBrave !== undefined;
 
 // Brave adds privacy features to window:
 // - Randomized values for many APIs (farbling)
@@ -289,12 +301,12 @@ const isBrave = 'brave' in navigator &&
 
 The `sandbox` attribute on iframes behaves slightly differently across browsers:
 
-| Sandbox Flag | Chrome | Firefox | Safari | Effect on Fingerprinting |
-|--------------|--------|---------|--------|--------------------------|
-| `allow-same-origin` | Full support | Full support | Full support | Required for property access |
-| `allow-scripts` | Full support | Full support | Full support | Enables JavaScript enumeration |
-| `allow-top-navigation` | Full support | Full support | Full support | Doesn't affect fingerprinting |
-| Empty sandbox | Unique null origin | Unique null origin | Unique null origin | Creates isolated context |
+| Sandbox Flag           | Chrome             | Firefox            | Safari             | Effect on Fingerprinting       |
+| ---------------------- | ------------------ | ------------------ | ------------------ | ------------------------------ |
+| `allow-same-origin`    | Full support       | Full support       | Full support       | Required for property access   |
+| `allow-scripts`        | Full support       | Full support       | Full support       | Enables JavaScript enumeration |
+| `allow-top-navigation` | Full support       | Full support       | Full support       | Doesn't affect fingerprinting  |
+| Empty sandbox          | Unique null origin | Unique null origin | Unique null origin | Creates isolated context       |
 
 ## Why This Matters: Privacy Implications
 
@@ -303,6 +315,7 @@ Content window fingerprinting is particularly concerning for several reasons:
 ### 1. It's Extremely Difficult to Detect
 
 Unlike canvas fingerprinting (which draws graphics) or audio fingerprinting (which processes sounds), iframe creation is completely normal on the web. Websites create iframes all the time for:
+
 - Embedded videos (YouTube, Vimeo)
 - Advertisements
 - Social media widgets (Facebook, Twitter embeds)
@@ -320,6 +333,7 @@ Even with JavaScript disabled in iframes (via sandbox restrictions), trackers ca
 ### 3. It Persists Across Privacy Measures
 
 Think you're protected because you:
+
 - Cleared cookies?
 - Used incognito mode?
 - Changed your IP via VPN?
@@ -334,6 +348,7 @@ Because iframe properties are consistent across different websites, trackers can
 ### 5. It's Part of Multi-Vector Attacks
 
 Content window fingerprinting is rarely used alone. It's combined with:
+
 - User Agent strings (browser + OS info)
 - Screen resolution and color depth
 - Timezone and language settings
@@ -350,6 +365,7 @@ The broader context helps explain why content window fingerprinting matters more
 ### Google's Fingerprinting Policy Shift
 
 In December 2024, Google announced that starting February 16, 2025, it would officially allow advertisers to use fingerprinting-based tracking to replace third-party cookies. This policy change:
+
 - Was sharply rebuked by the UK's Information Commissioner's Office (ICO)
 - Represents what privacy expert Lukasz Olejnik called "the biggest privacy erosion in 10 years"
 - Legitimized fingerprinting techniques that were previously considered invasive
@@ -357,6 +373,7 @@ In December 2024, Google announced that starting February 16, 2025, it would off
 ### Fingerprinting Detection Research (2025)
 
 A 2025 paper published at NDSS Symposium introduced FP-tracer, a tool that uses "taint-tracking and multi-level entropy-based thresholds" to detect fine-grained browser fingerprinting. The research found that:
+
 - Many websites use multiple fingerprinting vectors simultaneously
 - Iframe-based techniques are harder to detect than canvas/WebGL
 - Cross-site tracking via fingerprinting is more prevalent than previously thought
@@ -364,21 +381,25 @@ A 2025 paper published at NDSS Symposium introduced FP-tracer, a tool that uses 
 ### Browser Vendor Responses
 
 **Brave (Most Aggressive):**
+
 - Implements "farbling" - randomizes property values
 - Returns different iframe properties for each domain
 - Blocks known fingerprinting scripts
 
 **Firefox:**
+
 - Enhanced Tracking Protection blocks known trackers
 - `privacy.resistFingerprinting` standardizes some window properties
 - Doesn't specifically target iframe fingerprinting yet
 
 **Safari:**
+
 - Intelligent Tracking Prevention (ITP) focuses on cross-site tracking
 - Limited iframe property standardization
 - Privacy budgets under development
 
 **Chrome/Edge:**
+
 - Privacy Sandbox aims to replace tracking with "privacy-preserving" alternatives
 - No specific protections against iframe fingerprinting
 - Allows fingerprinting as of February 2025 policy
@@ -390,11 +411,13 @@ Let's be real - completely blocking content window fingerprinting without breaki
 ### 1. Use Privacy-Focused Browsers
 
 **Best Choice: Brave**
+
 - Automatically farbles (randomizes) iframe window properties
 - Different fingerprint on each domain
 - Strong balance between privacy and functionality
 
 **How to Enable Brave's Protections:**
+
 ```
 Settings > Shields > Advanced View
 - Trackers & ads blocking: Aggressive
@@ -402,12 +425,15 @@ Settings > Shields > Advanced View
 ```
 
 **Good Choice: Firefox with Resist Fingerprinting**
+
 ```
 about:config → privacy.resistFingerprinting → true
 ```
+
 This standardizes many window properties, though not all iframe-specific ones.
 
 **Nuclear Option: Tor Browser**
+
 - Maximum privacy through standardization + Tor network
 - All Tor Browser users have identical window properties
 - Trade-off: slower browsing, some sites break
@@ -415,11 +441,13 @@ This standardizes many window properties, though not all iframe-specific ones.
 ### 2. Browser Extensions (Limited Effectiveness)
 
 Extensions like uBlock Origin, Privacy Badger, and NoScript can help by:
+
 - Blocking tracker scripts before they load
 - Preventing third-party iframes from loading
 - Blocking fingerprinting-specific domains
 
 **But they can't:**
+
 - Modify window object properties (requires deep browser hooks)
 - Prevent first-party fingerprinting
 - Block legitimate iframes that also fingerprint
@@ -437,6 +465,7 @@ This prevents your site from being embedded in iframes, protecting users from so
 ### 4. The "Blend In" Strategy
 
 Sometimes the best protection is being unremarkable:
+
 - Use the most common browser in your region (usually Chrome)
 - Keep it updated to the latest version
 - Don't install unusual extensions
@@ -447,6 +476,7 @@ When you look like millions of other users, iframe fingerprinting becomes less e
 ### 5. Accept Targeted Tracking for Critical Uses
 
 For highly sensitive activities (whistleblowing, political activism, etc.):
+
 - Use Tor Browser exclusively
 - Access from public WiFi (not home network)
 - Don't login to personal accounts
@@ -459,6 +489,7 @@ Let's look at how content window fingerprinting is actually used:
 ### Scenario 1: Advertising Networks
 
 An ad network embeds ads via iframes across thousands of websites. Their tracking script:
+
 1. Creates a hidden iframe when the ad loads
 2. Fingerprints the contentWindow properties
 3. Combines with cookies (if available) or other fingerprints
@@ -470,6 +501,7 @@ An ad network embeds ads via iframes across thousands of websites. Their trackin
 ### Scenario 2: Fraud Prevention
 
 Financial services and e-commerce sites use fingerprinting for fraud detection:
+
 1. You visit a banking website
 2. JavaScript creates an iframe and fingerprints your browser
 3. Your fingerprint is compared to previous sessions
@@ -481,6 +513,7 @@ Financial services and e-commerce sites use fingerprinting for fraud detection:
 ### Scenario 3: Anti-Bot Detection
 
 Websites protecting against scraping and automation:
+
 1. Suspicious traffic is detected (too many requests, unusual patterns)
 2. Challenge page loads with fingerprinting script
 3. Real browser windows have 300+ properties; bots often have fewer
@@ -492,6 +525,7 @@ Websites protecting against scraping and automation:
 ### Scenario 4: Social Media Tracking
 
 Social media embeds (Facebook Like button, Twitter feed, etc.):
+
 1. You visit a blog with a Facebook embed
 2. The embed is an iframe from facebook.com
 3. Facebook's script fingerprints your iframe window
@@ -505,6 +539,7 @@ Social media embeds (Facebook Like button, Twitter feed, etc.):
 Content window fingerprinting is one of those techniques that highlights how difficult true privacy is on the modern web. It's not flashy, it's not obvious, but it's effective.
 
 **Key Takeaways:**
+
 1. **Every iframe is a potential tracker**: Even innocent-looking embeds can fingerprint you
 2. **Properties reveal your browser**: The exact set of window properties is fairly unique
 3. **It works with other signals**: Combined with canvas, WebGL, fonts, etc., it's very identifying
@@ -522,6 +557,7 @@ For high-risk individuals: Use Tor Browser for sensitive activities. Accept that
 **The Reality:**
 
 Perfect privacy on the modern web requires breaking so much functionality that it's not practical for daily use. The goal should be:
+
 - Make tracking harder and more expensive
 - Reduce the number of trackers that can follow you
 - Support browsers and services that prioritize privacy
@@ -536,6 +572,7 @@ Now you know that even invisible iframes are watching you. Welcome to the modern
 ---
 
 **Sources:**
+
 - [Castle.io: Anti-Detect Browser Analysis - How to Detect the Undetectable Browser](https://blog.castle.io/anti-detect-browser-analysis-how-to-detect-the-undetectable-browser/) - Research on iframe monitoring in anti-detect browsers
 - [Coronium: Browser Fingerprint Detection 2025 Complete Guide](https://www.coronium.io/blog/browser-fingerprint-detection-guide) - Comprehensive guide to fingerprinting techniques
 - [PITG Network: Beyond Cookies - Browser Fingerprinting in 2025](https://pitg.network/news/techdive/2025/08/15/browser-fingerprinting.html) - Analysis of post-cookie tracking landscape

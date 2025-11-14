@@ -1,6 +1,7 @@
 # Anti-Fingerprinting Detection: Privacy Tools Expose You
 
 Ironically, anti-fingerprinting tools create new fingerprints. Websites detect:
+
 - Brave's farbling (noise injection patterns)
 - Firefox Resist Fingerprinting (standardized values)
 - Extension artifacts (Canvas Defender, Privacy Badger)
@@ -16,8 +17,11 @@ function detectAntiFingerprinting() {
   }
 
   // Detect Firefox RFP
-  if (navigator.hardwareConcurrency === 2 && 
-      screen.width === 1366 && screen.height === 768) {
+  if (
+    navigator.hardwareConcurrency === 2 &&
+    screen.width === 1366 &&
+    screen.height === 768
+  ) {
     tests.push('firefox_rfp');
   }
 

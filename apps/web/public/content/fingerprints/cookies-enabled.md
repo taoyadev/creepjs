@@ -23,9 +23,9 @@ function checkCookieSupport() {
 
   // Old way (still used as fallback)
   if (supported) {
-    document.cookie = "test=1; SameSite=Lax";
-    const actuallyWorks = document.cookie.indexOf("test=") !== -1;
-    document.cookie = "test=; expires=Thu, 01 Jan 1970 00:00:00 UTC";
+    document.cookie = 'test=1; SameSite=Lax';
+    const actuallyWorks = document.cookie.indexOf('test=') !== -1;
+    document.cookie = 'test=; expires=Thu, 01 Jan 1970 00:00:00 UTC';
     return actuallyWorks;
   }
 
@@ -46,14 +46,14 @@ So when you disable cookies, you're joining a tiny group. That tiny group is wha
 
 ### Browser-Specific Behavior Table
 
-| Browser | Default Cookies | Incognito Cookies | Third-Party Cookies | Market Share (2024) |
-|---------|----------------|-------------------|---------------------|---------------------|
-| Chrome | Enabled | Enabled | Enabled by default | 67.94% |
-| Safari | Enabled | Enabled | Blocked by default | 16.18% |
-| Firefox | Enabled | Enabled | Blocked by default | 4.23% |
-| Edge | Enabled | Enabled | Enabled by default | 5.07% |
-| Brave | Enabled | Enabled | Blocked by default | 0.67% |
-| Tor Browser | Disabled | Disabled | Blocked | 0.08% |
+| Browser     | Default Cookies | Incognito Cookies | Third-Party Cookies | Market Share (2024) |
+| ----------- | --------------- | ----------------- | ------------------- | ------------------- |
+| Chrome      | Enabled         | Enabled           | Enabled by default  | 67.94%              |
+| Safari      | Enabled         | Enabled           | Blocked by default  | 16.18%              |
+| Firefox     | Enabled         | Enabled           | Blocked by default  | 4.23%               |
+| Edge        | Enabled         | Enabled           | Enabled by default  | 5.07%               |
+| Brave       | Enabled         | Enabled           | Blocked by default  | 0.67%               |
+| Tor Browser | Disabled        | Disabled          | Blocked             | 0.08%               |
 
 Source: StatCounter Global Stats 2024, browser documentation
 
@@ -64,6 +64,7 @@ Notice something? Even privacy-focused browsers like Firefox and Brave keep `nav
 Entropy is how we measure uniqueness in fingerprinting. It's measured in bits. The more bits, the more unique you are.
 
 For `navigator.cookieEnabled`:
+
 - **Entropy**: ~0.14 bits
 - **Uniqueness contribution**: Very low when alone
 - **Combined uniqueness**: Moderate when paired with other signals
@@ -85,22 +86,26 @@ Here's why fingerprinters love checking `navigator.cookieEnabled`: it helps them
 ### How Browsers Handle This
 
 **Chrome Incognito**:
+
 - `navigator.cookieEnabled` returns `true`
 - Cookies work normally within the incognito session
 - All cookies deleted when you close incognito
 - Detection: Very difficult via this method alone
 
 **Firefox Private Browsing**:
+
 - `navigator.cookieEnabled` returns `true`
 - Cookies work but are sandboxed
 - Detection: Cannot be done via cookieEnabled alone
 
 **Safari Private Browsing**:
+
 - `navigator.cookieEnabled` returns `true`
 - Cookies work but are cleared after 7 days of non-use
 - Intelligent Tracking Prevention makes first-party cookies client-side only after 7 days
 
 **Tor Browser**:
+
 - `navigator.cookieEnabled` returns `false` (or `true` depending on security level)
 - Aggressive cookie blocking
 - Detection: Easily identified, but that's intentional for this browser
@@ -136,16 +141,16 @@ const cookieData = {
   // They detect cookie cleaning
   hasCookiesFromPreviousVisit: checkForExistingCookies(),
   // Combined with other signals
-  thirdPartyBlocked: testThirdPartyCookies()
+  thirdPartyBlocked: testThirdPartyCookies(),
 };
 
 function testCookieWrite() {
   try {
-    document.cookie = "fingerprintTest=1";
-    const works = document.cookie.includes("fingerprintTest");
-    document.cookie = "fingerprintTest=; expires=Thu, 01 Jan 1970 00:00:00 UTC";
+    document.cookie = 'fingerprintTest=1';
+    const works = document.cookie.includes('fingerprintTest');
+    document.cookie = 'fingerprintTest=; expires=Thu, 01 Jan 1970 00:00:00 UTC';
     return works;
-  } catch(e) {
+  } catch (e) {
     return false;
   }
 }
@@ -174,6 +179,7 @@ Let's zoom out. According to research published in 2024 continuing EFF's work:
 - Fingerprint diversity remains high **even with cookie blocking enabled**
 
 The cookie-enabled check is just one tiny piece of a massive fingerprinting puzzle that includes:
+
 - Canvas rendering
 - WebGL capabilities
 - Audio context fingerprinting
@@ -190,18 +196,21 @@ Disabling cookies helps with exactly zero of these.
 Here's what browsers that actually care about privacy do (as of 2025):
 
 **Brave**:
+
 - Keeps `navigator.cookieEnabled = true`
 - Blocks third-party cookies by default
 - Uses "farbling" to randomize fingerprinting APIs
 - Doesn't sacrifice cookie-enabled signal for better privacy
 
 **Firefox with Enhanced Tracking Protection**:
+
 - Keeps `navigator.cookieEnabled = true`
 - Blocks known fingerprinting scripts
 - Isolates first-party cookies
 - Uses Total Cookie Protection (since 2021, improved in 2024)
 
 **Safari with Intelligent Tracking Prevention (ITP)**:
+
 - Keeps `navigator.cookieEnabled = true`
 - Announced in WWDC 2025: will prevent suspicious scripts from using localStorage and cookies to check identifiers
 - Blocks cross-site tracking
@@ -241,16 +250,16 @@ console.log({
   cookiesEnabled: navigator.cookieEnabled,
   canWriteCookies: (() => {
     try {
-      document.cookie = "test=1";
-      const result = document.cookie.includes("test");
-      document.cookie = "test=; expires=Thu, 01 Jan 1970 00:00:00 UTC";
+      document.cookie = 'test=1';
+      const result = document.cookie.includes('test');
+      document.cookie = 'test=; expires=Thu, 01 Jan 1970 00:00:00 UTC';
       return result;
-    } catch(e) {
+    } catch (e) {
       return false;
     }
   })(),
   hasExistingCookies: document.cookie.length > 0,
-  thirdPartyTest: "requires iframe test"
+  thirdPartyTest: 'requires iframe test',
 });
 ```
 

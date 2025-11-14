@@ -4,14 +4,18 @@ const SCREEN_FRAME_CHECK_INTERVAL = 2500;
 
 const parseDimension = (value: unknown): number | null => {
   const numeric = typeof value === 'string' ? Number(value) : (value as number);
-  return typeof numeric === 'number' && Number.isFinite(numeric) ? numeric : null;
+  return typeof numeric === 'number' && Number.isFinite(numeric)
+    ? numeric
+    : null;
 };
 
 let screenFrameBackup: ScreenFrameFingerprint | undefined;
 let screenFrameWatchId: ReturnType<typeof setTimeout> | undefined;
 
 const isZeroFrame = (frame: ScreenFrameFingerprint): boolean => {
-  return [frame.top, frame.right, frame.bottom, frame.left].every((edge) => !edge);
+  return [frame.top, frame.right, frame.bottom, frame.left].every(
+    (edge) => !edge
+  );
 };
 
 const readFrame = (): ScreenFrameFingerprint => {
@@ -28,9 +32,13 @@ const readFrame = (): ScreenFrameFingerprint => {
   const availHeight = parseDimension(screen.availHeight);
 
   const right =
-    width !== null && availWidth !== null && left !== null ? width - availWidth - left : null;
+    width !== null && availWidth !== null && left !== null
+      ? width - availWidth - left
+      : null;
   const bottom =
-    height !== null && availHeight !== null && top !== null ? height - availHeight - top : null;
+    height !== null && availHeight !== null && top !== null
+      ? height - availHeight - top
+      : null;
 
   return {
     top,
@@ -62,7 +70,9 @@ const watchScreenFrame = () => {
  * Measures the screen frame (visual viewport margins) and attempts to cache
  * a non-zero reading for environments that temporarily zero these values.
  */
-export async function collectScreenFrameFingerprint(): Promise<ScreenFrameFingerprint | undefined> {
+export async function collectScreenFrameFingerprint(): Promise<
+  ScreenFrameFingerprint | undefined
+> {
   if (typeof window === 'undefined' || typeof window.screen === 'undefined') {
     return undefined;
   }
@@ -76,7 +86,11 @@ export async function collectScreenFrameFingerprint(): Promise<ScreenFrameFinger
       return { ...screenFrameBackup };
     }
 
-    if (typeof document !== 'undefined' && document.fullscreenElement && document.exitFullscreen) {
+    if (
+      typeof document !== 'undefined' &&
+      document.fullscreenElement &&
+      document.exitFullscreen
+    ) {
       try {
         await document.exitFullscreen();
       } catch (error) {

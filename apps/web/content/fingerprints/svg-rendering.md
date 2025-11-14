@@ -26,7 +26,7 @@ function getSVGFingerprint() {
     width: bbox.width,
     height: bbox.height,
     x: bbox.x,
-    y: bbox.y
+    y: bbox.y,
   };
 }
 ```

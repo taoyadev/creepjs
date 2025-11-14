@@ -1,7 +1,6 @@
 ---
 name: Other bugs
 about: Bugs not related to unexpectedly changing fingerprints
-
 ---
 
 <!--

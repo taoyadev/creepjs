@@ -15,7 +15,7 @@ function getDOMRectFingerprint() {
     width: rect.width,
     height: rect.height,
     x: rect.x,
-    y: rect.y
+    y: rect.y,
   };
 }
 ```

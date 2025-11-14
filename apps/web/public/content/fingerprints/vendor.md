@@ -13,6 +13,7 @@ const vendor = navigator.vendor;
 This property returns a string identifying the organization that produced the browser software. The API has existed since the early days of JavaScript standardization and remains universally supported across all modern browsers, mobile platforms, and embedded web views.
 
 **Common Return Values**:
+
 - Chrome/Chromium/Edge: `"Google Inc."`
 - Safari/WebKit: `"Apple Computer, Inc."`
 - Firefox: `""` (empty string)
@@ -34,7 +35,7 @@ const browserIdentity = {
   vendor: navigator.vendor,
   userAgent: navigator.userAgent,
   platform: navigator.platform,
-  engine: getEngineFromUA()
+  engine: getEngineFromUA(),
 };
 
 function detectBrowser(identity) {
@@ -44,7 +45,10 @@ function detectBrowser(identity) {
   }
 
   // Safari detection
-  if (identity.vendor === 'Apple Computer, Inc.' && /Safari/.test(identity.userAgent)) {
+  if (
+    identity.vendor === 'Apple Computer, Inc.' &&
+    /Safari/.test(identity.userAgent)
+  ) {
     return 'Safari';
   }
 
@@ -54,7 +58,11 @@ function detectBrowser(identity) {
   }
 
   // Spoofing detection: vendor and UA mismatch
-  if (identity.vendor === 'Google Inc.' && /Safari/.test(identity.userAgent) && !/Chrome/.test(identity.userAgent)) {
+  if (
+    identity.vendor === 'Google Inc.' &&
+    /Safari/.test(identity.userAgent) &&
+    !/Chrome/.test(identity.userAgent)
+  ) {
     return 'SPOOFED';
   }
 }
@@ -67,6 +75,7 @@ This multi-factor approach identifies inconsistencies where the user agent claim
 The entropy contribution of `navigator.vendor` depends on browser market share distribution. According to 2024-2025 global statistics:
 
 **Desktop Browser Market Share**:
+
 - Chrome (Chromium): ~65% → vendor = "Google Inc."
 - Safari: ~15% → vendor = "Apple Computer, Inc."
 - Firefox: ~3% → vendor = ""
@@ -75,6 +84,7 @@ The entropy contribution of `navigator.vendor` depends on browser market share d
 - Other: ~10% → various
 
 **Collapsed Vendor Distribution**:
+
 - "Google Inc.": ~72% (Chrome + Edge + Chromium browsers)
 - "Apple Computer, Inc.": ~15% (Safari)
 - "": ~3% (Firefox)
@@ -89,6 +99,7 @@ H ≈ 1.3 bits
 This relatively low entropy reflects the dominance of Chromium-based browsers (all reporting "Google Inc."). However, the value increases significantly when considering mobile platforms, where Safari on iOS represents 50-60% of traffic in North American markets.
 
 **Mobile Browser Distribution** (North America):
+
 - Safari (iOS): ~60% → vendor = "Apple Computer, Inc."
 - Chrome (Android): ~30% → vendor = "Google Inc."
 - Samsung Internet: ~5% → vendor = "Google Inc."
@@ -103,12 +114,14 @@ The vendor property's true fingerprinting value emerges when combined with other
 Beyond simple vendor identification, the property helps infer the underlying browser engine:
 
 **Vendor-to-Engine Mapping**:
+
 - "Google Inc." → Blink engine (Chromium)
 - "Apple Computer, Inc." → WebKit engine
 - "" (empty) → Gecko engine (Firefox)
 - "Opera Software ASA" → Presto engine (legacy Opera)
 
 This engine inference enables targeted exploitation, as each engine has distinct:
+
 - JavaScript engine quirks (V8, JavaScriptCore, SpiderMonkey)
 - CSS rendering behaviors
 - Security vulnerabilities
@@ -158,21 +171,25 @@ Commercial anti-bot systems (DataDome, PerimeterX, Akamai) actively check vendor
 Privacy-focused browsers take different approaches to vendor reporting:
 
 **Tor Browser** (Firefox-based):
+
 - navigator.vendor: "" (matches Firefox)
 - User Agent: Generic Firefox UA
 - Verdict: Consistent, harder to fingerprint
 
 **Brave** (Chromium-based):
+
 - navigator.vendor: "Google Inc." (inherits from Chromium)
 - User Agent: Randomized Chrome version
 - Fingerprinting Protection: Brave randomizes other signals but cannot change vendor without breaking Chromium compatibility
 
 **Firefox with resistFingerprinting**:
+
 - navigator.vendor: "" (unchanged)
 - User Agent: Normalized to common Firefox version
 - Other signals: Randomized/normalized
 
 **Safari Private Browsing**:
+
 - navigator.vendor: "Apple Computer, Inc." (unchanged)
 - Limitation: Private mode does NOT modify vendor property
 
@@ -183,21 +200,25 @@ The inability to easily spoof vendor without breaking web compatibility represen
 The `navigator.vendor` property emerged during the Browser Wars (1990s-2000s) as vendors sought to distinguish their browsers for feature detection and branding. The property's evolution reflects shifting web standards priorities:
 
 **Netscape Era (1995-2000)**:
+
 - navigator.vendor returned "Netscape" or similar vendor names
 - Used for proprietary feature detection
 - No standardization
 
 **Internet Explorer Dominance (2001-2008)**:
+
 - IE returned empty string or vendor-specific values
 - Minimal standardization pressure due to IE monopoly
 
 **Modern Web Standards (2009-present)**:
+
 - WHATWG HTML specification includes navigator.vendor
 - Values remain implementation-defined
 - Browsers cannot change values due to compatibility concerns
 - Privacy advocates recommend empty string (Firefox model)
 
 **Chromium Ascendancy (2013-present)**:
+
 - Chrome's market dominance makes "Google Inc." the most common value
 - All Chromium-based browsers inherit this value
 - Creates large "Google Inc." anonymity set
@@ -207,6 +228,7 @@ The `navigator.vendor` property emerged during the Browser Wars (1990s-2000s) as
 Analysis of commercial fingerprinting libraries reveals how vendor detection integrates into comprehensive tracking systems:
 
 **FingerprintJS Implementation**:
+
 ```javascript
 function getVendor() {
   return navigator.vendor || '';
@@ -236,6 +258,7 @@ Enterprise security platforms (Imperva, Cloudflare Bot Management, DataDome) use
 Modern web development best practices discourage browser detection in favor of feature detection. However, `navigator.vendor` often serves as a practical shortcut:
 
 **Anti-Pattern (Browser Sniffing)**:
+
 ```javascript
 if (navigator.vendor === 'Apple Computer, Inc.') {
   // Apply Safari-specific workarounds
@@ -244,6 +267,7 @@ if (navigator.vendor === 'Apple Computer, Inc.') {
 ```
 
 **Recommended Pattern (Feature Detection)**:
+
 ```javascript
 if ('IntersectionObserver' in window) {
   // Use modern API
@@ -253,6 +277,7 @@ if ('IntersectionObserver' in window) {
 ```
 
 Despite recommendations, vendor detection persists due to:
+
 - Browser-specific bugs requiring targeted fixes
 - Performance optimizations for specific engines
 - Analytics and telemetry requirements
@@ -264,6 +289,7 @@ Mobile browsers introduce additional complexity to vendor detection:
 
 **iOS Restrictions**:
 All iOS browsers must use WebKit engine (App Store requirement), meaning:
+
 - Chrome on iOS: navigator.vendor = "Apple Computer, Inc." (NOT "Google Inc.")
 - Firefox on iOS: navigator.vendor = "Apple Computer, Inc." (NOT empty string)
 - Edge on iOS: navigator.vendor = "Apple Computer, Inc." (NOT "Google Inc.")
@@ -272,6 +298,7 @@ This creates a unique fingerprinting signature where user agent claims Chrome bu
 
 **Android Diversity**:
 Android allows multiple browser engines:
+
 - Chrome: vendor = "Google Inc."
 - Firefox: vendor = ""
 - Samsung Internet: vendor = "Google Inc." (Chromium-based)
@@ -287,7 +314,10 @@ Security researchers and attackers use vendor detection for vulnerability target
 When a browser-specific vulnerability is disclosed (e.g., CVE-2024-XXXX affecting Chrome), attackers use vendor detection to target exploitation:
 
 ```javascript
-if (navigator.vendor === 'Google Inc.' && /Chrome\/120/.test(navigator.userAgent)) {
+if (
+  navigator.vendor === 'Google Inc.' &&
+  /Chrome\/120/.test(navigator.userAgent)
+) {
   // Deliver Chrome 120-specific exploit
   deliverExploit();
 }
@@ -303,12 +333,14 @@ Malvertising campaigns use vendor detection to serve platform-specific malware p
 The W3C and WHATWG have debated whether `navigator.vendor` should be deprecated or standardized:
 
 **Arguments for Deprecation**:
+
 - Enables fingerprinting with minimal benefit
 - Outdated concept (browser vendor vs. engine/standard compliance)
 - Replaceable by feature detection
 - Privacy-invasive with low utility
 
 **Arguments for Retention**:
+
 - Widely deployed across millions of websites
 - Breaking changes would harm web compatibility
 - Useful for telemetry and debugging
@@ -322,21 +354,24 @@ The property remains in WHATWG HTML Living Standard with implementation-defined 
 Users and developers seeking to minimize vendor-based fingerprinting face limited options:
 
 **User-Level Mitigation**:
+
 1. Use Tor Browser (normalizes vendor with user agent)
 2. Use Firefox with privacy.resistFingerprinting enabled (though vendor remains empty string)
 3. Accept vendor fingerprinting as cost of using preferred browser
 
 **Developer-Level Mitigation**:
 Browser vendors could theoretically normalize vendor values, but web compatibility prevents this:
+
 - Changing Chrome from "Google Inc." to "" would break thousands of websites
 - Changing Safari from "Apple Computer, Inc." to "" creates similar issues
 - Standardizing all browsers to "" reduces fingerprinting but eliminates legitimate use cases
 
 **Extension-Based Spoofing**:
 Some privacy extensions attempt to override navigator.vendor:
+
 ```javascript
 Object.defineProperty(Navigator.prototype, 'vendor', {
-  get: () => 'Apple Computer, Inc.'
+  get: () => 'Apple Computer, Inc.',
 });
 ```
 
@@ -346,9 +381,9 @@ However, this creates vendor-UA mismatches detectable by sophisticated fingerpri
 
 While user agent strings contain extensive information (browser version, OS, architecture), navigator.vendor provides orthogonal value:
 
-| Property | Entropy | Spoof Difficulty | Use Case |
-|----------|---------|------------------|----------|
-| User Agent | 5-8 bits | Easy (extensions) | Version detection, feature inference |
+| Property         | Entropy    | Spoof Difficulty                        | Use Case                                |
+| ---------------- | ---------- | --------------------------------------- | --------------------------------------- |
+| User Agent       | 5-8 bits   | Easy (extensions)                       | Version detection, feature inference    |
 | navigator.vendor | 1-1.5 bits | Difficult (requires prototype override) | Vendor verification, spoofing detection |
 
 The key difference: user agent spoofing is trivial and common, while vendor spoofing requires JavaScript injection and creates detectable inconsistencies.

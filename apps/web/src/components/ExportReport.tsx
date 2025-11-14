@@ -1,7 +1,13 @@
 'use client';
 
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import type { FingerprintResult } from '@creepjs/core';
 import { Download, FileJson, FileSpreadsheet, Info } from 'lucide-react';
@@ -70,7 +76,11 @@ export function ExportReport({ result }: ExportReportProps) {
       // Canvas
       if (result.data.canvas) {
         rows.push(['Canvas', 'Hash', result.data.canvas.hash || 'N/A']);
-        rows.push(['Canvas', 'Detected', result.data.canvas.hash ? 'Yes' : 'No']);
+        rows.push([
+          'Canvas',
+          'Detected',
+          result.data.canvas.hash ? 'Yes' : 'No',
+        ]);
         rows.push(['', '', '']);
       }
 
@@ -79,44 +89,103 @@ export function ExportReport({ result }: ExportReportProps) {
         rows.push(['WebGL', 'Vendor', result.data.webgl.vendor || 'N/A']);
         rows.push(['WebGL', 'Renderer', result.data.webgl.renderer || 'N/A']);
         rows.push(['WebGL', 'Version', result.data.webgl.version || 'N/A']);
-        rows.push(['WebGL', 'Shading Language', result.data.webgl.shadingLanguageVersion || 'N/A']);
+        rows.push([
+          'WebGL',
+          'Shading Language',
+          result.data.webgl.shadingLanguageVersion || 'N/A',
+        ]);
         if (result.data.webgl.unmaskedRenderer) {
-          rows.push(['WebGL', 'Unmasked Renderer', result.data.webgl.unmaskedRenderer]);
+          rows.push([
+            'WebGL',
+            'Unmasked Renderer',
+            result.data.webgl.unmaskedRenderer,
+          ]);
         }
         rows.push(['', '', '']);
       }
 
       // Navigator
       if (result.data.navigator) {
-        rows.push(['Navigator', 'User Agent', result.data.navigator.userAgent || 'N/A']);
-        rows.push(['Navigator', 'Platform', result.data.navigator.platform || 'N/A']);
-        rows.push(['Navigator', 'Language', result.data.navigator.language || 'N/A']);
+        rows.push([
+          'Navigator',
+          'User Agent',
+          result.data.navigator.userAgent || 'N/A',
+        ]);
+        rows.push([
+          'Navigator',
+          'Platform',
+          result.data.navigator.platform || 'N/A',
+        ]);
+        rows.push([
+          'Navigator',
+          'Language',
+          result.data.navigator.language || 'N/A',
+        ]);
         if (result.data.languages) {
-          rows.push(['Navigator', 'Languages', result.data.languages.flat().join(', ')]);
+          rows.push([
+            'Navigator',
+            'Languages',
+            result.data.languages.flat().join(', '),
+          ]);
         }
         if (result.data.hardwareConcurrency) {
-          rows.push(['System', 'Hardware Concurrency', result.data.hardwareConcurrency.toString()]);
+          rows.push([
+            'System',
+            'Hardware Concurrency',
+            result.data.hardwareConcurrency.toString(),
+          ]);
         }
         if (result.data.touchSupport?.maxTouchPoints) {
-          rows.push(['System', 'Max Touch Points', result.data.touchSupport.maxTouchPoints.toString()]);
+          rows.push([
+            'System',
+            'Max Touch Points',
+            result.data.touchSupport.maxTouchPoints.toString(),
+          ]);
         }
         rows.push(['', '', '']);
       }
 
       // Screen
       if (result.data.screen) {
-        rows.push(['Screen', 'Resolution', `${result.data.screen.width}x${result.data.screen.height}`]);
-        rows.push(['Screen', 'Available Resolution', `${result.data.screen.availWidth}x${result.data.screen.availHeight}`]);
-        rows.push(['Screen', 'Color Depth', `${result.data.screen.colorDepth} bits`]);
-        rows.push(['Screen', 'Pixel Depth', `${result.data.screen.pixelDepth} bits`]);
+        rows.push([
+          'Screen',
+          'Resolution',
+          `${result.data.screen.width}x${result.data.screen.height}`,
+        ]);
+        rows.push([
+          'Screen',
+          'Available Resolution',
+          `${result.data.screen.availWidth}x${result.data.screen.availHeight}`,
+        ]);
+        rows.push([
+          'Screen',
+          'Color Depth',
+          `${result.data.screen.colorDepth} bits`,
+        ]);
+        rows.push([
+          'Screen',
+          'Pixel Depth',
+          `${result.data.screen.pixelDepth} bits`,
+        ]);
         rows.push(['', '', '']);
       }
 
       // Fonts
       if (result.data.fonts) {
-        rows.push(['Fonts', 'Detected Count', result.data.fonts.count.toString()]);
-        if (result.data.fonts.available && result.data.fonts.available.length > 0) {
-          rows.push(['Fonts', 'Sample (First 10)', result.data.fonts.available.slice(0, 10).join(', ')]);
+        rows.push([
+          'Fonts',
+          'Detected Count',
+          result.data.fonts.count.toString(),
+        ]);
+        if (
+          result.data.fonts.available &&
+          result.data.fonts.available.length > 0
+        ) {
+          rows.push([
+            'Fonts',
+            'Sample (First 10)',
+            result.data.fonts.available.slice(0, 10).join(', '),
+          ]);
         }
         rows.push(['', '', '']);
       }
@@ -124,33 +193,72 @@ export function ExportReport({ result }: ExportReportProps) {
       // Audio
       if (result.data.audio) {
         rows.push(['Audio', 'Hash', result.data.audio.hash || 'N/A']);
-        rows.push(['Audio', 'Sample Rate', result.data.audio.sampleRate?.toString() || 'N/A']);
+        rows.push([
+          'Audio',
+          'Sample Rate',
+          result.data.audio.sampleRate?.toString() || 'N/A',
+        ]);
         rows.push(['', '', '']);
       }
 
       // Timezone
       if (result.data.timezone) {
-        rows.push(['Timezone', 'Timezone', result.data.timezone.timezone || 'N/A']);
-        rows.push(['Timezone', 'Offset', result.data.timezone.timezoneOffset?.toString() || 'N/A']);
+        rows.push([
+          'Timezone',
+          'Timezone',
+          result.data.timezone.timezone || 'N/A',
+        ]);
+        rows.push([
+          'Timezone',
+          'Offset',
+          result.data.timezone.timezoneOffset?.toString() || 'N/A',
+        ]);
         rows.push(['Timezone', 'Locale', result.data.timezone.locale || 'N/A']);
         rows.push(['', '', '']);
       }
 
       // Media Devices
       if (result.data.media) {
-        rows.push(['Media Devices', 'Audio Inputs', result.data.media.deviceCount.audioInput.toString()]);
-        rows.push(['Media Devices', 'Video Inputs', result.data.media.deviceCount.videoInput.toString()]);
-        rows.push(['Media Devices', 'Audio Outputs', result.data.media.deviceCount.audioOutput.toString()]);
+        rows.push([
+          'Media Devices',
+          'Audio Inputs',
+          result.data.media.deviceCount.audioInput.toString(),
+        ]);
+        rows.push([
+          'Media Devices',
+          'Video Inputs',
+          result.data.media.deviceCount.videoInput.toString(),
+        ]);
+        rows.push([
+          'Media Devices',
+          'Audio Outputs',
+          result.data.media.deviceCount.audioOutput.toString(),
+        ]);
         rows.push(['', '', '']);
       }
 
       // WebRTC
       if (result.data.webrtc) {
         rows.push(['WebRTC', 'Hash', result.data.webrtc.hash || 'N/A']);
-        rows.push(['WebRTC', 'IPv4 Candidates', result.data.webrtc.candidates?.ipv4?.length.toString() || '0']);
-        rows.push(['WebRTC', 'IPv6 Candidates', result.data.webrtc.candidates?.ipv6?.length.toString() || '0']);
-        if (result.data.webrtc.candidates?.ipv4 && result.data.webrtc.candidates.ipv4.length > 0) {
-          rows.push(['WebRTC', 'Sample IPv4', result.data.webrtc.candidates.ipv4[0]]);
+        rows.push([
+          'WebRTC',
+          'IPv4 Candidates',
+          result.data.webrtc.candidates?.ipv4?.length.toString() || '0',
+        ]);
+        rows.push([
+          'WebRTC',
+          'IPv6 Candidates',
+          result.data.webrtc.candidates?.ipv6?.length.toString() || '0',
+        ]);
+        if (
+          result.data.webrtc.candidates?.ipv4 &&
+          result.data.webrtc.candidates.ipv4.length > 0
+        ) {
+          rows.push([
+            'WebRTC',
+            'Sample IPv4',
+            result.data.webrtc.candidates.ipv4[0],
+          ]);
         }
         rows.push(['', '', '']);
       }
@@ -158,22 +266,44 @@ export function ExportReport({ result }: ExportReportProps) {
       // CSS
       if (result.data.css) {
         rows.push(['CSS', 'Hash', result.data.css.hash || 'N/A']);
-        rows.push(['CSS', 'System Fonts', Object.keys(result.data.css.systemFonts).length.toString()]);
-        rows.push(['CSS', 'Computed Styles', Object.keys(result.data.css.styles).length.toString()]);
+        rows.push([
+          'CSS',
+          'System Fonts',
+          Object.keys(result.data.css.systemFonts).length.toString(),
+        ]);
+        rows.push([
+          'CSS',
+          'Computed Styles',
+          Object.keys(result.data.css.styles).length.toString(),
+        ]);
         rows.push(['', '', '']);
       }
 
       // Date/Time Locale
-      if (result.data.dateTimeLocale && typeof result.data.dateTimeLocale === 'string') {
+      if (
+        result.data.dateTimeLocale &&
+        typeof result.data.dateTimeLocale === 'string'
+      ) {
         rows.push(['Locale', 'Date/Time Locale', result.data.dateTimeLocale]);
         rows.push(['', '', '']);
       }
 
       // Lies Detection
       if (result.data.lies) {
-        rows.push(['Lies Detection', 'Total Lies', result.data.lies.liesCount?.toString() || '0']);
-        rows.push(['Lies Detection', 'Trust Score', result.data.lies.trustScore?.toString() || 'N/A']);
-        if (result.data.lies.inconsistencies && result.data.lies.inconsistencies.length > 0) {
+        rows.push([
+          'Lies Detection',
+          'Total Lies',
+          result.data.lies.liesCount?.toString() || '0',
+        ]);
+        rows.push([
+          'Lies Detection',
+          'Trust Score',
+          result.data.lies.trustScore?.toString() || 'N/A',
+        ]);
+        if (
+          result.data.lies.inconsistencies &&
+          result.data.lies.inconsistencies.length > 0
+        ) {
           result.data.lies.inconsistencies.forEach((inconsistency, index) => {
             rows.push(['Lies Detection', `Issue ${index + 1}`, inconsistency]);
           });
@@ -182,37 +312,71 @@ export function ExportReport({ result }: ExportReportProps) {
       }
 
       // Performance
-      rows.push(['Performance', 'Total Time', `${(result.timings.total ?? 0).toFixed(2)}ms`]);
+      rows.push([
+        'Performance',
+        'Total Time',
+        `${(result.timings.total ?? 0).toFixed(2)}ms`,
+      ]);
       if (result.timings.canvas !== undefined) {
-        rows.push(['Performance', 'Canvas Time', `${result.timings.canvas.toFixed(2)}ms`]);
+        rows.push([
+          'Performance',
+          'Canvas Time',
+          `${result.timings.canvas.toFixed(2)}ms`,
+        ]);
       }
       if (result.timings.webgl !== undefined) {
-        rows.push(['Performance', 'WebGL Time', `${result.timings.webgl.toFixed(2)}ms`]);
+        rows.push([
+          'Performance',
+          'WebGL Time',
+          `${result.timings.webgl.toFixed(2)}ms`,
+        ]);
       }
       if (result.timings.navigator !== undefined) {
-        rows.push(['Performance', 'Navigator Time', `${result.timings.navigator.toFixed(2)}ms`]);
+        rows.push([
+          'Performance',
+          'Navigator Time',
+          `${result.timings.navigator.toFixed(2)}ms`,
+        ]);
       }
       if (result.timings.screen !== undefined) {
-        rows.push(['Performance', 'Screen Time', `${result.timings.screen.toFixed(2)}ms`]);
+        rows.push([
+          'Performance',
+          'Screen Time',
+          `${result.timings.screen.toFixed(2)}ms`,
+        ]);
       }
       if (result.timings.fonts !== undefined) {
-        rows.push(['Performance', 'Fonts Time', `${result.timings.fonts.toFixed(2)}ms`]);
+        rows.push([
+          'Performance',
+          'Fonts Time',
+          `${result.timings.fonts.toFixed(2)}ms`,
+        ]);
       }
       if (result.timings.audio !== undefined) {
-        rows.push(['Performance', 'Audio Time', `${result.timings.audio.toFixed(2)}ms`]);
+        rows.push([
+          'Performance',
+          'Audio Time',
+          `${result.timings.audio.toFixed(2)}ms`,
+        ]);
       }
 
       // Convert to CSV string
       const csvContent = rows
         .map((row) =>
-          row.map((cell) => {
-            // Escape quotes and wrap in quotes if contains comma, newline, or quote
-            const cellStr = String(cell);
-            if (cellStr.includes(',') || cellStr.includes('\n') || cellStr.includes('"')) {
-              return `"${cellStr.replace(/"/g, '""')}"`;
-            }
-            return cellStr;
-          }).join(',')
+          row
+            .map((cell) => {
+              // Escape quotes and wrap in quotes if contains comma, newline, or quote
+              const cellStr = String(cell);
+              if (
+                cellStr.includes(',') ||
+                cellStr.includes('\n') ||
+                cellStr.includes('"')
+              ) {
+                return `"${cellStr.replace(/"/g, '""')}"`;
+              }
+              return cellStr;
+            })
+            .join(',')
         )
         .join('\n');
 
@@ -287,82 +451,104 @@ export function ExportReport({ result }: ExportReportProps) {
           Export Report
         </CardTitle>
         <CardDescription>
-          Download your fingerprint data in various formats for analysis or record-keeping
+          Download your fingerprint data in various formats for analysis or
+          record-keeping
         </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
           {/* Export Options */}
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid gap-4 md:grid-cols-3">
             {/* JSON Export */}
-            <div className="space-y-3 p-4 bg-muted/50 rounded-lg">
+            <div className="bg-muted/50 space-y-3 rounded-lg p-4">
               <div className="flex items-center gap-2">
                 <FileJson className="h-5 w-5 text-blue-500" />
                 <h3 className="font-semibold">JSON Format</h3>
               </div>
-              <p className="text-sm text-muted-foreground">
-                Complete fingerprint data with all collectors and metadata in JSON format. Best for
-                programmatic analysis.
+              <p className="text-muted-foreground text-sm">
+                Complete fingerprint data with all collectors and metadata in
+                JSON format. Best for programmatic analysis.
               </p>
-              <Button onClick={exportToJSON} className="w-full" variant="outline">
-                <FileJson className="h-4 w-4 mr-2" />
+              <Button
+                onClick={exportToJSON}
+                className="w-full"
+                variant="outline"
+              >
+                <FileJson className="mr-2 h-4 w-4" />
                 Download JSON
               </Button>
             </div>
 
             {/* CSV Export */}
-            <div className="space-y-3 p-4 bg-muted/50 rounded-lg">
+            <div className="bg-muted/50 space-y-3 rounded-lg p-4">
               <div className="flex items-center gap-2">
                 <FileSpreadsheet className="h-5 w-5 text-green-500" />
                 <h3 className="font-semibold">CSV Format</h3>
               </div>
-              <p className="text-sm text-muted-foreground">
-                Flattened data in CSV format. Ideal for spreadsheet analysis in Excel or Google
-                Sheets.
+              <p className="text-muted-foreground text-sm">
+                Flattened data in CSV format. Ideal for spreadsheet analysis in
+                Excel or Google Sheets.
               </p>
-              <Button onClick={exportToCSV} className="w-full" variant="outline">
-                <FileSpreadsheet className="h-4 w-4 mr-2" />
+              <Button
+                onClick={exportToCSV}
+                className="w-full"
+                variant="outline"
+              >
+                <FileSpreadsheet className="mr-2 h-4 w-4" />
                 Download CSV
               </Button>
             </div>
 
             {/* History Export */}
-            <div className="space-y-3 p-4 bg-muted/50 rounded-lg">
+            <div className="bg-muted/50 space-y-3 rounded-lg p-4">
               <div className="flex items-center gap-2">
                 <Download className="h-5 w-5 text-purple-500" />
                 <h3 className="font-semibold">Full History</h3>
               </div>
-              <p className="text-sm text-muted-foreground">
-                Export all stored history records in JSON format. Useful for backing up your data.
+              <p className="text-muted-foreground text-sm">
+                Export all stored history records in JSON format. Useful for
+                backing up your data.
               </p>
-              <Button onClick={exportHistory} className="w-full" variant="outline">
-                <Download className="h-4 w-4 mr-2" />
+              <Button
+                onClick={exportHistory}
+                className="w-full"
+                variant="outline"
+              >
+                <Download className="mr-2 h-4 w-4" />
                 Download History
               </Button>
             </div>
           </div>
 
           {/* Information Note */}
-          <div className="flex items-start gap-3 p-4 bg-blue-500/10 rounded-lg border border-blue-500/20">
-            <Info className="h-5 w-5 mt-0.5 text-blue-500 flex-shrink-0" />
+          <div className="flex items-start gap-3 rounded-lg border border-blue-500/20 bg-blue-500/10 p-4">
+            <Info className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-500" />
             <div className="space-y-1 text-sm">
               <p className="font-medium">About Exports</p>
-              <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+              <ul className="text-muted-foreground list-inside list-disc space-y-1">
                 <li>All exports are generated locally in your browser</li>
                 <li>No data is sent to any server during export</li>
-                <li>JSON files contain complete raw data from all collectors</li>
-                <li>CSV files contain summarized data in spreadsheet-friendly format</li>
-                <li>History exports include all fingerprints stored in your browser</li>
+                <li>
+                  JSON files contain complete raw data from all collectors
+                </li>
+                <li>
+                  CSV files contain summarized data in spreadsheet-friendly
+                  format
+                </li>
+                <li>
+                  History exports include all fingerprints stored in your
+                  browser
+                </li>
               </ul>
             </div>
           </div>
 
           {/* Data Structure Info */}
           <div className="space-y-3">
-            <h3 className="font-semibold text-sm">JSON Export Structure</h3>
+            <h3 className="text-sm font-semibold">JSON Export Structure</h3>
             <div className="bg-muted/50 rounded-lg p-4">
-              <pre className="text-xs font-mono overflow-x-auto">
-{`{
+              <pre className="overflow-x-auto font-mono text-xs">
+                {`{
   "metadata": {
     "exportDate": "ISO timestamp",
     "version": "1.0.0",

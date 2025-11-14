@@ -60,6 +60,7 @@ console.log(result.fingerprintId); // "a1b2c3d4e5f6..."
 ```
 
 **Features:**
+
 - One-line integration
 - TypeScript support
 - UMD/ESM builds
@@ -114,13 +115,13 @@ SDK (packages/sdk)
 
 ### Why Cloudflare?
 
-| Benefit | Description |
-|---------|-------------|
-| **Zero Cold Start** | V8 Isolates ensure instant response |
-| **Global Coverage** | 300+ edge locations worldwide |
-| **Free Tier** | 100K requests/day on Workers free plan |
-| **Low Latency** | <50ms p95 response time |
-| **Easy Scaling** | Seamlessly scales to millions of requests |
+| Benefit             | Description                               |
+| ------------------- | ----------------------------------------- |
+| **Zero Cold Start** | V8 Isolates ensure instant response       |
+| **Global Coverage** | 300+ edge locations worldwide             |
+| **Free Tier**       | 100K requests/day on Workers free plan    |
+| **Low Latency**     | <50ms p95 response time                   |
+| **Easy Scaling**    | Seamlessly scales to millions of requests |
 
 ---
 
@@ -272,7 +273,7 @@ console.log(result);
 <script>
   CreepJS.getFingerprint({
     token: 'cfp_your_token',
-  }).then(result => {
+  }).then((result) => {
     console.log('Fingerprint ID:', result.fingerprintId);
   });
 </script>
@@ -378,12 +379,12 @@ pnpm --filter @creepjs/web test:e2e
 
 ## 📊 Performance Targets
 
-| Metric | Target | Current |
-|--------|--------|---------|
-| API Response Time (p95) | <100ms | ~50ms |
-| SDK Bundle Size (gzipped) | <15KB | ~12KB |
-| Lighthouse Score | >95 | 98 |
-| Uptime | >99.9% | 99.95% |
+| Metric                    | Target | Current |
+| ------------------------- | ------ | ------- |
+| API Response Time (p95)   | <100ms | ~50ms   |
+| SDK Bundle Size (gzipped) | <15KB  | ~12KB   |
+| Lighthouse Score          | >95    | 98      |
+| Uptime                    | >99.9% | 99.95%  |
 
 ---
 

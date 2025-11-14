@@ -31,7 +31,10 @@ const LIE_WEIGHTS: Record<string, number> = {
   privacyToolsDetected: 5,
 };
 
-const TOTAL_LIE_WEIGHT = Object.values(LIE_WEIGHTS).reduce((sum, weight) => sum + weight, 0);
+const TOTAL_LIE_WEIGHT = Object.values(LIE_WEIGHTS).reduce(
+  (sum, weight) => sum + weight,
+  0
+);
 
 const BENIGN_RESISTANCE_KEYS = new Set([
   'deviceEventsBlocked',
@@ -47,18 +50,23 @@ const BENIGN_RESISTANCE_KEYS = new Set([
 /**
  * Collect lies detection data by analyzing other fingerprint data for inconsistencies
  */
-export async function collectLiesFingerprint(data: FingerprintData): Promise<LiesFingerprint | undefined> {
+export async function collectLiesFingerprint(
+  data: FingerprintData
+): Promise<LiesFingerprint | undefined> {
   try {
     const lies: Record<string, boolean> = {};
     const inconsistencies: string[] = [];
 
     // Screen vs Window dimensions
     if (data.screen) {
-      const { width, height, availWidth, availHeight, devicePixelRatio } = data.screen;
+      const { width, height, availWidth, availHeight, devicePixelRatio } =
+        data.screen;
 
       if (width === 0 || height === 0) {
         lies.screenDimensionsZero = true;
-        inconsistencies.push('Screen dimensions are zero (possible headless browser)');
+        inconsistencies.push(
+          'Screen dimensions are zero (possible headless browser)'
+        );
       }
 
       if (availWidth > width || availHeight > height) {
@@ -73,9 +81,14 @@ export async function collectLiesFingerprint(data: FingerprintData): Promise<Lie
           inconsistencies.push('Window dimensions are zero');
         }
 
-        if (window.outerWidth < window.innerWidth || window.outerHeight < window.innerHeight) {
+        if (
+          window.outerWidth < window.innerWidth ||
+          window.outerHeight < window.innerHeight
+        ) {
           lies.outerSmallerThanInner = true;
-          inconsistencies.push('Outer window size is smaller than inner (impossible)');
+          inconsistencies.push(
+            'Outer window size is smaller than inner (impossible)'
+          );
         }
       }
 
@@ -94,16 +107,25 @@ export async function collectLiesFingerprint(data: FingerprintData): Promise<Lie
       const ua = userAgent.toLowerCase();
       const plat = platform.toLowerCase();
 
-      if ((ua.includes('win') && !plat.includes('win')) ||
-          (ua.includes('mac') && !plat.includes('mac')) ||
-          (ua.includes('linux') && !plat.includes('linux'))) {
+      if (
+        (ua.includes('win') && !plat.includes('win')) ||
+        (ua.includes('mac') && !plat.includes('mac')) ||
+        (ua.includes('linux') && !plat.includes('linux'))
+      ) {
         lies.userAgentPlatformMismatch = true;
-        inconsistencies.push(`User-Agent (${userAgent}) doesn't match platform (${platform})`);
+        inconsistencies.push(
+          `User-Agent (${userAgent}) doesn't match platform (${platform})`
+        );
       }
 
       // Mobile UA without touch support
       const touchPoints = data.touchSupport?.maxTouchPoints ?? 0;
-      if ((ua.includes('mobile') || ua.includes('android') || ua.includes('iphone')) && touchPoints === 0) {
+      if (
+        (ua.includes('mobile') ||
+          ua.includes('android') ||
+          ua.includes('iphone')) &&
+        touchPoints === 0
+      ) {
         lies.mobileWithoutTouch = true;
         inconsistencies.push('Mobile User-Agent but no touch support');
       }
@@ -117,17 +139,29 @@ export async function collectLiesFingerprint(data: FingerprintData): Promise<Lie
 
       // Suspicious hardware concurrency
       if (typeof data.hardwareConcurrency === 'number') {
-        if (data.hardwareConcurrency === 0 || data.hardwareConcurrency === 1 || data.hardwareConcurrency > 128) {
+        if (
+          data.hardwareConcurrency === 0 ||
+          data.hardwareConcurrency === 1 ||
+          data.hardwareConcurrency > 128
+        ) {
           lies.suspiciousHardwareConcurrency = true;
-          inconsistencies.push(`Unusual hardware concurrency: ${data.hardwareConcurrency}`);
+          inconsistencies.push(
+            `Unusual hardware concurrency: ${data.hardwareConcurrency}`
+          );
         }
       }
 
       // Missing plugins/mimeTypes on non-mobile
-      if (!ua.includes('mobile') && !ua.includes('android') && !ua.includes('iphone')) {
+      if (
+        !ua.includes('mobile') &&
+        !ua.includes('android') &&
+        !ua.includes('iphone')
+      ) {
         if (Array.isArray(data.plugins) && data.plugins.length === 0) {
           lies.missingPlugins = true;
-          inconsistencies.push('Desktop browser reported zero plugins after enumeration');
+          inconsistencies.push(
+            'Desktop browser reported zero plugins after enumeration'
+          );
         }
       }
     }
@@ -141,7 +175,9 @@ export async function collectLiesFingerprint(data: FingerprintData): Promise<Lie
       const hasUnmaskedValues = Boolean(unmaskedVendor && unmaskedRenderer);
       if (genericMasked && !hasUnmaskedValues) {
         lies.genericWebGL = true;
-        inconsistencies.push('WebGL exposes only generic Google/ANGLE identifiers');
+        inconsistencies.push(
+          'WebGL exposes only generic Google/ANGLE identifiers'
+        );
       }
 
       // Check if unmasked values differ significantly
@@ -154,7 +190,9 @@ export async function collectLiesFingerprint(data: FingerprintData): Promise<Lie
           maskedVendor !== 'google inc.';
         if (mismatch) {
           lies.webglVendorMismatch = true;
-          inconsistencies.push('WebGL vendor mismatch between masked and unmasked');
+          inconsistencies.push(
+            'WebGL vendor mismatch between masked and unmasked'
+          );
         }
       }
     }
@@ -170,7 +208,8 @@ export async function collectLiesFingerprint(data: FingerprintData): Promise<Lie
       }
 
       // Check for impossible timezone offset
-      if (Math.abs(timezoneOffset) > 840) { // Max is UTC+14 (840 minutes)
+      if (Math.abs(timezoneOffset) > 840) {
+        // Max is UTC+14 (840 minutes)
         lies.impossibleTimezoneOffset = true;
         inconsistencies.push(`Impossible timezone offset: ${timezoneOffset}`);
       }
@@ -187,7 +226,9 @@ export async function collectLiesFingerprint(data: FingerprintData): Promise<Lie
       // Check for blocked canvas
       if (data.canvas.dataURL && data.canvas.dataURL.length < 100) {
         lies.canvasBlocked = true;
-        inconsistencies.push('Canvas appears to be blocked (data URL too short)');
+        inconsistencies.push(
+          'Canvas appears to be blocked (data URL too short)'
+        );
       }
     }
 
@@ -196,7 +237,11 @@ export async function collectLiesFingerprint(data: FingerprintData): Promise<Lie
       const { sampleRate } = data.audio;
 
       // Check for unusual sample rates
-      if (sampleRate !== 44100 && sampleRate !== 48000 && sampleRate !== 96000) {
+      if (
+        sampleRate !== 44100 &&
+        sampleRate !== 48000 &&
+        sampleRate !== 96000
+      ) {
         lies.unusualAudioSampleRate = true;
         inconsistencies.push(`Unusual audio sample rate: ${sampleRate}`);
       }
@@ -224,7 +269,11 @@ export async function collectLiesFingerprint(data: FingerprintData): Promise<Lie
       const ua = data.navigator.userAgent.toLowerCase();
 
       // Desktop browser with no media devices is suspicious
-      if (!ua.includes('mobile') && deviceCount.audioInput === 0 && deviceCount.videoInput === 0) {
+      if (
+        !ua.includes('mobile') &&
+        deviceCount.audioInput === 0 &&
+        deviceCount.videoInput === 0
+      ) {
         lies.noMediaDevices = true;
         inconsistencies.push('Desktop browser with no media devices detected');
       }
@@ -249,34 +298,53 @@ export async function collectLiesFingerprint(data: FingerprintData): Promise<Lie
 
     // Resistance detection analysis
     if (data.resistance) {
-      const { totalDetections, privacyToolDetected, detections } = data.resistance;
+      const { totalDetections, privacyToolDetected, detections } =
+        data.resistance;
       const benignSignals = detections
-        ? Object.entries(detections).reduce((sum, [key, value]) =>
-            value && BENIGN_RESISTANCE_KEYS.has(key) ? sum + 1 : sum,
-          0)
+        ? Object.entries(detections).reduce(
+            (sum, [key, value]) =>
+              value && BENIGN_RESISTANCE_KEYS.has(key) ? sum + 1 : sum,
+            0
+          )
         : 0;
       const meaningfulSignals = Math.max(0, totalDetections - benignSignals);
 
-      if ((privacyToolDetected && meaningfulSignals >= 4) || meaningfulSignals >= 8) {
+      if (
+        (privacyToolDetected && meaningfulSignals >= 4) ||
+        meaningfulSignals >= 8
+      ) {
         lies.privacyToolsDetected = true;
-        inconsistencies.push(`Privacy tooling indicators detected (${meaningfulSignals} strong signals)`);
+        inconsistencies.push(
+          `Privacy tooling indicators detected (${meaningfulSignals} strong signals)`
+        );
       }
     }
 
     // Count total lies
-    const liesCount = Object.values(lies).filter(v => v === true).length;
+    const liesCount = Object.values(lies).filter((v) => v === true).length;
 
     // Calculate trust score (0-100, higher is more trustworthy)
-    const triggeredWeight = Object.entries(lies).reduce((sum, [flag, value]) =>
-      value ? sum + (LIE_WEIGHTS[flag] ?? LIE_DEFAULT_WEIGHT) : sum, 0);
-    const unknownTriggered = Object.keys(lies).filter((flag) => !(flag in LIE_WEIGHTS)).length;
+    const triggeredWeight = Object.entries(lies).reduce(
+      (sum, [flag, value]) =>
+        value ? sum + (LIE_WEIGHTS[flag] ?? LIE_DEFAULT_WEIGHT) : sum,
+      0
+    );
+    const unknownTriggered = Object.keys(lies).filter(
+      (flag) => !(flag in LIE_WEIGHTS)
+    ).length;
     const maxWeight = TOTAL_LIE_WEIGHT + unknownTriggered * LIE_DEFAULT_WEIGHT;
-    const trustScore = maxWeight === 0
-      ? 100
-      : Math.max(0, Math.round(100 * (1 - triggeredWeight / maxWeight)));
+    const trustScore =
+      maxWeight === 0
+        ? 100
+        : Math.max(0, Math.round(100 * (1 - triggeredWeight / maxWeight)));
 
     // Generate hash
-    const dataString = JSON.stringify({ lies, liesCount, trustScore, inconsistencies });
+    const dataString = JSON.stringify({
+      lies,
+      liesCount,
+      trustScore,
+      inconsistencies,
+    });
     const hash = await hashString(dataString);
 
     return {

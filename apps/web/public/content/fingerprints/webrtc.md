@@ -23,10 +23,10 @@ When you visit a website, JavaScript running on that page can create what's call
 ```javascript
 // This is all it takes to extract your IP addresses:
 const pc = new RTCPeerConnection();
-pc.createOffer().then(offer => pc.setLocalDescription(offer));
+pc.createOffer().then((offer) => pc.setLocalDescription(offer));
 
 // Then listen for ICE candidates that contain your IPs:
-pc.onicecandidate = function(event) {
+pc.onicecandidate = function (event) {
   if (event.candidate) {
     // BAM! Your IP addresses are right here
     console.log(event.candidate.candidate);
@@ -54,6 +54,7 @@ When you connect to a VPN, your internet traffic gets routed through an encrypte
 But WebRTC often operates **outside** this tunnel. It's trying to establish the most efficient connection possible, which means it'll use your real network interfaces—the ones not going through the VPN tunnel. It's like your browser is helpfully throwing your business card out the window while you're trying to sneak through the back door.
 
 Different VPNs handle this differently:
+
 - **Good VPNs** route WebRTC traffic through the tunnel or block WebRTC leaks
 - **Cheap VPNs** often don't handle WebRTC at all
 - **No VPN** means everything leaks (obviously)
@@ -62,29 +63,29 @@ Different VPNs handle this differently:
 
 But it's not just about IP addresses. WebRTC fingerprinting collects way more:
 
-| Data Collected | What It Reveals | Privacy Impact |
-|---------------|----------------|----------------|
-| **Local IP addresses** | Your internal network configuration | 🔴 Critical |
-| **Public IP address** | Your real location (bypasses VPN) | 🔴 Critical |
-| **IPv6 address** | Additional unique identifier | 🔴 Critical |
-| **mDNS hostname** | Your computer's network name | 🟠 High |
-| **Supported codecs** | Audio/video codec list | 🟡 Medium |
-| **STUN/TURN server responses** | Network topology details | 🟠 High |
-| **Media devices** | Connected cameras/microphones (count only) | 🟡 Medium |
-| **RTP capabilities** | Supported protocols and extensions | 🟡 Medium |
+| Data Collected                 | What It Reveals                            | Privacy Impact |
+| ------------------------------ | ------------------------------------------ | -------------- |
+| **Local IP addresses**         | Your internal network configuration        | 🔴 Critical    |
+| **Public IP address**          | Your real location (bypasses VPN)          | 🔴 Critical    |
+| **IPv6 address**               | Additional unique identifier               | 🔴 Critical    |
+| **mDNS hostname**              | Your computer's network name               | 🟠 High        |
+| **Supported codecs**           | Audio/video codec list                     | 🟡 Medium      |
+| **STUN/TURN server responses** | Network topology details                   | 🟠 High        |
+| **Media devices**              | Connected cameras/microphones (count only) | 🟡 Medium      |
+| **RTP capabilities**           | Supported protocols and extensions         | 🟡 Medium      |
 
 ## The Numbers: How Bad Is WebRTC Leaking?
 
 Let me hit you with some data that shows the scale of this problem:
 
-| Metric | Value | Source | Year |
-|--------|-------|--------|------|
-| **Browsers with WebRTC enabled by default** | 70-80% | BrowserLeaks Analysis | 2024 |
-| **VPNs tested with WebRTC leaks** | ~40% failed to prevent leaks | VPNMentor Study | 2024 |
-| **Users aware of WebRTC leaks** | <25% | ExpressVPN Survey | 2024 |
-| **Websites actively using WebRTC for tracking** | ~3-5% of top sites | Privacy Research Consortium | 2024 |
-| **Mobile browsers vulnerable** | 85%+ (Chrome, Firefox, Edge) | Security.org Testing | 2024 |
-| **Tor Browser leak resistance** | 100% (WebRTC disabled by default) | Tor Project | 2024 |
+| Metric                                          | Value                             | Source                      | Year |
+| ----------------------------------------------- | --------------------------------- | --------------------------- | ---- |
+| **Browsers with WebRTC enabled by default**     | 70-80%                            | BrowserLeaks Analysis       | 2024 |
+| **VPNs tested with WebRTC leaks**               | ~40% failed to prevent leaks      | VPNMentor Study             | 2024 |
+| **Users aware of WebRTC leaks**                 | <25%                              | ExpressVPN Survey           | 2024 |
+| **Websites actively using WebRTC for tracking** | ~3-5% of top sites                | Privacy Research Consortium | 2024 |
+| **Mobile browsers vulnerable**                  | 85%+ (Chrome, Firefox, Edge)      | Security.org Testing        | 2024 |
+| **Tor Browser leak resistance**                 | 100% (WebRTC disabled by default) | Tor Project                 | 2024 |
 
 Here's what these numbers mean in practice:
 
@@ -93,6 +94,7 @@ Here's what these numbers mean in practice:
 - **If you're using Chrome/Firefox mobile**: You're especially vulnerable
 
 According to 2024 testing by VPN.com, when they tested 50 popular VPN services:
+
 - 30 VPNs (60%) successfully prevented WebRTC leaks
 - 15 VPNs (30%) had partial protection (IPv6 leaked)
 - 5 VPNs (10%) offered zero WebRTC leak protection
@@ -166,18 +168,18 @@ Result: Website knows:
 
 Different browsers handle WebRTC differently. Here's the breakdown:
 
-| Browser | Default WebRTC State | Leak Risk | Privacy Controls | Rating |
-|---------|---------------------|-----------|------------------|---------|
-| **Chrome (Desktop)** | ✅ Enabled | 🔴 High | Limited (extensions needed) | ⭐⭐ |
-| **Chrome (Mobile)** | ✅ Enabled | 🔴 Very High | None | ⭐ |
-| **Firefox (Desktop)** | ✅ Enabled | 🟠 Medium | Good (media.peerconnection.enabled) | ⭐⭐⭐ |
-| **Firefox (Mobile)** | ✅ Enabled | 🔴 High | Good | ⭐⭐⭐ |
-| **Safari (Desktop)** | ✅ Enabled | 🟡 Low-Medium | Automatic mDNS masking | ⭐⭐⭐⭐ |
-| **Safari (iOS)** | ✅ Enabled | 🟡 Medium | Automatic protections | ⭐⭐⭐⭐ |
-| **Edge** | ✅ Enabled | 🔴 High | Limited (same as Chrome) | ⭐⭐ |
-| **Opera** | ✅ Enabled | 🔴 High | Built-in VPN helps | ⭐⭐⭐ |
-| **Brave** | ✅ Enabled | 🟢 Very Low | Aggressive protection by default | ⭐⭐⭐⭐⭐ |
-| **Tor Browser** | ❌ Disabled | 🟢 None | Completely disabled | ⭐⭐⭐⭐⭐ |
+| Browser               | Default WebRTC State | Leak Risk     | Privacy Controls                    | Rating     |
+| --------------------- | -------------------- | ------------- | ----------------------------------- | ---------- |
+| **Chrome (Desktop)**  | ✅ Enabled           | 🔴 High       | Limited (extensions needed)         | ⭐⭐       |
+| **Chrome (Mobile)**   | ✅ Enabled           | 🔴 Very High  | None                                | ⭐         |
+| **Firefox (Desktop)** | ✅ Enabled           | 🟠 Medium     | Good (media.peerconnection.enabled) | ⭐⭐⭐     |
+| **Firefox (Mobile)**  | ✅ Enabled           | 🔴 High       | Good                                | ⭐⭐⭐     |
+| **Safari (Desktop)**  | ✅ Enabled           | 🟡 Low-Medium | Automatic mDNS masking              | ⭐⭐⭐⭐   |
+| **Safari (iOS)**      | ✅ Enabled           | 🟡 Medium     | Automatic protections               | ⭐⭐⭐⭐   |
+| **Edge**              | ✅ Enabled           | 🔴 High       | Limited (same as Chrome)            | ⭐⭐       |
+| **Opera**             | ✅ Enabled           | 🔴 High       | Built-in VPN helps                  | ⭐⭐⭐     |
+| **Brave**             | ✅ Enabled           | 🟢 Very Low   | Aggressive protection by default    | ⭐⭐⭐⭐⭐ |
+| **Tor Browser**       | ❌ Disabled          | 🟢 None       | Completely disabled                 | ⭐⭐⭐⭐⭐ |
 
 **Key Findings:**
 
@@ -207,6 +209,7 @@ Even if you successfully block IPv4 leaks, your IPv6 address is often still expo
 ### 2. mDNS Hostnames Are More Identifying Than You Think
 
 Your computer's network name often contains:
+
 - Your actual name ("johns-macbook")
 - Your company name ("ACME-LAPTOP-001")
 - Your device model
@@ -227,6 +230,7 @@ So completely disabling WebRTC breaks legitimate functionality. This is why brow
 ### 4. Corporate Networks Are Especially Vulnerable
 
 If you work from home and use your company VPN, WebRTC might be leaking:
+
 - Your company's internal IP scheme
 - Your exact network location
 - Your corporate device identifier
@@ -242,13 +246,14 @@ Okay, enough scary stuff. Here's what actually works:
 
 For Chrome/Edge users, install one of these:
 
-| Extension | Effectiveness | Notes |
-|-----------|--------------|-------|
-| **WebRTC Leak Prevent** | 🟢 Very Good | Official by Google, most reliable |
-| **WebRTC Control** | 🟢 Good | Allows per-site enabling |
-| **uBlock Origin** | 🟢 Good | Has WebRTC blocking in advanced settings |
+| Extension               | Effectiveness | Notes                                    |
+| ----------------------- | ------------- | ---------------------------------------- |
+| **WebRTC Leak Prevent** | 🟢 Very Good  | Official by Google, most reliable        |
+| **WebRTC Control**      | 🟢 Good       | Allows per-site enabling                 |
+| **uBlock Origin**       | 🟢 Good       | Has WebRTC blocking in advanced settings |
 
 For Firefox users:
+
 1. Type `about:config` in address bar
 2. Search for `media.peerconnection.enabled`
 3. Set to `false`
@@ -267,6 +272,7 @@ For Firefox users:
 If you're serious about VPN privacy, only use services that offer "WebRTC leak protection." Here's what to look for:
 
 ✅ **Good VPN features:**
+
 - Explicit "WebRTC leak protection" in settings
 - Forces WebRTC traffic through VPN tunnel
 - Option to disable WebRTC entirely
@@ -274,11 +280,13 @@ If you're serious about VPN privacy, only use services that offer "WebRTC leak p
 - Regular independent audits
 
 ❌ **Red flags:**
+
 - No mention of WebRTC in documentation
 - IPv6 not supported or disabled
 - Cheap/free VPN (they cut corners)
 
 Based on 2024 testing by independent reviewers:
+
 - **ExpressVPN**: WebRTC protection included
 - **NordVPN**: Strong protection in custom apps
 - **Mullvad**: Excellent protection, privacy-focused
@@ -290,12 +298,14 @@ Based on 2024 testing by independent reviewers:
 Before trusting your VPN, test for leaks:
 
 **Best Testing Sites:**
+
 - **BrowserLeaks.com/webrtc** - Most comprehensive
 - **IPLeak.net** - Detailed results
 - **Perfect-Privacy.com/webrtc-leaktest** - Good explanations
 - **ExpressVPN.com/webrtc-leak-test** - Simple, visual
 
 **Testing Process:**
+
 1. Connect to VPN
 2. Visit testing site
 3. Check for:
@@ -324,20 +334,25 @@ Your browser and OS support different audio/video codecs:
 
 ```javascript
 // This reveals your codec capabilities:
-RTCRtpSender.getCapabilities('video')
-RTCRtpSender.getCapabilities('audio')
+RTCRtpSender.getCapabilities('video');
+RTCRtpSender.getCapabilities('audio');
 
 // Example output:
 {
   codecs: [
     { mimeType: 'video/VP8', clockRate: 90000 },
-    { mimeType: 'video/H264', clockRate: 90000, sdpFmtpLine: 'profile-level-id=42e01f' },
+    {
+      mimeType: 'video/H264',
+      clockRate: 90000,
+      sdpFmtpLine: 'profile-level-id=42e01f',
+    },
     // ... dozens more
-  ]
+  ];
 }
 ```
 
 This list varies by:
+
 - Browser version
 - Operating system
 - Installed codec packs
@@ -348,16 +363,18 @@ This list varies by:
 WebRTC can count your cameras and microphones without permission:
 
 ```javascript
-navigator.mediaDevices.enumerateDevices()
+navigator.mediaDevices.enumerateDevices();
 ```
 
 Even without labels (which require permission), the mere count and types create entropy:
+
 - "2 videoinput, 3 audioinput, 4 audiooutput" might be your specific setup
 - Professionals with USB mics, multiple cameras, etc. are very fingerprintable
 
 ### 3. Network Timing Characteristics
 
 The timing of ICE candidate gathering varies by:
+
 - Network speed
 - NAT type (full cone, restricted, port-restricted, symmetric)
 - Firewall configuration
@@ -373,12 +390,13 @@ The WebRTC fingerprinting landscape is evolving fast:
 
 - **Safari** continues leading with automatic mDNS masking
 - **Firefox** is improving default protections in private browsing mode
-- **Chrome** is *slowly* adding more user controls (under pressure)
+- **Chrome** is _slowly_ adding more user controls (under pressure)
 - **Brave** keeps raising the bar with aggressive blocking
 
 ### Trend 2: VPN Industry Responding
 
 After years of ignoring WebRTC, VPN providers are finally taking it seriously:
+
 - More VPNs advertising WebRTC protection
 - Independent audits now include WebRTC leak testing
 - Built-in kill switches also kill WebRTC
@@ -386,6 +404,7 @@ After years of ignoring WebRTC, VPN providers are finally taking it seriously:
 ### Trend 3: Websites Adapting
 
 Some websites that relied on WebRTC for tracking are now diversifying because:
+
 - Too many false negatives (users blocking WebRTC)
 - Legal pressure (GDPR considers IP addresses personal data)
 - Technical limitations (Safari's protections work well)
@@ -425,6 +444,7 @@ Here's what you need to remember:
 5. **Test your setup**: Don't assume—verify with BrowserLeaks.com
 
 For most people, I recommend:
+
 - Use **Brave browser** for privacy-sensitive browsing (built-in protection)
 - If using VPN, choose one with explicit WebRTC protection
 - Test your setup regularly (quarterly at minimum)
@@ -436,4 +456,4 @@ Want to see what WebRTC is leaking about you right now? Run our WebRTC fingerpri
 
 ---
 
-*Last Updated: January 2025 | Data sources: BrowserLeaks, VPNMentor 2024 Study, ExpressVPN Research, VPN.com Testing Results, Security.org Analysis, Tor Project Documentation*
+_Last Updated: January 2025 | Data sources: BrowserLeaks, VPNMentor 2024 Study, ExpressVPN Research, VPN.com Testing Results, Security.org Analysis, Tor Project Documentation_

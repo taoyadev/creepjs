@@ -12,6 +12,7 @@ This directory contains comprehensive educational content about browser fingerpr
 ## Content Template
 
 Each page follows the E-E-A-T framework with:
+
 - Elon Musk conversational style
 - 1000+ words minimum
 - Multiple data tables with sources
@@ -24,6 +25,7 @@ Each page follows the E-E-A-T framework with:
 ## Structure
 
 All content follows this structure:
+
 1. H1 title with core keyword
 2. Opening hook (conversational)
 3. What it is
@@ -42,6 +44,7 @@ All content follows this structure:
 ## Sources
 
 All statistics and claims are cited from:
+
 - Academic research papers
 - Browser vendor documentation
 - Industry reports

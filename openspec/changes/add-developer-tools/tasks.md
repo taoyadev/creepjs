@@ -1,6 +1,7 @@
 # Tasks: add-developer-tools
 
 ## 1. OpenAPI 3.0 Specification
+
 - [ ] 1.1 Install OpenAPI/Swagger dependencies
   - Add `swagger-ui-react` to `apps/web`
   - Add `zod-to-openapi` for schema conversion
@@ -20,6 +21,7 @@
   - Test snippet accuracy
 
 ## 2. Code Generator
+
 - [ ] 2.1 Build code generation engine
   - Create `apps/web/lib/code-generator.ts`
   - Template system for 5 frameworks
@@ -53,6 +55,7 @@
   - Add to `/playground` page
 
 ## 3. Postman/Insomnia Collections
+
 - [ ] 3.1 Generate Postman Collection v2.1 from OpenAPI spec
   - Use `openapi-to-postmanv2` converter
   - Output: `collections/creepjs-api.postman_collection.json`
@@ -70,6 +73,7 @@
   - Include quick start guide
 
 ## 4. CLI Tool (@creepjs/cli)
+
 - [ ] 4.1 Scaffold CLI package
   - Create `packages/cli/` directory
   - Initialize `package.json` with bin entry
@@ -102,6 +106,7 @@
   - README with usage examples
 
 ## 5. Integration & Testing
+
 - [ ] 5.1 Test OpenAPI spec accuracy
   - Validate spec with `swagger-cli validate`
   - Test all endpoints in Swagger UI
@@ -124,6 +129,7 @@
   - Resolve any validation errors
 
 ## 6. Documentation
+
 - [ ] 6.1 Create API documentation guide
   - How to access Swagger UI
   - How to authenticate in "Try it out"

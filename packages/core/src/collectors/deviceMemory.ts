@@ -6,7 +6,10 @@ export function collectDeviceMemory(): number | undefined {
     return undefined;
   }
 
-  const raw = (navigator as Navigator & { deviceMemory?: number | string }).deviceMemory;
+  const raw = (navigator as Navigator & { deviceMemory?: number | string })
+    .deviceMemory;
   const value = typeof raw === 'string' ? Number(raw) : raw;
-  return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
+  return typeof value === 'number' && Number.isFinite(value)
+    ? value
+    : undefined;
 }

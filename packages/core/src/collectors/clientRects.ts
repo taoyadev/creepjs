@@ -20,7 +20,7 @@ export function collectClientRectsFingerprint():
 
     document.body.appendChild(div);
 
-    emojis.forEach(emoji => {
+    emojis.forEach((emoji) => {
       div.textContent = emoji;
       const rect = div.getBoundingClientRect();
       rects.push(rect.width, rect.height, rect.x, rect.y);

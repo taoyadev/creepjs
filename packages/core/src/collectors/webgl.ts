@@ -14,12 +14,10 @@ export function collectWebGLFingerprint(): WebGLFingerprint | undefined {
     if (!gl) return undefined;
 
     const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
-    const vendor =
-      (gl.getParameter(gl.VENDOR) as string | null) ?? 'unknown';
+    const vendor = (gl.getParameter(gl.VENDOR) as string | null) ?? 'unknown';
     const renderer =
       (gl.getParameter(gl.RENDERER) as string | null) ?? 'unknown';
-    const version =
-      (gl.getParameter(gl.VERSION) as string | null) ?? 'unknown';
+    const version = (gl.getParameter(gl.VERSION) as string | null) ?? 'unknown';
     const shadingLanguageVersion =
       (gl.getParameter(gl.SHADING_LANGUAGE_VERSION) as string | null) ??
       'unknown';

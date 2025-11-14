@@ -1,10 +1,25 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import type { FingerprintResult } from '@creepjs/core';
-import { ArrowLeftRight, Calendar, Hash, TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle } from 'lucide-react';
+import {
+  ArrowLeftRight,
+  Calendar,
+  Hash,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  AlertTriangle,
+  CheckCircle,
+} from 'lucide-react';
 
 interface FingerprintComparisonProps {
   fingerprint1: FingerprintResult;
@@ -21,7 +36,11 @@ interface ComparisonItem {
   changeType?: 'improved' | 'degraded' | 'neutral';
 }
 
-export function FingerprintComparison({ fingerprint1, fingerprint2, onClose }: FingerprintComparisonProps) {
+export function FingerprintComparison({
+  fingerprint1,
+  fingerprint2,
+  onClose,
+}: FingerprintComparisonProps) {
   const comparison = useMemo(() => {
     const items: ComparisonItem[] = [];
 
@@ -32,7 +51,10 @@ export function FingerprintComparison({ fingerprint1, fingerprint2, onClose }: F
       value1: fingerprint1.fingerprintId,
       value2: fingerprint2.fingerprintId,
       changed: fingerprint1.fingerprintId !== fingerprint2.fingerprintId,
-      changeType: fingerprint1.fingerprintId !== fingerprint2.fingerprintId ? 'neutral' : undefined,
+      changeType:
+        fingerprint1.fingerprintId !== fingerprint2.fingerprintId
+          ? 'neutral'
+          : undefined,
     });
 
     items.push({
@@ -63,11 +85,13 @@ export function FingerprintComparison({ fingerprint1, fingerprint2, onClose }: F
       field: 'Total Collection Time',
       value1: `${(fingerprint1.timings.total ?? 0).toFixed(0)}ms`,
       value2: `${(fingerprint2.timings.total ?? 0).toFixed(0)}ms`,
-      changed: (fingerprint1.timings.total ?? 0) !== (fingerprint2.timings.total ?? 0),
+      changed:
+        (fingerprint1.timings.total ?? 0) !== (fingerprint2.timings.total ?? 0),
       changeType:
         (fingerprint2.timings.total ?? 0) < (fingerprint1.timings.total ?? 0)
           ? 'improved'
-          : (fingerprint2.timings.total ?? 0) > (fingerprint1.timings.total ?? 0)
+          : (fingerprint2.timings.total ?? 0) >
+              (fingerprint1.timings.total ?? 0)
             ? 'degraded'
             : undefined,
     });
@@ -79,16 +103,23 @@ export function FingerprintComparison({ fingerprint1, fingerprint2, onClose }: F
         field: 'Hash',
         value1: fingerprint1.data.canvas?.hash || 'N/A',
         value2: fingerprint2.data.canvas?.hash || 'N/A',
-        changed: fingerprint1.data.canvas?.hash !== fingerprint2.data.canvas?.hash,
+        changed:
+          fingerprint1.data.canvas?.hash !== fingerprint2.data.canvas?.hash,
         changeType:
-          fingerprint1.data.canvas?.hash !== fingerprint2.data.canvas?.hash ? 'neutral' : undefined,
+          fingerprint1.data.canvas?.hash !== fingerprint2.data.canvas?.hash
+            ? 'neutral'
+            : undefined,
       });
 
       items.push({
         category: 'Canvas',
         field: 'Collection Time',
-        value1: fingerprint1.timings.canvas ? `${fingerprint1.timings.canvas.toFixed(0)}ms` : 'N/A',
-        value2: fingerprint2.timings.canvas ? `${fingerprint2.timings.canvas.toFixed(0)}ms` : 'N/A',
+        value1: fingerprint1.timings.canvas
+          ? `${fingerprint1.timings.canvas.toFixed(0)}ms`
+          : 'N/A',
+        value2: fingerprint2.timings.canvas
+          ? `${fingerprint2.timings.canvas.toFixed(0)}ms`
+          : 'N/A',
         changed: fingerprint1.timings.canvas !== fingerprint2.timings.canvas,
         changeType:
           fingerprint2.timings.canvas && fingerprint1.timings.canvas
@@ -106,8 +137,12 @@ export function FingerprintComparison({ fingerprint1, fingerprint2, onClose }: F
         field: 'Vendor',
         value1: fingerprint1.data.webgl?.vendor || 'N/A',
         value2: fingerprint2.data.webgl?.vendor || 'N/A',
-        changed: fingerprint1.data.webgl?.vendor !== fingerprint2.data.webgl?.vendor,
-        changeType: fingerprint1.data.webgl?.vendor !== fingerprint2.data.webgl?.vendor ? 'neutral' : undefined,
+        changed:
+          fingerprint1.data.webgl?.vendor !== fingerprint2.data.webgl?.vendor,
+        changeType:
+          fingerprint1.data.webgl?.vendor !== fingerprint2.data.webgl?.vendor
+            ? 'neutral'
+            : undefined,
       });
 
       items.push({
@@ -115,9 +150,14 @@ export function FingerprintComparison({ fingerprint1, fingerprint2, onClose }: F
         field: 'Renderer',
         value1: fingerprint1.data.webgl?.renderer || 'N/A',
         value2: fingerprint2.data.webgl?.renderer || 'N/A',
-        changed: fingerprint1.data.webgl?.renderer !== fingerprint2.data.webgl?.renderer,
+        changed:
+          fingerprint1.data.webgl?.renderer !==
+          fingerprint2.data.webgl?.renderer,
         changeType:
-          fingerprint1.data.webgl?.renderer !== fingerprint2.data.webgl?.renderer ? 'neutral' : undefined,
+          fingerprint1.data.webgl?.renderer !==
+          fingerprint2.data.webgl?.renderer
+            ? 'neutral'
+            : undefined,
       });
     }
 
@@ -128,9 +168,12 @@ export function FingerprintComparison({ fingerprint1, fingerprint2, onClose }: F
         field: 'User Agent',
         value1: fingerprint1.data.navigator?.userAgent || 'N/A',
         value2: fingerprint2.data.navigator?.userAgent || 'N/A',
-        changed: fingerprint1.data.navigator?.userAgent !== fingerprint2.data.navigator?.userAgent,
+        changed:
+          fingerprint1.data.navigator?.userAgent !==
+          fingerprint2.data.navigator?.userAgent,
         changeType:
-          fingerprint1.data.navigator?.userAgent !== fingerprint2.data.navigator?.userAgent
+          fingerprint1.data.navigator?.userAgent !==
+          fingerprint2.data.navigator?.userAgent
             ? 'neutral'
             : undefined,
       });
@@ -140,9 +183,14 @@ export function FingerprintComparison({ fingerprint1, fingerprint2, onClose }: F
         field: 'Platform',
         value1: fingerprint1.data.navigator?.platform || 'N/A',
         value2: fingerprint2.data.navigator?.platform || 'N/A',
-        changed: fingerprint1.data.navigator?.platform !== fingerprint2.data.navigator?.platform,
+        changed:
+          fingerprint1.data.navigator?.platform !==
+          fingerprint2.data.navigator?.platform,
         changeType:
-          fingerprint1.data.navigator?.platform !== fingerprint2.data.navigator?.platform ? 'neutral' : undefined,
+          fingerprint1.data.navigator?.platform !==
+          fingerprint2.data.navigator?.platform
+            ? 'neutral'
+            : undefined,
       });
 
       items.push({
@@ -185,11 +233,20 @@ export function FingerprintComparison({ fingerprint1, fingerprint2, onClose }: F
       items.push({
         category: 'Screen',
         field: 'Color Depth',
-        value1: fingerprint1.data.screen?.colorDepth ? `${fingerprint1.data.screen.colorDepth} bits` : 'N/A',
-        value2: fingerprint2.data.screen?.colorDepth ? `${fingerprint2.data.screen.colorDepth} bits` : 'N/A',
-        changed: fingerprint1.data.screen?.colorDepth !== fingerprint2.data.screen?.colorDepth,
+        value1: fingerprint1.data.screen?.colorDepth
+          ? `${fingerprint1.data.screen.colorDepth} bits`
+          : 'N/A',
+        value2: fingerprint2.data.screen?.colorDepth
+          ? `${fingerprint2.data.screen.colorDepth} bits`
+          : 'N/A',
+        changed:
+          fingerprint1.data.screen?.colorDepth !==
+          fingerprint2.data.screen?.colorDepth,
         changeType:
-          fingerprint1.data.screen?.colorDepth !== fingerprint2.data.screen?.colorDepth ? 'neutral' : undefined,
+          fingerprint1.data.screen?.colorDepth !==
+          fingerprint2.data.screen?.colorDepth
+            ? 'neutral'
+            : undefined,
       });
     }
 
@@ -200,7 +257,8 @@ export function FingerprintComparison({ fingerprint1, fingerprint2, onClose }: F
         field: 'Detected Count',
         value1: fingerprint1.data.fonts?.count || 0,
         value2: fingerprint2.data.fonts?.count || 0,
-        changed: fingerprint1.data.fonts?.count !== fingerprint2.data.fonts?.count,
+        changed:
+          fingerprint1.data.fonts?.count !== fingerprint2.data.fonts?.count,
         changeType:
           fingerprint1.data.fonts?.count !== fingerprint2.data.fonts?.count
             ? 'neutral'
@@ -215,9 +273,14 @@ export function FingerprintComparison({ fingerprint1, fingerprint2, onClose }: F
         field: 'Timezone',
         value1: fingerprint1.data.timezone?.timezone || 'N/A',
         value2: fingerprint2.data.timezone?.timezone || 'N/A',
-        changed: fingerprint1.data.timezone?.timezone !== fingerprint2.data.timezone?.timezone,
+        changed:
+          fingerprint1.data.timezone?.timezone !==
+          fingerprint2.data.timezone?.timezone,
         changeType:
-          fingerprint1.data.timezone?.timezone !== fingerprint2.data.timezone?.timezone ? 'neutral' : undefined,
+          fingerprint1.data.timezone?.timezone !==
+          fingerprint2.data.timezone?.timezone
+            ? 'neutral'
+            : undefined,
       });
 
       items.push({
@@ -225,9 +288,14 @@ export function FingerprintComparison({ fingerprint1, fingerprint2, onClose }: F
         field: 'Offset',
         value1: fingerprint1.data.timezone?.timezoneOffset ?? 'N/A',
         value2: fingerprint2.data.timezone?.timezoneOffset ?? 'N/A',
-        changed: fingerprint1.data.timezone?.timezoneOffset !== fingerprint2.data.timezone?.timezoneOffset,
+        changed:
+          fingerprint1.data.timezone?.timezoneOffset !==
+          fingerprint2.data.timezone?.timezoneOffset,
         changeType:
-          fingerprint1.data.timezone?.timezoneOffset !== fingerprint2.data.timezone?.timezoneOffset ? 'neutral' : undefined,
+          fingerprint1.data.timezone?.timezoneOffset !==
+          fingerprint2.data.timezone?.timezoneOffset
+            ? 'neutral'
+            : undefined,
       });
     }
 
@@ -238,8 +306,12 @@ export function FingerprintComparison({ fingerprint1, fingerprint2, onClose }: F
         field: 'Hash',
         value1: fingerprint1.data.audio?.hash || 'N/A',
         value2: fingerprint2.data.audio?.hash || 'N/A',
-        changed: fingerprint1.data.audio?.hash !== fingerprint2.data.audio?.hash,
-        changeType: fingerprint1.data.audio?.hash !== fingerprint2.data.audio?.hash ? 'neutral' : undefined,
+        changed:
+          fingerprint1.data.audio?.hash !== fingerprint2.data.audio?.hash,
+        changeType:
+          fingerprint1.data.audio?.hash !== fingerprint2.data.audio?.hash
+            ? 'neutral'
+            : undefined,
       });
     }
 
@@ -250,12 +322,16 @@ export function FingerprintComparison({ fingerprint1, fingerprint2, onClose }: F
         field: 'Total Lies',
         value1: fingerprint1.data.lies?.liesCount || 0,
         value2: fingerprint2.data.lies?.liesCount || 0,
-        changed: fingerprint1.data.lies?.liesCount !== fingerprint2.data.lies?.liesCount,
+        changed:
+          fingerprint1.data.lies?.liesCount !==
+          fingerprint2.data.lies?.liesCount,
         changeType:
           fingerprint2.data.lies && fingerprint1.data.lies
-            ? fingerprint2.data.lies.liesCount < fingerprint1.data.lies.liesCount
+            ? fingerprint2.data.lies.liesCount <
+              fingerprint1.data.lies.liesCount
               ? 'improved'
-              : fingerprint2.data.lies.liesCount > fingerprint1.data.lies.liesCount
+              : fingerprint2.data.lies.liesCount >
+                  fingerprint1.data.lies.liesCount
                 ? 'degraded'
                 : undefined
             : undefined,
@@ -268,8 +344,12 @@ export function FingerprintComparison({ fingerprint1, fingerprint2, onClose }: F
   const stats = useMemo(() => {
     const totalFields = comparison.length;
     const changedFields = comparison.filter((item) => item.changed).length;
-    const improvedFields = comparison.filter((item) => item.changeType === 'improved').length;
-    const degradedFields = comparison.filter((item) => item.changeType === 'degraded').length;
+    const improvedFields = comparison.filter(
+      (item) => item.changeType === 'improved'
+    ).length;
+    const degradedFields = comparison.filter(
+      (item) => item.changeType === 'degraded'
+    ).length;
 
     return {
       totalFields,
@@ -277,7 +357,8 @@ export function FingerprintComparison({ fingerprint1, fingerprint2, onClose }: F
       unchangedFields: totalFields - changedFields,
       improvedFields,
       degradedFields,
-      changePercentage: totalFields > 0 ? (changedFields / totalFields) * 100 : 0,
+      changePercentage:
+        totalFields > 0 ? (changedFields / totalFields) * 100 : 0,
     };
   }, [comparison]);
 
@@ -296,7 +377,7 @@ export function FingerprintComparison({ fingerprint1, fingerprint2, onClose }: F
   return (
     <div className="space-y-6">
       {/* Header */}
-      <Card className="border-2 border-primary/20">
+      <Card className="border-primary/20 border-2">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="space-y-1">
@@ -315,26 +396,28 @@ export function FingerprintComparison({ fingerprint1, fingerprint2, onClose }: F
         </CardHeader>
         <CardContent>
           {/* Summary Statistics */}
-          <div className="grid md:grid-cols-5 gap-4">
-            <div className="space-y-1 p-4 bg-muted/50 rounded-lg">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="grid gap-4 md:grid-cols-5">
+            <div className="bg-muted/50 space-y-1 rounded-lg p-4">
+              <div className="text-muted-foreground flex items-center gap-2 text-sm">
                 <Hash className="h-4 w-4" />
                 <span>Total Fields</span>
               </div>
               <div className="text-2xl font-bold">{stats.totalFields}</div>
             </div>
-            <div className="space-y-1 p-4 bg-orange-500/10 rounded-lg border border-orange-500/20">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="space-y-1 rounded-lg border border-orange-500/20 bg-orange-500/10 p-4">
+              <div className="text-muted-foreground flex items-center gap-2 text-sm">
                 <AlertTriangle className="h-4 w-4 text-orange-500" />
                 <span>Changed</span>
               </div>
               <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
                 {stats.changedFields}
               </div>
-              <div className="text-xs text-muted-foreground">{stats.changePercentage.toFixed(1)}%</div>
+              <div className="text-muted-foreground text-xs">
+                {stats.changePercentage.toFixed(1)}%
+              </div>
             </div>
-            <div className="space-y-1 p-4 bg-green-500/10 rounded-lg border border-green-500/20">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="space-y-1 rounded-lg border border-green-500/20 bg-green-500/10 p-4">
+              <div className="text-muted-foreground flex items-center gap-2 text-sm">
                 <CheckCircle className="h-4 w-4 text-green-500" />
                 <span>Unchanged</span>
               </div>
@@ -342,8 +425,8 @@ export function FingerprintComparison({ fingerprint1, fingerprint2, onClose }: F
                 {stats.unchangedFields}
               </div>
             </div>
-            <div className="space-y-1 p-4 bg-blue-500/10 rounded-lg border border-blue-500/20">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="space-y-1 rounded-lg border border-blue-500/20 bg-blue-500/10 p-4">
+              <div className="text-muted-foreground flex items-center gap-2 text-sm">
                 <TrendingUp className="h-4 w-4 text-blue-500" />
                 <span>Improved</span>
               </div>
@@ -351,8 +434,8 @@ export function FingerprintComparison({ fingerprint1, fingerprint2, onClose }: F
                 {stats.improvedFields}
               </div>
             </div>
-            <div className="space-y-1 p-4 bg-red-500/10 rounded-lg border border-red-500/20">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="space-y-1 rounded-lg border border-red-500/20 bg-red-500/10 p-4">
+              <div className="text-muted-foreground flex items-center gap-2 text-sm">
                 <TrendingDown className="h-4 w-4 text-red-500" />
                 <span>Degraded</span>
               </div>
@@ -375,16 +458,16 @@ export function FingerprintComparison({ fingerprint1, fingerprint2, onClose }: F
               {items.map((item, index) => (
                 <div
                   key={`${item.category}-${item.field}-${index}`}
-                  className={`p-4 rounded-lg border ${
+                  className={`rounded-lg border p-4 ${
                     item.changed
-                      ? 'bg-orange-500/5 border-orange-500/20'
+                      ? 'border-orange-500/20 bg-orange-500/5'
                       : 'bg-muted/50 border-muted'
                   }`}
                 >
                   <div className="space-y-3">
                     {/* Field Name */}
                     <div className="flex items-center justify-between">
-                      <div className="font-medium text-sm">{item.field}</div>
+                      <div className="text-sm font-medium">{item.field}</div>
                       {item.changed && (
                         <div className="flex items-center gap-2">
                           {item.changeType === 'improved' && (
@@ -410,20 +493,24 @@ export function FingerprintComparison({ fingerprint1, fingerprint2, onClose }: F
                     </div>
 
                     {/* Values */}
-                    <div className="grid md:grid-cols-2 gap-4">
+                    <div className="grid gap-4 md:grid-cols-2">
                       <div className="space-y-1">
-                        <div className="text-xs text-muted-foreground flex items-center gap-2">
+                        <div className="text-muted-foreground flex items-center gap-2 text-xs">
                           <Calendar className="h-3 w-3" />
                           Fingerprint 1 (Older)
                         </div>
-                        <div className="text-sm font-mono break-all">{String(item.value1)}</div>
+                        <div className="break-all font-mono text-sm">
+                          {String(item.value1)}
+                        </div>
                       </div>
                       <div className="space-y-1">
-                        <div className="text-xs text-muted-foreground flex items-center gap-2">
+                        <div className="text-muted-foreground flex items-center gap-2 text-xs">
                           <Calendar className="h-3 w-3" />
                           Fingerprint 2 (Newer)
                         </div>
-                        <div className="text-sm font-mono break-all">{String(item.value2)}</div>
+                        <div className="break-all font-mono text-sm">
+                          {String(item.value2)}
+                        </div>
                       </div>
                     </div>
                   </div>

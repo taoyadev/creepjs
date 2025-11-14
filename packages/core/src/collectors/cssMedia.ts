@@ -41,16 +41,17 @@ export function collectCSSMediaFingerprint(): CSSMediaFingerprint | undefined {
     ];
 
     const matches: Record<string, boolean> = {};
-    mediaQueries.forEach(query => {
+    mediaQueries.forEach((query) => {
       matches[query] = window.matchMedia(`(${query})`).matches;
     });
 
     // Get device pixel ratio ranges
     const pixelRatios = [1, 1.5, 2, 2.5, 3];
     const pixelRatioMatches: Record<string, boolean> = {};
-    pixelRatios.forEach(ratio => {
-      pixelRatioMatches[`min-resolution: ${ratio}dppx`] =
-        window.matchMedia(`(min-resolution: ${ratio}dppx)`).matches;
+    pixelRatios.forEach((ratio) => {
+      pixelRatioMatches[`min-resolution: ${ratio}dppx`] = window.matchMedia(
+        `(min-resolution: ${ratio}dppx)`
+      ).matches;
     });
 
     // Get orientation

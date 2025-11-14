@@ -217,8 +217,8 @@ export function getWebGLContext(cache: Options['cache']) {
  */
 function getShaderPrecision(
   gl: WebGLRenderingContext,
-  shaderType: typeof shaderTypes[number],
-  precisionType: typeof precisionTypes[number],
+  shaderType: (typeof shaderTypes)[number],
+  precisionType: (typeof precisionTypes)[number],
 ) {
   const shaderPrecision = gl.getShaderPrecisionFormat(gl[shaderType], gl[precisionType])
   return shaderPrecision ? [shaderPrecision.rangeMin, shaderPrecision.rangeMax, shaderPrecision.precision] : []

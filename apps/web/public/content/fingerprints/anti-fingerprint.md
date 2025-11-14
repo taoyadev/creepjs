@@ -11,6 +11,7 @@ Think about it. If 95% of people are using regular Chrome with no privacy protec
 It's counterintuitive, but true. **Privacy tools create patterns. And patterns can be detected.**
 
 Websites can detect:
+
 - **Brave's farbling** (their noise injection technique)
 - **Firefox Resist Fingerprinting mode** (standardized fake values)
 - **Tor Browser** (standardized dimensions and timezone)
@@ -25,6 +26,7 @@ Each of these leaves telltale signs that trackers have learned to detect.
 Brave Browser introduced "farbling" in 2019. The idea was genius: instead of blocking fingerprinting APIs (which breaks websites), inject tiny amounts of random noise into the results.
 
 For example:
+
 - Canvas fingerprinting returns slightly different values each time
 - WebGL parameters get small random variations
 - Audio fingerprinting gets noise added
@@ -65,6 +67,7 @@ function getBraveNoisyCanvas() {
 The problem? **The noise itself has a pattern**. Security researchers found that Brave's farbling uses a deterministic algorithm seeded by session and domain keys. If you test the same canvas multiple times on the same site, you get the same "random" result.
 
 Trackers figured this out. They can now:
+
 1. Test canvas rendering multiple times
 2. Check if results are consistent within a session
 3. Detect the specific pattern of Brave's noise injection
@@ -73,6 +76,7 @@ Trackers figured this out. They can now:
 ### Brave's 2024 Statistics
 
 According to Brave's own announcement in January 2024, they removed "Strict" fingerprinting protection mode because:
+
 - It affected **over 330,000 users** (0.5% of 65.5 million monthly active users)
 - Compatibility issues broke websites for these users
 - Standard mode's farbling was already "the strongest of any major browser"
@@ -84,6 +88,7 @@ But here's the catch: even Standard mode's farbling can be detected by sophistic
 Firefox has a feature called "Resist Fingerprinting" (RFP) that you can enable in `about:config`. It's more aggressive than Brave—instead of adding noise, Firefox returns **standardized fake values**.
 
 For example, with RFP enabled:
+
 - Screen resolution: Always reports 1366x768
 - Hardware concurrency: Always reports 2 CPU cores
 - Timezone: Always reports UTC
@@ -126,7 +131,7 @@ function detectFirefoxRFP() {
   const ctx = canvas.getContext('2d');
   ctx.fillText('test', 0, 0);
   const data = ctx.getImageData(0, 0, 1, 1).data;
-  if (data.every(v => v === 0)) {
+  if (data.every((v) => v === 0)) {
     tests.push('blocked_canvas');
   }
 
@@ -135,7 +140,7 @@ function detectFirefoxRFP() {
     return {
       detected: true,
       confidence: 'high',
-      signals: tests
+      signals: tests,
     };
   }
 
@@ -149,18 +154,19 @@ So if you're one of them, you're in a very small group. And that small group is 
 
 ### Firefox Market Share and RFP Usage (2024)
 
-| Metric | Value | Notes |
-|--------|-------|-------|
-| Firefox market share | ~3% | Desktop browsers worldwide |
-| Firefox users with RFP | <1% of Firefox users | ~0.03% of all users |
-| Tor Browser users | ~2-3 million daily | All use RFP by default |
-| Total RFP users | ~3-5 million | Globally |
+| Metric                 | Value                | Notes                      |
+| ---------------------- | -------------------- | -------------------------- |
+| Firefox market share   | ~3%                  | Desktop browsers worldwide |
+| Firefox users with RFP | <1% of Firefox users | ~0.03% of all users        |
+| Tor Browser users      | ~2-3 million daily   | All use RFP by default     |
+| Total RFP users        | ~3-5 million         | Globally                   |
 
 So when a tracker detects RFP fingerprint, they know you're in a group of **maybe 3-5 million people worldwide**. That's actually pretty small.
 
 ## Tor Browser: The Best Anonymity (With Tradeoffs)
 
 Tor Browser is the gold standard for privacy. It's based on Firefox with RFP enabled, but goes further:
+
 - Forces all traffic through Tor network (encrypted, routed through relays)
 - Disables JavaScript by default for some sites
 - Blocks fonts (uses only built-in fonts)
@@ -187,6 +193,7 @@ Here's what Tor standardizes:
 **Every Tor user returns these exact values.** That's millions of people with identical fingerprints. True anonymity through uniformity.
 
 But here's the catch: **Tor Browser itself is detectable**. Websites can tell you're using Tor by:
+
 1. Checking if your IP is a known Tor exit node
 2. Detecting the standardized fingerprint
 3. Testing for blocked features (WebGL, canvas, fonts)
@@ -194,6 +201,7 @@ But here's the catch: **Tor Browser itself is detectable**. Websites can tell yo
 According to 2024 data, **2-3 million people use Tor daily**. Many websites block or challenge Tor users (CAPTCHAs, access restrictions).
 
 So Tor gives you the best anonymity, but at the cost of:
+
 - Slow browsing (traffic goes through multiple relays)
 - Some websites block you
 - You're identified as "a Tor user" (even if they can't identify which specific Tor user)
@@ -232,6 +240,7 @@ function detectCanvasDefender() {
 ```
 
 Canvas Defender's randomization is detectable because:
+
 1. It generates different results each time (unlike real browsers)
 2. The random distribution has statistical properties
 3. Extension injects code that can be detected
@@ -240,15 +249,15 @@ Canvas Defender's randomization is detectable because:
 
 Here's the reality check for 2024:
 
-| Privacy Tool | Est. Users | % of Internet Users | Detectability |
-|--------------|-----------|-------------------|---------------|
-| Brave Browser | 65.5 million MAU | ~1.5% | High (farbling patterns) |
-| Firefox + RFP | ~1-2 million | ~0.03% | Very High (standardized values) |
-| Tor Browser | 2-3 million daily | ~0.05% | Very High (Tor exit nodes) |
-| Canvas Defender | ~500K | ~0.01% | High (extension artifacts) |
-| Privacy Badger | ~3 million | ~0.06% | Medium (script blocking patterns) |
-| uBlock Origin | ~50 million | ~1.0% | Medium (ad blocking patterns) |
-| Regular browsers | ~4.5 billion | ~98% | Low (normal fingerprints) |
+| Privacy Tool     | Est. Users        | % of Internet Users | Detectability                     |
+| ---------------- | ----------------- | ------------------- | --------------------------------- |
+| Brave Browser    | 65.5 million MAU  | ~1.5%               | High (farbling patterns)          |
+| Firefox + RFP    | ~1-2 million      | ~0.03%              | Very High (standardized values)   |
+| Tor Browser      | 2-3 million daily | ~0.05%              | Very High (Tor exit nodes)        |
+| Canvas Defender  | ~500K             | ~0.01%              | High (extension artifacts)        |
+| Privacy Badger   | ~3 million        | ~0.06%              | Medium (script blocking patterns) |
+| uBlock Origin    | ~50 million       | ~1.0%               | Medium (ad blocking patterns)     |
+| Regular browsers | ~4.5 billion      | ~98%                | Low (normal fingerprints)         |
 
 See the problem? **Using privacy tools puts you in tiny groups**. And tiny groups are easy to identify.
 
@@ -325,7 +334,7 @@ function detectRFP() {
     return {
       detected: true,
       confidence: score >= 9 ? 'high' : 'medium',
-      signals: signals
+      signals: signals,
     };
   }
 
@@ -370,6 +379,7 @@ function detectPrivacyExtensions() {
 Remember that study I mentioned earlier? "Breaking the Shield: Analyzing and Attacking Canvas Fingerprinting Defenses in the Wild" (ACM Web Conference 2025)?
 
 The researchers tested **all major anti-fingerprinting tools**:
+
 - Brave's farbling
 - Firefox Resist Fingerprinting
 - Canvas Defender
@@ -379,6 +389,7 @@ The researchers tested **all major anti-fingerprinting tools**:
 Their conclusion: **They successfully detected and defeated every single defense**.
 
 Success rates:
+
 - Brave detection: 94.7%
 - Firefox RFP detection: 97.2%
 - Canvas Defender detection: 91.3%
@@ -425,6 +436,7 @@ This is the "good enough privacy" approach.
 ### Option 4: Multiple Browser Profiles
 
 Use different browsers for different activities:
+
 - Chrome for Google services
 - Firefox for shopping
 - Brave for general browsing
@@ -437,6 +449,7 @@ This makes cross-site tracking harder because each browser has a different finge
 Brave has proposed an interesting idea: "Privacy Budgets." Instead of blocking or randomizing everything, allocate each website a "budget" of entropy they can collect.
 
 For example:
+
 - Allow 10 bits of fingerprinting per site
 - Once the site uses up its budget, additional fingerprinting APIs return randomized values
 

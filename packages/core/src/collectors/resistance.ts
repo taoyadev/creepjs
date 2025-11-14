@@ -4,7 +4,9 @@ import type { ResistanceFingerprint } from '../types';
  * Collect Resistance Detection fingerprint
  * Detects anti-fingerprinting tools and browser modifications
  */
-export function collectResistanceFingerprint(): ResistanceFingerprint | undefined {
+export function collectResistanceFingerprint():
+  | ResistanceFingerprint
+  | undefined {
   if (typeof navigator === 'undefined' || typeof window === 'undefined') {
     return undefined;
   }
@@ -17,7 +19,8 @@ export function collectResistanceFingerprint(): ResistanceFingerprint | undefine
     const nav = navigator as typeof navigator & {
       brave?: { isBrave?: () => Promise<boolean> };
     };
-    detections.brave = 'brave' in nav && typeof nav.brave?.isBrave === 'function';
+    detections.brave =
+      'brave' in nav && typeof nav.brave?.isBrave === 'function';
 
     // Check for webdriver (automation tools)
     detections.webdriver = navigator.webdriver === true;
@@ -75,7 +78,10 @@ export function collectResistanceFingerprint(): ResistanceFingerprint | undefine
     };
 
     // Puppeteer detection
-    if (win.document?.$cdc_asdjflasutopfhvcZLmcfl_ || win.document?.$chrome_asyncScriptInfo) {
+    if (
+      win.document?.$cdc_asdjflasutopfhvcZLmcfl_ ||
+      win.document?.$chrome_asyncScriptInfo
+    ) {
       detections.puppeteerDetected = true;
     }
 
@@ -153,7 +159,10 @@ export function collectResistanceFingerprint(): ResistanceFingerprint | undefine
             debugInfo.UNMASKED_RENDERER_WEBGL
           ) as string | null;
           detections.webglBlocked =
-            !vendor || !renderer || vendor === 'Google Inc.' || renderer === 'ANGLE';
+            !vendor ||
+            !renderer ||
+            vendor === 'Google Inc.' ||
+            renderer === 'ANGLE';
         }
       }
     } catch (_webglError) {
@@ -226,9 +235,15 @@ export function collectResistanceFingerprint(): ResistanceFingerprint | undefine
     // Check for permissions API inconsistencies
     detections.permissionsInconsistent = false;
     if ('permissions' in navigator) {
-      const perms = (navigator as typeof navigator & {
-        permissions?: { query?: (descriptor: { name: string }) => Promise<{ state: string }> };
-      }).permissions;
+      const perms = (
+        navigator as typeof navigator & {
+          permissions?: {
+            query?: (descriptor: {
+              name: string;
+            }) => Promise<{ state: string }>;
+          };
+        }
+      ).permissions;
 
       if (!perms || typeof perms.query !== 'function') {
         detections.permissionsInconsistent = true;
@@ -237,10 +252,7 @@ export function collectResistanceFingerprint(): ResistanceFingerprint | undefine
 
     // Check for DeviceOrientation/Motion events (often missing in headless)
     detections.deviceEventsBlocked = false;
-    if (
-      !('ondeviceorientation' in window) &&
-      !('ondevicemotion' in window)
-    ) {
+    if (!('ondeviceorientation' in window) && !('ondevicemotion' in window)) {
       detections.deviceEventsBlocked = true;
     }
 
@@ -255,7 +267,10 @@ export function collectResistanceFingerprint(): ResistanceFingerprint | undefine
 
     // Check for inconsistent hardware concurrency
     detections.hardwareConcurrencyInconsistent = false;
-    if (navigator.hardwareConcurrency === 0 || navigator.hardwareConcurrency === 1) {
+    if (
+      navigator.hardwareConcurrency === 0 ||
+      navigator.hardwareConcurrency === 1
+    ) {
       detections.hardwareConcurrencyInconsistent = true;
     }
 
@@ -275,7 +290,9 @@ export function collectResistanceFingerprint(): ResistanceFingerprint | undefine
     // Check for missing touch support on mobile UA
     detections.touchSupportInconsistent = false;
     if (
-      (uaLower.includes('mobile') || uaLower.includes('android') || uaLower.includes('iphone')) &&
+      (uaLower.includes('mobile') ||
+        uaLower.includes('android') ||
+        uaLower.includes('iphone')) &&
       navigator.maxTouchPoints === 0
     ) {
       detections.touchSupportInconsistent = true;
@@ -293,7 +310,9 @@ export function collectResistanceFingerprint(): ResistanceFingerprint | undefine
     }
 
     // Count total detections
-    const totalDetections = Object.values(detections).filter(v => v === true).length;
+    const totalDetections = Object.values(detections).filter(
+      (v) => v === true
+    ).length;
 
     return {
       detections,

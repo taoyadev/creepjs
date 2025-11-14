@@ -13,7 +13,7 @@ function getTextMetricsFingerprint() {
   return {
     width: metrics.width,
     actualBoundingBoxAscent: metrics.actualBoundingBoxAscent,
-    actualBoundingBoxDescent: metrics.actualBoundingBoxDescent
+    actualBoundingBoxDescent: metrics.actualBoundingBoxDescent,
   };
 }
 ```

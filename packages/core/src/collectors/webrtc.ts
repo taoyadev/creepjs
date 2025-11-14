@@ -8,7 +8,9 @@ import type { WebRTCFingerprint } from '../types';
 /**
  * Collect WebRTC fingerprint data
  */
-export async function collectWebRTCFingerprint(): Promise<WebRTCFingerprint | undefined> {
+export async function collectWebRTCFingerprint(): Promise<
+  WebRTCFingerprint | undefined
+> {
   try {
     // Check basic support
     const rtcPeerConnectionSupported = !!(
@@ -161,7 +163,10 @@ export async function collectWebRTCFingerprint(): Promise<WebRTCFingerprint | un
     };
 
     try {
-      if (typeof RTCRtpSender !== 'undefined' && typeof RTCRtpSender.getCapabilities === 'function') {
+      if (
+        typeof RTCRtpSender !== 'undefined' &&
+        typeof RTCRtpSender.getCapabilities === 'function'
+      ) {
         const audioCapabilities = RTCRtpSender.getCapabilities('audio');
         if (audioCapabilities?.codecs) {
           capabilities.audio = audioCapabilities.codecs.map(
@@ -227,7 +232,13 @@ function isPrivateIP(ip: string): boolean {
   if (parts.length !== 4) return false;
 
   const [p0, p1, p2, p3] = parts;
-  if (p0 === undefined || p1 === undefined || p2 === undefined || p3 === undefined) return false;
+  if (
+    p0 === undefined ||
+    p1 === undefined ||
+    p2 === undefined ||
+    p3 === undefined
+  )
+    return false;
 
   // 10.0.0.0 - 10.255.255.255
   if (p0 === 10) return true;

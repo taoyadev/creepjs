@@ -31,23 +31,24 @@ Basic emoji fingerprinting:
 ```javascript
 function getEmojiFingerprint() {
   const testEmojis = [
-    '😀',           // Grinning face (universal)
-    '🎨',           // Artist palette (varies widely)
-    '🔒',           // Lock (simple shape)
-    '🏴',           // Black flag (regional)
-    '👨‍👩‍👧‍👦',   // Family (ZWJ sequence)
-    '🇺🇸',         // US flag (regional indicators)
-    '🏳️‍🌈',       // Pride flag (complex ZWJ)
-    '🫠',          // Melting face (Unicode 14.0, 2021)
-    '🥹',          // Face holding back tears (Unicode 14.0)
+    '😀', // Grinning face (universal)
+    '🎨', // Artist palette (varies widely)
+    '🔒', // Lock (simple shape)
+    '🏴', // Black flag (regional)
+    '👨‍👩‍👧‍👦', // Family (ZWJ sequence)
+    '🇺🇸', // US flag (regional indicators)
+    '🏳️‍🌈', // Pride flag (complex ZWJ)
+    '🫠', // Melting face (Unicode 14.0, 2021)
+    '🥹', // Face holding back tears (Unicode 14.0)
   ];
 
   const measurements = [];
 
-  testEmojis.forEach(emoji => {
+  testEmojis.forEach((emoji) => {
     const span = document.createElement('span');
     span.textContent = emoji;
-    span.style.cssText = 'position:absolute;left:-9999px;font-size:100px;font-family:sans-serif;';
+    span.style.cssText =
+      'position:absolute;left:-9999px;font-size:100px;font-family:sans-serif;';
     document.body.appendChild(span);
 
     const rect = span.getBoundingClientRect();
@@ -59,7 +60,7 @@ function getEmojiFingerprint() {
       boundingWidth: rect.width,
       boundingHeight: rect.height,
       // Advanced: Check if actually rendered as color emoji
-      supportsColor: detectColorEmoji(span)
+      supportsColor: detectColorEmoji(span),
     });
 
     document.body.removeChild(span);
@@ -68,7 +69,7 @@ function getEmojiFingerprint() {
   return {
     measurements,
     hash: hashMeasurements(measurements),
-    supportedCount: measurements.filter(m => m.supportsColor).length
+    supportedCount: measurements.filter((m) => m.supportsColor).length,
   };
 }
 
@@ -86,29 +87,32 @@ function detectColorEmoji(element) {
 According to recent fingerprinting research:
 
 **Emoji Fingerprint Study (2024):**
+
 - **1,791 emojis tested** across 11 different browsers
 - **114 emojis showed differences** between browser implementations
 - **Minimum 2 emojis differing** between any two browser/OS combinations
 - **2,575 DOMRect objects** measured at font-size: 300px for maximum precision
 
 **User Awareness Study (Twitter users, 710 respondents):**
+
 - **25% unaware** that emojis they post could appear differently to followers
 - **20% would have edited or not sent** tweets after seeing cross-platform rendering differences
 
 **Identification Effectiveness:**
+
 - Emoji rendering alone provides **4-6 bits of entropy** (identifies 1 in 16-64 users)
 - Combined with other font metrics: **8-12 bits** (1 in 256-4096 users)
 - Most marked differences: Chrome vs Internet Explorer, various Android devices
 
-| OS / Browser Combo | Emoji Font | Typical Width (😀 @ 100px) | Uniqueness Level |
-|--------------------|-----------|---------------------------|------------------|
-| **Windows 11 / Chrome** | Segoe UI Emoji (3D Fluent) | 102-104px | High |
-| **Windows 10 / Chrome** | Segoe UI Emoji (flat) | 100-102px | High |
-| **macOS 14 / Safari** | Apple Color Emoji (latest) | 105-108px | Very High |
-| **macOS 13 / Safari** | Apple Color Emoji (older) | 104-106px | Very High |
-| **Android 14 / Chrome** | Noto Color Emoji | 98-100px | Medium-High |
-| **Linux / Firefox** | Noto/Twemoji/Fallback | 80-120px (highly variable) | Extremely High |
-| **iOS 17 / Safari** | Apple Color Emoji | 105-108px (same as macOS) | High |
+| OS / Browser Combo      | Emoji Font                 | Typical Width (😀 @ 100px) | Uniqueness Level |
+| ----------------------- | -------------------------- | -------------------------- | ---------------- |
+| **Windows 11 / Chrome** | Segoe UI Emoji (3D Fluent) | 102-104px                  | High             |
+| **Windows 10 / Chrome** | Segoe UI Emoji (flat)      | 100-102px                  | High             |
+| **macOS 14 / Safari**   | Apple Color Emoji (latest) | 105-108px                  | Very High        |
+| **macOS 13 / Safari**   | Apple Color Emoji (older)  | 104-106px                  | Very High        |
+| **Android 14 / Chrome** | Noto Color Emoji           | 98-100px                   | Medium-High      |
+| **Linux / Firefox**     | Noto/Twemoji/Fallback      | 80-120px (highly variable) | Extremely High   |
+| **iOS 17 / Safari**     | Apple Color Emoji          | 105-108px (same as macOS)  | High             |
 
 ## What Nobody Tells You
 
@@ -117,18 +121,21 @@ According to recent fingerprinting research:
 Emoji rendering can pinpoint your exact OS version with shocking precision:
 
 **Windows 10 vs Windows 11:**
+
 - Windows 10 → Flat 2D emojis (Microsoft's old style)
 - Windows 11 → 3D Fluent emojis with shadows and depth
 - Measurable differences: 2-4px width variance at 100px font size
 - **Detection accuracy**: 95%+
 
 **macOS version detection:**
+
 - macOS 13 (Ventura) → Emoji design version 15.0
 - macOS 14 (Sonoma) → Updated emoji designs
 - Apple periodically redesigns emojis (rounder, different colors)
 - **Detection accuracy**: 85-90% when testing multiple emojis
 
 **Android fragmentation:**
+
 - Android 12+ → Material You emojis (3D, colorful)
 - Android 9-11 → Blob emojis (round, expressive)
 - Android 8- → Older gradient emojis
@@ -142,21 +149,25 @@ This is more precise than User-Agent strings, which can be easily spoofed. You c
 Complex emojis using Zero-Width Joiners (ZWJ) are incredibly identifying:
 
 **Family emoji (👨‍👩‍👧‍👦):**
+
 - Modern systems: Renders as single composite glyph (width ~100-110px)
 - Older/unsupported systems: Shows 4 separate people (width ~400-450px)
 - Linux/older Android: Sometimes shows person + ZWJ character + person (broken rendering)
 
 **Pride flag (🏳️‍🌈):**
+
 - Supported: Single rainbow flag (width ~100px)
 - Unsupported: White flag + rainbow (width ~200px) or broken rendering
 - Political consideration: Some countries/systems deliberately don't support this emoji
 
 **Professional emojis with skin tones and tools:**
+
 - 👨🏽‍⚕️ (man health worker, medium skin tone)
 - Composed of: MAN + MEDIUM SKIN TONE + ZWJ + STAFF OF AESCULAPIUS
 - Rendering varies wildly: single glyph, separate glyphs, missing components
 
 **Why this matters:**
+
 - ZWJ emoji support indicates OS version and update level
 - Measures cultural/regional emoji priorities (which emojis get designed first)
 - Can detect enterprise vs consumer OS builds (different emoji font packages)
@@ -166,19 +177,22 @@ Complex emojis using Zero-Width Joiners (ZWJ) are incredibly identifying:
 Flag emojis are regional indicator symbols that vary tremendously:
 
 **Universal flags:**
+
 - 🇺🇸 (US), 🇬🇧 (UK), 🇯🇵 (Japan) → ~99% support
 - Render at ~100-110px width on most systems
 
 **Regional/political flags:**
+
 - 🏴󠁧󠁢󠁳󠁣󠁴󠁿 (Scotland), 🏴󠁧󠁢󠁷󠁬󠁳󠁿 (Wales) → 60-80% support
 - 🇹🇼 (Taiwan) → Deliberately blocked in Chinese market devices
 - 🇽🇰 (Kosovo) → Limited support due to political non-recognition
 
 **Detection strategy:**
+
 ```javascript
 function detectRegionalFlags() {
   const politicalFlags = ['🇹🇼', '🇽🇰', '🏴󠁧󠁢󠁳󠁣󠁴󠁿'];
-  const supported = politicalFlags.map(flag => {
+  const supported = politicalFlags.map((flag) => {
     const span = document.createElement('span');
     span.textContent = flag;
     span.style.fontSize = '100px';
@@ -189,14 +203,15 @@ function detectRegionalFlags() {
   });
 
   return {
-    taiwanFlag: supported[0],  // False on devices sold in China
+    taiwanFlag: supported[0], // False on devices sold in China
     kosovoFlag: supported[1],
-    scotlandFlag: supported[2]
+    scotlandFlag: supported[2],
   };
 }
 ```
 
 This reveals:
+
 - **Geographic market**: Chinese devices block Taiwan flag
 - **OS update status**: Newer Unicode versions support more flags
 - **System language settings**: Some flags only appear with specific locale settings
@@ -206,17 +221,20 @@ This reveals:
 New emojis are added yearly via Unicode updates:
 
 **Unicode 14.0 (2021):**
+
 - 🫠 (Melting Face), 🥹 (Face Holding Back Tears)
 - Only supported on: macOS 12.1+, iOS 15.4+, Android 12L+, Windows 11 22H2+
 
 **Unicode 15.0 (2022):**
+
 - 🫨 (Shaking Face), 🩷 (Pink Heart)
 - Only supported on: macOS 13+, iOS 16.4+, Android 13+, Windows 11 23H2+
 
 **Detection:**
+
 ```javascript
 const recentEmojis = ['🫠', '🥹', '🫨', '🩷'];
-const supportCount = recentEmojis.filter(emoji => {
+const supportCount = recentEmojis.filter((emoji) => {
   const element = document.createElement('span');
   element.textContent = emoji;
   element.style.fontSize = '50px';
@@ -235,18 +253,19 @@ This fingerprints your **update discipline** and **device age**.
 
 ## Browser Differences
 
-| Browser | Emoji Source | Rendering Method | Privacy Protection |
-|---------|--------------|-----------------|-------------------|
-| **Chrome** | System emoji font | Native OS rendering | None - exposes exact OS fonts |
-| **Firefox** | System emoji font | Native OS rendering | RFP can limit (rounds measurements) |
-| **Safari** | Apple Color Emoji (always) | Core Text rendering | Limited - all Apple devices similar |
-| **Edge** | System emoji font (Chromium) | Same as Chrome | None |
-| **Brave** | System emoji font | Adds noise to measurements | Good - randomizes dimensions ±2px |
-| **Tor Browser** | System emoji font | Standardizes measurements | Best - reports generic values |
+| Browser         | Emoji Source                 | Rendering Method           | Privacy Protection                  |
+| --------------- | ---------------------------- | -------------------------- | ----------------------------------- |
+| **Chrome**      | System emoji font            | Native OS rendering        | None - exposes exact OS fonts       |
+| **Firefox**     | System emoji font            | Native OS rendering        | RFP can limit (rounds measurements) |
+| **Safari**      | Apple Color Emoji (always)   | Core Text rendering        | Limited - all Apple devices similar |
+| **Edge**        | System emoji font (Chromium) | Same as Chrome             | None                                |
+| **Brave**       | System emoji font            | Adds noise to measurements | Good - randomizes dimensions ±2px   |
+| **Tor Browser** | System emoji font            | Standardizes measurements  | Best - reports generic values       |
 
 ### Firefox resistFingerprinting
 
 Enabling `privacy.resistFingerprinting` in Firefox:
+
 - Rounds emoji measurements to nearest 5px
 - Reduces precision but doesn't eliminate fingerprinting
 - May still reveal OS family (Windows vs macOS)
@@ -254,6 +273,7 @@ Enabling `privacy.resistFingerprinting` in Firefox:
 ### Brave's Noise Injection
 
 Brave adds random ±1-3px noise to all element measurements:
+
 - Makes exact fingerprinting harder
 - Doesn't prevent OS-level detection
 - Can still distinguish Windows vs macOS vs Linux
@@ -274,6 +294,7 @@ Total entropy can exceed **15-20 bits**, identifying 1 in 32,000 to 1 in 1,000,0
 ### Cross-Site Tracking
 
 Unlike cookies:
+
 - **Can't be deleted** - Hardware/OS-based rendering is persistent
 - **Survives incognito mode** - Same system, same measurements
 - **Cross-browser consistent** - Chrome, Firefox, Safari render emojis identically on same OS

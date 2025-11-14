@@ -5,7 +5,9 @@ import { murmurHash3 } from '../utils/hash';
  * Collect TextMetrics fingerprint
  * Tests text measurement API for browser differences
  */
-export function collectTextMetricsFingerprint(): TextMetricsFingerprint | undefined {
+export function collectTextMetricsFingerprint():
+  | TextMetricsFingerprint
+  | undefined {
   if (typeof document === 'undefined') return undefined;
 
   try {
@@ -20,13 +22,18 @@ export function collectTextMetricsFingerprint(): TextMetricsFingerprint | undefi
       '😀😃😄😁',
     ];
 
-    const fonts = ['12px Arial', '14px Times New Roman', '16px Courier New', '18px Verdana'];
+    const fonts = [
+      '12px Arial',
+      '14px Times New Roman',
+      '16px Courier New',
+      '18px Verdana',
+    ];
 
     const metrics: number[] = [];
 
-    fonts.forEach(font => {
+    fonts.forEach((font) => {
       ctx.font = font;
-      testStrings.forEach(text => {
+      testStrings.forEach((text) => {
         const m = ctx.measureText(text);
         metrics.push(
           m.width,
@@ -36,7 +43,7 @@ export function collectTextMetricsFingerprint(): TextMetricsFingerprint | undefi
           m.actualBoundingBoxDescent,
           m.fontBoundingBoxAscent,
           m.fontBoundingBoxDescent,
-          m.alphabeticBaseline || 0,
+          m.alphabeticBaseline || 0
         );
       });
     });

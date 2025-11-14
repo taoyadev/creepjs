@@ -10,7 +10,7 @@ export function FingerprintCardSkeleton() {
           <Skeleton className="h-9 w-24" />
         </div>
       </CardHeader>
-      <CardContent className="pt-6 space-y-6">
+      <CardContent className="space-y-6 pt-6">
         {/* Fingerprint ID Section */}
         <div className="space-y-2">
           <Skeleton className="h-5 w-32" />
@@ -36,7 +36,7 @@ export function FingerprintCardSkeleton() {
         </div>
 
         {/* Timestamp */}
-        <div className="pt-4 border-t">
+        <div className="border-t pt-4">
           <Skeleton className="h-4 w-48" />
         </div>
 

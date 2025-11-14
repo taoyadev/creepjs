@@ -1,8 +1,16 @@
 import type { DomBlockerFingerprint } from '../types';
 
-const CLASS_NAMES = ['adsbox', 'ad-banner', 'google-ads', 'text-ad', 'ad-container'];
+const CLASS_NAMES = [
+  'adsbox',
+  'ad-banner',
+  'google-ads',
+  'text-ad',
+  'ad-container',
+];
 
-export function collectDomBlockersFingerprint(): DomBlockerFingerprint | undefined {
+export function collectDomBlockersFingerprint():
+  | DomBlockerFingerprint
+  | undefined {
   if (typeof document === 'undefined') {
     return undefined;
   }
@@ -13,7 +21,8 @@ export function collectDomBlockersFingerprint(): DomBlockerFingerprint | undefin
   }
 
   const testContainer = document.createElement('div');
-  testContainer.style.cssText = 'position:absolute;left:-9999px;top:-9999px;visibility:hidden;';
+  testContainer.style.cssText =
+    'position:absolute;left:-9999px;top:-9999px;visibility:hidden;';
 
   CLASS_NAMES.forEach((className) => {
     const el = document.createElement('div');

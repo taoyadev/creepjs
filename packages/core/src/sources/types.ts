@@ -10,13 +10,15 @@ export interface RunSourcesOptions {
   concurrency?: number;
 }
 
-const now = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
+const now = () =>
+  typeof performance !== 'undefined' ? performance.now() : Date.now();
 
 async function runSource<T>(source: Source<T>): Promise<CollectorSummary<T>> {
   const start = now();
   try {
     const value = await source();
-    const status = value === undefined || value === null ? 'skipped' : 'success';
+    const status =
+      value === undefined || value === null ? 'skipped' : 'success';
     return {
       status,
       value,
@@ -58,8 +60,11 @@ export async function runSources(
     { idleDelay: options.idleDelay, concurrency: options.concurrency }
   );
 
-  return components.reduce<Record<string, CollectorSummary>>((acc, { name, component }) => {
-    acc[name] = component;
-    return acc;
-  }, {});
+  return components.reduce<Record<string, CollectorSummary>>(
+    (acc, { name, component }) => {
+      acc[name] = component;
+      return acc;
+    },
+    {}
+  );
 }

@@ -180,7 +180,6 @@ export const defaultMetadata: Metadata = {
   creator: SITE_CONFIG.author.name,
   publisher: SITE_CONFIG.author.name,
 
-
   // Robots
   robots: {
     index: true,

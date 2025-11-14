@@ -10,7 +10,7 @@ function getMIMETypesFingerprint() {
     types.push({
       type: navigator.mimeTypes[i].type,
       description: navigator.mimeTypes[i].description,
-      suffixes: navigator.mimeTypes[i].suffixes
+      suffixes: navigator.mimeTypes[i].suffixes,
     });
   }
 

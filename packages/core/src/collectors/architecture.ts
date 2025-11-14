@@ -2,7 +2,10 @@
  * Detects CPU architecture quirks via IEEE 754 NaN sign bit behaviour.
  */
 export function collectArchitectureFingerprint(): number | undefined {
-  if (typeof Float32Array === 'undefined' || typeof Uint8Array === 'undefined') {
+  if (
+    typeof Float32Array === 'undefined' ||
+    typeof Uint8Array === 'undefined'
+  ) {
     return undefined;
   }
 

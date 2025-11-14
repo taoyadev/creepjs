@@ -46,7 +46,7 @@ describe('Sources', () => {
 
       it('should return LocaleNotAvailable status if resolvedOptions().locale is undefined', () => {
         spyOn(window.Intl, 'DateTimeFormat').and.returnValue({
-          resolvedOptions: () => ({ locale: undefined } as unknown as Intl.ResolvedDateTimeFormatOptions),
+          resolvedOptions: () => ({ locale: undefined }) as unknown as Intl.ResolvedDateTimeFormatOptions,
           format: () => '',
           formatToParts: () => [],
         })
@@ -57,7 +57,7 @@ describe('Sources', () => {
 
       it('should return empty string when resolvedOptions().locale is an empty string', () => {
         spyOn(window.Intl, 'DateTimeFormat').and.returnValue({
-          resolvedOptions: () => ({ locale: '' } as Intl.ResolvedDateTimeFormatOptions),
+          resolvedOptions: () => ({ locale: '' }) as Intl.ResolvedDateTimeFormatOptions,
           format: () => '',
           formatToParts: () => [],
         })

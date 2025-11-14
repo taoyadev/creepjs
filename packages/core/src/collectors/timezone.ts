@@ -3,9 +3,7 @@ import type { TimezoneFingerprint } from '../types';
 /**
  * Collect Timezone and Intl API fingerprint with comprehensive testing
  */
-export function collectTimezoneFingerprint():
-  | TimezoneFingerprint
-  | undefined {
+export function collectTimezoneFingerprint(): TimezoneFingerprint | undefined {
   if (typeof Intl === 'undefined') return undefined;
 
   try {
@@ -26,17 +24,33 @@ export function collectTimezoneFingerprint():
     // DateTimeFormat testing
     try {
       const dateFormats: Record<string, string> = {};
-      dateFormats.short = new Intl.DateTimeFormat(undefined, { dateStyle: 'short' }).format(date);
-      dateFormats.medium = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(date);
-      dateFormats.long = new Intl.DateTimeFormat(undefined, { dateStyle: 'long' }).format(date);
-      dateFormats.full = new Intl.DateTimeFormat(undefined, { dateStyle: 'full' }).format(date);
-      dateFormats.timeShort = new Intl.DateTimeFormat(undefined, { timeStyle: 'short' }).format(date);
-      dateFormats.timeMedium = new Intl.DateTimeFormat(undefined, { timeStyle: 'medium' }).format(date);
+      dateFormats.short = new Intl.DateTimeFormat(undefined, {
+        dateStyle: 'short',
+      }).format(date);
+      dateFormats.medium = new Intl.DateTimeFormat(undefined, {
+        dateStyle: 'medium',
+      }).format(date);
+      dateFormats.long = new Intl.DateTimeFormat(undefined, {
+        dateStyle: 'long',
+      }).format(date);
+      dateFormats.full = new Intl.DateTimeFormat(undefined, {
+        dateStyle: 'full',
+      }).format(date);
+      dateFormats.timeShort = new Intl.DateTimeFormat(undefined, {
+        timeStyle: 'short',
+      }).format(date);
+      dateFormats.timeMedium = new Intl.DateTimeFormat(undefined, {
+        timeStyle: 'medium',
+      }).format(date);
 
       result.dateTimeFormat = {
         formats: dateFormats,
-        hourCycle: new Intl.DateTimeFormat(undefined, { hour: 'numeric' }).resolvedOptions().hourCycle,
-        timeZoneName: new Intl.DateTimeFormat(undefined, { timeZoneName: 'long' }).resolvedOptions().timeZoneName,
+        hourCycle: new Intl.DateTimeFormat(undefined, {
+          hour: 'numeric',
+        }).resolvedOptions().hourCycle,
+        timeZoneName: new Intl.DateTimeFormat(undefined, {
+          timeZoneName: 'long',
+        }).resolvedOptions().timeZoneName,
       };
     } catch (_error) {
       void _error;
@@ -48,15 +62,28 @@ export function collectTimezoneFingerprint():
       const numberFormats: Record<string, string> = {};
       const testNumber = 123456.789;
       numberFormats.decimal = new Intl.NumberFormat().format(testNumber);
-      numberFormats.currency = new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD' }).format(testNumber);
-      numberFormats.percent = new Intl.NumberFormat(undefined, { style: 'percent' }).format(0.789);
-      numberFormats.scientific = new Intl.NumberFormat(undefined, { notation: 'scientific' }).format(testNumber);
-      numberFormats.compact = new Intl.NumberFormat(undefined, { notation: 'compact' }).format(testNumber);
+      numberFormats.currency = new Intl.NumberFormat(undefined, {
+        style: 'currency',
+        currency: 'USD',
+      }).format(testNumber);
+      numberFormats.percent = new Intl.NumberFormat(undefined, {
+        style: 'percent',
+      }).format(0.789);
+      numberFormats.scientific = new Intl.NumberFormat(undefined, {
+        notation: 'scientific',
+      }).format(testNumber);
+      numberFormats.compact = new Intl.NumberFormat(undefined, {
+        notation: 'compact',
+      }).format(testNumber);
 
       result.numberFormat = {
         formats: numberFormats,
-        notation: new Intl.NumberFormat(undefined, { notation: 'standard' }).resolvedOptions().notation,
-        signDisplay: new Intl.NumberFormat(undefined, { signDisplay: 'auto' }).resolvedOptions().signDisplay,
+        notation: new Intl.NumberFormat(undefined, {
+          notation: 'standard',
+        }).resolvedOptions().notation,
+        signDisplay: new Intl.NumberFormat(undefined, {
+          signDisplay: 'auto',
+        }).resolvedOptions().signDisplay,
       };
     } catch (_error) {
       void _error;
@@ -92,7 +119,7 @@ export function collectTimezoneFingerprint():
         const cardinal = new Intl.PluralRules(undefined, { type: 'cardinal' });
         const ordinal = new Intl.PluralRules(undefined, { type: 'ordinal' });
 
-        [0, 1, 2, 3, 5, 10, 21, 100].forEach(n => {
+        [0, 1, 2, 3, 5, 10, 21, 100].forEach((n) => {
           cardinalRules[`n${n}`] = cardinal.select(n);
           ordinalRules[`n${n}`] = ordinal.select(n);
         });
@@ -114,8 +141,10 @@ export function collectTimezoneFingerprint():
         const regions: Record<string, string> = {};
         const currencies: Record<string, string> = {};
 
-        const langDisplay = new Intl.DisplayNames(undefined, { type: 'language' });
-        ['en', 'es', 'fr', 'de', 'zh', 'ja'].forEach(code => {
+        const langDisplay = new Intl.DisplayNames(undefined, {
+          type: 'language',
+        });
+        ['en', 'es', 'fr', 'de', 'zh', 'ja'].forEach((code) => {
           try {
             languages[code] = langDisplay.of(code) || '';
           } catch (_error) {
@@ -124,8 +153,10 @@ export function collectTimezoneFingerprint():
           }
         });
 
-        const regionDisplay = new Intl.DisplayNames(undefined, { type: 'region' });
-        ['US', 'GB', 'CN', 'JP', 'DE', 'FR'].forEach(code => {
+        const regionDisplay = new Intl.DisplayNames(undefined, {
+          type: 'region',
+        });
+        ['US', 'GB', 'CN', 'JP', 'DE', 'FR'].forEach((code) => {
           try {
             regions[code] = regionDisplay.of(code) || '';
           } catch (_error) {
@@ -134,8 +165,10 @@ export function collectTimezoneFingerprint():
           }
         });
 
-        const currencyDisplay = new Intl.DisplayNames(undefined, { type: 'currency' });
-        ['USD', 'EUR', 'GBP', 'JPY', 'CNY'].forEach(code => {
+        const currencyDisplay = new Intl.DisplayNames(undefined, {
+          type: 'currency',
+        });
+        ['USD', 'EUR', 'GBP', 'JPY', 'CNY'].forEach((code) => {
           try {
             currencies[code] = currencyDisplay.of(code) || '';
           } catch (_error) {
@@ -161,9 +194,18 @@ export function collectTimezoneFingerprint():
         const formats: Record<string, string> = {};
         const items = ['Apple', 'Banana', 'Orange'];
 
-        formats.conjunction = new Intl.ListFormat(undefined, { style: 'long', type: 'conjunction' }).format(items);
-        formats.disjunction = new Intl.ListFormat(undefined, { style: 'long', type: 'disjunction' }).format(items);
-        formats.unit = new Intl.ListFormat(undefined, { style: 'long', type: 'unit' }).format(items);
+        formats.conjunction = new Intl.ListFormat(undefined, {
+          style: 'long',
+          type: 'conjunction',
+        }).format(items);
+        formats.disjunction = new Intl.ListFormat(undefined, {
+          style: 'long',
+          type: 'disjunction',
+        }).format(items);
+        formats.unit = new Intl.ListFormat(undefined, {
+          style: 'long',
+          type: 'unit',
+        }).format(items);
 
         result.listFormat = {
           formats,
@@ -201,12 +243,14 @@ export function collectTimezoneFingerprint():
     try {
       const testLocales = ['en-US', 'zh-CN', 'ja-JP', 'de-DE', 'fr-FR'];
       result.supportedLocales = {
-        dateTimeFormat: Intl.DateTimeFormat.supportedLocalesOf(testLocales).length,
+        dateTimeFormat:
+          Intl.DateTimeFormat.supportedLocalesOf(testLocales).length,
         numberFormat: Intl.NumberFormat.supportedLocalesOf(testLocales).length,
         collator: Intl.Collator.supportedLocalesOf(testLocales).length,
-        pluralRules: typeof Intl.PluralRules !== 'undefined'
-          ? Intl.PluralRules.supportedLocalesOf(testLocales).length
-          : 0,
+        pluralRules:
+          typeof Intl.PluralRules !== 'undefined'
+            ? Intl.PluralRules.supportedLocalesOf(testLocales).length
+            : 0,
       };
     } catch (_error) {
       void _error;

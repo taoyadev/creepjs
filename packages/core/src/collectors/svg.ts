@@ -22,7 +22,10 @@ export function collectSVGFingerprint(): SVGFingerprint | undefined {
     rect.setAttribute('height', '100');
     rect.setAttribute('fill', 'red');
 
-    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    const circle = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'circle'
+    );
     circle.setAttribute('cx', '50');
     circle.setAttribute('cy', '50');
     circle.setAttribute('r', '30');
@@ -54,10 +57,22 @@ export function collectSVGFingerprint(): SVGFingerprint | undefined {
     const pathBox = path.getBBox();
 
     const data = [
-      rectBox.x, rectBox.y, rectBox.width, rectBox.height,
-      circleBox.x, circleBox.y, circleBox.width, circleBox.height,
-      textBox.x, textBox.y, textBox.width, textBox.height,
-      pathBox.x, pathBox.y, pathBox.width, pathBox.height,
+      rectBox.x,
+      rectBox.y,
+      rectBox.width,
+      rectBox.height,
+      circleBox.x,
+      circleBox.y,
+      circleBox.width,
+      circleBox.height,
+      textBox.x,
+      textBox.y,
+      textBox.width,
+      textBox.height,
+      pathBox.x,
+      pathBox.y,
+      pathBox.width,
+      pathBox.height,
     ];
 
     document.body.removeChild(svg);

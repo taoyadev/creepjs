@@ -66,12 +66,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     'css-media',
   ];
 
-  const fingerprintPages: MetadataRoute.Sitemap = fingerprintTypes.map((type) => ({
-    url: `${baseUrl}/fingerprint/${type}`,
-    lastModified: new Date(),
-    changeFrequency: 'monthly' as const,
-    priority: 0.7,
-  }));
+  const fingerprintPages: MetadataRoute.Sitemap = fingerprintTypes.map(
+    (type) => ({
+      url: `${baseUrl}/fingerprint/${type}`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+    })
+  );
 
   return [...staticPages, ...fingerprintPages];
 }

@@ -5,7 +5,9 @@ import { murmurHash3 } from '../utils/hash';
  * Collect HTMLElement features fingerprint
  * Tests HTMLElement prototype and property characteristics
  */
-export function collectHTMLElementFingerprint(): HTMLElementFingerprint | undefined {
+export function collectHTMLElementFingerprint():
+  | HTMLElementFingerprint
+  | undefined {
   if (typeof HTMLElement === 'undefined' || typeof document === 'undefined') {
     return undefined;
   }
@@ -46,8 +48,10 @@ export function collectHTMLElementFingerprint(): HTMLElementFingerprint | undefi
       'hasAttribute',
     ];
 
-    const availableMethods = methods.filter(method =>
-      typeof (element as unknown as Record<string, unknown>)[method] === 'function'
+    const availableMethods = methods.filter(
+      (method) =>
+        typeof (element as unknown as Record<string, unknown>)[method] ===
+        'function'
     );
 
     // Check for shadow DOM support

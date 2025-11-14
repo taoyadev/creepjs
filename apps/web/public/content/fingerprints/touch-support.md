@@ -60,7 +60,7 @@ function comprehensiveTouchDetection() {
     // Media query approach
     coarsePointer: matchMedia('(pointer: coarse)').matches,
     finePointer: matchMedia('(pointer: fine)').matches,
-    anyPointer: matchMedia('(any-pointer: coarse)').matches
+    anyPointer: matchMedia('(any-pointer: coarse)').matches,
   };
 }
 ```
@@ -69,13 +69,13 @@ function comprehensiveTouchDetection() {
 
 Based on browser market share and device statistics:
 
-| maxTouchPoints | Estimated % | Device Categories | Typical Devices |
-|----------------|-------------|-------------------|-----------------|
-| **0** | ~65-70% | Desktop PC, non-touch laptop | Office PCs, gaming rigs, older laptops, MacBook Air (non-touch) |
-| **5** | ~22-25% | Smartphones, tablets | iPhone, Android phones, iPad, Android tablets |
-| **10** | ~5-8% | Touchscreen laptops, 2-in-1 | Surface Pro, Dell XPS 2-in-1, HP Spectre x360, Lenovo Yoga |
-| **1** | ~1-2% | Stylus-only or legacy touch | Older tablets, some graphics tablets |
-| **20+** | <0.5% | Large format touchscreens | Interactive kiosks, digital whiteboards |
+| maxTouchPoints | Estimated % | Device Categories            | Typical Devices                                                 |
+| -------------- | ----------- | ---------------------------- | --------------------------------------------------------------- |
+| **0**          | ~65-70%     | Desktop PC, non-touch laptop | Office PCs, gaming rigs, older laptops, MacBook Air (non-touch) |
+| **5**          | ~22-25%     | Smartphones, tablets         | iPhone, Android phones, iPad, Android tablets                   |
+| **10**         | ~5-8%       | Touchscreen laptops, 2-in-1  | Surface Pro, Dell XPS 2-in-1, HP Spectre x360, Lenovo Yoga      |
+| **1**          | ~1-2%       | Stylus-only or legacy touch  | Older tablets, some graphics tablets                            |
+| **20+**        | <0.5%       | Large format touchscreens    | Interactive kiosks, digital whiteboards                         |
 
 **Fingerprinting Entropy**: 1.5-2 bits alone, but dramatically higher when combined with screen size and user agent
 
@@ -183,6 +183,7 @@ A device reporting `maxTouchPoints > 0` but showing mouse-only behavior reveals:
 ### Legitimate Applications
 
 **Responsive design:**
+
 ```javascript
 if (navigator.maxTouchPoints > 0) {
   // Increase button sizes for touch targets
@@ -191,17 +192,20 @@ if (navigator.maxTouchPoints > 0) {
 ```
 
 **Feature adaptation:**
+
 - Show swipe tutorials on touch devices
 - Enable drag-and-drop on desktop
 - Adjust scroll behavior (momentum scrolling on touch)
 
 **Accessibility:**
+
 - Larger tap targets for touch users
 - Keyboard navigation for desktop users
 
 ### Problematic Applications
 
 **Device-based price discrimination:**
+
 ```javascript
 // Don't do this
 if (navigator.maxTouchPoints >= 10) {
@@ -211,11 +215,13 @@ if (navigator.maxTouchPoints >= 10) {
 ```
 
 **Ad targeting:**
+
 - Luxury goods ads for 10-point users (expensive laptops)
 - Mobile app install ads for 5-point users
 - Desktop software ads for 0-point users
 
 **Content gatekeeping:**
+
 - "Mobile not supported" messages on complex web apps
 - Feature paywalls based on device class
 
@@ -261,7 +267,7 @@ console.log({
   finePointer: matchMedia('(pointer: fine)').matches,
   anyCoarsePointer: matchMedia('(any-pointer: coarse)').matches,
   anyFinePointer: matchMedia('(any-pointer: fine)').matches,
-  hoverCapable: matchMedia('(hover: hover)').matches
+  hoverCapable: matchMedia('(hover: hover)').matches,
 });
 ```
 
@@ -298,6 +304,7 @@ trackUser({ deviceType: navigator.maxTouchPoints });
 ```
 
 **Use progressive enhancement:**
+
 - Default to mouse/keyboard support
 - Add touch features when detected
 - Don't make assumptions about user behavior

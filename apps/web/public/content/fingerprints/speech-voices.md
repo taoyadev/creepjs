@@ -22,15 +22,15 @@ function getSpeechVoicesFingerprint() {
 
   return {
     count: voices.length,
-    voices: voices.map(v => ({
-      name: v.name,          // "Microsoft David Desktop"
-      lang: v.lang,          // "en-US"
-      default: v.default,    // true/false
+    voices: voices.map((v) => ({
+      name: v.name, // "Microsoft David Desktop"
+      lang: v.lang, // "en-US"
+      default: v.default, // true/false
       localService: v.localService, // true = installed locally
-      voiceURI: v.voiceURI   // Unique identifier
+      voiceURI: v.voiceURI, // Unique identifier
     })),
     hash: hashVoices(voices),
-    defaultVoice: voices.find(v => v.default)?.name
+    defaultVoice: voices.find((v) => v.default)?.name,
   };
 }
 
@@ -44,13 +44,13 @@ function getSpeechVoicesFingerprint() {
 
 Voice fingerprinting entropy varies wildly by platform:
 
-| Platform | Typical Voice Count | Entropy | Uniqueness |
-|----------|-------------------|---------|------------|
-| **Windows 10/11 (default)** | 8-15 voices | 3-4 bits | ~1 in 10-16 users |
-| **macOS (default)** | 40-80 voices | 5-6 bits | ~1 in 32-64 users |
-| **Linux** | 1-50 (extremely variable) | 4-7 bits | ~1 in 16-128 users |
-| **Windows + Language packs** | 20-40 voices | 6-8 bits | ~1 in 64-256 users |
-| **macOS + Accessibility** | 80-150 voices | 7-9 bits | ~1 in 128-512 users |
+| Platform                     | Typical Voice Count       | Entropy  | Uniqueness          |
+| ---------------------------- | ------------------------- | -------- | ------------------- |
+| **Windows 10/11 (default)**  | 8-15 voices               | 3-4 bits | ~1 in 10-16 users   |
+| **macOS (default)**          | 40-80 voices              | 5-6 bits | ~1 in 32-64 users   |
+| **Linux**                    | 1-50 (extremely variable) | 4-7 bits | ~1 in 16-128 users  |
+| **Windows + Language packs** | 20-40 voices              | 6-8 bits | ~1 in 64-256 users  |
+| **macOS + Accessibility**    | 80-150 voices             | 7-9 bits | ~1 in 128-512 users |
 
 **Combined with other fingerprints**, voice data can push total entropy to 15-20 bits, uniquely identifying 1 in 32,000 to 1 in 1,000,000 users.
 
@@ -61,17 +61,20 @@ Voice fingerprinting entropy varies wildly by platform:
 Having multiple language packs is extremely identifying:
 
 **Scenario 1: Spanish + English + French voices**
+
 - Only ~2-3% of users are trilingual
 - Suggests European background or international work
 - Often correlates with higher education and income
 - Reveals cultural/ethnic background
 
 **Scenario 2: Arabic + English voices**
+
 - Immediately identifies Middle Eastern background or Arabic speaker
 - Can be used for discriminatory targeting or profiling
 - Potentially sensitive in geopolitical contexts
 
 **Scenario 3: Asian languages (Chinese/Japanese/Korean)**
+
 - Identifies East Asian heritage or language learners
 - Often correlates with specific professional fields (tech, translation, education)
 
@@ -82,20 +85,24 @@ The combination of language packs creates a linguistic fingerprint that's both u
 This is where speech voice fingerprinting crosses into deeply unethical territory. Screen reader users have specialized voices:
 
 **JAWS (Job Access With Speech)**
+
 - Voices: "Microsoft David Desktop", "Eloquence", "Vocalizer Expressive"
 - Cost: $1,000+ software license
 - Indicates: Visual impairment, professional screen reader user
 
 **NVDA (NonVisual Desktop Access)**
+
 - Voices: eSpeak, SAPI5 voices, Windows OneCore voices
 - Free software, but specific voice combinations identify NVDA users
 - Indicates: Visual impairment, tech-savvy (NVDA requires more configuration)
 
 **VoiceOver (macOS/iOS)**
+
 - Voices: "Alex", "Samantha", "Tom" (higher quality voices)
 - Indicates: Apple accessibility user, likely visual impairment
 
 **Dragon NaturallySpeaking**
+
 - Voices: "NaturalVoice" series
 - Indicates: Motor impairment, dictation-heavy workflow, professional transcription
 
@@ -111,6 +118,7 @@ This is where speech voice fingerprinting crosses into deeply unethical territor
 macOS ships with an absurd number of voices by default:
 
 **Languages included (macOS Sonoma):**
+
 - **English**: 40+ variants (US, UK, Australian, Indian, Irish, Scottish, South African)
 - **Romance languages**: Spanish (10+ variants), French, Italian, Portuguese
 - **Asian languages**: Chinese (Mandarin, Cantonese), Japanese, Korean, Thai, Vietnamese
@@ -126,11 +134,13 @@ The problem: Which specific subset of these voices you have enabled creates a hi
 Certain voices indicate professional software:
 
 **Adobe Creative Cloud voices** (for video editing, After Effects):
+
 - "Microsoft Zira Desktop - English (United States)"
 - "Microsoft David Desktop - English (United States)"
 - Indicates: Video editor, content creator, Adobe subscription ($50+/month)
 
 **Microsoft Office voices**:
+
 - "Microsoft Hazel Desktop - English (Great Britain)"
 - "Microsoft Mark Mobile - English (United States)"
 - Indicates: Office 365 subscription, business user
@@ -142,11 +152,13 @@ Certain voices indicate professional software:
 The broader 2024 context makes voice fingerprinting even more concerning:
 
 **Voice biometric threats:**
+
 - Voice deepfakes can bypass authentication systems with 90%+ accuracy
 - Fraudsters can clone voices from short recordings
 - Text-to-speech fingerprinting correlates with actual voice characteristics
 
 **Industry responses (2024):**
+
 - **SAG-AFTRA agreements** with Replica Studios to license voice actors' digital replicas
 - **Japan's "No More Unauthorized AI Generation"** campaign by 200+ voice actors
 - **Descript Overdub** requires recorded consent before creating voice clones
@@ -159,15 +171,18 @@ The irony: While the industry works to protect voice talent from AI cloning, bro
 Speech voice enumeration likely violates privacy regulations:
 
 **GDPR (EU):**
+
 - Voice data may constitute "personal data" or "sensitive data"
 - Disability status revealed by accessibility voices is "special category data" (Article 9)
 - Requires explicit consent and legitimate purpose
 
 **ADA (US):**
+
 - Discriminating based on detected accessibility software could violate Americans with Disabilities Act
 - Insurance/employment decisions influenced by screen reader detection = illegal discrimination
 
 **CCPA (California):**
+
 - Voice data is "personal information"
 - Must allow opt-out and deletion (impossible with browser fingerprinting)
 
@@ -175,14 +190,14 @@ Yet browsers still expose this data freely with no permission dialogs.
 
 ## Browser Differences and Protection
 
-| Browser | Exposes Voices | Voice Count Limit | Privacy Protection |
-|---------|---------------|------------------|-------------------|
-| **Chrome** | ✅ All voices | No limit | None - full enumeration |
-| **Firefox** | ✅ All voices | No limit | RFP can limit (manual enable) |
-| **Safari** | ✅ All macOS voices | 40-120+ | None - especially bad on macOS |
-| **Edge** | ✅ All voices | No limit | None - same as Chrome (Chromium) |
-| **Brave** | ⚠️ Limited enumeration | Reduced set | Randomizes or limits voice exposure |
-| **Tor Browser** | ⚠️ Minimal voices | ~3-5 standard | Strict standardization |
+| Browser         | Exposes Voices         | Voice Count Limit | Privacy Protection                  |
+| --------------- | ---------------------- | ----------------- | ----------------------------------- |
+| **Chrome**      | ✅ All voices          | No limit          | None - full enumeration             |
+| **Firefox**     | ✅ All voices          | No limit          | RFP can limit (manual enable)       |
+| **Safari**      | ✅ All macOS voices    | 40-120+           | None - especially bad on macOS      |
+| **Edge**        | ✅ All voices          | No limit          | None - same as Chrome (Chromium)    |
+| **Brave**       | ⚠️ Limited enumeration | Reduced set       | Randomizes or limits voice exposure |
+| **Tor Browser** | ⚠️ Minimal voices      | ~3-5 standard     | Strict standardization              |
 
 ### Firefox resistFingerprinting
 
@@ -193,6 +208,7 @@ privacy.resistFingerprinting = true
 ```
 
 **Effect:**
+
 - Reduces voice enumeration
 - May report only 1-2 generic voices
 - Can break legitimate TTS applications
@@ -200,6 +216,7 @@ privacy.resistFingerprinting = true
 ### Brave Browser Protection
 
 Brave automatically:
+
 - Limits voice enumeration to ~5-10 common voices
 - Randomizes voice order
 - Omits unique identifying voices
@@ -208,6 +225,7 @@ Brave automatically:
 ### The Tradeoff
 
 Blocking voice enumeration means:
+
 - **Breaking read-aloud features** on educational sites
 - **Disabling voice selection** in TTS applications
 - **Poor UX** for language learners who need specific accents
@@ -219,21 +237,23 @@ Blocking voice enumeration means:
 
 ```javascript
 function detectPlatformFromVoices(voices) {
-  const voiceNames = voices.map(v => v.name);
+  const voiceNames = voices.map((v) => v.name);
 
-  if (voiceNames.some(n => n.includes('Microsoft') && n.includes('Desktop'))) {
+  if (
+    voiceNames.some((n) => n.includes('Microsoft') && n.includes('Desktop'))
+  ) {
     return 'Windows 10/11';
   }
 
-  if (voiceNames.some(n => n.includes('Samantha') || n.includes('Alex'))) {
+  if (voiceNames.some((n) => n.includes('Samantha') || n.includes('Alex'))) {
     return 'macOS';
   }
 
-  if (voiceNames.some(n => n.includes('eSpeak') || n.includes('Festival'))) {
+  if (voiceNames.some((n) => n.includes('eSpeak') || n.includes('Festival'))) {
     return 'Linux';
   }
 
-  if (voiceNames.some(n => n.includes('Google'))) {
+  if (voiceNames.some((n) => n.includes('Google'))) {
     return 'Chrome browser with cloud voices';
   }
 
@@ -245,7 +265,7 @@ function detectPlatformFromVoices(voices) {
 
 ```javascript
 function detectLanguages(voices) {
-  const languages = new Set(voices.map(v => v.lang.split('-')[0]));
+  const languages = new Set(voices.map((v) => v.lang.split('-')[0]));
   const languageCount = languages.size;
 
   if (languageCount >= 5) {
@@ -262,13 +282,16 @@ function detectLanguages(voices) {
 
 ```javascript
 function detectAccessibilityVoices(voices) {
-  const voiceNames = voices.map(v => v.name.toLowerCase());
+  const voiceNames = voices.map((v) => v.name.toLowerCase());
 
   const indicators = {
-    jaws: voiceNames.some(n => n.includes('eloquence') || n.includes('vocalizer')),
-    nvda: voiceNames.some(n => n.includes('espeak')),
-    dragonNaturally: voiceNames.some(n => n.includes('naturalvoice')),
-    voiceOver: voiceNames.length > 60 && voiceNames.some(n => n.includes('alex'))
+    jaws: voiceNames.some(
+      (n) => n.includes('eloquence') || n.includes('vocalizer')
+    ),
+    nvda: voiceNames.some((n) => n.includes('espeak')),
+    dragonNaturally: voiceNames.some((n) => n.includes('naturalvoice')),
+    voiceOver:
+      voiceNames.length > 60 && voiceNames.some((n) => n.includes('alex')),
   };
 
   return indicators;
@@ -280,16 +303,19 @@ function detectAccessibilityVoices(voices) {
 ### For Users
 
 **1. Use privacy browsers:**
+
 - **Tor Browser**: Most aggressive protection, ~3-5 standardized voices
 - **Brave**: Good balance, limits enumeration to common voices
 - **Firefox with RFP**: Manual enable, reduces voice exposure
 
 **2. Minimize installed voices:**
+
 - Uninstall unused language packs (Windows: Settings > Time & Language > Language)
 - Remove third-party TTS engines
 - Keep only essential accessibility voices
 
 **3. Accept the tradeoff:**
+
 - You can't hide accessibility voices without breaking critical software
 - Multilingual users can't function without language-specific voices
 - Privacy vs. functionality is a zero-sum game
@@ -306,11 +332,12 @@ trackUser({ voiceFingerprint: voiceHash });
 // Good: Functional use only
 function selectBestVoice(language) {
   const voices = speechSynthesis.getVoices();
-  return voices.find(v => v.lang.startsWith(language)) || voices[0];
+  return voices.find((v) => v.lang.startsWith(language)) || voices[0];
 }
 ```
 
 **Respect privacy:**
+
 - Only enumerate voices when user explicitly requests TTS features
 - Don't log voice data to analytics
 - Don't correlate voice data with other identifiers

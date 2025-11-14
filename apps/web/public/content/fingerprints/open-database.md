@@ -47,15 +47,15 @@ As of **April 2024**, WebSQL is gone from all major browsers. No flag can bring 
 
 Here's the complete picture:
 
-| Browser | Peak Support | Removal Date | 2024-2025 Status | Alternative |
-|---------|--------------|--------------|------------------|-------------|
-| Chrome | v4-123 (2010-2024) | April 2024 (v124) | Not supported | IndexedDB, SQLite via WASM |
-| Firefox | Never | N/A | Never supported | IndexedDB |
-| Safari | v3.1-13 (2008-2019) | 2019 (WebKit removal) | Not supported | IndexedDB |
-| Edge (Chromium) | v79-123 (2020-2024) | April 2024 (v124) | Not supported | IndexedDB |
-| Opera | v10-108 (2010-2024) | April 2024 (follows Chrome) | Not supported | IndexedDB |
-| Mobile Safari | iOS 3.2-13 | 2019 | Not supported | IndexedDB |
-| Samsung Internet | v4-23 | April 2024 (follows Chromium) | Not supported | IndexedDB |
+| Browser          | Peak Support        | Removal Date                  | 2024-2025 Status | Alternative                |
+| ---------------- | ------------------- | ----------------------------- | ---------------- | -------------------------- |
+| Chrome           | v4-123 (2010-2024)  | April 2024 (v124)             | Not supported    | IndexedDB, SQLite via WASM |
+| Firefox          | Never               | N/A                           | Never supported  | IndexedDB                  |
+| Safari           | v3.1-13 (2008-2019) | 2019 (WebKit removal)         | Not supported    | IndexedDB                  |
+| Edge (Chromium)  | v79-123 (2020-2024) | April 2024 (v124)             | Not supported    | IndexedDB                  |
+| Opera            | v10-108 (2010-2024) | April 2024 (follows Chrome)   | Not supported    | IndexedDB                  |
+| Mobile Safari    | iOS 3.2-13          | 2019                          | Not supported    | IndexedDB                  |
+| Samsung Internet | v4-23               | April 2024 (follows Chromium) | Not supported    | IndexedDB                  |
 
 Source: Chrome Platform Status, MDN Web Docs, WebKit blog, browser release notes
 
@@ -90,18 +90,21 @@ This was beautiful for fingerprinters because:
 Let's do the math for when WebSQL was still alive:
 
 Assuming this browser market share in 2023:
+
 - Chrome + Chromium browsers: ~70% (had WebSQL)
 - Safari: ~15% (no WebSQL after 2019)
 - Firefox: ~8% (never had WebSQL)
 - Other: ~7%
 
 **Entropy calculation**:
+
 - Has WebSQL: ~70% → -log2(0.70) = 0.51 bits
 - No WebSQL: ~30% → -log2(0.30) = 1.74 bits
 
 Combined entropy: **~0.88 bits**
 
 That's significant. For comparison:
+
 - Canvas fingerprinting: 8-10 bits
 - WebGL: 5-7 bits
 - **WebSQL check: 0.88 bits** (not bad for a one-liner)
@@ -133,7 +136,7 @@ function comprehensiveBrowserFingerprint() {
       } else {
         return 'Ancient browser or bot';
       }
-    })()
+    })(),
   };
 }
 ```
@@ -145,19 +148,21 @@ Libraries like FingerprintJS, Fingerprint2, and ClientJS all checked for WebSQL.
 Good question. The spec was abandoned in 2010. Why did Chrome support it until 2024?
 
 **Reasons for keeping it**:
+
 1. **Legacy apps**: Enterprise apps built in 2010-2015 relied on WebSQL
 2. **No breaking changes**: Chrome's philosophy was not to break the web
 3. **Maintenance burden was low**: SQLite was already embedded in Chrome
 4. **IndexedDB adoption was slow**: Developers kept using WebSQL because it was easier (SQL is familiar)
 
 **Reasons for finally removing it**:
+
 1. **Security concerns**: Maintaining old APIs is a security risk
 2. **Code bloat**: Every feature has maintenance cost
 3. **Web standards**: W3C wanted it gone for 14 years
 4. **IndexedDB maturity**: Modern alternative is now stable and well-supported
 5. **SQLite WASM**: You can now run SQLite in browsers via WebAssembly without native APIs
 
-Chrome's announcement (August 2023): *"Web SQL Database has been removed from the HTML specification and is no longer recommended for use. We are removing Web SQL Database from Chrome."*
+Chrome's announcement (August 2023): _"Web SQL Database has been removed from the HTML specification and is no longer recommended for use. We are removing Web SQL Database from Chrome."_
 
 They gave developers a deprecation trial from Chrome 119-123 (5 months) to update their apps. That trial expired in March 2024. Chrome 124 (April 2024) removed it completely.
 
@@ -171,22 +176,23 @@ import initSqlJs from 'sql.js';
 
 async function useSQLite() {
   const SQL = await initSqlJs({
-    locateFile: file => `https://sql.js.org/dist/${file}`
+    locateFile: (file) => `https://sql.js.org/dist/${file}`,
   });
 
   // Create a database
   const db = new SQL.Database();
 
   // Run SQL queries (just like WebSQL!)
-  db.run("CREATE TABLE test (id INTEGER, name TEXT)");
+  db.run('CREATE TABLE test (id INTEGER, name TEXT)');
   db.run("INSERT INTO test VALUES (1, 'hello')");
 
-  const results = db.exec("SELECT * FROM test");
+  const results = db.exec('SELECT * FROM test');
   console.log(results);
 }
 ```
 
 This is better than WebSQL because:
+
 - **Sandboxed**: Runs in WASM, not native code
 - **Standardized**: Works identically in every browser
 - **Up-to-date**: You control the SQLite version
@@ -206,7 +212,8 @@ const hasWebSQL = 'openDatabase' in window; // false everywhere
 
 It's like asking "Do you have a floppy disk drive?" in 2025. Everyone says no. No information gained.
 
-But here's a fun twist: if you're testing in an older browser (Chrome 123 or earlier), it *still* might show up. So fingerprinting scripts that check for WebSQL can now detect:
+But here's a fun twist: if you're testing in an older browser (Chrome 123 or earlier), it _still_ might show up. So fingerprinting scripts that check for WebSQL can now detect:
+
 - **Modern browser (2024+)**: No WebSQL
 - **Old browser (pre-2024)**: Has WebSQL
 - **Old browser trying to look new**: Has WebSQL but claims to be new
@@ -223,12 +230,12 @@ If you were using WebSQL for your app, here's the migration path:
 // IndexedDB is the official replacement
 const request = indexedDB.open('myDB', 1);
 
-request.onupgradeneeded = function(event) {
+request.onupgradeneeded = function (event) {
   const db = event.target.result;
   const store = db.createObjectStore('test', { keyPath: 'id' });
 };
 
-request.onsuccess = function(event) {
+request.onsuccess = function (event) {
   const db = event.target.result;
   const tx = db.transaction('test', 'readwrite');
   const store = tx.objectStore('test');
@@ -251,9 +258,9 @@ const worker = sqlite3Worker1Promiser({
     await worker('config-get', {});
     await worker('open', { filename: 'test.db' });
     await worker('exec', {
-      sql: 'CREATE TABLE test (id INTEGER, text TEXT)'
+      sql: 'CREATE TABLE test (id INTEGER, text TEXT)',
     });
-  }
+  },
 });
 ```
 
@@ -284,6 +291,7 @@ This means WebSQL removal affected less than 1 in 10,000 websites. Most had alre
 ### Top Use Cases (What Broke)
 
 The sites that did break were mostly:
+
 1. **Old enterprise apps** (intranet sites from 2010-2015)
 2. **Legacy mobile apps** (hybrid apps using Cordova/PhoneGap)
 3. **Abandoned side projects** (no maintainer to update)
@@ -301,14 +309,14 @@ If you're curious about your browser, test it:
     exists: 'openDatabase' in window,
     type: typeof window.openDatabase,
     functional: false,
-    errorOnCall: null
+    errorOnCall: null,
   };
 
   if (results.exists) {
     try {
       const db = window.openDatabase('test', '1.0', 'test', 1024);
       results.functional = !!db;
-    } catch(e) {
+    } catch (e) {
       results.errorOnCall = e.message;
     }
   }
@@ -319,6 +327,7 @@ If you're curious about your browser, test it:
 ```
 
 Expected output in 2024-2025:
+
 ```
 exists: false
 type: "undefined"
@@ -332,15 +341,15 @@ If you get `exists: true`, you're on an old browser (pre-April 2024). Update it.
 
 WebSQL removal is part of a larger trend: browsers removing or restricting fingerprinting vectors. Let's look at what else changed recently:
 
-| API/Feature | Status (2024-2025) | Fingerprinting Impact |
-|-------------|-------------------|----------------------|
-| WebSQL | Removed (April 2024) | Was 0.88 bits, now 0 bits |
-| User-Agent string | Being reduced (2023-2024) | Down from ~8 bits to ~3 bits |
-| Battery API | Removed (2019-2021) | Was 2-3 bits |
-| Device Motion/Orientation | Permission required (2023) | Was 4-5 bits |
-| WebRTC local IPs | Restricted (2023) | Was 3-5 bits |
-| Canvas fingerprinting | Being "farbbled" (2024) | Still 8-10 bits but less stable |
-| WebGL | Being restricted (ongoing) | Still 5-7 bits |
+| API/Feature               | Status (2024-2025)         | Fingerprinting Impact           |
+| ------------------------- | -------------------------- | ------------------------------- |
+| WebSQL                    | Removed (April 2024)       | Was 0.88 bits, now 0 bits       |
+| User-Agent string         | Being reduced (2023-2024)  | Down from ~8 bits to ~3 bits    |
+| Battery API               | Removed (2019-2021)        | Was 2-3 bits                    |
+| Device Motion/Orientation | Permission required (2023) | Was 4-5 bits                    |
+| WebRTC local IPs          | Restricted (2023)          | Was 3-5 bits                    |
+| Canvas fingerprinting     | Being "farbbled" (2024)    | Still 8-10 bits but less stable |
+| WebGL                     | Being restricted (ongoing) | Still 5-7 bits                  |
 
 Browsers are slowly removing or restricting APIs that enable fingerprinting. WebSQL removal fits this pattern.
 
@@ -349,12 +358,14 @@ Browsers are slowly removing or restricting APIs that enable fingerprinting. Web
 Not really. Here's why:
 
 **Low risk factors**:
+
 1. **Read-only detection**: Scripts could only check if the API existed, not read stored data
 2. **Same-origin policy**: Each domain got isolated databases
 3. **No cross-site tracking**: WebSQL couldn't track you across sites
 4. **Limited entropy**: Only 0.88 bits (not enough to uniquely identify)
 
 **The real risk**:
+
 - Browser identification (Chrome vs Firefox)
 - Combined with other signals for more precise fingerprinting
 - Helped detect browser spoofing (user agent lies vs actual APIs)
@@ -378,16 +389,19 @@ For developers building fingerprinting protection, the lesson is: **track which 
 Based on current browser trends (2024-2025), here are candidates for removal:
 
 **High probability**:
+
 - AppCache (already deprecated, removal planned)
 - Mutation Events (deprecated, use MutationObserver)
 - `document.domain` setter (being removed in Chrome)
 
 **Medium probability**:
+
 - PPAPI plugins (Flash alternative, being phased out)
 - Synchronous XMLHttpRequest in page dismissal
 - Unload event (being deprecated for BFCache)
 
 **Low probability but discussed**:
+
 - High-precision timing APIs (reduced precision for fingerprinting)
 - Font enumeration APIs (privacy risk)
 - Some WebRTC features (local IP leaks)
@@ -399,6 +413,7 @@ Each removal is another fingerprinting vector eliminated.
 WebSQL was a zombie API that shambled around for 14 years after being officially killed. It provided an easy browser fingerprinting vector: Chrome/Safari had it, Firefox didn't. But as of April 2024, it's finally gone from all major browsers.
 
 For fingerprinting, this means:
+
 - **Pre-2024**: Useful signal (0.88 bits of entropy)
 - **2024-2025**: Useless (0 bits, everyone returns false)
 - **Future**: Might detect outdated browsers (reverse fingerprinting)

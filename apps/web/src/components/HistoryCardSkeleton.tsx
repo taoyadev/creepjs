@@ -4,7 +4,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 export function HistoryCardSkeleton() {
   return (
     <Card className="w-full">
-      <CardContent className="pt-6 space-y-4">
+      <CardContent className="space-y-4 pt-6">
         {/* Fingerprint ID */}
         <div className="space-y-2">
           <Skeleton className="h-4 w-24" />

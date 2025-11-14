@@ -13,7 +13,14 @@ export interface IdleMapOptions {
  */
 export function waitForIdle(delay: number = DEFAULT_IDLE_DELAY): Promise<void> {
   if (typeof window !== 'undefined') {
-    const idle = (window as typeof window & { requestIdleCallback?: (cb: IdleRequestCallback, opts?: IdleRequestOptions) => number }).requestIdleCallback;
+    const idle = (
+      window as typeof window & {
+        requestIdleCallback?: (
+          cb: IdleRequestCallback,
+          opts?: IdleRequestOptions
+        ) => number;
+      }
+    ).requestIdleCallback;
     if (typeof idle === 'function') {
       return new Promise((resolve) => {
         idle(() => resolve(), { timeout: delay });
@@ -37,7 +44,10 @@ export async function mapWithIdleBreaks<T, R>(
   const normalizedOptions: IdleMapOptions =
     typeof options === 'number' ? { idleDelay: options } : options;
   const idleDelay = normalizedOptions.idleDelay ?? DEFAULT_IDLE_DELAY;
-  const concurrency = Math.max(1, Math.floor(normalizedOptions.concurrency ?? 1));
+  const concurrency = Math.max(
+    1,
+    Math.floor(normalizedOptions.concurrency ?? 1)
+  );
 
   const results: R[] = [];
   let cursor = 0;
@@ -50,7 +60,10 @@ export async function mapWithIdleBreaks<T, R>(
         break;
       }
 
-      results[currentIndex] = await iteratee(items[currentIndex]!, currentIndex);
+      results[currentIndex] = await iteratee(
+        items[currentIndex]!,
+        currentIndex
+      );
       if (currentIndex < items.length - 1) {
         await waitForIdle(idleDelay);
       }

@@ -23,7 +23,8 @@ Different rendering engines (the software that draws web pages) have subtle diff
 function getDOMRectFingerprint() {
   // Create a test element with decimal dimensions
   const div = document.createElement('div');
-  div.style.cssText = 'width:100.5px; height:50.25px; position:absolute; transform:rotate(1.5deg);';
+  div.style.cssText =
+    'width:100.5px; height:50.25px; position:absolute; transform:rotate(1.5deg);';
   document.body.appendChild(div);
 
   // Get its measurements
@@ -38,7 +39,7 @@ function getDOMRectFingerprint() {
     top: rect.top,
     right: rect.right,
     bottom: rect.bottom,
-    left: rect.left
+    left: rect.left,
   };
 
   // Clean up
@@ -66,12 +67,12 @@ According to recent research from 2024-2025, DOM Rect fingerprinting has become 
 
 ### Effectiveness Metrics
 
-| Metric | Value | Source |
-|--------|-------|--------|
-| Unique browser identification rate | 85-95% | BitBrowser Research 2025 |
-| Stability across sessions | High (persists through IP changes) | Mozilla Bugzilla Analysis |
-| Decimal precision tracked | Up to 16 decimal places | BrowserLeaks Documentation |
-| Resistance to cookie clearing | 100% (doesn't use cookies) | Privacy Check Studies |
+| Metric                             | Value                              | Source                     |
+| ---------------------------------- | ---------------------------------- | -------------------------- |
+| Unique browser identification rate | 85-95%                             | BitBrowser Research 2025   |
+| Stability across sessions          | High (persists through IP changes) | Mozilla Bugzilla Analysis  |
+| Decimal precision tracked          | Up to 16 decimal places            | BrowserLeaks Documentation |
+| Resistance to cookie clearing      | 100% (doesn't use cookies)         | Privacy Check Studies      |
 
 ### Real-World Tracking Capabilities
 
@@ -88,15 +89,16 @@ A July 2025 study by BitBrowser found that "even with changed IPs or cleared coo
 
 Here's how different browsers handle DOM Rect calculations as of 2024-2025:
 
-| Browser | Rendering Engine | Sub-Pixel Precision | Fingerprint Protection | Entropy Level |
-|---------|-----------------|---------------------|----------------------|---------------|
-| Chrome 130+ | Blink (V8) | 16 decimal places | None | Very High |
-| Firefox 132+ | Gecko (SpiderMonkey) | 15-16 decimal places | Partial (RFP mode) | High |
-| Safari 18+ | WebKit (JavaScriptCore) | 14-16 decimal places | Minimal | High |
-| Brave 1.73+ | Blink (V8) | Randomized | Strong (farbling) | Low-Medium |
-| Tor Browser 14+ | Gecko (SpiderMonkey) | Standardized values | Very Strong | Very Low |
+| Browser         | Rendering Engine        | Sub-Pixel Precision  | Fingerprint Protection | Entropy Level |
+| --------------- | ----------------------- | -------------------- | ---------------------- | ------------- |
+| Chrome 130+     | Blink (V8)              | 16 decimal places    | None                   | Very High     |
+| Firefox 132+    | Gecko (SpiderMonkey)    | 15-16 decimal places | Partial (RFP mode)     | High          |
+| Safari 18+      | WebKit (JavaScriptCore) | 14-16 decimal places | Minimal                | High          |
+| Brave 1.73+     | Blink (V8)              | Randomized           | Strong (farbling)      | Low-Medium    |
+| Tor Browser 14+ | Gecko (SpiderMonkey)    | Standardized values  | Very Strong            | Very Low      |
 
 **Key Findings:**
+
 - **Chrome and Edge** provide the most precise measurements, making them highly fingerprintable
 - **Firefox** offers "Resist Fingerprinting" mode (enabled via `privacy.resistFingerprinting`) which standardizes values
 - **Brave** uses "farbling" - adding random noise to measurements so they're different on each site
@@ -107,15 +109,19 @@ Here's how different browsers handle DOM Rect calculations as of 2024-2025:
 Let's get into the weeds for a moment. DOM Rect fingerprinting works because of these factors:
 
 ### 1. Hardware Differences
+
 Your GPU, CPU, and display adapter all influence how pixels are rendered. A Nvidia RTX 4090 calculates geometry slightly differently than an Intel integrated graphics chip.
 
 ### 2. Operating System Variations
+
 Windows, macOS, and Linux handle font rendering, DPI scaling, and sub-pixel anti-aliasing differently. This affects element measurements.
 
 ### 3. Browser Engine Implementation
+
 Each rendering engine has its own codebase for calculating element positions. These implementations have subtle differences in rounding, floating-point precision, and coordinate systems.
 
 ### 4. Font Rendering
+
 Even the same font renders slightly differently across systems. When you measure text elements, these differences show up in the rect values.
 
 ### Advanced Fingerprinting Example
@@ -132,7 +138,7 @@ function advancedDOMRectFingerprint() {
     'width:50.125px; height:50.125px; border-radius:50%',
   ];
 
-  styles.forEach(style => {
+  styles.forEach((style) => {
     const div = document.createElement('div');
     div.style.cssText = style + '; position:absolute; visibility:hidden;';
     div.textContent = 'Test123!@#';
@@ -143,7 +149,7 @@ function advancedDOMRectFingerprint() {
       width: rect.width,
       height: rect.height,
       x: rect.x,
-      y: rect.y
+      y: rect.y,
     });
 
     document.body.removeChild(div);
@@ -157,7 +163,7 @@ function hashFingerprint(data) {
   // In reality, trackers use sophisticated hashing algorithms
   return JSON.stringify(data)
     .split('')
-    .reduce((hash, char) => ((hash << 5) - hash) + char.charCodeAt(0), 0)
+    .reduce((hash, char) => (hash << 5) - hash + char.charCodeAt(0), 0)
     .toString(36);
 }
 ```
@@ -169,10 +175,13 @@ This creates multiple test elements with different properties and combines their
 Absolutely. Here's why DOM Rect fingerprinting is particularly concerning:
 
 ### It's Invisible and Unstoppable
+
 Unlike cookies or localStorage that you can clear, DOM Rect fingerprinting happens in milliseconds during page load. You can't see it, and blocking JavaScript entirely is the only surefire way to prevent it (which breaks most websites).
 
 ### It Persists Across "Clean Slates"
+
 Think you're protecting your privacy by:
+
 - Using incognito mode?
 - Clearing all cookies and cache?
 - Using a VPN?
@@ -181,9 +190,11 @@ Think you're protecting your privacy by:
 None of these help against DOM Rect fingerprinting. Your device's hardware and rendering characteristics remain the same.
 
 ### It Enables Cross-Site Tracking
+
 Advertisers and trackers can follow you across different websites, building comprehensive profiles of your browsing behavior. That product you looked at on Site A? Site B knows you were interested, even if they're completely unrelated companies.
 
 ### It's Legal Gray Area
+
 In 2024, Google announced they would officially allow fingerprinting-based tracking starting February 2025, replacing third-party cookies. The UK's ICO (Information Commissioner's Office) sharply criticized this decision, but as of January 2025, fingerprinting remains largely unregulated.
 
 ## Protection Strategies: What Actually Works
@@ -193,11 +204,13 @@ Let me be straight with you - completely blocking DOM Rect fingerprinting while 
 ### 1. Use Privacy-Focused Browsers
 
 **Best Options:**
+
 - **Tor Browser** (most private): Standardizes all DOM Rect values, making all users identical. Downside: slower browsing
 - **Brave** (balanced): Uses "farbling" to randomize fingerprints per domain. You'll have a different fingerprint on each site
 - **Firefox with RFP** (good compromise): Enable `privacy.resistFingerprinting` in about:config
 
 **How to Enable Firefox RFP:**
+
 ```
 1. Type about:config in Firefox address bar
 2. Search for privacy.resistFingerprinting
@@ -210,6 +223,7 @@ This forces Firefox to return standardized DOM Rect values, making you blend in 
 ### 2. Browser Extensions (Limited Effectiveness)
 
 Extensions like "ClientRects Fingerprint Defender" claim to protect against this, but they have limitations:
+
 - They add processing overhead
 - Sites can detect you're using protection (itself a fingerprint!)
 - They don't work in all contexts (like iframes)
@@ -229,13 +243,16 @@ The principle: it doesn't matter what RFP users actually report, as long as they
 Here's the reality: browser vendors and privacy advocates are fighting back. But trackers are adapting too.
 
 ### Browser Vendor Responses (2024-2025)
+
 - **Mozilla**: Investigating getClientRects fingerprinting (Bug 1507879)
 - **Brave**: Implementing randomization strategies
 - **Apple**: Working on privacy budgets and anti-fingerprinting measures in WebKit
 - **Google**: Ironically, allowing more fingerprinting while claiming to protect privacy
 
 ### Tracker Adaptations
+
 When browsers block one technique, trackers combine multiple signals:
+
 - DOM Rect + Canvas fingerprinting
 - DOM Rect + WebGL parameters
 - DOM Rect + Audio context
@@ -248,6 +265,7 @@ The combination creates even higher entropy (uniqueness). A 2025 study found tha
 DOM Rect fingerprinting is one of those techniques that makes you realize how much information your browser leaks just by doing its job. It's not a bug - it's a feature being exploited.
 
 **The key takeaways:**
+
 1. Your browser's mathematical calculations are unique enough to identify you
 2. This happens invisibly on most websites you visit
 3. Traditional privacy tools (clearing cookies, VPNs) don't help
@@ -269,6 +287,7 @@ And hey, at least now when someone asks "how can they track me if I cleared my c
 ---
 
 **Sources:**
+
 - [BitBrowser: Deep Analysis of ClientRects Browser Fingerprint](https://medium.com/@zhoumengxue/deep-analysis-of-anti-detection-browsers-clientrects-browser-fingerprint-8532e440cd47) - July 2025 research on ClientRects fingerprinting effectiveness
 - [Mozilla Bug 1507879: Investigate getClientRects for Fingerprinting](https://bugzilla.mozilla.org/show_bug.cgi?id=1507879) - Official Mozilla investigation into protection mechanisms
 - [BrowserLeaks ClientRects Test](https://browserleaks.com/rects) - Live demonstration and testing tool

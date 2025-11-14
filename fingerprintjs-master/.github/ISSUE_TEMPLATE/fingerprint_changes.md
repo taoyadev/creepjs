@@ -1,7 +1,6 @@
 ---
 name: Changing fingerprints
 about: Collected fingerprints change unexpectedly
-
 ---
 
 <!--

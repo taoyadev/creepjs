@@ -40,17 +40,13 @@ const platform = navigator.platform;
 const ua = navigator.userAgent;
 
 // Checking for architecture hints:
-const is64bit = ua.includes('x64') ||
-                ua.includes('Win64') ||
-                ua.includes('x86_64');
+const is64bit =
+  ua.includes('x64') || ua.includes('Win64') || ua.includes('x86_64');
 
-const isARM = /arm|aarch64/i.test(ua) ||
-              /arm64/i.test(ua);
+const isARM = /arm|aarch64/i.test(ua) || /arm64/i.test(ua);
 
 // Apple Silicon detection (tricky):
-const isAppleSilicon =
-  ua.includes('Mac OS X') &&
-  navigator.maxTouchPoints > 1;  // M1+ Macs support touch via Sidecar
+const isAppleSilicon = ua.includes('Mac OS X') && navigator.maxTouchPoints > 1; // M1+ Macs support touch via Sidecar
 ```
 
 **Accuracy**: 70-85% depending on how clever the detection script is.
@@ -63,11 +59,11 @@ const data = await navigator.userAgentData.getHighEntropyValues([
   'architecture',
   'bitness',
   'model',
-  'platformVersion'
+  'platformVersion',
 ]);
 
-console.log(data.architecture);  // "x86", "arm", etc.
-console.log(data.bitness);       // "64", "32"
+console.log(data.architecture); // "x86", "arm", etc.
+console.log(data.bitness); // "64", "32"
 ```
 
 **Browser Support**: Chrome/Edge only. Firefox and Safari don't support this (yet).
@@ -82,9 +78,15 @@ Even if you block all APIs, websites can **guess** your architecture by timing o
 // ARM CPUs have different instruction performance than x86
 async function guessArchitecture() {
   const tests = {
-    integerMath: () => { /* heavy integer operations */ },
-    floatingPoint: () => { /* heavy FP operations */ },
-    memoryAccess: () => { /* cache timing patterns */ }
+    integerMath: () => {
+      /* heavy integer operations */
+    },
+    floatingPoint: () => {
+      /* heavy FP operations */
+    },
+    memoryAccess: () => {
+      /* cache timing patterns */
+    },
   };
 
   const timings = {};
@@ -96,9 +98,9 @@ async function guessArchitecture() {
 
   // ARM vs x86 have distinct performance signatures
   if (timings.integerMath < timings.floatingPoint * 0.7) {
-    return "Likely ARM (integer優位)";
+    return 'Likely ARM (integer優位)';
   }
-  return "Likely x86";
+  return 'Likely x86';
 }
 ```
 
@@ -119,12 +121,12 @@ ARM was the "phone chip" and x86 was the "real computer chip." That's over.
 
 **ARM's Growth Trajectory** (from Statista, Heise Online, Tom's Hardware 2024-2025):
 
-| Timeframe | ARM Market Share | Key Driver |
-|-----------|------------------|------------|
-| Q4 2024 | **10.8%** of notebooks/PCs | Apple M1/M2 success |
-| Q1 2025 | **13.6%** of notebooks/PCs | +26% growth in ONE QUARTER |
-| Projected 2025 | **20%** x86/ARM split | Qualcomm Snapdragon X enters market |
-| Projected 2029 | **40%+** of notebooks | Industry consensus forecast |
+| Timeframe      | ARM Market Share           | Key Driver                          |
+| -------------- | -------------------------- | ----------------------------------- |
+| Q4 2024        | **10.8%** of notebooks/PCs | Apple M1/M2 success                 |
+| Q1 2025        | **13.6%** of notebooks/PCs | +26% growth in ONE QUARTER          |
+| Projected 2025 | **20%** x86/ARM split      | Qualcomm Snapdragon X enters market |
+| Projected 2029 | **40%+** of notebooks      | Industry consensus forecast         |
 
 **What happened?** Apple's M1 chip (2020) proved ARM could **crush** x86 in performance-per-watt. Now Qualcomm, MediaTek, and even NVIDIA are making ARM chips for Windows PCs. Microsoft is all-in on ARM support.
 
@@ -132,10 +134,10 @@ ARM was the "phone chip" and x86 was the "real computer chip." That's over.
 
 Within x86, there's a mini-revolution too:
 
-| Vendor | Market Share (2025) | Change |
-|--------|---------------------|--------|
-| Intel | **75.3%** | Holding majority but declining |
-| AMD | **24.7%** | +4.3% year-over-year growth |
+| Vendor | Market Share (2025) | Change                         |
+| ------ | ------------------- | ------------------------------ |
+| Intel  | **75.3%**           | Holding majority but declining |
+| AMD    | **24.7%**           | +4.3% year-over-year growth    |
 
 AMD's Ryzen chips are eating Intel's lunch, especially in gaming and workstations.
 
@@ -148,6 +150,7 @@ ARM Holdings is aiming for **50% of data center CPUs by end of 2025** (up from 1
 ### Market Value Projections
 
 The **ARM-Based PC Processors Market** was valued at:
+
 - 2023: **$9.20 billion**
 - 2030 projected: **$52.65 billion**
 - **CAGR: 28.30%** (insane growth rate)
@@ -162,21 +165,20 @@ CPU architecture reveals **way more** about you than just "what chip you have." 
 
 ```javascript
 // Tracker logic:
-if (architecture === "ARM64" && platform.includes("Mac")) {
-  device = "Apple Silicon Mac (M1/M2/M3)";
-  purchaseDate = "2020-2025";
-  priceRange = "$999-$3999";
+if (architecture === 'ARM64' && platform.includes('Mac')) {
+  device = 'Apple Silicon Mac (M1/M2/M3)';
+  purchaseDate = '2020-2025';
+  priceRange = '$999-$3999';
   demographics = {
-    techSavvy: "High",
-    income: "Above median",
-    profession: "Likely creative or technical"
+    techSavvy: 'High',
+    income: 'Above median',
+    profession: 'Likely creative or technical',
   };
-}
-else if (architecture === "x86-64" && platform.includes("Mac")) {
-  device = "Intel Mac";
-  purchaseDate = "2015-2020";
-  priceRange = "$1299-$2799 (when purchased)";
-  status = "Holding onto old hardware or IT-managed";
+} else if (architecture === 'x86-64' && platform.includes('Mac')) {
+  device = 'Intel Mac';
+  purchaseDate = '2015-2020';
+  priceRange = '$1299-$2799 (when purchased)';
+  status = 'Holding onto old hardware or IT-managed';
 }
 ```
 
@@ -194,6 +196,7 @@ else if (architecture === "x86-64" && platform.includes("Mac")) {
 ### Cross-Platform Correlation
 
 Imagine you visit SiteA on your MacBook Pro M2 (ARM) and SiteB on your iPhone (ARM). Both share:
+
 - ARM architecture
 - macOS/iOS ecosystem
 - Timezone
@@ -209,6 +212,7 @@ Here's the uncomfortable truth: **Architecture is hardware-stable**. You're not 
 ### What ARM Detection Reveals
 
 If you're using ARM64 (especially Apple Silicon):
+
 1. **Premium device**: You spent $1000+ on a computer
 2. **Recent purchase**: ARM PCs are 2020+ tech
 3. **Tech-forward user**: Early adopter of new architecture
@@ -220,12 +224,14 @@ According to **CISPA Browser-Based CPU Fingerprinting research**, combining arch
 ## Browser Fingerprinting Entropy
 
 **Architecture alone**: ~1.5-2 bits of entropy
+
 - x86-64: 85% (common)
 - ARM64: 13.6% (less common)
 - ARM32: 1% (rare)
 - Other: 0.4% (very rare)
 
 **Combined with other factors**:
+
 - Architecture + OS + Screen Resolution: **6-8 bits** (1 in 64-256)
 - Architecture + OS + Screen + Core Count: **9-11 bits** (1 in 512-2048)
 - Full hardware fingerprint: **15-20 bits** (1 in 32,000-1,000,000)
@@ -241,9 +247,10 @@ According to **CISPA Browser-Based CPU Fingerprinting research**, combining arch
 ### Safari: The "MacIntel" Trick
 
 Apple Silicon Macs **lie** about their platform:
+
 ```javascript
 // On M3 MacBook Pro (ARM64):
-navigator.platform;  // Returns "MacIntel" (x86!)
+navigator.platform; // Returns "MacIntel" (x86!)
 ```
 
 **Why?** To avoid breaking websites that sniff for "MacIntel" and serve Intel-optimized code.
@@ -282,12 +289,14 @@ Tor Browser **doesn't spoof architecture** effectively (Linux x86_64 is reported
 Not all architecture detection is evil:
 
 **✅ Good Reasons:**
+
 - **Video codecs**: ARM and x86 support different hardware video decoding
 - **WebAssembly**: Optimizing WASM modules for architecture
 - **Performance tuning**: Serving lighter assets to ARM mobile devices
 - **Bug detection**: Different rendering bugs on different architectures
 
 **❌ Problematic Reasons:**
+
 - **Price discrimination**: "ARM = premium device → charge more"
 - **Cross-device tracking**: "Same architecture + ecosystem → same person"
 - **Ad targeting**: "Apple Silicon user → show luxury brand ads"
@@ -298,6 +307,7 @@ Not all architecture detection is evil:
 CPU architecture fingerprinting is both **powerful** and **unavoidable**. Here's my honest take:
 
 **The Reality:**
+
 - Your CPU architecture is visible to every website you visit
 - ARM is exploding from 10.8% to projected 40% by 2029
 - Being on ARM (especially Apple Silicon) makes you **more identifiable** right now because you're in the minority
@@ -319,6 +329,7 @@ The ARM revolution is real, it's accelerating, and it's reshaping both computing
 ---
 
 **Sources:**
+
 - [Microsoft Edge: Detect CPU Architecture via UA-CH](https://learn.microsoft.com/en-us/microsoft-edge/web-platform/how-to-detect-win11) - Official documentation on architecture detection
 - [ARM Market Share Q1 2025: 13.6%](https://www.heise.de/en/news/ARM-exceeds-10-percent-CPU-market-share-in-notebooks-and-servers-10386761.html) - Heise Online market analysis
 - [Tom's Hardware: ARM 40% by 2029](https://www.tomshardware.com/laptops/projections-show-that-arm-cpus-will-power-40-percent-of-notebooks-sold-in-2029) - Industry projections

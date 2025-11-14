@@ -5,7 +5,9 @@ import { murmurHash3 } from '../utils/hash';
  * Collect ContentWindow features fingerprint
  * Tests iframe contentWindow object characteristics
  */
-export function collectContentWindowFingerprint(): ContentWindowFingerprint | undefined {
+export function collectContentWindowFingerprint():
+  | ContentWindowFingerprint
+  | undefined {
   if (typeof document === 'undefined' || typeof window === 'undefined') {
     return undefined;
   }
@@ -48,10 +50,14 @@ export function collectContentWindowFingerprint(): ContentWindowFingerprint | un
       alert: typeof contentWindow.alert === 'function',
       confirm: typeof contentWindow.confirm === 'function',
       prompt: typeof contentWindow.prompt === 'function',
-      requestAnimationFrame: typeof contentWindow.requestAnimationFrame === 'function',
-      requestIdleCallback: typeof (contentWindow as typeof contentWindow & {
-        requestIdleCallback?: unknown;
-      }).requestIdleCallback === 'function',
+      requestAnimationFrame:
+        typeof contentWindow.requestAnimationFrame === 'function',
+      requestIdleCallback:
+        typeof (
+          contentWindow as typeof contentWindow & {
+            requestIdleCallback?: unknown;
+          }
+        ).requestIdleCallback === 'function',
     };
 
     // Check document properties

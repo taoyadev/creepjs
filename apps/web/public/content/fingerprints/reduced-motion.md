@@ -9,12 +9,14 @@ This is one of the most ethically problematic fingerprinting vectors because it 
 Reduced motion is an accessibility setting that minimizes or eliminates animations, transitions, and parallax effects on your screen. It's designed for people who experience physical discomfort or medical symptoms from motion on screen.
 
 **Where to find it:**
+
 - **macOS**: System Settings > Accessibility > Display > Reduce motion
 - **iOS/iPadOS**: Settings > Accessibility > Motion > Reduce Motion
 - **Windows**: Settings > Accessibility > Visual effects > Animation effects
 - **Android**: Settings > Accessibility > Remove animations (varies by manufacturer)
 
 **Why people enable it:**
+
 - **Vestibular disorders**: Inner ear problems causing dizziness, vertigo, balance issues (affects 70+ million people)
 - **Motion sickness**: Triggered by screen movement (kinesis)
 - **Migraines and headaches**: Animations can trigger or worsen attacks
@@ -35,8 +37,9 @@ There's a standard CSS media query for this: `prefers-reduced-motion`. It's well
 
 ```javascript
 // Check if user prefers reduced motion
-const prefersReducedMotion =
-  matchMedia('(prefers-reduced-motion: reduce)').matches;
+const prefersReducedMotion = matchMedia(
+  '(prefers-reduced-motion: reduce)'
+).matches;
 
 if (prefersReducedMotion) {
   console.log('User has reduced motion enabled');
@@ -53,7 +56,9 @@ Developers can (and should) use this to disable animations:
 ```css
 /* Default with animations */
 .button {
-  transition: transform 0.3s ease, background-color 0.2s;
+  transition:
+    transform 0.3s ease,
+    background-color 0.2s;
 }
 
 .button:hover {
@@ -93,24 +98,24 @@ The intended use is beautiful: websites respect your medical needs and don't mak
 
 Unlike some other accessibility features, reduced motion has **excellent cross-platform support**. This makes it an even more effective fingerprinting vector.
 
-| Platform | Support | Location |
-|----------|---------|----------|
-| **macOS** | Full (10.12+) | System Settings > Accessibility > Display |
-| **iOS/iPadOS** | Full (iOS 7+) | Settings > Accessibility > Motion |
-| **Windows** | Partial (10/11) | Settings > Accessibility > Visual effects |
-| **Android** | Varies | Depends on manufacturer and version |
-| **Linux** | Desktop dependent | GNOME, KDE have settings |
+| Platform       | Support           | Location                                  |
+| -------------- | ----------------- | ----------------------------------------- |
+| **macOS**      | Full (10.12+)     | System Settings > Accessibility > Display |
+| **iOS/iPadOS** | Full (iOS 7+)     | Settings > Accessibility > Motion         |
+| **Windows**    | Partial (10/11)   | Settings > Accessibility > Visual effects |
+| **Android**    | Varies            | Depends on manufacturer and version       |
+| **Linux**      | Desktop dependent | GNOME, KDE have settings                  |
 
 **Browser Support:**
 
-| Browser | Support | Notes |
-|---------|---------|-------|
-| **Safari** | Yes (10.1+) | Since 2017 |
-| **Chrome/Edge** | Yes (74+) | Since 2019 |
-| **Firefox** | Yes (63+) | Since 2018 |
-| **Opera** | Yes (62+) | Chromium-based |
-| **Brave** | Partial | May block or randomize |
-| **Tor Browser** | No | Deliberately standardized to "no-preference" |
+| Browser         | Support     | Notes                                        |
+| --------------- | ----------- | -------------------------------------------- |
+| **Safari**      | Yes (10.1+) | Since 2017                                   |
+| **Chrome/Edge** | Yes (74+)   | Since 2019                                   |
+| **Firefox**     | Yes (63+)   | Since 2018                                   |
+| **Opera**       | Yes (62+)   | Chromium-based                               |
+| **Brave**       | Partial     | May block or randomize                       |
+| **Tor Browser** | No          | Deliberately standardized to "no-preference" |
 
 **Key Insight:** Browser support is near-universal (95%+ of browsers), which means this fingerprinting vector works for almost everyone, regardless of platform.
 
@@ -119,10 +124,12 @@ Unlike some other accessibility features, reduced motion has **excellent cross-p
 Here's what the data actually shows:
 
 **Distribution:**
+
 - **No preference**: 95-97% (most people)
 - **Reduce motion**: 3-5% (accessibility setting enabled)
 
 **That 3-5% breaks down as:**
+
 - Vestibular disorders: 40-45%
 - Motion sickness: 20-25%
 - Migraines/headaches: 15-20%
@@ -131,6 +138,7 @@ Here's what the data actually shows:
 - Other conditions: 5-10%
 
 **Population Context:**
+
 - **70+ million people** have vestibular disorders (inner ear/balance issues)
 - **15% of the global population** (1.3 billion people) has a disability
 - **Migraine affects 15% of adults** worldwide (1+ billion people)
@@ -139,6 +147,7 @@ Here's what the data actually shows:
 
 **Browser Analytics:**
 From HTTP Archive and web usage studies (2024):
+
 - 3.2% of users have `prefers-reduced-motion: reduce` enabled
 - Among users 50+, usage increases to 5-7%
 - Mobile users enable it slightly less often (2.8%) than desktop (3.5%)
@@ -151,6 +160,7 @@ With only 3% of users having this enabled, it's a rare characteristic that makes
 Let's do the math:
 
 **Entropy Calculation:**
+
 ```
 P(reduce) = 0.03 (3% of users)
 P(no-preference) = 0.97
@@ -163,6 +173,7 @@ H ≈ 0.20 bits
 That's 0.20 bits of entropy on its own. Not huge. But here's the problem:
 
 **Cumulative Fingerprinting:**
+
 1. Reduced motion (0.20 bits)
 2. Contrast preference (0.23 bits)
 3. Forced colors (0.5 bits if Windows)
@@ -190,6 +201,7 @@ This is where things get deeply uncomfortable. Let me be direct about why this m
 Having `prefers-reduced-motion: reduce` enabled strongly suggests:
 
 **Vestibular disorders:**
+
 - Benign paroxysmal positional vertigo (BPPV)
 - Ménière's disease
 - Vestibular neuritis
@@ -197,6 +209,7 @@ Having `prefers-reduced-motion: reduce` enabled strongly suggests:
 - Vestibular migraine
 
 **Neurological conditions:**
+
 - Migraines (chronic or episodic)
 - Epilepsy (photosensitive or motion-sensitive)
 - Post-concussion syndrome
@@ -204,17 +217,20 @@ Having `prefers-reduced-motion: reduce` enabled strongly suggests:
 - Multiple sclerosis (MS)
 
 **Sensory processing disorders:**
+
 - Autism spectrum disorder
 - ADHD
 - Sensory processing disorder (SPD)
 
 **Other conditions:**
+
 - Motion sickness (kinesis)
 - Chronic fatigue syndrome
 - Fibromyalgia
 - Visual processing disorders
 
 This is **protected health information** under:
+
 - **HIPAA** (US health privacy law)
 - **GDPR Article 9** (EU special category personal data)
 - **ADA** (Americans with Disabilities Act)
@@ -226,9 +242,11 @@ But websites collect it passively without consent.
 
 **Employment Discrimination:**
 A 2024 ACM study found:
+
 > "Students with disabilities actively hide their accessibility needs to avoid stigma and discrimination when their accessibility needs were known."
 
 If employers can detect disability markers during:
+
 - Online job applications
 - Skills assessments
 - Remote interviews (with website open in background)
@@ -237,6 +255,7 @@ They might discriminate. Yes, it's illegal under ADA. But enforcement in online 
 
 **Insurance Discrimination:**
 Health and life insurance companies could theoretically adjust premiums based on detected conditions:
+
 - Vestibular disorders correlate with fall risk (higher medical costs)
 - Epilepsy requires ongoing treatment and monitoring
 - Migraines correlate with other health conditions
@@ -245,12 +264,14 @@ This is illegal under ACA and HIPAA, but the technical capability exists.
 
 **Advertising Manipulation:**
 Once you're flagged as having a disability:
+
 - Predatory ads for overpriced medical devices
 - Manipulative targeting when you're vulnerable
 - Exclusion from job postings, housing options, financial products
 - Differential pricing (charging more because you have fewer options)
 
 **Real-World Examples:**
+
 - 2024 research found users with screen readers received different job ads
 - Users with accessibility settings saw fewer high-paying job postings
 - Some insurance companies were caught using browser data for risk assessment
@@ -258,6 +279,7 @@ Once you're flagged as having a disability:
 ### Social Stigma
 
 The ACM 2024 study revealed disturbing patterns:
+
 - Many students with disabilities **hide their accessibility needs** to avoid judgment
 - Assistive technology use led to experienced **stigma and discrimination**
 - Students reported being treated differently when disability status was known
@@ -271,6 +293,7 @@ Let me be absolutely clear: **using reduced motion detection for fingerprinting 
 ### Why This Is Different
 
 Unlike benign fingerprinting signals (screen resolution, timezone), reduced motion:
+
 1. **Reveals medical diagnosis**: Directly indicates specific health conditions
 2. **Exposes disability status**: Falls under special protection in most jurisdictions
 3. **Enables discrimination**: Can be used to exclude or exploit vulnerable people
@@ -279,6 +302,7 @@ Unlike benign fingerprinting signals (screen resolution, timezone), reduced moti
 ### The Paradox
 
 This creates an impossible choice:
+
 - **Use reduced motion** → Be tracked and identified, risk discrimination
 - **Don't use it** → Get physically sick, trigger medical episodes, can't use the web
 
@@ -289,6 +313,7 @@ People with disabilities shouldn't have to choose between health and privacy.
 If you're a developer and you're adding `prefers-reduced-motion` to a fingerprint hash, **stop**. You're directly contributing to discrimination against people with disabilities.
 
 The W3C Web Accessibility Initiative states:
+
 > "Privacy-invasive accessibility detection undermines trust and may discourage users with disabilities from using accessibility features, which would be contrary to the goal of accessibility."
 
 ## Browser Fingerprinting in Practice
@@ -296,18 +321,21 @@ The W3C Web Accessibility Initiative states:
 How are trackers actually using this?
 
 **Major Fingerprinting Libraries:**
+
 - **FingerprintJS**: Includes `prefers-reduced-motion` in fingerprint
 - **CreepJS**: Research tool explicitly checks this
 - **Fingerprintjs2**: Legacy library, still widely used
 - **Canvas fingerprinting**: Often combined with motion detection
 
 **Detection in the Wild (2024 analysis):**
+
 - **18.7%** of top 10,000 sites query `prefers-reduced-motion`
 - **14.2%** of sites with fingerprinting scripts include it
 - **92%** combine it with other accessibility queries
 - **6.3%** explicitly send it to third-party analytics
 
 **Industry Usage:**
+
 - **Fraud detection**: Verify device consistency across sessions
 - **Ad networks**: Audience segmentation (problematic)
 - **Analytics platforms**: Track for "user experience" optimization
@@ -328,18 +356,19 @@ Honestly, if you have a vestibular disorder, migraines, or epilepsy, **use reduc
 
 **Option 2: Privacy-Focused Browsers**
 
-| Browser | Protection | Effectiveness | Accessibility Trade-off |
-|---------|-----------|---------------|------------------------|
-| **Tor Browser** | Standardizes to "no-preference" | Excellent | Websites won't respect your needs |
-| **Brave** | Can block/randomize with Shields | Very good | Configurable, may break sites |
-| **Firefox** | `privacy.resistFingerprinting = true` | Good | Disables reduced motion detection |
-| **LibreWolf** | Built-in fingerprinting resistance | Good | Blocks accessibility queries |
+| Browser         | Protection                            | Effectiveness | Accessibility Trade-off           |
+| --------------- | ------------------------------------- | ------------- | --------------------------------- |
+| **Tor Browser** | Standardizes to "no-preference"       | Excellent     | Websites won't respect your needs |
+| **Brave**       | Can block/randomize with Shields      | Very good     | Configurable, may break sites     |
+| **Firefox**     | `privacy.resistFingerprinting = true` | Good          | Disables reduced motion detection |
+| **LibreWolf**   | Built-in fingerprinting resistance    | Good          | Blocks accessibility queries      |
 
 **Trade-off Warning:** Privacy browsers that block reduced motion detection mean websites will show you animations that might make you sick. This is a serious accessibility vs. privacy conflict.
 
 **Option 3: Compartmentalize**
 
 Use different browsers for different threat models:
+
 - **Regular browser with reduced motion**: Everyday use (email, social media, shopping)
 - **Tor or Brave**: High-privacy activities (banking, health, political, journalism)
 
@@ -348,6 +377,7 @@ This limits your fingerprinting surface for sensitive activities while maintaini
 **Option 4: Browser Extensions**
 
 Use extensions that disable animations locally:
+
 - **Disable HTML5 Autoplay** (Chrome/Firefox)
 - **Animation Policy** (Firefox)
 - **Custom CSS injectors** (Stylus, Stylish)
@@ -357,6 +387,7 @@ These work client-side and can't be detected the same way as OS-level settings.
 **Option 5: Additional Privacy Measures**
 
 If you must use reduced motion:
+
 - **VPN or Tor**: Hide your IP address (doesn't stop fingerprinting but adds protection)
 - **Clear cookies frequently**: Breaks cross-site tracking
 - **Private browsing mode**: Limits persistent storage
@@ -369,6 +400,7 @@ If you must use reduced motion:
 **Ethical Guidelines:**
 
 ✅ **ABSOLUTELY DO:**
+
 ```css
 /* Use reduced motion to improve accessibility */
 @media (prefers-reduced-motion: reduce) {
@@ -392,7 +424,6 @@ if (reduceMotion) {
   // Remove animated GIFs
   // Simplify transitions
   // Make experience comfortable
-
   // DO NOT:
   // - Send to analytics
   // - Store in database
@@ -402,6 +433,7 @@ if (reduceMotion) {
 ```
 
 ❌ **ABSOLUTELY DON'T:**
+
 ```javascript
 // This is unethical and potentially illegal
 const fingerprint = {
@@ -420,6 +452,7 @@ useForTargeting(fingerprint);
 ```
 
 **Legal Considerations:**
+
 - **GDPR Article 9**: Health data requires explicit consent and justification
 - **HIPAA**: If you're a covered entity, this could be PHI
 - **ADA**: Using disability status for discrimination is illegal
@@ -427,40 +460,47 @@ useForTargeting(fingerprint);
 
 **W3C Recommendation:**
 From "Mitigating Browser Fingerprinting in Web Specifications":
+
 > "Features that expose user preferences or accessibility needs must be designed to minimize privacy impact. Developers should never use accessibility features for fingerprinting."
 
 ## Browser Vendor Responses
 
 **Mozilla Firefox:**
+
 - Full support for `prefers-reduced-motion` since 2018
 - `privacy.resistFingerprinting = true` standardizes to "no-preference"
 - Enhanced Tracking Protection blocks third-party fingerprinting scripts
 - Documentation **explicitly warns** against misuse for tracking
 
 **Apple Safari:**
+
 - First to implement (2017)
 - Intelligent Tracking Prevention (ITP) limits fingerprinting
 - Does NOT block the query (prioritizes accessibility over privacy)
 - Relies on blocking third-party scripts instead
 
 **Google Chrome:**
+
 - Implemented in 2019
 - Minimal built-in fingerprinting protection
 - Privacy Sandbox aims to reduce fingerprinting
 - In 2025, Google **permitted fingerprinting** within Privacy Sandbox (controversial)
 
 **Brave:**
+
 - Shields mode can block or randomize responses
 - "Aggressive" mode returns fake values
 - Users choose between privacy and accessibility
 - Research blog actively educates about risks
 
 **Microsoft Edge:**
+
 - Chromium-based, follows Chrome implementation
 - Enhanced Tracking Prevention blocks some scripts
 - Does not block reduced motion query
 
 **Tor Browser:**
+
 - **Blocks** `prefers-reduced-motion` detection entirely
 - All users appear identical (no accessibility detection)
 - Accessibility sacrificed for anonymity (controversial in disability community)
@@ -470,12 +510,14 @@ From "Mitigating Browser Fingerprinting in Web Specifications":
 Here's my honest take on reduced motion fingerprinting:
 
 **The Good:**
+
 - Essential accessibility feature for millions with vestibular disorders, epilepsy, migraines
 - Well-supported across browsers and platforms
 - When used ethically, prevents physical symptoms and medical episodes
 - Demonstrates web industry taking accessibility seriously
 
 **The Bad:**
+
 - Reveals sensitive medical information and disability status
 - Enables discrimination in employment, insurance, advertising
 - Contributes to browser fingerprinting uniqueness
@@ -487,6 +529,7 @@ Using reduced motion detection for fingerprinting is **discriminatory, unethical
 **My Recommendation:**
 
 **If you have a vestibular disorder, migraines, epilepsy, or motion sensitivity:**
+
 1. **Use reduced motion.** Your health comes first.
 2. Be aware you're more identifiable, but don't let that stop you
 3. Use additional privacy measures (VPN, ad blockers, clear cookies)
@@ -494,6 +537,7 @@ Using reduced motion detection for fingerprinting is **discriminatory, unethical
 5. Advocate for better privacy protections for accessibility features
 
 **If you're a web developer:**
+
 1. **Respect reduced motion to improve accessibility**
 2. **NEVER use it for fingerprinting or tracking**
 3. **NEVER share it with third parties**
@@ -504,18 +548,21 @@ Using reduced motion detection for fingerprinting is **discriminatory, unethical
 **What We Need:**
 
 **Regulatory Action:**
+
 - GDPR Article 9 technically covers this, but enforcement is minimal
 - ADA should explicitly prohibit using accessibility detection for discrimination
 - HIPAA should clarify that browser-detected health indicators are protected
 - Penalties for companies that use accessibility features for tracking
 
 **Technical Solutions:**
+
 - Browser APIs that provide accessibility without revealing it to websites
 - Privacy-preserving alternatives (hard technical problem)
 - Standardized "do not track accessibility preferences" signal
 - Differential privacy techniques for accessibility features
 
 **Industry Standards:**
+
 - W3C should strengthen guidance against accessibility fingerprinting
 - Developer education about ethical use
 - Code of conduct for fingerprinting libraries

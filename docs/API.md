@@ -47,13 +47,13 @@ All responses are in JSON format with a standard structure:
 
 ### HTTP Status Codes
 
-| Status Code | Description |
-|-------------|-------------|
-| 200 | Success |
-| 400 | Bad Request (Invalid parameters) |
-| 401 | Unauthorized (Invalid or missing token) |
-| 429 | Too Many Requests (Rate limit exceeded) |
-| 500 | Internal Server Error |
+| Status Code | Description                             |
+| ----------- | --------------------------------------- |
+| 200         | Success                                 |
+| 400         | Bad Request (Invalid parameters)        |
+| 401         | Unauthorized (Invalid or missing token) |
+| 429         | Too Many Requests (Rate limit exceeded) |
+| 500         | Internal Server Error                   |
 
 ## Endpoint Details
 
@@ -70,6 +70,7 @@ Generate a unique browser fingerprint ID.
 #### Request
 
 **Headers**:
+
 ```http
 Content-Type: application/json
 X-API-Token: cfp_your_token_here
@@ -119,14 +120,28 @@ X-API-Token: cfp_your_token_here
     "canvas": { "hash": "hash" },
     "screenFrame": { "top": 0, "right": 0, "bottom": 32, "left": 0 },
     "plugins": [],
-    "lies": { "hash": "...", "liesCount": 0, "trustScore": 100, "lies": {}, "inconsistencies": [] }
+    "lies": {
+      "hash": "...",
+      "liesCount": 0,
+      "trustScore": 100,
+      "lies": {},
+      "inconsistencies": []
+    }
   },
   "confidence": 0.95,
   "timestamp": 1704816000000,
   "collectors": {
     "canvas": { "status": "success", "duration": 4.12 },
-    "domBlockers": { "status": "success", "duration": 0.21, "value": { "detected": [] } },
-    "audioBaseLatency": { "status": "error", "duration": 1.05, "error": "AudioContext not supported" }
+    "domBlockers": {
+      "status": "success",
+      "duration": 0.21,
+      "value": { "detected": [] }
+    },
+    "audioBaseLatency": {
+      "status": "error",
+      "duration": 1.05,
+      "error": "AudioContext not supported"
+    }
   },
   "timings": {
     "canvas": 4.12,
@@ -139,14 +154,14 @@ X-API-Token: cfp_your_token_here
 
 **Response Field Descriptions**:
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `fingerprintId` | string | Unique fingerprint ID (12-16 characters) |
-| `data` | object | Full `FingerprintData` map (40+ optional collectors) |
-| `confidence` | number | Coverage ratio (0-1), representing the share of collectors that succeeded |
-| `timestamp` | number | Server timestamp (milliseconds) |
-| `collectors` | object | Each collector's `status/duration/value/error` for UI transparency |
-| `timings` | object | Collector execution times (ms), includes `total` |
+| Field           | Type   | Description                                                               |
+| --------------- | ------ | ------------------------------------------------------------------------- |
+| `fingerprintId` | string | Unique fingerprint ID (12-16 characters)                                  |
+| `data`          | object | Full `FingerprintData` map (40+ optional collectors)                      |
+| `confidence`    | number | Coverage ratio (0-1), representing the share of collectors that succeeded |
+| `timestamp`     | number | Server timestamp (milliseconds)                                           |
+| `collectors`    | object | Each collector's `status/duration/value/error` for UI transparency        |
+| `timings`       | object | Collector execution times (ms), includes `total`                          |
 
 **Error Response Examples**:
 
@@ -180,6 +195,7 @@ X-API-Token: cfp_your_token_here
 #### Example Code
 
 **cURL**:
+
 ```bash
 curl -X POST https://api.creepjs.org/v1/fingerprint \
   -H "Content-Type: application/json" \
@@ -197,6 +213,7 @@ curl -X POST https://api.creepjs.org/v1/fingerprint \
 ```
 
 **JavaScript (Fetch)**:
+
 ```javascript
 const response = await fetch('https://api.creepjs.org/v1/fingerprint', {
   method: 'POST',
@@ -218,6 +235,7 @@ console.log(data.fingerprintId); // "3mK9vN2Lx8pQ"
 ```
 
 **Python (requests)**:
+
 ```python
 import requests
 
@@ -258,11 +276,12 @@ Generate a new API Token for authentication.
 
 **Query Parameters**:
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `email` | string | Yes | Valid email address |
+| Parameter | Type   | Required | Description         |
+| --------- | ------ | -------- | ------------------- |
+| `email`   | string | Yes      | Valid email address |
 
 **Example**:
+
 ```http
 GET /v1/token?email=hello@creepjs.org
 ```
@@ -281,10 +300,10 @@ GET /v1/token?email=hello@creepjs.org
 
 **Response Field Descriptions**:
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `token` | string | API Token (starts with `cfp_`) |
-| `quota` | string | Daily quota limit |
+| Field       | Type           | Description                                          |
+| ----------- | -------------- | ---------------------------------------------------- |
+| `token`     | string         | API Token (starts with `cfp_`)                       |
+| `quota`     | string         | Daily quota limit                                    |
 | `expiresAt` | string \| null | Expiration time (ISO 8601), null means never expires |
 
 **Error Response Examples**:
@@ -307,14 +326,18 @@ GET /v1/token?email=hello@creepjs.org
 #### Example Code
 
 **cURL**:
+
 ```bash
 curl -X GET "https://api.creepjs.org/v1/token?email=hello@creepjs.org"
 ```
 
 **JavaScript**:
+
 ```javascript
 const email = 'hello@creepjs.org';
-const response = await fetch(`https://api.creepjs.org/v1/token?email=${encodeURIComponent(email)}`);
+const response = await fetch(
+  `https://api.creepjs.org/v1/token?email=${encodeURIComponent(email)}`
+);
 const data = await response.json();
 console.log(data.token); // "cfp_a1b2c3d4e5f6g7h8"
 ```
@@ -347,10 +370,10 @@ Check API service status.
 
 ### Free Tier
 
-| Endpoint | Limit | Window |
-|----------|-------|--------|
-| `POST /v1/fingerprint` | 1000 requests | 24 hours |
-| `GET /v1/token` | 10 requests | 24 hours (per IP) |
+| Endpoint               | Limit         | Window            |
+| ---------------------- | ------------- | ----------------- |
+| `POST /v1/fingerprint` | 1000 requests | 24 hours          |
+| `GET /v1/token`        | 10 requests   | 24 hours (per IP) |
 
 ### Response Headers
 
@@ -362,24 +385,24 @@ X-RateLimit-Remaining: 857
 X-RateLimit-Reset: 1704902400000
 ```
 
-| Header | Description |
-|--------|-------------|
-| `X-RateLimit-Limit` | Total quota |
-| `X-RateLimit-Remaining` | Remaining quota |
-| `X-RateLimit-Reset` | Reset timestamp (milliseconds) |
+| Header                  | Description                    |
+| ----------------------- | ------------------------------ |
+| `X-RateLimit-Limit`     | Total quota                    |
+| `X-RateLimit-Remaining` | Remaining quota                |
+| `X-RateLimit-Reset`     | Reset timestamp (milliseconds) |
 
 ---
 
 ## Error Codes
 
-| Error Code | HTTP Status | Description |
-|------------|-------------|-------------|
-| `INVALID_REQUEST` | 400 | Invalid request body format |
-| `INVALID_EMAIL` | 400 | Invalid email format |
-| `MISSING_TOKEN` | 401 | Missing API Token |
-| `INVALID_TOKEN` | 401 | Token is invalid or expired |
-| `RATE_LIMIT_EXCEEDED` | 429 | Rate limit quota exceeded |
-| `INTERNAL_ERROR` | 500 | Internal server error |
+| Error Code            | HTTP Status | Description                 |
+| --------------------- | ----------- | --------------------------- |
+| `INVALID_REQUEST`     | 400         | Invalid request body format |
+| `INVALID_EMAIL`       | 400         | Invalid email format        |
+| `MISSING_TOKEN`       | 401         | Missing API Token           |
+| `INVALID_TOKEN`       | 401         | Token is invalid or expired |
+| `RATE_LIMIT_EXCEEDED` | 429         | Rate limit quota exceeded   |
+| `INTERNAL_ERROR`      | 500         | Internal server error       |
 
 ---
 
@@ -390,11 +413,13 @@ Instead of calling the API directly, we recommend using the official SDK:
 ### Installation
 
 **NPM**:
+
 ```bash
 npm install @creepjs/sdk
 ```
 
 **CDN** (UMD):
+
 ```html
 <script src="https://cdn.creepjs.org/v1/sdk.js"></script>
 ```
@@ -410,11 +435,12 @@ const fp = await getFingerprint({
 });
 
 console.log(fp.fingerprintId); // "3mK9vN2Lx8pQ"
-console.log(fp.confidence);     // 0.95
-console.log(fp.cached);         // false
+console.log(fp.confidence); // 0.95
+console.log(fp.cached); // false
 ```
 
 **UMD (Browser)**:
+
 ```html
 <script src="https://cdn.creepjs.org/v1/sdk.js"></script>
 <script>
@@ -434,8 +460,8 @@ import { CreepJS } from '@creepjs/sdk';
 const client = new CreepJS({
   token: 'cfp_your_token_here',
   endpoint: 'https://api.creepjs.org', // Custom endpoint
-  cache: true,                          // Enable caching (default)
-  cacheTtl: 3600,                       // Cache TTL (seconds)
+  cache: true, // Enable caching (default)
+  cacheTtl: 3600, // Cache TTL (seconds)
 });
 
 const fp = await client.getFingerprint();
@@ -443,12 +469,12 @@ const fp = await client.getFingerprint();
 
 ### SDK Configuration Options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `token` | string | - | API Token (required) |
-| `endpoint` | string | `https://api.creepjs.org` | API endpoint |
-| `cache` | boolean | `true` | Enable LocalStorage caching |
-| `cacheTtl` | number | `3600` | Cache TTL (seconds) |
+| Option     | Type    | Default                   | Description                 |
+| ---------- | ------- | ------------------------- | --------------------------- |
+| `token`    | string  | -                         | API Token (required)        |
+| `endpoint` | string  | `https://api.creepjs.org` | API endpoint                |
+| `cache`    | boolean | `true`                    | Enable LocalStorage caching |
+| `cacheTtl` | number  | `3600`                    | Cache TTL (seconds)         |
 
 ---
 
@@ -460,8 +486,8 @@ const fp = await client.getFingerprint();
 // ✅ Recommended: Use SDK's built-in caching
 const fp = await getFingerprint({
   token: 'cfp_xxx',
-  cache: true,      // Enabled by default
-  cacheTtl: 3600,   // 1 hour
+  cache: true, // Enabled by default
+  cacheTtl: 3600, // 1 hour
 });
 
 // ❌ Not recommended: Request on every page load
@@ -520,13 +546,13 @@ if (navigator.doNotTrack === '1') {
 
 ## Performance Benchmarks
 
-| Metric | Target |
-|--------|--------|
-| API Response Time (p50) | < 50ms |
-| API Response Time (p95) | < 100ms |
-| API Response Time (p99) | < 200ms |
-| SDK Bundle Size (gzipped) | < 15KB |
-| SDK Initialization Time | < 10ms |
+| Metric                      | Target  |
+| --------------------------- | ------- |
+| API Response Time (p50)     | < 50ms  |
+| API Response Time (p95)     | < 100ms |
+| API Response Time (p99)     | < 200ms |
+| SDK Bundle Size (gzipped)   | < 15KB  |
+| SDK Initialization Time     | < 10ms  |
 | Fingerprint Collection Time | < 100ms |
 
 ---
@@ -536,6 +562,7 @@ if (navigator.doNotTrack === '1') {
 ### Q: Will the fingerprint ID change?
 
 **A**: The ID may change in the following scenarios:
+
 - User switches browsers
 - User switches devices
 - User clears browser data
@@ -547,19 +574,21 @@ Under normal circumstances, the fingerprint ID remains stable for the same devic
 ### Q: How to improve fingerprint uniqueness?
 
 **A**: Collect more dimensions of data:
+
 ```javascript
 const components = {
   canvas: collectCanvasFingerprint(),
   webgl: collectWebGLFingerprint(),
   navigator: collectNavigatorInfo(),
   screen: collectScreenInfo(),
-  fonts: collectInstalledFonts(),  // Add font detection
+  fonts: collectInstalledFonts(), // Add font detection
 };
 ```
 
 ### Q: Is this GDPR compliant?
 
 **A**: We provide privacy-friendly options:
+
 1. Clearly inform users about fingerprint collection
 2. Provide opt-out options (respect DNT)
 3. Don't persistently store raw fingerprint data
@@ -574,6 +603,7 @@ For specific compliance requirements, please consult legal counsel.
 ### Q: Does it support server-side calls?
 
 **A**: Yes, but please note:
+
 - Servers cannot collect browser fingerprint data (Canvas/WebGL, etc.)
 - Client must collect data first, then pass to server
 - Server can call API for fingerprint generation

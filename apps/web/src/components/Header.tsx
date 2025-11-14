@@ -11,9 +11,12 @@ interface HeaderProps {
 
 export function Header({ currentPage }: HeaderProps) {
   return (
-    <nav className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur">
-      <div className="container mx-auto flex h-16 items-center justify-between px-4 min-w-0">
-        <Link href="/" className="flex items-center gap-2 text-xl md:text-2xl font-bold whitespace-nowrap flex-shrink-0">
+    <nav className="bg-background/95 sticky top-0 z-50 border-b backdrop-blur">
+      <div className="container mx-auto flex h-16 min-w-0 items-center justify-between px-4">
+        <Link
+          href="/"
+          className="flex flex-shrink-0 items-center gap-2 whitespace-nowrap text-xl font-bold md:text-2xl"
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="24"
@@ -40,24 +43,36 @@ export function Header({ currentPage }: HeaderProps) {
         </Link>
 
         {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center gap-2">
+        <div className="hidden items-center gap-2 md:flex">
           <Link href="/">
-            <Button variant={currentPage === 'home' ? 'default' : 'ghost'} size="sm">
+            <Button
+              variant={currentPage === 'home' ? 'default' : 'ghost'}
+              size="sm"
+            >
               Home
             </Button>
           </Link>
           <Link href="/checker">
-            <Button variant={currentPage === 'checker' ? 'default' : 'ghost'} size="sm">
+            <Button
+              variant={currentPage === 'checker' ? 'default' : 'ghost'}
+              size="sm"
+            >
               Checker
             </Button>
           </Link>
           <Link href="/docs">
-            <Button variant={currentPage === 'docs' ? 'default' : 'ghost'} size="sm">
+            <Button
+              variant={currentPage === 'docs' ? 'default' : 'ghost'}
+              size="sm"
+            >
               Docs
             </Button>
           </Link>
           <Link href="/playground">
-            <Button variant={currentPage === 'playground' ? 'default' : 'ghost'} size="sm">
+            <Button
+              variant={currentPage === 'playground' ? 'default' : 'ghost'}
+              size="sm"
+            >
               Playground
             </Button>
           </Link>
@@ -65,7 +80,7 @@ export function Header({ currentPage }: HeaderProps) {
         </div>
 
         {/* Mobile Navigation */}
-        <div className="flex md:hidden items-center gap-2">
+        <div className="flex items-center gap-2 md:hidden">
           <ThemeToggle />
           <MobileNav currentPage={currentPage} />
         </div>

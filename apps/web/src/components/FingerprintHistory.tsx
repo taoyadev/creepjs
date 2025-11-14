@@ -1,10 +1,24 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import type { FingerprintResult } from '@creepjs/core';
-import { History, Trash2, TrendingUp, Calendar, Hash, Check, X } from 'lucide-react';
+import {
+  History,
+  Trash2,
+  TrendingUp,
+  Calendar,
+  Hash,
+  Check,
+  X,
+} from 'lucide-react';
 import { FingerprintComparison } from '@/components/FingerprintComparison';
 import { toast } from 'sonner';
 
@@ -17,11 +31,16 @@ interface HistoryRecord extends FingerprintResult {
   id: string;
 }
 
-export function FingerprintHistory({ currentResult, onCompare }: FingerprintHistoryProps) {
+export function FingerprintHistory({
+  currentResult,
+  onCompare,
+}: FingerprintHistoryProps) {
   const [history, setHistory] = useState<HistoryRecord[]>([]);
   const [selectedForCompare, setSelectedForCompare] = useState<string[]>([]);
   const [comparing, setComparing] = useState(false);
-  const [comparisonFingerprints, setComparisonFingerprints] = useState<[FingerprintResult, FingerprintResult] | null>(null);
+  const [comparisonFingerprints, setComparisonFingerprints] = useState<
+    [FingerprintResult, FingerprintResult] | null
+  >(null);
 
   useEffect(() => {
     loadHistory();
@@ -79,7 +98,9 @@ export function FingerprintHistory({ currentResult, onCompare }: FingerprintHist
       const updated = history.filter((r) => r.id !== id);
       localStorage.setItem('creepjs_history', JSON.stringify(updated));
       setHistory(updated);
-      setSelectedForCompare((prev) => prev.filter((selectedId) => selectedId !== id));
+      setSelectedForCompare((prev) =>
+        prev.filter((selectedId) => selectedId !== id)
+      );
       toast.success('Record deleted', {
         description: 'Fingerprint record has been removed from history.',
       });
@@ -152,15 +173,17 @@ export function FingerprintHistory({ currentResult, onCompare }: FingerprintHist
   };
 
   // Calculate statistics
-  const avgCoverage = history.length > 0
-    ? history.reduce((sum, r) => sum + r.confidence, 0) / history.length
-    : 0;
+  const avgCoverage =
+    history.length > 0
+      ? history.reduce((sum, r) => sum + r.confidence, 0) / history.length
+      : 0;
 
   const uniqueFingerprints = new Set(history.map((r) => r.fingerprintId)).size;
 
-  const coverageTrend = history.length >= 2
-    ? history[0].confidence - history[history.length - 1].confidence
-    : 0;
+  const coverageTrend =
+    history.length >= 2
+      ? history[0].confidence - history[history.length - 1].confidence
+      : 0;
 
   return (
     <div className="space-y-6">
@@ -176,30 +199,32 @@ export function FingerprintHistory({ currentResult, onCompare }: FingerprintHist
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid md:grid-cols-4 gap-4">
-            <div className="space-y-1 p-4 bg-muted/50 rounded-lg">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="grid gap-4 md:grid-cols-4">
+            <div className="bg-muted/50 space-y-1 rounded-lg p-4">
+              <div className="text-muted-foreground flex items-center gap-2 text-sm">
                 <History className="h-4 w-4" />
                 <span>Total Records</span>
               </div>
               <div className="text-2xl font-bold">{history.length}</div>
             </div>
-            <div className="space-y-1 p-4 bg-muted/50 rounded-lg">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="bg-muted/50 space-y-1 rounded-lg p-4">
+              <div className="text-muted-foreground flex items-center gap-2 text-sm">
                 <Hash className="h-4 w-4" />
                 <span>Unique IDs</span>
               </div>
               <div className="text-2xl font-bold">{uniqueFingerprints}</div>
             </div>
-            <div className="space-y-1 p-4 bg-muted/50 rounded-lg">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="bg-muted/50 space-y-1 rounded-lg p-4">
+              <div className="text-muted-foreground flex items-center gap-2 text-sm">
                 <Check className="h-4 w-4" />
                 <span>Avg Coverage</span>
               </div>
-              <div className="text-2xl font-bold">{(avgCoverage * 100).toFixed(1)}%</div>
+              <div className="text-2xl font-bold">
+                {(avgCoverage * 100).toFixed(1)}%
+              </div>
             </div>
-            <div className="space-y-1 p-4 bg-muted/50 rounded-lg">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="bg-muted/50 space-y-1 rounded-lg p-4">
+              <div className="text-muted-foreground flex items-center gap-2 text-sm">
                 <TrendingUp className="h-4 w-4" />
                 <span>Trend</span>
               </div>
@@ -219,7 +244,7 @@ export function FingerprintHistory({ currentResult, onCompare }: FingerprintHist
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-3 mt-4">
+          <div className="mt-4 flex gap-3">
             <Button
               variant="outline"
               size="sm"
@@ -234,7 +259,7 @@ export function FingerprintHistory({ currentResult, onCompare }: FingerprintHist
               onClick={clearAllHistory}
               disabled={history.length === 0}
             >
-              <Trash2 className="h-4 w-4 mr-2" />
+              <Trash2 className="mr-2 h-4 w-4" />
               Clear All
             </Button>
           </div>
@@ -245,9 +270,12 @@ export function FingerprintHistory({ currentResult, onCompare }: FingerprintHist
       {history.length === 0 ? (
         <Card>
           <CardContent className="pt-6">
-            <div className="text-center text-muted-foreground py-8">
-              <History className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No history records yet. Visit this page multiple times to build history.</p>
+            <div className="text-muted-foreground py-8 text-center">
+              <History className="mx-auto mb-4 h-12 w-12 opacity-50" />
+              <p>
+                No history records yet. Visit this page multiple times to build
+                history.
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -261,7 +289,7 @@ export function FingerprintHistory({ currentResult, onCompare }: FingerprintHist
               <Card
                 key={record.id}
                 className={`transition-all ${
-                  isSelected ? 'border-2 border-primary' : ''
+                  isSelected ? 'border-primary border-2' : ''
                 } ${isCurrent ? 'bg-primary/5' : ''}`}
               >
                 <CardContent className="pt-6">
@@ -269,7 +297,7 @@ export function FingerprintHistory({ currentResult, onCompare }: FingerprintHist
                     {/* Selection Checkbox */}
                     <button
                       onClick={() => toggleSelectForCompare(record.id)}
-                      className={`flex-shrink-0 w-6 h-6 rounded border-2 flex items-center justify-center transition-all ${
+                      className={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded border-2 transition-all ${
                         isSelected
                           ? 'bg-primary border-primary text-primary-foreground'
                           : 'border-muted-foreground/30 hover:border-primary'
@@ -284,17 +312,19 @@ export function FingerprintHistory({ currentResult, onCompare }: FingerprintHist
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
                             {isCurrent && (
-                              <span className="text-xs px-2 py-1 rounded-full bg-primary text-primary-foreground">
+                              <span className="bg-primary text-primary-foreground rounded-full px-2 py-1 text-xs">
                                 CURRENT
                               </span>
                             )}
-                            <span className="text-xs text-muted-foreground">
+                            <span className="text-muted-foreground text-xs">
                               #{history.length - index}
                             </span>
                           </div>
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <div className="text-muted-foreground flex items-center gap-2 text-sm">
                             <Calendar className="h-4 w-4" />
-                            <span>{new Date(record.timestamp).toLocaleString()}</span>
+                            <span>
+                              {new Date(record.timestamp).toLocaleString()}
+                            </span>
                           </div>
                         </div>
                         <Button
@@ -307,15 +337,19 @@ export function FingerprintHistory({ currentResult, onCompare }: FingerprintHist
                         </Button>
                       </div>
 
-                      <div className="grid md:grid-cols-3 gap-4">
+                      <div className="grid gap-4 md:grid-cols-3">
                         <div className="space-y-1">
-                          <div className="text-xs text-muted-foreground">Fingerprint ID</div>
-                          <code className="text-sm font-mono break-all">
+                          <div className="text-muted-foreground text-xs">
+                            Fingerprint ID
+                          </div>
+                          <code className="break-all font-mono text-sm">
                             {record.fingerprintId}
                           </code>
                         </div>
                         <div className="space-y-1">
-                          <div className="text-xs text-muted-foreground">Coverage</div>
+                          <div className="text-muted-foreground text-xs">
+                            Coverage
+                          </div>
                           <div className="flex items-center gap-2">
                             <div
                               className={`text-lg font-bold ${
@@ -328,7 +362,7 @@ export function FingerprintHistory({ currentResult, onCompare }: FingerprintHist
                             >
                               {(record.confidence * 100).toFixed(1)}%
                             </div>
-                            <div className="flex-1 bg-muted rounded-full h-2 overflow-hidden">
+                            <div className="bg-muted h-2 flex-1 overflow-hidden rounded-full">
                               <div
                                 className={`h-full rounded-full ${
                                   record.confidence >= 0.8
@@ -343,7 +377,9 @@ export function FingerprintHistory({ currentResult, onCompare }: FingerprintHist
                           </div>
                         </div>
                         <div className="space-y-1">
-                          <div className="text-xs text-muted-foreground">Collection Time</div>
+                          <div className="text-muted-foreground text-xs">
+                            Collection Time
+                          </div>
                           <div className="text-sm font-medium">
                             {(record.timings.total ?? 0).toFixed(0)}ms
                           </div>

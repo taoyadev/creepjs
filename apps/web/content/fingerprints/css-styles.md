@@ -10,7 +10,7 @@ function getCSSFingerprint() {
   const computed = window.getComputedStyle(div);
   const styles = {};
 
-  ['fontFamily', 'fontSize', 'lineHeight', 'color'].forEach(prop => {
+  ['fontFamily', 'fontSize', 'lineHeight', 'color'].forEach((prop) => {
     styles[prop] = computed[prop];
   });
 

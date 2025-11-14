@@ -2,7 +2,10 @@
  * Returns the WebKit Private Click Measurement source identifier if available.
  */
 export function collectPrivateClickMeasurement(): string | undefined {
-  if (typeof document === 'undefined' || typeof document.createElement !== 'function') {
+  if (
+    typeof document === 'undefined' ||
+    typeof document.createElement !== 'function'
+  ) {
     return undefined;
   }
 

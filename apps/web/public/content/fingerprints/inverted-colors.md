@@ -9,10 +9,12 @@ Let me break down why this matters and why it's one of those accessibility featu
 Think of your screen like a photo negative from the old days. Black becomes white, white becomes black, blue becomes orange. Everything flips to its opposite color. It's primarily an iOS accessibility feature found in Settings > Accessibility > Display & Text Size > Invert Colors.
 
 There are two types:
+
 - **Classic Invert**: Flips everything, including photos and videos (which looks weird)
 - **Smart Invert**: Flips UI elements but leaves media alone (much better experience)
 
 People use this feature for several reasons:
+
 - Vision impairments that make bright screens painful
 - Light sensitivity issues
 - Color blindness where inverted colors provide better contrast
@@ -28,6 +30,7 @@ Here's the thing: there's no standard "inverted colors API" that browsers expose
 ### Detection Methods
 
 **CSS Filter Detection:**
+
 ```javascript
 // Check if document root has invert filter applied
 const filters = getComputedStyle(document.documentElement).filter;
@@ -35,6 +38,7 @@ const isInverted = filters.includes('invert');
 ```
 
 **Color Sampling Technique:**
+
 ```javascript
 // Create invisible element with known color
 const testEl = document.createElement('div');
@@ -56,15 +60,16 @@ None of these methods are foolproof, and they require JavaScript execution. But 
 
 ## Browser and Platform Support
 
-| Platform | Support | Location | Notes |
-|----------|---------|----------|-------|
-| **iOS/iPadOS** | Full | Settings > Accessibility > Display & Text Size | Classic & Smart Invert |
-| **macOS** | Full | System Settings > Accessibility > Display > Invert colors | System-wide |
-| **Android** | Limited | Settings > Accessibility > Color inversion | Varies by manufacturer |
-| **Windows** | No | N/A | Uses High Contrast mode instead |
-| **Linux** | Varies | Desktop environment dependent | Not standardized |
+| Platform       | Support | Location                                                  | Notes                           |
+| -------------- | ------- | --------------------------------------------------------- | ------------------------------- |
+| **iOS/iPadOS** | Full    | Settings > Accessibility > Display & Text Size            | Classic & Smart Invert          |
+| **macOS**      | Full    | System Settings > Accessibility > Display > Invert colors | System-wide                     |
+| **Android**    | Limited | Settings > Accessibility > Color inversion                | Varies by manufacturer          |
+| **Windows**    | No      | N/A                                                       | Uses High Contrast mode instead |
+| **Linux**      | Varies  | Desktop environment dependent                             | Not standardized                |
 
 **Browser Detection:**
+
 - Safari (iOS/macOS): Most common context for detection
 - Chrome/Edge: Can detect via CSS filter inspection
 - Firefox: Similar detection methods work
@@ -77,6 +82,7 @@ The key insight: inverted colors is primarily an Apple ecosystem feature. So det
 Here's what we know from actual data:
 
 **Overall Usage:**
+
 - Less than 0.5% of web users have inverted colors enabled
 - Among iOS users specifically, usage is estimated at 0.3-0.8%
 - Almost 50% of Dutch iOS users have at least one accessibility setting enabled
@@ -84,6 +90,7 @@ Here's what we know from actual data:
 
 **Why People Enable It:**
 According to Apple's accessibility research:
+
 - 70% use it for light sensitivity or eye strain
 - 20% use it for specific vision impairments (color blindness, low vision)
 - 10% use it as a "dark mode" alternative before dark mode existed
@@ -99,6 +106,7 @@ This is where things get uncomfortable. Let me be blunt: using accessibility fea
 
 **Medical Information Exposure:**
 Inverted colors often indicates:
+
 - Photophobia (light sensitivity)
 - Cataracts or glaucoma
 - Albinism
@@ -110,6 +118,7 @@ Under laws like HIPAA (US), GDPR (EU), and ADA (Americans with Disabilities Act)
 
 **Discrimination Risks:**
 Once a website knows you have a disability:
+
 - Insurance companies might charge higher premiums
 - Employers might discriminate during hiring (yes, even though it's illegal)
 - Advertisers might exclude you from seeing job postings or housing options
@@ -127,6 +136,7 @@ The Web Accessibility Initiative (WAI) has stated: "Accessibility features shoul
 Let's talk numbers. What does this actually add to your fingerprint?
 
 **Entropy Calculation:**
+
 ```
 If 0.5% of users have inverted colors enabled:
 P(inverted) = 0.005
@@ -137,6 +147,7 @@ Entropy ≈ 0.056 bits
 ```
 
 On its own: minimal. But combined with other signals:
+
 - Operating system (macOS/iOS = ~40% market share)
 - Screen size (iPhone/iPad specific dimensions)
 - Timezone
@@ -156,6 +167,7 @@ If you need inverted colors for accessibility but want to minimize fingerprintin
 
 **Option 1: Use Native Dark Mode Instead**
 Most websites now support dark mode through `prefers-color-scheme`. It's less distinctive than inverted colors:
+
 ```css
 @media (prefers-color-scheme: dark) {
   /* Dark theme styles */
@@ -166,6 +178,7 @@ Most websites now support dark mode through `prefers-color-scheme`. It's less di
 Use extensions like Dark Reader that inject CSS rather than inverting at the OS level. This can't be detected the same way.
 
 **Option 3: Privacy-Focused Browsers**
+
 - **Tor Browser**: Standardizes all users to look identical, disables accessibility feature detection
 - **Brave**: Built-in fingerprinting protection, randomizes or blocks detection
 - **Firefox with Resistfingerprinting**: `privacy.resistFingerprinting` setting normalizes features
@@ -178,17 +191,20 @@ Safari and Firefox reader modes provide simplified views with customizable color
 **Ethical Use Guidelines:**
 
 ✅ **DO:**
+
 - Respect the setting for its intended purpose (accessibility)
 - Use it to improve user experience (larger buttons, better contrast)
 - Clearly disclose in privacy policy if detected
 
 ❌ **DON'T:**
+
 - Combine with other signals to uniquely identify users
 - Share this data with third parties
 - Use it for ad targeting or price discrimination
 - Store it longer than necessary
 
 **Privacy-Preserving Detection:**
+
 ```javascript
 // Only detect for legitimate accessibility enhancement
 const maybeInverted = detectInvertedColors();
@@ -208,13 +224,13 @@ if (maybeInverted) {
 
 How major browsers handle this:
 
-| Browser | Protection | Effectiveness |
-|---------|-----------|---------------|
-| **Tor Browser** | Complete normalization | Excellent - all users appear identical |
-| **Brave** | Randomization + blocking | Very good - randomizes detectable features |
-| **Firefox** | Partial (with resistFingerprinting) | Good - requires manual configuration |
-| **Safari** | Basic ITP protection | Limited - primarily blocks third-party tracking |
-| **Chrome/Edge** | Minimal | Poor - mostly relies on user being logged out |
+| Browser         | Protection                          | Effectiveness                                   |
+| --------------- | ----------------------------------- | ----------------------------------------------- |
+| **Tor Browser** | Complete normalization              | Excellent - all users appear identical          |
+| **Brave**       | Randomization + blocking            | Very good - randomizes detectable features      |
+| **Firefox**     | Partial (with resistFingerprinting) | Good - requires manual configuration            |
+| **Safari**      | Basic ITP protection                | Limited - primarily blocks third-party tracking |
+| **Chrome/Edge** | Minimal                             | Poor - mostly relies on user being logged out   |
 
 **What This Means:**
 If privacy is your top concern and you need inverted colors, use Tor Browser or Brave with strict fingerprinting protection. But understand the tradeoff: some websites might break.
@@ -226,6 +242,7 @@ Here's the honest truth: inverted colors is a rare accessibility feature that ma
 This creates an impossible choice for people with disabilities: use the tools that help you navigate the web, or protect your privacy. You shouldn't have to choose between the two, but current web technology forces that choice.
 
 **My take:** Use the accessibility features you need. Your ability to use the web comfortably matters more than perfect privacy. But be aware that you're more identifiable, and take other precautions:
+
 - Use a VPN
 - Clear cookies regularly
 - Use privacy-focused browsers when possible

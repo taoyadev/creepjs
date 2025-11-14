@@ -6,6 +6,7 @@ export function collectPdfViewerEnabled(): boolean | undefined {
     return undefined;
   }
 
-  const pdfEnabled = (navigator as Navigator & { pdfViewerEnabled?: boolean }).pdfViewerEnabled;
+  const pdfEnabled = (navigator as Navigator & { pdfViewerEnabled?: boolean })
+    .pdfViewerEnabled;
   return typeof pdfEnabled === 'boolean' ? pdfEnabled : undefined;
 }

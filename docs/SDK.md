@@ -38,8 +38,8 @@ const result = await getFingerprint({
 });
 
 console.log(result.fingerprintId); // "3mK9vN2Lx8pQ"
-console.log(result.confidence);     // 0.95
-console.log(result.cached);         // false
+console.log(result.confidence); // 0.95
+console.log(result.cached); // false
 ```
 
 ### CommonJS
@@ -49,7 +49,7 @@ const { getFingerprint } = require('@creepjs/sdk');
 
 getFingerprint({
   token: 'cfp_your_token_here',
-}).then(result => {
+}).then((result) => {
   console.log(result.fingerprintId);
 });
 ```
@@ -61,7 +61,7 @@ getFingerprint({
 <script>
   CreepJS.getFingerprint({
     token: 'cfp_your_token_here',
-  }).then(result => {
+  }).then((result) => {
     console.log('Fingerprint:', result.fingerprintId);
   });
 </script>
@@ -75,24 +75,24 @@ Generate browser fingerprint.
 
 **Parameters**:
 
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `token` | string | Yes | - | API Token |
-| `endpoint` | string | No | `https://api.creepjs.org` | API endpoint |
-| `cache` | boolean | No | `true` | Enable caching |
-| `cacheTtl` | number | No | `3600` | Cache TTL (seconds) |
+| Parameter  | Type    | Required | Default                   | Description         |
+| ---------- | ------- | -------- | ------------------------- | ------------------- |
+| `token`    | string  | Yes      | -                         | API Token           |
+| `endpoint` | string  | No       | `https://api.creepjs.org` | API endpoint        |
+| `cache`    | boolean | No       | `true`                    | Enable caching      |
+| `cacheTtl` | number  | No       | `3600`                    | Cache TTL (seconds) |
 
 **Returns**: `Promise<FingerprintResult>`
 
 ```typescript
 interface FingerprintResult {
-  fingerprintId: string;          // Unique fingerprint ID
-  data: FingerprintData;          // 40+ optional collectors
-  confidence: number;             // Successful collector ratio (0-1)
+  fingerprintId: string; // Unique fingerprint ID
+  data: FingerprintData; // 40+ optional collectors
+  confidence: number; // Successful collector ratio (0-1)
   collectors?: Record<string, CollectorSummary>;
-  timings?: CollectorTimings;     // Per-collector durations + total
-  timestamp: number;              // Timestamp (ms)
-  cached?: boolean;               // From cache?
+  timings?: CollectorTimings; // Per-collector durations + total
+  timestamp: number; // Timestamp (ms)
+  cached?: boolean; // From cache?
 }
 ```
 
@@ -137,14 +137,14 @@ client.clearCache();
 // Enable caching (default)
 const fp = await getFingerprint({
   token: 'cfp_xxx',
-  cache: true,      // Use localStorage
-  cacheTtl: 3600,   // 1 hour
+  cache: true, // Use localStorage
+  cacheTtl: 3600, // 1 hour
 });
 
 // Disable caching
 const fp = await getFingerprint({
   token: 'cfp_xxx',
-  cache: false,  // Always fetch fresh
+  cache: false, // Always fetch fresh
 });
 ```
 
@@ -178,13 +178,13 @@ try {
 
 ### Error Codes
 
-| Code | Description |
-|------|-------------|
-| `INVALID_TOKEN` | Invalid API token |
-| `RATE_LIMIT_EXCEEDED` | Rate limit exceeded |
-| `NETWORK_ERROR` | Network connection failed |
-| `INVALID_RESPONSE` | Invalid API response |
-| `BROWSER_NOT_SUPPORTED` | Browser not supported |
+| Code                    | Description               |
+| ----------------------- | ------------------------- |
+| `INVALID_TOKEN`         | Invalid API token         |
+| `RATE_LIMIT_EXCEEDED`   | Rate limit exceeded       |
+| `NETWORK_ERROR`         | Network connection failed |
+| `INVALID_RESPONSE`      | Invalid API response      |
+| `BROWSER_NOT_SUPPORTED` | Browser not supported     |
 
 ## Advanced Usage
 
@@ -197,7 +197,7 @@ async function identifyUser(): Promise<string> {
   const result: FingerprintResult = await getFingerprint({
     token: process.env.CREEPJS_TOKEN!,
   });
-  
+
   return result.fingerprintId;
 }
 ```
@@ -213,7 +213,7 @@ function App() {
 
   useEffect(() => {
     getFingerprint({ token: 'cfp_xxx' })
-      .then(result => setFingerprintId(result.fingerprintId))
+      .then((result) => setFingerprintId(result.fingerprintId))
       .catch(console.error);
   }, []);
 
@@ -249,8 +249,8 @@ Need tighter control over how the collectors run? Call `collectFingerprint` dire
 import { collectFingerprint } from '@creepjs/core';
 
 const fingerprint = await collectFingerprint({
-  concurrency: 4,  // parallel workers (auto-tuned by default)
-  idleDelay: 8,    // ms to yield between tasks
+  concurrency: 4, // parallel workers (auto-tuned by default)
+  idleDelay: 8, // ms to yield between tasks
 });
 ```
 
@@ -303,16 +303,17 @@ if (navigator.doNotTrack === '1') {
 ## Browser Support
 
 | Browser | Version |
-|---------|---------|
-| Chrome | 80+ |
-| Firefox | 75+ |
-| Safari | 13+ |
-| Edge | 80+ |
-| Opera | 67+ |
+| ------- | ------- |
+| Chrome  | 80+     |
+| Firefox | 75+     |
+| Safari  | 13+     |
+| Edge    | 80+     |
+| Opera   | 67+     |
 
 ## Changelog
 
 ### v1.0.0
+
 - Initial release
 - Basic fingerprint generation
 - LocalStorage caching

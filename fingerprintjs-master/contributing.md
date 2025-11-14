@@ -27,12 +27,13 @@ If you want to fix a bug, add a source of entropy, or make any other code contri
 After you clone the repository, check the [Working with code](#working-with-code) section to learn how to run, check, and build the code.
 
 In order for us to review and accept your code contributions, please follow these rules:
+
 - Your code quality should be at least as good as the code you modify.
 - Your code style (syntax, naming, coding patterns, etc) should follow the FingerprintJS style.
 - All the new code should be covered with automated tests.
 - All the checks described in the [Working with code](#working-with-code) section must pass successfully.
-    You may create a draft pull request in this repository to run the checks automatically by GitHub Actions,
-    but the tests won't run on BrowserStack until a FingerprintJS maintainer approves them.
+  You may create a draft pull request in this repository to run the checks automatically by GitHub Actions,
+  but the tests won't run on BrowserStack until a FingerprintJS maintainer approves them.
 - Follow the recommendations provided in the [Pitfalls](#pitfalls) section.
 - If you want to add an entropy source (component), follow the [How to add an entropy source](#how-to-add-an-entropy-source) instructions carefully.
 - The changes should be backward compatible, ensuring FingerprintJS users continue to use the library without any modifications.
@@ -154,6 +155,7 @@ Unit test files are located right next to individual module files that they chec
 Integration tests are located in the `tests` directory.
 
 To run the tests in a browser on your machine, build the project and run:
+
 ```bash
 yarn test:local --browsers ChromeHeadless
 # or to run in Firefox
@@ -163,11 +165,14 @@ yarn test:local
 ```
 
 To run the tests in browsers on [BrowserStack](https://www.browserstack.com), get a BrowserStack access key and run:
+
 ```bash
 # For Linux, macOS and WSL (Linux on Windows)
 BROWSERSTACK_USERNAME=your-username BROWSERSTACK_ACCESS_KEY=your-key yarn test:browserstack
 ```
+
 If you face `Error: spawn Unknown system error -86` on macOS, try installing Rosetta:
+
 ```bash
 softwareupdate --install-rosetta
 ```
@@ -200,38 +205,40 @@ Entropy sources are located in the [src/sources](src/sources) directory.
 All entropy components must be simple JavaScript values that can be encoded into JSON.
 
 Entropy sources must meet the following requirements:
+
 - It is stable — it always or almost always produces the same value in each browser, including incognito, guest, and desktop modes.
 - It is selective — it produces different values in different browsers, operating systems, or devices.
-    A good entropy source represents the browser, operating system, or device settings.
+  A good entropy source represents the browser, operating system, or device settings.
 - It produces no side effects, such as messages in the browser console, DOM changes, modal windows, notifications, and sounds.
 - It is fast. An entropy source should take no more than 1 second to complete.
 - It doesn't represent only the browser version. An example of such a signal is a JavaScript feature probing.
-    It's not a good entropy source because the return value is likely to change due to automatic browser updates,
-    the selectivity is low, and the same entropy can be achieved by just using the User-Agent string.
+  It's not a good entropy source because the return value is likely to change due to automatic browser updates,
+  the selectivity is low, and the same entropy can be achieved by just using the User-Agent string.
 
 Entropy sources run in 2 stages: "load" and "get":
+
 - "Load" runs once when the agent's `load` function is called.
-    It must do as much work on the source as possible to make the "get" phase as fast as possible.
-    It may start background processes that will run indefinitely or until the "get" phase runs.
+  It must do as much work on the source as possible to make the "get" phase as fast as possible.
+  It may start background processes that will run indefinitely or until the "get" phase runs.
 - "Get" runs once per each agent's `get` function call.
-    It must be as fast as possible.
+  It must be as fast as possible.
 
 An example entropy source:
 
 ```js
 // The function below represents the "load" phase
 async function entropySource() {
-  // The "load" phase starts here
-  const preData = await doLongAction()
+    // The "load" phase starts here
+    const preData = await doLongAction()
 
-  // The "load" phase ends when the `entropySource` function returns
-  // The function below represents the "get" phase
-  return async () => {
-    // The "get" phase starts here
-    const finalData = await finalizeData(preData)
-    return finalData
-    // The "get" phase ends then this returned function returns
-  }
+    // The "load" phase ends when the `entropySource` function returns
+    // The function below represents the "get" phase
+    return async () => {
+        // The "get" phase starts here
+        const finalData = await finalizeData(preData)
+        return finalData
+        // The "get" phase ends then this returned function returns
+    }
 }
 ```
 
@@ -239,12 +246,12 @@ Any of the phases can be synchronous:
 
 ```js
 function entropySource() {
-  const preData = doLongSynchronousAction()
+    const preData = doLongSynchronousAction()
 
-  return () => {
-    const finalData = finalizeDataSynchronously(preData)
-    return finalData
-  }
+    return () => {
+        const finalData = finalizeDataSynchronously(preData)
+        return finalData
+    }
 }
 ```
 
@@ -252,10 +259,10 @@ The "get" phase can be omitted:
 
 ```js
 async function entropySource() {
-  const finalData = await doLongAction()
+    const finalData = await doLongAction()
 
-  // If the source's returned value is not a function, it's considered an entropy component
-  return finalData // Equivalent to: return () => finalData
+    // If the source's returned value is not a function, it's considered an entropy component
+    return finalData // Equivalent to: return () => finalData
 }
 ```
 
@@ -269,19 +276,19 @@ Example:
 
 ```js
 async function entropySource() {
-  // Wait for the required data to be calculated during the "load" phase
-  let result = await doLongAction()
+    // Wait for the required data to be calculated during the "load" phase
+    let result = await doLongAction()
 
-  // Start watching optional data in the background (this function doesn't block the execution)
-  watchNextResults((newResult) => {
-    result = newResult
-  })
+    // Start watching optional data in the background (this function doesn't block the execution)
+    watchNextResults((newResult) => {
+        result = newResult
+    })
 
-  // Then complete the "load" phase by returning a function.
-  // `watchNextResults` will continue working until the "get" phase starts.
-  return () => {
-    return result
-  }
+    // Then complete the "load" phase by returning a function.
+    // `watchNextResults` will continue working until the "get" phase starts.
+    return () => {
+        return result
+    }
 }
 ```
 
@@ -293,22 +300,22 @@ Example:
 
 ```js
 async function entropySource() {
-  try {
-    // `await` is necessary to catch asynchronous errors
-    return await doLongAction()
-  } catch (error) {
-    // WRONG:
-    return 'error'
+    try {
+        // `await` is necessary to catch asynchronous errors
+        return await doLongAction()
+    } catch (error) {
+        // WRONG:
+        return 'error'
 
-    // Correct:
-    if (error.message = 'Foo bar') {
-      return 'bot'
+        // Correct:
+        if ((error.message = 'Foo bar')) {
+            return 'bot'
+        }
+        if (/boo/.test(error.message)) {
+            return 'ie'
+        }
+        throw error // Unexpected error
     }
-    if (/boo/.test(error.message)) {
-      return 'ie'
-    }
-    throw error // Unexpected error
-  }
 }
 ```
 

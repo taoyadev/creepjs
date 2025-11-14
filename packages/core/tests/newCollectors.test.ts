@@ -25,7 +25,10 @@ const originalMatchMedia = window.matchMedia;
 
 beforeEach(() => {
   window.matchMedia = vi.fn((query: string) => ({
-    matches: query.includes('srgb') || query.includes('no-preference') || query.includes('standard'),
+    matches:
+      query.includes('srgb') ||
+      query.includes('no-preference') ||
+      query.includes('standard'),
     media: query,
     onchange: null,
     addListener: vi.fn(),
@@ -143,7 +146,10 @@ describe('new collectors', () => {
   });
 
   it('collectCookiesEnabled falls back to document cookie write', () => {
-    const descriptor = Object.getOwnPropertyDescriptor(window.navigator, 'cookieEnabled');
+    const descriptor = Object.getOwnPropertyDescriptor(
+      window.navigator,
+      'cookieEnabled'
+    );
     Object.defineProperty(window.navigator, 'cookieEnabled', {
       configurable: true,
       get: () => undefined,

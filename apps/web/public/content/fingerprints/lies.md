@@ -1,21 +1,21 @@
 # Lies Detection Fingerprinting: How Websites Catch You Faking Your Digital Identity
 
-Alright, let's talk about something most people don't know exists: lie detection for your browser. Yeah, you read that right. When you try to hide your digital fingerprint by using privacy tools, browser extensions, or "anti-detect" browsers, websites can actually *detect* that you're lying. It's like trying to wear a disguise at a party where everyone knows your walk, your voice, and your habits—the mask doesn't fool anyone.
+Alright, let's talk about something most people don't know exists: lie detection for your browser. Yeah, you read that right. When you try to hide your digital fingerprint by using privacy tools, browser extensions, or "anti-detect" browsers, websites can actually _detect_ that you're lying. It's like trying to wear a disguise at a party where everyone knows your walk, your voice, and your habits—the mask doesn't fool anyone.
 
-Here's the brutal truth: Over 92% of attempts to fake or modify browser fingerprints create detectable inconsistencies. That means your privacy tool might actually be making you *more* identifiable, not less. Let me explain why, and more importantly, how you can actually protect yourself properly.
+Here's the brutal truth: Over 92% of attempts to fake or modify browser fingerprints create detectable inconsistencies. That means your privacy tool might actually be making you _more_ identifiable, not less. Let me explain why, and more importantly, how you can actually protect yourself properly.
 
 ## What Is Lies Detection in Browser Fingerprinting?
 
 Think of your browser as a person at a job interview. Every answer needs to be consistent with every other answer. If you say you graduated from MIT in 2020, but you also say you're 19 years old, something doesn't add up, right? Browsers work the same way.
 
-Lies detection (sometimes called "inconsistency analysis" or "tampering detection") is a meta-fingerprinting technique. It doesn't just look at *what* your browser reports—it looks at whether all those reports make sense together. When you modify your browser fingerprint using tools like:
+Lies detection (sometimes called "inconsistency analysis" or "tampering detection") is a meta-fingerprinting technique. It doesn't just look at _what_ your browser reports—it looks at whether all those reports make sense together. When you modify your browser fingerprint using tools like:
 
 - Anti-detect browsers (Multilogin, GoLogin, AdsPower)
 - Browser extensions (Canvas Defender, User-Agent Switcher)
 - Privacy browsers in spoof mode
 - Automated browsers (Puppeteer, Selenium with stealth plugins)
 
-...you're changing specific properties. But here's the problem: You're probably not changing *all* the related properties. And that creates a pattern of lies that sophisticated fingerprinting systems can detect instantly.
+...you're changing specific properties. But here's the problem: You're probably not changing _all_ the related properties. And that creates a pattern of lies that sophisticated fingerprinting systems can detect instantly.
 
 ## How Lies Detection Actually Works
 
@@ -58,6 +58,7 @@ When operations take too long, or when timing has unnatural randomness, it's a r
 Different browser versions support different APIs. This is like saying you learned to drive in 2010 but also claiming you drove a Tesla Cybertruck to high school.
 
 Common lies:
+
 - Claiming to be Chrome 120 but missing APIs introduced in Chrome 110
 - Claiming to be Firefox but having Chrome-specific APIs like `chrome.runtime`
 - Claiming to be a mobile browser but having desktop-only APIs
@@ -75,16 +76,16 @@ Some lies are just logically impossible:
 
 Let me hit you with some eye-opening statistics from recent research:
 
-| Metric | Value | Source | Year |
-|--------|-------|--------|------|
-| **Detection accuracy for anti-detect browsers** | 92%+ | FP-tracer Research (PETS) | 2024 |
-| **Websites using inconsistency detection** | ~15% of top 10,000 | CreepJS Analysis | 2025 |
-| **False positive rate (flagging real browsers)** | <2% | Digital Privacy Alliance | 2024 |
-| **Puppeteer/Selenium detection rate** | 97%+ | Fingerprint.com Study | 2024 |
-| **Successfully spoofed fingerprints** | <8% | Stanford Network Security Lab | 2024 |
-| **Properties checked for consistency** | 200-500+ | Industry Standard | 2024 |
+| Metric                                           | Value              | Source                        | Year |
+| ------------------------------------------------ | ------------------ | ----------------------------- | ---- |
+| **Detection accuracy for anti-detect browsers**  | 92%+               | FP-tracer Research (PETS)     | 2024 |
+| **Websites using inconsistency detection**       | ~15% of top 10,000 | CreepJS Analysis              | 2025 |
+| **False positive rate (flagging real browsers)** | <2%                | Digital Privacy Alliance      | 2024 |
+| **Puppeteer/Selenium detection rate**            | 97%+               | Fingerprint.com Study         | 2024 |
+| **Successfully spoofed fingerprints**            | <8%                | Stanford Network Security Lab | 2024 |
+| **Properties checked for consistency**           | 200-500+           | Industry Standard             | 2024 |
 
-Here's what these numbers really mean: If you're using a cheap anti-detect browser or a poorly-configured privacy extension, you have less than an 8% chance of actually fooling a modern fingerprinting system. Worse, that failed attempt to hide actually makes your fingerprint *more unique* because the pattern of inconsistencies itself becomes your identifier.
+Here's what these numbers really mean: If you're using a cheap anti-detect browser or a poorly-configured privacy extension, you have less than an 8% chance of actually fooling a modern fingerprinting system. Worse, that failed attempt to hide actually makes your fingerprint _more unique_ because the pattern of inconsistencies itself becomes your identifier.
 
 ## Real-World Examples of Common Lies
 
@@ -94,8 +95,8 @@ Let me show you actual inconsistencies that get caught every day:
 
 ```javascript
 // What the tool reports:
-navigator.userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) ..."
-navigator.platform = "MacIntel"  // ← CAUGHT!
+navigator.userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ...';
+navigator.platform = 'MacIntel'; // ← CAUGHT!
 
 // What this tells us:
 // Claiming to be Windows 10 but platform says Mac.
@@ -118,8 +119,8 @@ navigator.platform = "MacIntel"  // ← CAUGHT!
 
 ```javascript
 // Puppeteer with stealth plugin:
-navigator.webdriver = false  // (correctly hidden)
-window.chrome.runtime = undefined  // ← CAUGHT!
+navigator.webdriver = false; // (correctly hidden)
+window.chrome.runtime = undefined; // ← CAUGHT!
 
 // Real Chrome ALWAYS has chrome.runtime defined.
 // Missing it is like a cop in plain clothes
@@ -130,9 +131,9 @@ window.chrome.runtime = undefined  // ← CAUGHT!
 
 ```javascript
 // Anti-detect browser reports:
-screen.width = 1920
-screen.height = 1080
-window.devicePixelRatio = 2
+screen.width = 1920;
+screen.height = 1080;
+window.devicePixelRatio = 2;
 
 // Problem: Actual rendered canvas shows:
 // Effective pixels = 3840 x 2160 (1920*2 x 1080*2)
@@ -145,34 +146,34 @@ window.devicePixelRatio = 2
 
 Based on CreepJS's detection algorithms and industry research, here's what raises red flags:
 
-| Issue Type | Suspicion Level | Detection Difficulty |
-|------------|----------------|---------------------|
-| User-Agent mismatch with platform | 🔴 **Critical** | Very Easy |
-| Canvas/WebGL inconsistent with claimed GPU | 🔴 **Critical** | Easy |
-| Missing APIs for claimed browser version | 🔴 **Critical** | Easy |
-| Fluctuating canvas fingerprints | 🟠 **High** | Easy |
-| Timezone doesn't match IP geolocation | 🟠 **High** | Moderate |
-| `navigator.webdriver = true` | 🔴 **Critical** | Trivial |
-| Missing `chrome.runtime` in Chrome | 🔴 **Critical** | Easy |
-| Unusual `window.outerWidth/outerHeight` (0 or 0) | 🔴 **Critical** | Easy |
-| Perfect English fonts on Chinese Windows | 🟡 **Medium** | Moderate |
-| Privacy browser fingerprint (Tor/Brave patterns) | 🟡 **Medium** | Moderate |
-| Math precision doesn't match claimed CPU | 🟠 **High** | Hard |
+| Issue Type                                       | Suspicion Level | Detection Difficulty |
+| ------------------------------------------------ | --------------- | -------------------- |
+| User-Agent mismatch with platform                | 🔴 **Critical** | Very Easy            |
+| Canvas/WebGL inconsistent with claimed GPU       | 🔴 **Critical** | Easy                 |
+| Missing APIs for claimed browser version         | 🔴 **Critical** | Easy                 |
+| Fluctuating canvas fingerprints                  | 🟠 **High**     | Easy                 |
+| Timezone doesn't match IP geolocation            | 🟠 **High**     | Moderate             |
+| `navigator.webdriver = true`                     | 🔴 **Critical** | Trivial              |
+| Missing `chrome.runtime` in Chrome               | 🔴 **Critical** | Easy                 |
+| Unusual `window.outerWidth/outerHeight` (0 or 0) | 🔴 **Critical** | Easy                 |
+| Perfect English fonts on Chinese Windows         | 🟡 **Medium**   | Moderate             |
+| Privacy browser fingerprint (Tor/Brave patterns) | 🟡 **Medium**   | Moderate             |
+| Math precision doesn't match claimed CPU         | 🟠 **High**     | Hard                 |
 
 ## Browser Comparison: Who's Lying?
 
 Different tools create different lie patterns. Here's what each commonly gets caught on:
 
-| Browser/Tool | Common Lies Detected | Pass Rate | Notes |
-|-------------|---------------------|-----------|-------|
-| **Puppeteer (stock)** | webdriver flag, chrome.runtime missing, permissions API | 3% | Extremely easy to detect |
-| **Puppeteer + stealth plugin** | chrome.runtime, timing anomalies, plugins list | 15% | Better but still obvious |
-| **Selenium** | webdriver flag, navigator properties, window vars | 5% | Similar to Puppeteer |
-| **Anti-detect browsers (cheap)** | User-Agent mismatches, incomplete spoofing | 10% | Half-baked implementations |
-| **Anti-detect browsers (premium)** | Subtle timing issues, rare API gaps | 40% | Best fakers, but expensive |
-| **Tor Browser** | Uniform fingerprint (paradoxically identifiable) | N/A | Doesn't lie, but obvious |
-| **Brave (aggressive blocking)** | Missing APIs, blocked canvas | 60% | Less lying, more blocking |
-| **Privacy extensions** | Canvas noise, random user-agents | 8% | Usually makes things worse |
+| Browser/Tool                       | Common Lies Detected                                    | Pass Rate | Notes                      |
+| ---------------------------------- | ------------------------------------------------------- | --------- | -------------------------- |
+| **Puppeteer (stock)**              | webdriver flag, chrome.runtime missing, permissions API | 3%        | Extremely easy to detect   |
+| **Puppeteer + stealth plugin**     | chrome.runtime, timing anomalies, plugins list          | 15%       | Better but still obvious   |
+| **Selenium**                       | webdriver flag, navigator properties, window vars       | 5%        | Similar to Puppeteer       |
+| **Anti-detect browsers (cheap)**   | User-Agent mismatches, incomplete spoofing              | 10%       | Half-baked implementations |
+| **Anti-detect browsers (premium)** | Subtle timing issues, rare API gaps                     | 40%       | Best fakers, but expensive |
+| **Tor Browser**                    | Uniform fingerprint (paradoxically identifiable)        | N/A       | Doesn't lie, but obvious   |
+| **Brave (aggressive blocking)**    | Missing APIs, blocked canvas                            | 60%       | Less lying, more blocking  |
+| **Privacy extensions**             | Canvas noise, random user-agents                        | 8%        | Usually makes things worse |
 
 ## What Nobody Tells You About Lies Detection
 
@@ -180,13 +181,13 @@ Here's the stuff that never makes it into the marketing materials:
 
 ### 1. Your Privacy Tool Might Make You More Trackable
 
-This is counterintuitive, but it's true. When you use a poorly-designed privacy tool, you're not hiding in a crowd—you're carrying a neon sign that says "I'M TRYING TO HIDE!" That pattern of failed attempts becomes *more* unique than your real fingerprint.
+This is counterintuitive, but it's true. When you use a poorly-designed privacy tool, you're not hiding in a crowd—you're carrying a neon sign that says "I'M TRYING TO HIDE!" That pattern of failed attempts becomes _more_ unique than your real fingerprint.
 
-According to 2024 research from the Digital Privacy Alliance, browsers with inconsistent fingerprints have 23% *higher* uniqueness scores than unmodified browsers. You literally become easier to track.
+According to 2024 research from the Digital Privacy Alliance, browsers with inconsistent fingerprints have 23% _higher_ uniqueness scores than unmodified browsers. You literally become easier to track.
 
 ### 2. The Tor Browser Paradox
 
-Tor Browser doesn't lie—it standardizes everything. All Tor users look identical: same screen resolution (1000×900), same timezone (UTC-5/New York), same font list, no WebGL. This creates perfect anonymity *within the Tor network* because you're indistinguishable from millions of other Tor users.
+Tor Browser doesn't lie—it standardizes everything. All Tor users look identical: same screen resolution (1000×900), same timezone (UTC-5/New York), same font list, no WebGL. This creates perfect anonymity _within the Tor network_ because you're indistinguishable from millions of other Tor users.
 
 But if you use Tor to visit regular websites? You're instantly recognizable as a Tor user, which is itself a small, identifiable group. It's like wearing the exact same uniform as 100,000 other people—great for anonymity within your group, terrible if your group is the only one wearing that uniform.
 
@@ -194,11 +195,12 @@ But if you use Tor to visit regular websites? You're instantly recognizable as a
 
 In 2025, advanced fingerprinting services are using machine learning to detect lies. They don't just check for specific inconsistencies—they train models on millions of real browser fingerprints, then flag anything that doesn't "feel" like a real browser.
 
-This is why perfectly-crafted fake fingerprints sometimes get caught: They're *too* perfect. Real browsers have quirks, outdated plugins, weird extension combinations. A fingerprint with zero quirks looks synthetic.
+This is why perfectly-crafted fake fingerprints sometimes get caught: They're _too_ perfect. Real browsers have quirks, outdated plugins, weird extension combinations. A fingerprint with zero quirks looks synthetic.
 
 ### 4. Your Behavior Gives You Away
 
 Even if you perfectly fake your fingerprint, your browsing behavior can betray you:
+
 - Mouse movements (humans move imperfectly, bots move too smoothly)
 - Typing patterns (keystroke timing is unique per person)
 - Scroll speed and patterns
@@ -214,6 +216,7 @@ Okay, enough doom and gloom. Here's what actually works:
 ### Strategy 1: Don't Lie—Use Compartmentalization
 
 Instead of trying to fake your fingerprint on every site:
+
 - Use different browsers for different activities
 - Use browser profiles for different identities
 - Use Firefox Containers to isolate website tracking
@@ -223,17 +226,18 @@ Instead of trying to fake your fingerprint on every site:
 
 These tools reduce your fingerprint surface without creating inconsistencies:
 
-| Tool | Strategy | Effectiveness |
-|------|----------|--------------|
-| **Firefox Resist Fingerprinting** | Blocks/standardizes APIs consistently | 🟢 High |
-| **Brave (standard mode)** | Blocks invasive APIs, minimal spoofing | 🟢 High |
-| **uBlock Origin** | Blocks fingerprinting scripts entirely | 🟢 Very High |
-| **NoScript** | JavaScript blocking (breaks sites but works) | 🟢 Complete |
+| Tool                              | Strategy                                     | Effectiveness |
+| --------------------------------- | -------------------------------------------- | ------------- |
+| **Firefox Resist Fingerprinting** | Blocks/standardizes APIs consistently        | 🟢 High       |
+| **Brave (standard mode)**         | Blocks invasive APIs, minimal spoofing       | 🟢 High       |
+| **uBlock Origin**                 | Blocks fingerprinting scripts entirely       | 🟢 Very High  |
+| **NoScript**                      | JavaScript blocking (breaks sites but works) | 🟢 Complete   |
 
 ### Strategy 3: Accept Some Tracking, Focus on What Matters
 
 Real talk: You can't be completely anonymous on the modern web without breaking most websites. Instead:
-- Focus on preventing *behavioral tracking* (ad blockers, cookie blocking)
+
+- Focus on preventing _behavioral tracking_ (ad blockers, cookie blocking)
 - Use privacy-respecting browsers that consistently report the same fingerprint
 - Save heavy privacy tools (Tor, VPNs) for actually sensitive activities
 - Don't overthink tracking on public, non-sensitive browsing
@@ -241,6 +245,7 @@ Real talk: You can't be completely anonymous on the modern web without breaking 
 ### Strategy 4: If You Must Spoof, Do It Right
 
 If you're a developer testing anti-fraud systems, or legitimately need anti-detect browsers:
+
 - Use premium services (Multilogin, GoLogin with proper configs)
 - Never mix real and spoofed profiles on the same device
 - Regularly test your fingerprint for inconsistencies
@@ -271,9 +276,11 @@ Want to see if your privacy setup is creating red flags? Here's how:
 // Check 1: User-Agent vs Platform consistency
 console.log('User-Agent:', navigator.userAgent);
 console.log('Platform:', navigator.platform);
-console.log('Match?',
-  (navigator.userAgent.includes('Windows') && navigator.platform.includes('Win')) ||
-  (navigator.userAgent.includes('Mac') && navigator.platform.includes('Mac'))
+console.log(
+  'Match?',
+  (navigator.userAgent.includes('Windows') &&
+    navigator.platform.includes('Win')) ||
+    (navigator.userAgent.includes('Mac') && navigator.platform.includes('Mac'))
 );
 
 // Check 2: Chrome runtime (Chrome/Edge only)
@@ -293,15 +300,19 @@ console.log('Canvas consistent:', hash1 === hash2);
 The arms race between privacy tools and detection systems is accelerating. Here's where we're headed:
 
 ### Trend 1: AI-Powered Lie Detection
+
 Machine learning models are getting trained on billions of real browser fingerprints. By mid-2025, even subtle lies will be detectable through statistical anomaly detection.
 
 ### Trend 2: Behavioral Biometrics
+
 Even perfect fingerprint spoofing won't help if your mouse movements, typing patterns, and scrolling behavior give you away. This is already being deployed by major banks and e-commerce sites.
 
 ### Trend 3: Privacy Browser Wars
-Browser vendors are fighting back. Firefox's Total Cookie Protection and Enhanced Tracking Protection are making headway. Apple's Safari has strong anti-fingerprinting measures. These are reducing the *need* to lie by reducing the *amount* of fingerprintable data.
+
+Browser vendors are fighting back. Firefox's Total Cookie Protection and Enhanced Tracking Protection are making headway. Apple's Safari has strong anti-fingerprinting measures. These are reducing the _need_ to lie by reducing the _amount_ of fingerprintable data.
 
 ### Trend 4: Legal Pressure
+
 The EU's ePrivacy Regulation and emerging US state laws are making aggressive fingerprinting riskier legally. Companies might back off not because it's technically hard, but because it's legally dangerous.
 
 ## FAQ: Your Questions Answered
@@ -326,6 +337,7 @@ A: Only if you don't lie! Using a privacy browser consistently (Tor, Brave) mean
 Here's what you need to remember: **Bad privacy tools are worse than no privacy tools.** If your browser is telling contradictory stories about itself, you're not hiding—you're waving a red flag.
 
 For most people, the best approach is:
+
 1. Use a privacy-respecting browser (Firefox, Brave)
 2. Install uBlock Origin
 3. Enable the browser's built-in tracking protection
@@ -339,4 +351,4 @@ Want to test your browser's honesty? Run our Lies Detection playground below and
 
 ---
 
-*Last Updated: January 2025 | Data sources: FP-tracer (PETS 2024), Digital Privacy Alliance, Stanford Network Security Lab, Fingerprint.com Industry Reports, CreepJS Research*
+_Last Updated: January 2025 | Data sources: FP-tracer (PETS 2024), Digital Privacy Alliance, Stanford Network Security Lab, Fingerprint.com Industry Reports, CreepJS Research_

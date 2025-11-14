@@ -57,7 +57,9 @@ export class CreepJS {
       if (!cached) return null;
 
       const data = JSON.parse(cached) as {
-        fingerprint: Omit<SDKResponse, 'coverage'> & { coverage?: CollectorCoverage };
+        fingerprint: Omit<SDKResponse, 'coverage'> & {
+          coverage?: CollectorCoverage;
+        };
         expiry: number;
       };
 
@@ -170,13 +172,12 @@ export class CreepJS {
   ): SDKResponse {
     return {
       ...response,
-      coverage:
-        response.coverage ?? {
-          ratio: response.confidence,
-          successful: 0,
-          failed: 0,
-          skipped: 0,
-        },
+      coverage: response.coverage ?? {
+        ratio: response.confidence,
+        successful: 0,
+        failed: 0,
+        skipped: 0,
+      },
     };
   }
 }
@@ -184,9 +185,7 @@ export class CreepJS {
 /**
  * Convenience function to get fingerprint
  */
-export async function getFingerprint(
-  config: SDKConfig
-): Promise<SDKResponse> {
+export async function getFingerprint(config: SDKConfig): Promise<SDKResponse> {
   const sdk = new CreepJS(config);
   return sdk.getFingerprint();
 }

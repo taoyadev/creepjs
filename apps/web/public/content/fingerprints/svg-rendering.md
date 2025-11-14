@@ -52,12 +52,12 @@ function getSVGFingerprint() {
       c: ctm.c,
       d: ctm.d,
       e: ctm.e,
-      f: ctm.f
+      f: ctm.f,
     },
     screen: {
       a: screenCTM.a,
-      d: screenCTM.d
-    }
+      d: screenCTM.d,
+    },
   };
 }
 ```
@@ -128,7 +128,7 @@ function getSVGTextFingerprint() {
   return {
     width: bbox.width,
     height: bbox.height,
-    textLength: length
+    textLength: length,
   };
 }
 ```

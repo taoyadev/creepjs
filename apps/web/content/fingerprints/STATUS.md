@@ -30,6 +30,7 @@
 ⏳ css-media.md - CSS Media Queries
 
 ## Homepage
+
 ⏳ homepage.md - Main landing page
 
 **Target**: All pages 1000+ words with full E-E-A-T compliance

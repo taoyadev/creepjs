@@ -9,6 +9,7 @@ The good news? This nightmare is mostly over. Let me explain what happened.
 Okay, quick history lesson. Back in the 90s and early 2000s, browsers couldn't do much. No video playback, no interactive content, no rich web apps. To add these capabilities, browsers supported **plugins**—external software that extended what browsers could do.
 
 The most famous ones:
+
 - **Adobe Flash Player** - animations, games, video players
 - **Java Runtime Environment** - Java applets
 - **Adobe Acrobat** - PDF viewing
@@ -22,11 +23,11 @@ Every plugin would register itself with the browser, and websites could detect t
 
 ```javascript
 // The old way (pre-2020)
-const plugins = Array.from(navigator.plugins).map(p => ({
+const plugins = Array.from(navigator.plugins).map((p) => ({
   name: p.name,
   description: p.description,
   filename: p.filename,
-  version: p.version
+  version: p.version,
 }));
 
 console.log(plugins);
@@ -43,6 +44,7 @@ console.log(plugins);
 Here's the problem: **your plugin list was essentially unique to you**.
 
 Think about it. What are the chances that someone else has:
+
 - The exact same plugins you have
 - The exact same versions
 - In the exact same installation order
@@ -68,26 +70,30 @@ function getPluginFingerprint() {
     totalMimeTypes: navigator.mimeTypes.length,
 
     // Plugin names and versions
-    plugins: plugins.map(p => ({
+    plugins: plugins.map((p) => ({
       name: p.name,
       description: p.description,
       version: p.version || 'unknown',
-      filename: p.filename
+      filename: p.filename,
     })),
 
     // Check for specific high-value plugins
-    hasFlash: plugins.some(p => p.name.toLowerCase().includes('flash')),
-    hasJava: plugins.some(p => p.name.toLowerCase().includes('java')),
-    hasSilverlight: plugins.some(p => p.name.toLowerCase().includes('silverlight')),
-    hasQuickTime: plugins.some(p => p.name.toLowerCase().includes('quicktime')),
-    hasUnity: plugins.some(p => p.name.toLowerCase().includes('unity')),
-    hasPDF: plugins.some(p => p.name.toLowerCase().includes('pdf')),
+    hasFlash: plugins.some((p) => p.name.toLowerCase().includes('flash')),
+    hasJava: plugins.some((p) => p.name.toLowerCase().includes('java')),
+    hasSilverlight: plugins.some((p) =>
+      p.name.toLowerCase().includes('silverlight')
+    ),
+    hasQuickTime: plugins.some((p) =>
+      p.name.toLowerCase().includes('quicktime')
+    ),
+    hasUnity: plugins.some((p) => p.name.toLowerCase().includes('unity')),
+    hasPDF: plugins.some((p) => p.name.toLowerCase().includes('pdf')),
 
     // Plugin order (reveals installation sequence)
-    pluginOrder: plugins.map(p => p.name),
+    pluginOrder: plugins.map((p) => p.name),
 
     // Hash the entire plugin list
-    hash: hashPlugins(plugins)
+    hash: hashPlugins(plugins),
   };
 
   return fingerprint;
@@ -95,14 +101,14 @@ function getPluginFingerprint() {
 
 function hashPlugins(plugins) {
   const str = plugins
-    .map(p => `${p.name}|${p.description}|${p.filename}`)
+    .map((p) => `${p.name}|${p.description}|${p.filename}`)
     .sort()
     .join('::');
 
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash = hash & hash; // Convert to 32-bit integer
   }
   return hash;
@@ -124,6 +130,7 @@ Here's something really creepy: enterprise software often installs browser plugi
 If a tracker saw these plugins, they knew you were browsing from a corporate environment. They could even guess which company based on the specific combination of plugins.
 
 Universities were similar. Students would have:
+
 - **Respondus LockDown Browser** (exam proctoring)
 - **SafeAssign** (plagiarism detection)
 - **ProctorU** (online testing)
@@ -137,6 +144,7 @@ Around 2015-2017, browsers started killing plugin support. Here's why:
 ### Security Nightmares
 
 Plugins were a massive security liability. Some statistics:
+
 - **Over 50%** of serious browser vulnerabilities in 2015 were plugin-related
 - **Flash Player** had 266 documented security vulnerabilities in 2016 alone
 - **Java browser plugins** were responsible for 91% of all compromised Windows systems in 2013
@@ -146,6 +154,7 @@ Plugins ran with elevated privileges and could access your entire system. A vuln
 ### Performance Issues
 
 Plugins were slow and battery-draining. Adobe admitted that Flash was responsible for:
+
 - **10-20% battery drain** on laptops
 - **3-5x slower** page load times
 - Frequent browser crashes
@@ -153,6 +162,7 @@ Plugins were slow and battery-draining. Adobe admitted that Flash was responsibl
 ### The Rise of HTML5
 
 By 2015, HTML5 could do almost everything plugins did:
+
 - `<video>` and `<audio>` tags for media playback (no more Flash)
 - `<canvas>` and WebGL for graphics and games
 - WebRTC for video chat
@@ -165,14 +175,17 @@ Plugins became obsolete.
 Here's how browsers killed plugins:
 
 ### Chrome 87 (October 2020)
+
 Chrome stopped exposing the actual plugin list and started returning a **hardcoded list** instead.
 
 Before Chrome 87:
+
 ```javascript
 navigator.plugins.length; // 20-30 plugins
 ```
 
 After Chrome 87:
+
 ```javascript
 navigator.plugins.length; // 5 plugins (PDF, Flash if enabled, Widevine CDM)
 ```
@@ -180,19 +193,23 @@ navigator.plugins.length; // 5 plugins (PDF, Flash if enabled, Widevine CDM)
 Everyone using Chrome 87+ gets the same plugin list. It doesn't matter what you actually have installed—Chrome lies to websites and returns a standardized list.
 
 ### Firefox 91 (August 2021)
+
 Firefox followed Chrome's lead and **hardcoded the plugin list** to a minimal set.
 
 The Firefox team stated: "To reduce fingerprinting, navigator.plugins now returns a fixed list of plugins."
 
 ### Safari (2017-2018)
+
 Safari was actually ahead of the curve. They started restricting plugin enumeration around 2017, years before Chrome and Firefox.
 
 Safari never exposed many plugins because:
+
 1. **macOS/iOS** never had as many plugins as Windows
 2. Apple controls the ecosystem tightly
 3. Safari prioritized privacy earlier than competitors
 
 ### Edge 87+ (2020)
+
 When Edge switched to Chromium, it inherited Chrome's hardcoded plugin list. Same behavior as Chrome.
 
 ## What Browsers Return Today (2024)
@@ -202,7 +219,7 @@ Let me show you what `navigator.plugins` returns on modern browsers:
 ```javascript
 // Chrome 120 / Edge 120 / Brave 1.60 / Opera 106 (all Chromium-based)
 console.log(navigator.plugins.length); // 5
-console.log(Array.from(navigator.plugins).map(p => p.name));
+console.log(Array.from(navigator.plugins).map((p) => p.name));
 // Output: [
 //   "PDF Viewer",
 //   "Chrome PDF Viewer",
@@ -213,7 +230,7 @@ console.log(Array.from(navigator.plugins).map(p => p.name));
 
 // Firefox 121
 console.log(navigator.plugins.length); // 5
-console.log(Array.from(navigator.plugins).map(p => p.name));
+console.log(Array.from(navigator.plugins).map((p) => p.name));
 // Output: [
 //   "PDF Viewer",
 //   "Chrome PDF Viewer",
@@ -224,7 +241,7 @@ console.log(Array.from(navigator.plugins).map(p => p.name));
 
 // Safari 17
 console.log(navigator.plugins.length); // 5
-console.log(Array.from(navigator.plugins).map(p => p.name));
+console.log(Array.from(navigator.plugins).map((p) => p.name));
 // Output: [
 //   "PDF Viewer",
 //   "Chrome PDF Viewer",
@@ -240,17 +257,17 @@ This is deliberate. The web standards were updated to require browsers to return
 
 ## Browser Market Share and Plugin Protection (2024)
 
-| Browser | Version | Plugin List | Market Share | Protected? |
-|---------|---------|-------------|--------------|------------|
-| Chrome 87+ | Modern | Hardcoded (5 plugins) | ~63% | ✅ Yes |
-| Firefox 91+ | Modern | Hardcoded (5 plugins) | ~3% | ✅ Yes |
-| Safari 14+ | Modern | Hardcoded (5 plugins) | ~20% | ✅ Yes |
-| Edge 87+ | Modern | Hardcoded (5 plugins) | ~5% | ✅ Yes |
-| Opera 73+ | Modern | Hardcoded (5 plugins) | ~2% | ✅ Yes |
-| Brave (all) | Modern | Hardcoded (5 plugins) | ~0.5% | ✅ Yes |
-| Chrome <87 | Legacy | Real plugin list | <1% | ❌ No |
-| Firefox <91 | Legacy | Real plugin list | <0.5% | ❌ No |
-| Internet Explorer | Dead | Empty list | ~0.1% | N/A |
+| Browser           | Version | Plugin List           | Market Share | Protected? |
+| ----------------- | ------- | --------------------- | ------------ | ---------- |
+| Chrome 87+        | Modern  | Hardcoded (5 plugins) | ~63%         | ✅ Yes     |
+| Firefox 91+       | Modern  | Hardcoded (5 plugins) | ~3%          | ✅ Yes     |
+| Safari 14+        | Modern  | Hardcoded (5 plugins) | ~20%         | ✅ Yes     |
+| Edge 87+          | Modern  | Hardcoded (5 plugins) | ~5%          | ✅ Yes     |
+| Opera 73+         | Modern  | Hardcoded (5 plugins) | ~2%          | ✅ Yes     |
+| Brave (all)       | Modern  | Hardcoded (5 plugins) | ~0.5%        | ✅ Yes     |
+| Chrome <87        | Legacy  | Real plugin list      | <1%          | ❌ No      |
+| Firefox <91       | Legacy  | Real plugin list      | <0.5%        | ❌ No      |
+| Internet Explorer | Dead    | Empty list            | ~0.1%        | N/A        |
 
 **Bottom line**: Over 93% of users are protected from plugin fingerprinting as of 2024.
 
@@ -276,13 +293,14 @@ But here's the clever part: the Widevine plugin information is **standardized** 
 Killing plugin enumeration was a huge privacy win, but trackers didn't give up. They adapted their techniques:
 
 ### 1. Feature Detection
+
 Instead of checking if you have a Java plugin, they'll try to run Java code and see if it works:
 
 ```javascript
 // Can you run Java?
 function hasJava() {
   try {
-    new java.lang.String("test");
+    new java.lang.String('test');
     return true;
   } catch (e) {
     return false;
@@ -291,6 +309,7 @@ function hasJava() {
 ```
 
 ### 2. Codec Detection
+
 Instead of checking for video plugins, they test which codecs you support:
 
 ```javascript
@@ -301,15 +320,17 @@ function detectCodecs() {
     h265: video.canPlayType('video/mp4; codecs="hev1"') !== '',
     vp8: video.canPlayType('video/webm; codecs="vp8"') !== '',
     vp9: video.canPlayType('video/webm; codecs="vp9"') !== '',
-    av1: video.canPlayType('video/mp4; codecs="av01"') !== ''
+    av1: video.canPlayType('video/mp4; codecs="av01"') !== '',
   };
 }
 ```
 
 ### 3. Extension Detection
+
 Trackers moved from detecting plugins to detecting browser extensions. That's a whole other fingerprinting vector (and harder to block).
 
 ### 4. Font Fingerprinting
+
 Instead of detecting Adobe software via plugins, trackers detect Adobe fonts (which get installed with Adobe software).
 
 ## The MDN Documentation
@@ -333,6 +354,7 @@ This shows that even sophisticated attackers can't overcome the browser's privac
 Mobile browsers (iOS Safari, Chrome Android, Firefox Android) never had significant plugin support to begin with.
 
 Why? Two reasons:
+
 1. **iOS doesn't allow plugins** - Apple's walled garden approach
 2. **Android discouraged plugins** - for security and battery life
 
@@ -345,6 +367,7 @@ The short answer: **not via plugins, unless you're on a really old browser**.
 If you're using Chrome 87+, Firefox 91+, Safari 14+, or Edge 87+, you're safe. These browsers return the same hardcoded plugin list for everyone.
 
 But remember: plugin fingerprinting was just one technique. Trackers have many others:
+
 - **Canvas fingerprinting**: 10-15 bits of entropy (still very effective)
 - **WebGL fingerprinting**: 8-12 bits of entropy (reveals GPU)
 - **Audio fingerprinting**: 4-6 bits of entropy (hardware differences)
@@ -359,6 +382,7 @@ Killing plugin fingerprinting was important, but it's just one piece of a much l
 Here's a technical detail: the way you enumerate plugins changed too.
 
 Old way (no longer works):
+
 ```javascript
 for (let plugin in navigator.plugins) {
   console.log(plugin);
@@ -366,6 +390,7 @@ for (let plugin in navigator.plugins) {
 ```
 
 Modern way (still works):
+
 ```javascript
 for (let i = 0; i < navigator.plugins.length; i++) {
   console.log(navigator.plugins[i]);

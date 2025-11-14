@@ -9,6 +9,7 @@ Let me walk you through why this matters and why forced colors is one of the mos
 Forced colors (also called Windows High Contrast mode) is an accessibility feature where the operating system overrides all website colors with a user-defined high-contrast theme. The user chooses a limited palette—usually 4-8 colors—and everything on screen conforms to it.
 
 **Common Windows High Contrast Themes:**
+
 - **High Contrast Black**: Black background, white text, bright accent colors
 - **High Contrast White**: White background, black text, high-contrast accents
 - **High Contrast #1**: Yellow on black
@@ -17,6 +18,7 @@ Forced colors (also called Windows High Contrast mode) is an accessibility featu
 When enabled, Windows forces all applications—including web browsers—to use only these colors. Websites can't override it. That's the point. It ensures consistent readability for people with severe low vision.
 
 **Who Uses This:**
+
 - People with low vision (macular degeneration, severe myopia, diabetic retinopathy)
 - Elderly users with age-related vision decline
 - People with light sensitivity disorders
@@ -80,24 +82,24 @@ So not only can websites see that you're using forced colors, they can sometimes
 
 Here's the critical thing: forced colors is **Windows-specific**. This is a huge fingerprinting signal.
 
-| Platform | Support | Notes |
-|----------|---------|-------|
-| **Windows 10/11** | Full | Settings > Accessibility > Contrast themes |
-| **macOS** | No | Uses "Increase Contrast" instead (different feature) |
-| **iOS/iPadOS** | No | Has separate accessibility features |
-| **Android** | No | Varies by manufacturer, not standardized |
-| **Linux** | No | Desktop environment dependent, not Windows High Contrast |
+| Platform          | Support | Notes                                                    |
+| ----------------- | ------- | -------------------------------------------------------- |
+| **Windows 10/11** | Full    | Settings > Accessibility > Contrast themes               |
+| **macOS**         | No      | Uses "Increase Contrast" instead (different feature)     |
+| **iOS/iPadOS**    | No      | Has separate accessibility features                      |
+| **Android**       | No      | Varies by manufacturer, not standardized                 |
+| **Linux**         | No      | Desktop environment dependent, not Windows High Contrast |
 
 **Browser Support:**
 
-| Browser | Windows | macOS/Linux | Notes |
-|---------|---------|-------------|-------|
-| **Edge** | Yes | No | Full Windows support |
-| **Chrome** | Yes | No | Respects Windows settings |
-| **Firefox** | Yes | No | Fully implemented |
-| **Opera** | Yes | No | Chromium-based support |
-| **Brave** | Partial | No | May block detection |
-| **Tor Browser** | No | No | Deliberately blocked |
+| Browser         | Windows | macOS/Linux | Notes                     |
+| --------------- | ------- | ----------- | ------------------------- |
+| **Edge**        | Yes     | No          | Full Windows support      |
+| **Chrome**      | Yes     | No          | Respects Windows settings |
+| **Firefox**     | Yes     | No          | Fully implemented         |
+| **Opera**       | Yes     | No          | Chromium-based support    |
+| **Brave**       | Partial | No          | May block detection       |
+| **Tor Browser** | No      | No          | Deliberately blocked      |
 
 **Key Insight:** If `forced-colors: active` returns true, you're almost certainly on Windows. That's powerful OS fingerprinting combined with disability disclosure.
 
@@ -106,6 +108,7 @@ Here's the critical thing: forced colors is **Windows-specific**. This is a huge
 Let's look at the actual numbers:
 
 **Overall Usage:**
+
 - **4% of Windows users** enable High Contrast mode (Microsoft official data, 2024)
 - **1-2% of all web users** globally (since Windows is ~70% of desktop market)
 - **50% of low vision users** report using it (WebAIM survey)
@@ -117,6 +120,7 @@ With only 1-2% of web users having this enabled, it's a significant identifying 
 But the real problem isn't the entropy—it's what it reveals.
 
 **Population Context:**
+
 - 285 million people globally have visual impairment (WHO)
 - 43 million are blind, 242 million have low vision
 - In the US, 12 million people 40+ have vision impairment
@@ -139,12 +143,14 @@ Forced colors creates multiple privacy issues simultaneously:
 ### 2. Disability Disclosure
 
 Having forced colors enabled strongly suggests:
+
 - **Severe low vision**: Can't read standard contrast
 - **Legal blindness**: Visual acuity of 20/200 or worse
 - **Specific conditions**: Macular degeneration, glaucoma, diabetic retinopathy, cataracts
 - **Age correlation**: More common in users 65+ due to age-related vision loss
 
 This is **protected health information** under:
+
 - HIPAA (US health information privacy)
 - GDPR Article 9 (special category data)
 - ADA (Americans with Disabilities Act)
@@ -195,6 +201,7 @@ Effective entropy ≈ 0.5-0.6 bits when considering OS interaction
 ```
 
 **Cumulative Fingerprinting:**
+
 - Forced colors: 0.5 bits
 - Screen resolution: 4.2 bits
 - Timezone: 4.8 bits
@@ -213,6 +220,7 @@ This is where I need to be direct: using forced colors detection for fingerprint
 ### Medical Information Exposure
 
 Forced colors mode indicates:
+
 - **Diagnosed vision impairment** (often documented by optometrist/ophthalmologist)
 - **Disability status** (may qualify for disability benefits)
 - **Age correlation** (65+ much more likely)
@@ -222,6 +230,7 @@ Forced colors mode indicates:
 
 **Employment Discrimination:**
 A 2024 ACM study found students with disabilities hide their accessibility needs because of experienced stigma and discrimination. If employers can detect disability status during:
+
 - Online job applications
 - Skills assessments
 - Video interviews (if website is open)
@@ -230,6 +239,7 @@ They might discriminate. Yes, it's illegal under ADA. No, it's not effectively e
 
 **Insurance Discrimination:**
 Health and life insurance companies could theoretically adjust premiums based on detected disability status. Vision impairment correlates with:
+
 - Age (higher health risks)
 - Diabetes (if diabetic retinopathy)
 - Other comorbidities
@@ -238,6 +248,7 @@ This is illegal under ACA and HIPAA, but technical capability exists.
 
 **Digital Redlining:**
 Once flagged as disabled:
+
 - Job ads might not show you (illegal but hard to prove)
 - Housing listings could be filtered
 - Financial products might exclude you
@@ -251,6 +262,7 @@ In 2024, researchers found users with screen readers received different content 
 How are trackers actually using this?
 
 **Major Fingerprinting Libraries:**
+
 - **FingerprintJS Pro**: Includes forced colors in enterprise fingerprint
 - **CreepJS**: Open-source research tool explicitly checks forced colors
 - **Browserscan**: Academic fingerprinting research includes this
@@ -258,12 +270,14 @@ How are trackers actually using this?
 
 **Detection in the Wild:**
 A 2024 analysis of websites found:
+
 - **8.3%** of top 10,000 sites query forced colors
 - **12.7%** of sites with fingerprinting scripts include it
 - **89%** combine it with other accessibility queries
 - **3.2%** explicitly send it to third-party analytics
 
 **Industry Usage:**
+
 - **Fraud detection services**: Use it to verify device consistency
 - **Ad networks**: Segment audiences (problematic)
 - **Analytics platforms**: Track for "user experience" (often stored indefinitely)
@@ -280,18 +294,19 @@ Honestly, if you need High Contrast mode to use your computer, **use it**. Your 
 
 **Option 2: Privacy-Focused Browsers**
 
-| Browser | Protection | Effectiveness |
-|---------|-----------|---------------|
-| **Tor Browser** | Blocks forced-colors query entirely | Excellent (but accessibility features don't work) |
-| **Brave** | Randomizes or blocks with Shields | Very good (configurable) |
-| **Firefox** | `privacy.resistFingerprinting = true` | Good (standardizes response) |
-| **LibreWolf** | Built-in fingerprinting resistance | Good (blocks accessibility queries) |
+| Browser         | Protection                            | Effectiveness                                     |
+| --------------- | ------------------------------------- | ------------------------------------------------- |
+| **Tor Browser** | Blocks forced-colors query entirely   | Excellent (but accessibility features don't work) |
+| **Brave**       | Randomizes or blocks with Shields     | Very good (configurable)                          |
+| **Firefox**     | `privacy.resistFingerprinting = true` | Good (standardizes response)                      |
+| **LibreWolf**   | Built-in fingerprinting resistance    | Good (blocks accessibility queries)               |
 
 **Trade-off Warning:** Privacy browsers often break accessibility. Tor Browser, for example, blocks forced colors detection, which means websites can't adapt to your needs. You're more private but less functional.
 
 **Option 3: Browser Extensions**
 
 Instead of OS-level High Contrast, use browser extensions:
+
 - **High Contrast** (Chrome/Edge extension)
 - **Dark Reader** (can create high-contrast themes)
 - **Stylus** (custom CSS injection)
@@ -301,6 +316,7 @@ These work client-side and can't be detected via `forced-colors` query. But they
 **Option 4: Compartmentalize**
 
 Use different browsers for different purposes:
+
 - **High Contrast Mode + Edge**: For everyday tasks where you need accessibility
 - **Tor or Brave**: For sensitive activities where privacy matters
 
@@ -309,6 +325,7 @@ This limits the fingerprinting surface for high-risk activities.
 **Option 5: Additional Privacy Measures**
 
 If you must use forced colors:
+
 - Use a VPN (hides IP address)
 - Clear cookies regularly (breaks cross-site tracking)
 - Use private browsing mode when possible
@@ -320,6 +337,7 @@ If you must use forced colors:
 **Ethical Guidelines:**
 
 ✅ **DO:**
+
 ```css
 /* Use forced colors to improve accessibility */
 @media (forced-colors: active) {
@@ -347,6 +365,7 @@ if (matchMedia('(forced-colors: active)').matches) {
 ```
 
 ❌ **DON'T:**
+
 ```javascript
 // Unethical fingerprinting
 const fingerprint = {
@@ -361,39 +380,46 @@ shareWithThirdParties(fingerprint); // Extremely unethical
 
 **Microsoft's Official Guidance:**
 From Microsoft Edge documentation (2024):
+
 > "The forced-colors media feature is intended to help developers create accessible experiences. It should not be used for fingerprinting or tracking purposes."
 
 **W3C Position:**
 From "Mitigating Browser Fingerprinting in Web Specifications":
+
 > "Privacy-invasive accessibility detection undermines trust and may discourage users with disabilities from using accessibility features."
 
 ## Browser Vendor Responses
 
 **Microsoft Edge:**
+
 - Supports forced colors fully (it's their feature)
 - Enhanced Tracking Prevention blocks third-party fingerprinting
 - Does NOT block forced-colors query (prioritizes accessibility)
 - Deprecated legacy `-ms-high-contrast` in favor of standard `forced-colors`
 
 **Mozilla Firefox:**
+
 - Full support since Firefox 89
 - `privacy.resistFingerprinting` standardizes to "none"
 - Enhanced Tracking Protection blocks fingerprinting scripts
 - Documentation warns against misuse
 
 **Google Chrome:**
+
 - Full support since Chrome 89
 - Minimal built-in fingerprinting protection
 - Privacy Sandbox aims to reduce fingerprinting (controversial)
 - In 2025, permitted fingerprinting within Privacy Sandbox framework
 
 **Brave:**
+
 - Chromium-based, supports forced colors
 - Shields mode can block or randomize detection
 - "Aggressive" fingerprinting protection returns false
 - Users can choose privacy vs. accessibility
 
 **Tor Browser:**
+
 - Deliberately does NOT support forced-colors query
 - All users appear identical (accessibility sacrificed for anonymity)
 - Controversial trade-off in accessibility community
@@ -403,12 +429,14 @@ From "Mitigating Browser Fingerprinting in Web Specifications":
 Here's my honest take on forced colors fingerprinting:
 
 **The Good:**
+
 - Essential accessibility feature for millions with severe low vision
 - Standardized, well-implemented across modern browsers
 - Makes the web usable for people who otherwise couldn't access it
 - When used ethically by developers, improves experiences
 
 **The Bad:**
+
 - Reveals Windows OS (strong fingerprinting signal)
 - Discloses probable disability status (protected health information)
 - Enables potential discrimination in employment, insurance, advertising
@@ -420,6 +448,7 @@ This creates an impossible choice: use the accessibility features you need to fu
 **My Recommendation:**
 
 **If you have low vision:** Use High Contrast mode. Your ability to use your computer and access the web matters more than theoretical privacy risks. But take additional precautions:
+
 1. Use a VPN
 2. Clear cookies regularly
 3. Use ad blockers
@@ -430,6 +459,7 @@ This creates an impossible choice: use the accessibility features you need to fu
 
 **Policy Needed:**
 Honestly, we need regulation. GDPR Article 9 technically covers this (special category data), but enforcement is minimal. We need:
+
 - Clear prohibition on using accessibility features for tracking
 - Mandatory disclosure if detected and stored
 - Penalties for discriminatory use

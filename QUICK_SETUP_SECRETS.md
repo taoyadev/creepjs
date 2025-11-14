@@ -7,6 +7,7 @@ Follow these steps to add GitHub Secrets for automated Cloudflare deployment.
 Open: `https://github.com/taoyadev/creepjs/settings/secrets/actions`
 
 Or manually:
+
 1. Go to https://github.com/taoyadev/creepjs
 2. Click **Settings** (top menu)
 3. Sidebar: **Secrets and variables** → **Actions**
@@ -18,9 +19,11 @@ Or manually:
 1. Click **New repository secret**
 2. **Name:** `CLOUDFLARE_API_TOKEN`
 3. **Secret:**
+
 ```
 kbjmXswH0vV9zMs1uuYSepwH1RAWWJsqgenjAtt8
 ```
+
 4. Click **Add secret**
 
 ---
@@ -30,9 +33,11 @@ kbjmXswH0vV9zMs1uuYSepwH1RAWWJsqgenjAtt8
 1. Click **New repository secret**
 2. **Name:** `CLOUDFLARE_ACCOUNT_ID`
 3. **Secret:**
+
 ```
 fe394f7c37b25babc4e351d704a6a97c
 ```
+
 4. Click **Add secret**
 
 ---
@@ -71,6 +76,7 @@ git push origin main
 ```
 
 This will automatically trigger both:
+
 - Web deployment (deploy-web.yml)
 - API deployment (deploy-api.yml)
 
@@ -94,10 +100,12 @@ npx wrangler secret list
 ## 6. Monitor Deployment
 
 ### GitHub Actions
+
 - View logs: https://github.com/taoyadev/creepjs/actions
 - Check for green checkmarks ✓
 
 ### Cloudflare Dashboard
+
 - Pages: https://dash.cloudflare.com → Workers & Pages → Pages
 - Workers: https://dash.cloudflare.com → Workers & Pages → Overview
 
@@ -108,6 +116,7 @@ npx wrangler secret list
 After first deployment, you can add:
 
 #### TEST_API_TOKEN (for API health checks)
+
 ```bash
 # Generate test token after API is deployed:
 curl "https://api.creepjs.org/v1/token?email=test@creepjs.org"
@@ -116,6 +125,7 @@ curl "https://api.creepjs.org/v1/token?email=test@creepjs.org"
 ```
 
 #### Custom Domain URLs
+
 - `CLOUDFLARE_API_URL` = `https://api.creepjs.org` (if using custom domain)
 - `CLOUDFLARE_WEB_URL` = `https://creepjs.org` (if using custom domain)
 
@@ -133,6 +143,7 @@ See detailed troubleshooting in `GITHUB_ACTIONS_SETUP.md`
 ## Summary
 
 **Required Actions:**
+
 - ✅ Add 2 GitHub Secrets (CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID)
 - ✅ Set 1 Cloudflare Workers Secret (IPINFO_TOKEN via Wrangler CLI)
 - ✅ Verify Cloudflare Pages project `creepjs-web` exists
@@ -142,6 +153,7 @@ See detailed troubleshooting in `GITHUB_ACTIONS_SETUP.md`
 **Time Estimate:** 5-10 minutes setup + 15-20 minutes first deployment
 
 **Expected Result:**
+
 - Web app deployed to Cloudflare Pages
 - API deployed to Cloudflare Workers
 - All health checks passing

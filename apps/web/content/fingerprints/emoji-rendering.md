@@ -10,7 +10,7 @@ Emoji rendering fingerprinting uses CSS and JavaScript to measure how emojis are
 
 - **Operating System**: Windows uses Segoe UI Emoji, macOS uses Apple Color Emoji, Linux uses various fonts
 - **OS Version**: Windows 10 vs 11 have different emoji styles (flat vs 3D)
-- **Browser**: Chrome, Firefox, Safari render emojis differently  
+- **Browser**: Chrome, Firefox, Safari render emojis differently
 - **Font Installation**: Installed emoji fonts (Noto Color Emoji, Twemoji, etc.)
 
 ## How It Works
@@ -20,7 +20,7 @@ function getEmojiFingerprint() {
   const testEmojis = ['😀', '🎨', '🔒', '🏴', '👨‍👩‍👧‍👦', '🇺🇸'];
   const measurements = [];
 
-  testEmojis.forEach(emoji => {
+  testEmojis.forEach((emoji) => {
     const span = document.createElement('span');
     span.textContent = emoji;
     span.style.cssText = 'position:absolute;left:-9999px;font-size:100px;';
@@ -29,7 +29,7 @@ function getEmojiFingerprint() {
     measurements.push({
       emoji,
       width: span.offsetWidth,
-      height: span.offsetHeight
+      height: span.offsetHeight,
     });
 
     document.body.removeChild(span);
@@ -41,21 +41,22 @@ function getEmojiFingerprint() {
 
 ## The Statistics
 
-| OS | Emoji Font | Uniqueness |
-|----|-----------|------------|
-| **Windows 11** | Segoe UI Emoji (3D) | High |
-| **Windows 10** | Segoe UI Emoji (flat) | High |
-| **macOS/iOS** | Apple Color Emoji | High |
-| **Android** | Noto Color Emoji | Medium |
-| **Linux** | Varies (high entropy) | Very High |
+| OS             | Emoji Font            | Uniqueness |
+| -------------- | --------------------- | ---------- |
+| **Windows 11** | Segoe UI Emoji (3D)   | High       |
+| **Windows 10** | Segoe UI Emoji (flat) | High       |
+| **macOS/iOS**  | Apple Color Emoji     | High       |
+| **Android**    | Noto Color Emoji      | Medium     |
+| **Linux**      | Varies (high entropy) | Very High  |
 
 ## What Nobody Tells You
 
 ### The OS Version Detective
 
 Emoji rendering can pinpoint your exact OS version:
+
 - Windows 10 → Flat 2D emojis
-- Windows 11 → 3D Fluent emojis  
+- Windows 11 → 3D Fluent emojis
 - macOS 13 vs 14 → Different emoji designs
 
 This is more precise than User-Agent strings, which can be spoofed.
@@ -63,6 +64,7 @@ This is more precise than User-Agent strings, which can be spoofed.
 ### Compound Emojis Are Goldmines
 
 Complex emojis like 👨‍👩‍👧‍👦 (family) or 🏳️‍🌈 (pride flag) are composed of multiple Unicode characters with zero-width joiners. How these render varies enormously:
+
 - Some systems show a single combined emoji
 - Others show individual components
 - Dimension measurements are wildly different
@@ -70,18 +72,19 @@ Complex emojis like 👨‍👩‍👧‍👦 (family) or 🏳️‍🌈 (pride 
 ### The Flag Emoji Trick
 
 Flag emojis (🇺🇸🇬🇧🇯🇵) are especially identifying because:
+
 - Not all systems support all flags
 - Regional indicator symbols behave differently
 - Political flags (🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scotland) have limited support
 
 ## Browser Differences
 
-| Browser | Uses | Privacy Protection |
-|---------|------|-------------------|
-| **Chrome** | System emoji font | None |
+| Browser     | Uses              | Privacy Protection      |
+| ----------- | ----------------- | ----------------------- |
+| **Chrome**  | System emoji font | None                    |
 | **Firefox** | System emoji font | Can be limited with RFP |
-| **Safari** | Apple Color Emoji | Limited (Apple devices) |
-| **Brave** | Randomization | Good |
+| **Safari**  | Apple Color Emoji | Limited (Apple devices) |
+| **Brave**   | Randomization     | Good                    |
 
 ## Protection
 

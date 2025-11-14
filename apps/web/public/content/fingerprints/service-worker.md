@@ -9,6 +9,7 @@ I'm talking about a technology that's present in roughly 87% of all browsers wor
 Think of Service Workers as tiny programs that run in the background of your browser, separate from the web page itself. They're the magic behind Progressive Web Apps (PWAs)—those web apps that feel almost like native apps.
 
 Here's what Service Workers do:
+
 - **Cache files** so websites load instantly on repeat visits
 - **Work offline** by serving cached content when you lose connection
 - **Handle push notifications** even when the website isn't open
@@ -43,6 +44,7 @@ if ('serviceWorker' in navigator) {
 ```
 
 The exact combination of supported features is like a browser's fingerprint. For example:
+
 - **Chrome 120** supports all features
 - **Firefox 120** missing Background Fetch and Content Index
 - **Safari 17** has limited Push support, no Background Sync
@@ -54,17 +56,17 @@ Different browsers handle Service Worker registration at different speeds:
 
 ```javascript
 const start = performance.now();
-navigator.serviceWorker.register('/sw.js')
-  .then(() => {
-    const duration = performance.now() - start;
-    // Chrome: typically 20-40ms
-    // Firefox: typically 30-60ms
-    // Safari: typically 40-80ms
-    // Timing patterns are distinctive per browser engine
-  });
+navigator.serviceWorker.register('/sw.js').then(() => {
+  const duration = performance.now() - start;
+  // Chrome: typically 20-40ms
+  // Firefox: typically 30-60ms
+  // Safari: typically 40-80ms
+  // Timing patterns are distinctive per browser engine
+});
 ```
 
 These timing differences come from:
+
 - JavaScript engine speed (V8 vs SpiderMonkey vs JavaScriptCore)
 - Worker thread creation overhead
 - Security checks and validation
@@ -114,16 +116,16 @@ How browsers handle Service Worker updates creates distinctive patterns:
 
 Let me show you the current state of Service Worker technology:
 
-| Metric | Value | Source | Year |
-|--------|-------|--------|------|
-| **Browsers supporting Service Workers** | ~87% of all internet users | Web Almanac / PWA Stats | 2024 |
-| **Top 1,000 sites using Service Workers** | 8.55% | HTTP Archive | 2024 |
-| **Top 10,000 sites using Service Workers** | 7.75% | HTTP Archive | 2024 |
-| **All websites using Service Workers** | 1.22% | HTTP Archive | 2024 |
-| **PWA market size 2024** | $2.08 billion USD | Market Research | 2024 |
-| **Projected PWA market 2033** | $21.24 billion USD | Grand View Research | 2025 |
-| **PWA market CAGR 2025-2033** | 29.9% | Research Forecast | 2025 |
-| **Desktop PWA installs increase (2021-2024)** | +400% | Industry Analysis | 2024 |
+| Metric                                        | Value                      | Source                  | Year |
+| --------------------------------------------- | -------------------------- | ----------------------- | ---- |
+| **Browsers supporting Service Workers**       | ~87% of all internet users | Web Almanac / PWA Stats | 2024 |
+| **Top 1,000 sites using Service Workers**     | 8.55%                      | HTTP Archive            | 2024 |
+| **Top 10,000 sites using Service Workers**    | 7.75%                      | HTTP Archive            | 2024 |
+| **All websites using Service Workers**        | 1.22%                      | HTTP Archive            | 2024 |
+| **PWA market size 2024**                      | $2.08 billion USD          | Market Research         | 2024 |
+| **Projected PWA market 2033**                 | $21.24 billion USD         | Grand View Research     | 2025 |
+| **PWA market CAGR 2025-2033**                 | 29.9%                      | Research Forecast       | 2025 |
+| **Desktop PWA installs increase (2021-2024)** | +400%                      | Industry Analysis       | 2024 |
 
 Here's what's especially interesting: While only 1.22% of all websites use Service Workers, the technology is heavily concentrated among high-traffic sites. The top 1,000 sites use them at 8.55%—that's 7x higher than the overall average. This means if you're browsing popular sites, you're encountering Service Workers constantly.
 
@@ -131,24 +133,24 @@ Here's what's especially interesting: While only 1.22% of all websites use Servi
 
 Different browsers have wildly different Service Worker implementations:
 
-| Browser | Service Worker Support | Key Features | Fingerprint Distinctiveness | Notes |
-|---------|----------------------|--------------|---------------------------|-------|
-| **Chrome (Desktop)** | ✅ Full | All features, Background Sync, Content Index | 🟡 Medium | Most features, most common |
-| **Chrome (Mobile)** | ✅ Full | All features, aggressive caching | 🟡 Medium | Similar to desktop |
-| **Firefox (Desktop)** | ✅ Good | Missing Content Index, Background Fetch | 🟠 High | Unique feature set |
-| **Firefox (Mobile)** | ✅ Good | Same as desktop | 🟠 High | Android only |
-| **Safari (macOS)** | ✅ Good | Limited Push, no Background Sync | 🔴 Very High | Unique limitations |
-| **Safari (iOS)** | ✅ Improving | Push added iOS 16.4+ (2023) | 🔴 Very High | Recent evolution creates version fingerprint |
-| **Edge** | ✅ Full | Same as Chrome (Chromium-based) | 🟡 Medium | Hard to distinguish from Chrome |
-| **Brave** | ✅ Full | Privacy protections may limit functionality | 🟠 High | Privacy features are distinctive |
-| **Opera** | ✅ Full | Same as Chrome base | 🟡 Medium | Similar to Chrome/Edge |
-| **Samsung Internet** | ✅ Good | Mobile-optimized | 🟠 High | Mobile-specific fingerprint |
+| Browser               | Service Worker Support | Key Features                                 | Fingerprint Distinctiveness | Notes                                        |
+| --------------------- | ---------------------- | -------------------------------------------- | --------------------------- | -------------------------------------------- |
+| **Chrome (Desktop)**  | ✅ Full                | All features, Background Sync, Content Index | 🟡 Medium                   | Most features, most common                   |
+| **Chrome (Mobile)**   | ✅ Full                | All features, aggressive caching             | 🟡 Medium                   | Similar to desktop                           |
+| **Firefox (Desktop)** | ✅ Good                | Missing Content Index, Background Fetch      | 🟠 High                     | Unique feature set                           |
+| **Firefox (Mobile)**  | ✅ Good                | Same as desktop                              | 🟠 High                     | Android only                                 |
+| **Safari (macOS)**    | ✅ Good                | Limited Push, no Background Sync             | 🔴 Very High                | Unique limitations                           |
+| **Safari (iOS)**      | ✅ Improving           | Push added iOS 16.4+ (2023)                  | 🔴 Very High                | Recent evolution creates version fingerprint |
+| **Edge**              | ✅ Full                | Same as Chrome (Chromium-based)              | 🟡 Medium                   | Hard to distinguish from Chrome              |
+| **Brave**             | ✅ Full                | Privacy protections may limit functionality  | 🟠 High                     | Privacy features are distinctive             |
+| **Opera**             | ✅ Full                | Same as Chrome base                          | 🟡 Medium                   | Similar to Chrome/Edge                       |
+| **Samsung Internet**  | ✅ Good                | Mobile-optimized                             | 🟠 High                     | Mobile-specific fingerprint                  |
 
 **Key Takeaways:**
 
 - **Safari stands out** because of iOS restrictions that existed until 2023. Even post-2023, iOS versions are highly identifiable by exact feature support.
 
-- **Firefox is distinctive** by what it *doesn't* support. Missing Chrome-specific APIs is a strong signal.
+- **Firefox is distinctive** by what it _doesn't_ support. Missing Chrome-specific APIs is a strong signal.
 
 - **Chrome/Edge/Opera** are hard to distinguish because they share the same Chromium base, but subtle timing and configuration differences exist.
 
@@ -161,10 +163,11 @@ Here are the insider details most articles skip:
 ### 1. Service Workers Persist Across Private Browsing
 
 This is controversial. In most browsers:
+
 - **Regular browsing**: Service Workers persist indefinitely
 - **Incognito/Private mode**: Service Workers work during the session but get cleared afterward
 
-However, the *fact* that Service Workers work in Private mode (or don't, in Safari's case) is itself fingerprintable. You're revealing which browser mode you're in.
+However, the _fact_ that Service Workers work in Private mode (or don't, in Safari's case) is itself fingerprintable. You're revealing which browser mode you're in.
 
 ### 2. The iOS Situation Is Complicated
 
@@ -178,6 +181,7 @@ This means your exact iOS version is identifiable through Service Worker feature
 ### 3. Corporate Environments Restrict Service Workers
 
 Many corporate IT departments disable or restrict Service Workers for security reasons (they can be used maliciously for persistence). If your browser reports that Service Workers are unavailable despite being in a modern browser, it strongly suggests:
+
 - Corporate network
 - Enterprise-managed device
 - Security software interference
@@ -188,6 +192,7 @@ This is highly identifying information.
 ### 4. PWA Installation Reveals User Behavior
 
 When you "install" a PWA (add it to your home screen), Service Worker behavior changes:
+
 - Installed PWAs get priority
 - Update frequency may change
 - Permissions are often pre-granted
@@ -198,6 +203,7 @@ Fingerprinting scripts can detect if you have any PWAs installed by testing for 
 ### 5. Update Intervals Are Fingerprintable
 
 Browsers check for Service Worker updates at different intervals:
+
 - **Chrome**: Every 24 hours
 - **Firefox**: Varies based on several factors
 - **Safari**: Different algorithm entirely
@@ -241,7 +247,7 @@ Let me show you actual fingerprints from different browsers:
     "backgroundSync": false,
     "backgroundFetch": false,
     "periodicBackgroundSync": false,
-    "push": true,  // Only after iOS 16.4
+    "push": true, // Only after iOS 16.4
     "notifications": true,
     "cacheStorage": true,
     "contentIndex": false
@@ -251,7 +257,7 @@ Let me show you actual fingerprints from different browsers:
   "cacheReadTiming": "2.3ms",
   "updateCheckInterval": "variable",
   "scope": "/",
-  "privateMode": "disabled",  // Service Workers don't work in Safari Private
+  "privateMode": "disabled", // Service Workers don't work in Safari Private
   "fingerprint": "safari-17-ios-17.2"
 }
 ```
@@ -281,6 +287,7 @@ Let me show you actual fingerprints from different browsers:
 ```
 
 **Notice the patterns:**
+
 - Feature availability immediately narrows down browser type
 - Timing characteristics reveal browser engine
 - iOS Safari is extremely distinctive
@@ -344,17 +351,18 @@ Here's how to reduce Service Worker fingerprinting:
 ### Solution 1: Browser Extensions (Limited)
 
 Unfortunately, most privacy extensions don't effectively block Service Worker fingerprinting because:
+
 - Service Workers are considered legitimate functionality
 - Blocking them breaks many websites
 - Feature detection happens through standard JavaScript APIs
 
 That said, these extensions help:
 
-| Extension | Effectiveness | Trade-offs |
-|-----------|--------------|-----------|
-| **uBlock Origin (advanced mode)** | 🟡 Medium | Can block SW registration scripts |
-| **NoScript** | 🟢 High | Blocks JavaScript entirely (breaks sites) |
-| **Privacy Badger** | 🟡 Medium | Blocks third-party SW contexts |
+| Extension                         | Effectiveness | Trade-offs                                |
+| --------------------------------- | ------------- | ----------------------------------------- |
+| **uBlock Origin (advanced mode)** | 🟡 Medium     | Can block SW registration scripts         |
+| **NoScript**                      | 🟢 High       | Blocks JavaScript entirely (breaks sites) |
+| **Privacy Badger**                | 🟡 Medium     | Blocks third-party SW contexts            |
 
 ### Solution 2: Use Browsers with Built-in Protections
 
@@ -380,12 +388,14 @@ This doesn't prevent fingerprinting but breaks tracking continuity:
 ### Solution 4: Disable Service Workers (Nuclear Option)
 
 **Firefox:**
+
 1. Type `about:config`
 2. Search `dom.serviceWorkers.enabled`
 3. Set to `false`
 
 **Chrome/Edge:**
 Via command-line flag:
+
 ```bash
 chrome.exe --disable-service-workers
 ```
@@ -395,6 +405,7 @@ chrome.exe --disable-service-workers
 ### Solution 5: Use Separate Browser Profiles
 
 Instead of blocking Service Workers entirely:
+
 - **Profile 1**: Daily browsing, Service Workers enabled
 - **Profile 2**: Privacy-sensitive browsing, Service Workers disabled
 - **Profile 3**: Work/specific purposes
@@ -420,7 +431,7 @@ Open your browser's console (F12) and run:
       sync: 'SyncManager' in window,
       backgroundFetch: 'BackgroundFetchManager' in window,
       periodicSync: 'PeriodicSyncManager' in window,
-      contentIndex: 'ContentIndex' in window
+      contentIndex: 'ContentIndex' in window,
     });
 
     // Check storage
@@ -438,6 +449,7 @@ Open your browser's console (F12) and run:
 ### Use CreepJS Service Worker Test
 
 Our playground (below) runs comprehensive tests:
+
 - Feature availability matrix
 - Timing measurements
 - Cache performance
@@ -452,6 +464,7 @@ The Service Worker landscape is evolving rapidly:
 ### Trend 1: iOS Catching Up
 
 Apple's addition of Push Notifications in iOS 16.4 (2023) was huge. Expect continued iOS improvements:
+
 - Better Background Sync support
 - Improved PWA integration
 - More feature parity with Android
@@ -459,6 +472,7 @@ Apple's addition of Push Notifications in iOS 16.4 (2023) was huge. Expect conti
 ### Trend 2: Privacy Regulations
 
 GDPR and emerging US privacy laws may require:
+
 - Consent before Service Worker installation
 - Clear disclosure of caching behavior
 - Easy opt-out mechanisms
@@ -466,6 +480,7 @@ GDPR and emerging US privacy laws may require:
 ### Trend 3: Browser Vendors Adding Protections
 
 Following Firefox and Brave's lead:
+
 - Chrome may add Service Worker privacy modes
 - Safari may implement more normalization
 - Cross-browser standards for privacy controls
@@ -473,6 +488,7 @@ Following Firefox and Brave's lead:
 ### Trend 4: PWA Explosion
 
 Market projections show PWAs growing from $2B (2024) to $21B (2033):
+
 - More sites will use Service Workers
 - Better development tools
 - Improved user experiences
@@ -484,7 +500,7 @@ Market projections show PWAs growing from $2B (2024) to $21B (2033):
 A: Not really. PWAs fundamentally require Service Workers, which are fingerprintable. But you can reduce tracking by clearing cache regularly.
 
 **Q: Do Service Workers track me across different websites?**
-A: Service Workers are origin-specific (one per domain). But your Service Worker *fingerprint* (what features you support) follows you everywhere.
+A: Service Workers are origin-specific (one per domain). But your Service Worker _fingerprint_ (what features you support) follows you everywhere.
 
 **Q: Does Private/Incognito mode protect against Service Worker fingerprinting?**
 A: Partially. Service Workers still work (except Safari), but they're cleared when you close the session. The fingerprint itself is still detectable during the session.
@@ -509,6 +525,7 @@ Here's what you need to remember about Service Worker fingerprinting:
 5. **It's getting bigger**: PWA adoption is exploding (29.9% annual growth)
 
 For most people, I recommend:
+
 - Use **Firefox with Enhanced Tracking Protection** (good privacy/functionality balance)
 - Clear cache monthly (Settings → Privacy → Clear Data)
 - Don't worry too much about Service Worker fingerprinting specifically—focus on blocking third-party cookies and trackers
@@ -522,4 +539,4 @@ Want to see your exact Service Worker fingerprint? Run our comprehensive test be
 
 ---
 
-*Last Updated: January 2025 | Data sources: HTTP Archive Web Almanac 2024, Grand View Research PWA Market Report, W3C Service Worker Specification, Browser Vendor Documentation, CreepJS Research*
+_Last Updated: January 2025 | Data sources: HTTP Archive Web Almanac 2024, Grand View Research PWA Market Report, W3C Service Worker Specification, Browser Vendor Documentation, CreepJS Research_

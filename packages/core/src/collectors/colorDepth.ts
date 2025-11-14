@@ -7,5 +7,7 @@ export function collectColorDepth(): number | undefined {
   }
 
   const depth = window.screen.colorDepth ?? window.screen.pixelDepth;
-  return typeof depth === 'number' && Number.isFinite(depth) ? depth : undefined;
+  return typeof depth === 'number' && Number.isFinite(depth)
+    ? depth
+    : undefined;
 }

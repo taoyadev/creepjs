@@ -15,9 +15,10 @@ This test returns `true` exclusively on Safari 14.1 and later versions running o
 ```javascript
 const pcmFingerprint = {
   hasAttributionSourceId: 'attributionSourceId' in HTMLAnchorElement.prototype,
-  hasAttributionDestination: 'attributionDestination' in HTMLAnchorElement.prototype,
+  hasAttributionDestination:
+    'attributionDestination' in HTMLAnchorElement.prototype,
   hasAttributeOn: 'attributeon' in HTMLAnchorElement.prototype,
-  isSafari: supportsPCM // Binary Safari indicator
+  isSafari: supportsPCM, // Binary Safari indicator
 };
 ```
 
@@ -29,7 +30,7 @@ const safariIndicators = {
   applePayJS: 'ApplePaySession' in window,
   webkit: 'webkit' in window || 'webkitRequestAnimationFrame' in window,
   touchBar: 'TouchBar' in window,
-  safariExtension: 'safari' in window && 'extension' in window.safari
+  safariExtension: 'safari' in window && 'extension' in window.safari,
 };
 ```
 
@@ -40,11 +41,13 @@ This multi-factor detection creates a high-confidence Safari identification syst
 Private Click Measurement support is exclusively limited to Apple's WebKit browser engine:
 
 **Safari 14.1+** (April 2021 and later):
+
 - macOS Big Sur (11.3+) and later
 - iOS 14.5+ and iPadOS 14.5+
 - Safari Technology Preview
 
 **Other Browsers**:
+
 - Chrome/Chromium: Not supported
 - Firefox: Not supported (Mozilla explicitly rejected implementation)
 - Edge: Not supported
@@ -52,6 +55,7 @@ Private Click Measurement support is exclusively limited to Apple's WebKit brows
 - Brave: Not supported (uses Chromium engine)
 
 According to browser market share statistics for 2024-2025:
+
 - Safari represents approximately 15-20% of global browser market share
 - iOS Safari dominates mobile browsing in North America (50-60%)
 - macOS Safari accounts for 10-15% of desktop browsers
@@ -64,6 +68,7 @@ This distribution creates a substantial fingerprinting opportunity, as PCM detec
 Understanding PCM's intended purpose reveals why its detection enables fingerprinting. Apple introduced Private Click Measurement as a privacy-preserving ad attribution system that allows advertisers to measure campaign effectiveness without persistent cross-site tracking.
 
 **Core Privacy Features**:
+
 - Randomized 24-48 hour delay before attribution reports
 - Limited data transfer: 8-bit source ID (256 campaigns) and 4-bit conversion ID (16 values)
 - Maximum 7-day attribution window
@@ -110,9 +115,10 @@ const appleEcosystemFingerprint = {
   pcm: 'attributionSourceId' in HTMLAnchorElement.prototype,
   applePay: typeof ApplePaySession !== 'undefined',
   webkit: navigator.vendor === 'Apple Computer, Inc.',
-  platform: navigator.platform.includes('Mac') || navigator.platform.includes('iPhone'),
+  platform:
+    navigator.platform.includes('Mac') || navigator.platform.includes('iPhone'),
   touchSupport: 'ontouchstart' in window,
-  accelerometer: 'DeviceMotionEvent' in window
+  accelerometer: 'DeviceMotionEvent' in window,
 };
 ```
 
@@ -139,10 +145,12 @@ Major analytics services (Google Analytics, Adobe Analytics, Mixpanel) can infer
 From an information theory perspective, PCM detection contributes meaningful entropy to browser fingerprints:
 
 **Baseline Entropy**:
+
 - Safari market share: 15-20%
 - Entropy contribution: -log2(0.15 to 0.20) = 2.3 to 2.7 bits
 
 **Conditional Entropy** (given other signals):
+
 - Safari on macOS: 10% of desktop traffic → 3.3 bits
 - Safari on iOS: 50% of mobile traffic (US) → 1.0 bits
 - Safari with Apple Pay support: 8% of all traffic → 3.6 bits
@@ -184,7 +192,7 @@ delete HTMLAnchorElement.prototype.attributeOn;
 // Override property detection
 Object.defineProperty(HTMLAnchorElement.prototype, 'attributionSourceId', {
   get: undefined,
-  configurable: false
+  configurable: false,
 });
 ```
 
@@ -193,6 +201,7 @@ However, this approach breaks legitimate PCM functionality and may create detect
 **Realistic Defense Strategy**:
 
 For most users, accepting PCM-based fingerprinting is the practical choice, as:
+
 - Safari's anti-tracking features (ITP, bounce tracking protection) outweigh PCM fingerprinting risks
 - Switching browsers sacrifices Apple ecosystem integration
 - PCM tracking requires sophisticated adversaries (not typical ad networks)
@@ -207,6 +216,7 @@ Apple's developer guidelines explicitly prohibit fingerprinting, creating a cont
 "Apps may not use or transmit a user's data without first obtaining the user's permission and providing the user with access to information about how and where the data will be used."
 
 **Safari Anti-Fingerprinting Measures**:
+
 - Intelligent Tracking Prevention (ITP) blocks third-party cookies
 - User agent freezing to reduce version entropy
 - Canvas fingerprinting detection and blocking
