@@ -35,7 +35,10 @@ export function collectDomBlockersFingerprint(): DomBlockerFingerprint | undefin
       element.clientHeight === 0 ||
       element.clientWidth === 0
     ) {
-      detected.push(CLASS_NAMES[index]);
+      const className = CLASS_NAMES[index];
+      if (className) {
+        detected.push(className);
+      }
     }
   });
 
