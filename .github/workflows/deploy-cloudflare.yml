@@ -46,7 +46,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: Build Next.js app (with transpilePackages)
+      - name: Build dependency packages
+        run: |
+          pnpm --filter @creepjs/core build
+          pnpm --filter @creepjs/sdk build
+
+      - name: Build Next.js app
         run: pnpm --filter @creepjs/web build
         env:
           NEXT_PUBLIC_API_BASE: ${{ secrets.CLOUDFLARE_API_URL }}
