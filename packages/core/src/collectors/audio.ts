@@ -56,7 +56,7 @@ export function collectAudioFingerprint():
             analyser.disconnect();
             oscillator.disconnect();
             void context.close();
-          } catch (_cleanupError) {
+          } catch {
             // Ignore cleanup errors
           }
           resolve(undefined);
@@ -78,7 +78,7 @@ export function collectAudioFingerprint():
           analyser.disconnect();
           oscillator.disconnect();
           void context.close();
-        } catch (_cleanupError) {
+        } catch {
           // Ignore cleanup errors
         }
 

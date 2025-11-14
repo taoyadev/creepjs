@@ -6,5 +6,8 @@ export function collectOpenDatabaseSupport(): boolean | undefined {
     return undefined;
   }
 
-  return typeof (window as any).openDatabase === 'function';
+  return (
+    typeof (window as Window & { openDatabase?: unknown }).openDatabase ===
+    'function'
+  );
 }

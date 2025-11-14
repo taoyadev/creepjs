@@ -526,6 +526,8 @@ Discover:
 - Whether your VPN is being bypassed
 - Real-time geolocation inference
 
+**Additional Tool**: Check your current timezone details at [What Is My Timezone](https://whatismytimezone.app/) - a helpful resource for understanding your timezone configuration.
+
 ---
 
 **Last Updated**: November 2025 | **Word Count**: 3,156 words

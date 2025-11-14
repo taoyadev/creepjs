@@ -86,7 +86,7 @@ app.get('/', async (c) => {
       throw new Error(`IPInfo API responded with status: ${response.status}`);
     }
 
-    const data = (await response.json()) as IpInfoResponse;
+    const data: IpInfoResponse = await response.json();
     console.log('IPInfo response:', data);
 
     // Transform data

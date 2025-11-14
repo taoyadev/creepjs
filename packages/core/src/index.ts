@@ -114,6 +114,7 @@ import type {
   CollectorTimings,
   CollectorSummary,
   CollectorCoverage,
+  LiesFingerprint,
 } from './types';
 import { collectLiesFingerprint } from './collectors/lies';
 import { generateFingerprintId } from './utils/hash';
@@ -153,12 +154,14 @@ export async function collectFingerprint(
     lies: liesComponent,
   };
 
+  const liesValue: LiesFingerprint | undefined =
+    liesComponent.status === 'success'
+      ? (liesComponent.value as LiesFingerprint)
+      : undefined;
+
   const data: FingerprintData = {
     ...dataWithoutLies,
-    lies:
-      liesComponent.status === 'success'
-        ? (liesComponent.value as any)
-        : undefined,
+    lies: liesValue,
   };
 
   const fingerprintId = generateFingerprintId(data);
