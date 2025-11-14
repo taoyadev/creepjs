@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
 interface MobileNavProps {
-  currentPage?: 'home' | 'demo' | 'docs' | 'playground';
+  currentPage?: 'home' | 'checker' | 'docs' | 'playground';
 }
 
 export function MobileNav({ currentPage }: MobileNavProps) {
@@ -17,7 +17,7 @@ export function MobileNav({ currentPage }: MobileNavProps) {
 
   const navItems = [
     { href: '/', label: 'Home', icon: Home, page: 'home' },
-    { href: '/demo', label: 'Demo', icon: Fingerprint, page: 'demo' },
+    { href: '/checker', label: 'Checker', icon: Fingerprint, page: 'checker' },
     { href: '/docs', label: 'Docs', icon: FileText, page: 'docs' },
     { href: '/playground', label: 'Playground', icon: Code, page: 'playground' },
   ];

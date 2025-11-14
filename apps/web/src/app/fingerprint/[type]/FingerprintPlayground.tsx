@@ -583,7 +583,7 @@ curl https://creepjs.org/api/fingerprint/${type}`;
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary">
       <nav className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <Link href="/" className="text-2xl font-bold">CreepJS.org</Link>
+          <Link href="/" className="text-2xl font-bold">CreepJS 2.0</Link>
           <div className="flex gap-2">
             <Link href="/"><Button variant="ghost" size="sm">Home</Button></Link>
             <Link href="/docs"><Button variant="ghost" size="sm">Docs</Button></Link>
@@ -796,7 +796,10 @@ curl https://creepjs.org/api/fingerprint/${type}`;
                     },
                     // Style links
                     a: ({ href, children }) => {
-                      const isInternal = href?.startsWith('/');
+                      if (!href) {
+                        return <span className="text-primary">{children}</span>;
+                      }
+                      const isInternal = href.startsWith('/');
                       if (isInternal) {
                         return (
                           <Link href={href} className="text-primary hover:underline">

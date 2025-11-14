@@ -221,9 +221,9 @@ ctx.fillRect(125, 1, 62, 20);
 
 // 4. Draw text with gradient and emoji
 ctx.fillStyle = '#069';
-ctx.fillText('CreepJS.org 🔒', 2, 15);
+ctx.fillText('CreepJS 2.0 🔒', 2, 15);
 ctx.fillStyle = 'rgba(102, 204, 0, 0.7)';
-ctx.fillText('CreepJS.org 🔒', 4, 17);
+ctx.fillText('CreepJS 2.0 🔒', 4, 17);
 
 // 5. Extract the fingerprint
 const dataURL = canvas.toDataURL();

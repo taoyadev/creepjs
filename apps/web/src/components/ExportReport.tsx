@@ -19,7 +19,7 @@ export function ExportReport({ result }: ExportReportProps) {
         metadata: {
           exportDate: new Date().toISOString(),
           version: '1.0.0',
-          source: 'CreepJS.org',
+          source: 'CreepJS 2.0',
         },
         fingerprint: {
           id: result.fingerprintId,
@@ -63,7 +63,7 @@ export function ExportReport({ result }: ExportReportProps) {
         ['', '', ''], // Empty row for readability
         ['Basic Info', 'Fingerprint ID', result.fingerprintId],
         ['Basic Info', 'Timestamp', new Date(result.timestamp).toISOString()],
-        ['Basic Info', 'Confidence', `${(result.confidence * 100).toFixed(2)}%`],
+        ['Basic Info', 'Coverage', `${(result.confidence * 100).toFixed(2)}%`],
         ['', '', ''],
       ];
 
@@ -76,10 +76,13 @@ export function ExportReport({ result }: ExportReportProps) {
 
       // WebGL
       if (result.data.webgl) {
-        rows.push(['WebGL', 'Hash', result.data.webgl.hash || 'N/A']);
         rows.push(['WebGL', 'Vendor', result.data.webgl.vendor || 'N/A']);
         rows.push(['WebGL', 'Renderer', result.data.webgl.renderer || 'N/A']);
-        rows.push(['WebGL', 'Extensions', result.data.webgl.extensions?.length.toString() || '0']);
+        rows.push(['WebGL', 'Version', result.data.webgl.version || 'N/A']);
+        rows.push(['WebGL', 'Shading Language', result.data.webgl.shadingLanguageVersion || 'N/A']);
+        if (result.data.webgl.unmaskedRenderer) {
+          rows.push(['WebGL', 'Unmasked Renderer', result.data.webgl.unmaskedRenderer]);
+        }
         rows.push(['', '', '']);
       }
 
@@ -87,9 +90,16 @@ export function ExportReport({ result }: ExportReportProps) {
       if (result.data.navigator) {
         rows.push(['Navigator', 'User Agent', result.data.navigator.userAgent || 'N/A']);
         rows.push(['Navigator', 'Platform', result.data.navigator.platform || 'N/A']);
-        rows.push(['Navigator', 'Languages', result.data.navigator.languages?.join(', ') || 'N/A']);
-        rows.push(['Navigator', 'Hardware Concurrency', result.data.navigator.hardwareConcurrency?.toString() || 'N/A']);
-        rows.push(['Navigator', 'Max Touch Points', result.data.navigator.maxTouchPoints?.toString() || 'N/A']);
+        rows.push(['Navigator', 'Language', result.data.navigator.language || 'N/A']);
+        if (result.data.languages) {
+          rows.push(['Navigator', 'Languages', result.data.languages.flat().join(', ')]);
+        }
+        if (result.data.hardwareConcurrency) {
+          rows.push(['System', 'Hardware Concurrency', result.data.hardwareConcurrency.toString()]);
+        }
+        if (result.data.touchSupport?.maxTouchPoints) {
+          rows.push(['System', 'Max Touch Points', result.data.touchSupport.maxTouchPoints.toString()]);
+        }
         rows.push(['', '', '']);
       }
 
@@ -104,10 +114,9 @@ export function ExportReport({ result }: ExportReportProps) {
 
       // Fonts
       if (result.data.fonts) {
-        rows.push(['Fonts', 'Hash', result.data.fonts.hash || 'N/A']);
-        rows.push(['Fonts', 'Detected Count', result.data.fonts.fonts?.length.toString() || '0']);
-        if (result.data.fonts.fonts && result.data.fonts.fonts.length > 0) {
-          rows.push(['Fonts', 'Sample (First 10)', result.data.fonts.fonts.slice(0, 10).join(', ')]);
+        rows.push(['Fonts', 'Detected Count', result.data.fonts.count.toString()]);
+        if (result.data.fonts.available && result.data.fonts.available.length > 0) {
+          rows.push(['Fonts', 'Sample (First 10)', result.data.fonts.available.slice(0, 10).join(', ')]);
         }
         rows.push(['', '', '']);
       }
@@ -122,16 +131,16 @@ export function ExportReport({ result }: ExportReportProps) {
       // Timezone
       if (result.data.timezone) {
         rows.push(['Timezone', 'Timezone', result.data.timezone.timezone || 'N/A']);
-        rows.push(['Timezone', 'Offset', result.data.timezone.offset?.toString() || 'N/A']);
+        rows.push(['Timezone', 'Offset', result.data.timezone.timezoneOffset?.toString() || 'N/A']);
+        rows.push(['Timezone', 'Locale', result.data.timezone.locale || 'N/A']);
         rows.push(['', '', '']);
       }
 
       // Media Devices
-      if (result.data.mediaDevices) {
-        rows.push(['Media Devices', 'Hash', result.data.mediaDevices.hash || 'N/A']);
-        rows.push(['Media Devices', 'Audio Inputs', result.data.mediaDevices.devices?.filter((d) => d.kind === 'audioinput').length.toString() || '0']);
-        rows.push(['Media Devices', 'Video Inputs', result.data.mediaDevices.devices?.filter((d) => d.kind === 'videoinput').length.toString() || '0']);
-        rows.push(['Media Devices', 'Audio Outputs', result.data.mediaDevices.devices?.filter((d) => d.kind === 'audiooutput').length.toString() || '0']);
+      if (result.data.media) {
+        rows.push(['Media Devices', 'Audio Inputs', result.data.media.deviceCount.audioInput.toString()]);
+        rows.push(['Media Devices', 'Video Inputs', result.data.media.deviceCount.videoInput.toString()]);
+        rows.push(['Media Devices', 'Audio Outputs', result.data.media.deviceCount.audioOutput.toString()]);
         rows.push(['', '', '']);
       }
 
@@ -149,48 +158,49 @@ export function ExportReport({ result }: ExportReportProps) {
       // CSS
       if (result.data.css) {
         rows.push(['CSS', 'Hash', result.data.css.hash || 'N/A']);
-        rows.push(['CSS', 'System Colors Detected', result.data.css.systemColors ? 'Yes' : 'No']);
+        rows.push(['CSS', 'System Fonts', Object.keys(result.data.css.systemFonts).length.toString()]);
+        rows.push(['CSS', 'Computed Styles', Object.keys(result.data.css.styles).length.toString()]);
         rows.push(['', '', '']);
       }
 
-      // Intl
-      if (result.data.intl) {
-        rows.push(['Intl', 'Hash', result.data.intl.hash || 'N/A']);
-        rows.push(['Intl', 'Locale', result.data.intl.locale || 'N/A']);
-        rows.push(['Intl', 'DateTimeFormat', result.data.intl.dateTimeFormat || 'N/A']);
-        rows.push(['Intl', 'NumberFormat', result.data.intl.numberFormat || 'N/A']);
-        rows.push(['', '', '']);
-      }
-
-      // Headless Detection
-      if (result.data.headless) {
-        rows.push(['Headless Detection', 'Detected', result.data.headless.isHeadless ? 'Yes' : 'No']);
-        rows.push(['Headless Detection', 'Confidence', `${(result.data.headless.confidence * 100).toFixed(2)}%`]);
-        if (result.data.headless.indicators && result.data.headless.indicators.length > 0) {
-          rows.push(['Headless Detection', 'Indicators', result.data.headless.indicators.join(', ')]);
-        }
+      // Date/Time Locale
+      if (result.data.dateTimeLocale && typeof result.data.dateTimeLocale === 'string') {
+        rows.push(['Locale', 'Date/Time Locale', result.data.dateTimeLocale]);
         rows.push(['', '', '']);
       }
 
       // Lies Detection
       if (result.data.lies) {
-        rows.push(['Lies Detection', 'Total Lies', result.data.lies.totalLies?.toString() || '0']);
-        if (result.data.lies.lies && result.data.lies.lies.length > 0) {
-          result.data.lies.lies.forEach((lie, index) => {
-            rows.push(['Lies Detection', `Lie ${index + 1}`, lie]);
+        rows.push(['Lies Detection', 'Total Lies', result.data.lies.liesCount?.toString() || '0']);
+        rows.push(['Lies Detection', 'Trust Score', result.data.lies.trustScore?.toString() || 'N/A']);
+        if (result.data.lies.inconsistencies && result.data.lies.inconsistencies.length > 0) {
+          result.data.lies.inconsistencies.forEach((inconsistency, index) => {
+            rows.push(['Lies Detection', `Issue ${index + 1}`, inconsistency]);
           });
         }
         rows.push(['', '', '']);
       }
 
       // Performance
-      rows.push(['Performance', 'Total Time', `${result.timings.total.toFixed(2)}ms`]);
-      rows.push(['Performance', 'Canvas Time', `${result.timings.canvas.toFixed(2)}ms`]);
-      rows.push(['Performance', 'WebGL Time', `${result.timings.webgl.toFixed(2)}ms`]);
-      rows.push(['Performance', 'Navigator Time', `${result.timings.navigator.toFixed(2)}ms`]);
-      rows.push(['Performance', 'Screen Time', `${result.timings.screen.toFixed(2)}ms`]);
-      rows.push(['Performance', 'Fonts Time', `${result.timings.fonts.toFixed(2)}ms`]);
-      rows.push(['Performance', 'Audio Time', `${result.timings.audio.toFixed(2)}ms`]);
+      rows.push(['Performance', 'Total Time', `${(result.timings.total ?? 0).toFixed(2)}ms`]);
+      if (result.timings.canvas !== undefined) {
+        rows.push(['Performance', 'Canvas Time', `${result.timings.canvas.toFixed(2)}ms`]);
+      }
+      if (result.timings.webgl !== undefined) {
+        rows.push(['Performance', 'WebGL Time', `${result.timings.webgl.toFixed(2)}ms`]);
+      }
+      if (result.timings.navigator !== undefined) {
+        rows.push(['Performance', 'Navigator Time', `${result.timings.navigator.toFixed(2)}ms`]);
+      }
+      if (result.timings.screen !== undefined) {
+        rows.push(['Performance', 'Screen Time', `${result.timings.screen.toFixed(2)}ms`]);
+      }
+      if (result.timings.fonts !== undefined) {
+        rows.push(['Performance', 'Fonts Time', `${result.timings.fonts.toFixed(2)}ms`]);
+      }
+      if (result.timings.audio !== undefined) {
+        rows.push(['Performance', 'Audio Time', `${result.timings.audio.toFixed(2)}ms`]);
+      }
 
       // Convert to CSV string
       const csvContent = rows
@@ -241,7 +251,7 @@ export function ExportReport({ result }: ExportReportProps) {
         metadata: {
           exportDate: new Date().toISOString(),
           version: '1.0.0',
-          source: 'CreepJS.org',
+          source: 'CreepJS 2.0',
           recordCount: history.length,
         },
         history: history,
@@ -356,7 +366,7 @@ export function ExportReport({ result }: ExportReportProps) {
   "metadata": {
     "exportDate": "ISO timestamp",
     "version": "1.0.0",
-    "source": "CreepJS.org"
+    "source": "CreepJS 2.0"
   },
   "fingerprint": {
     "id": "unique fingerprint ID",

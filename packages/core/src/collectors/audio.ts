@@ -25,19 +25,54 @@ export function collectAudioFingerprint(): Promise<AudioFingerprint | undefined>
     scriptProcessor.connect(gainNode);
     gainNode.connect(context.destination);
 
+    // Resume AudioContext if suspended (required for autoplay policy)
+    if (context.state === 'suspended') {
+      void context.resume().catch(() => {
+        // Ignore resume errors
+      });
+    }
+
     oscillator.start(0);
 
     return new Promise((resolve) => {
+      let processed = false;
+
+      // Set timeout to prevent hanging
+      const timeout = setTimeout(() => {
+        if (!processed) {
+          processed = true;
+          try {
+            oscillator.stop();
+            scriptProcessor.disconnect();
+            gainNode.disconnect();
+            analyser.disconnect();
+            oscillator.disconnect();
+            void context.close();
+          } catch (_cleanupError) {
+            // Ignore cleanup errors
+          }
+          resolve(undefined);
+        }
+      }, 1000); // 1 second timeout
+
       scriptProcessor.onaudioprocess = function (event) {
+        if (processed) return;
+        processed = true;
+        clearTimeout(timeout);
+
         const output = event.outputBuffer.getChannelData(0);
         const hash = murmurHash3(output.slice(0, 100).join(','));
 
-        oscillator.stop();
-        scriptProcessor.disconnect();
-        gainNode.disconnect();
-        analyser.disconnect();
-        oscillator.disconnect();
-        void context.close();
+        try {
+          oscillator.stop();
+          scriptProcessor.disconnect();
+          gainNode.disconnect();
+          analyser.disconnect();
+          oscillator.disconnect();
+          void context.close();
+        } catch (_cleanupError) {
+          // Ignore cleanup errors
+        }
 
         resolve({
           hash: String(hash),

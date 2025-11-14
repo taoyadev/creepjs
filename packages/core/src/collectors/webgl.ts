@@ -62,7 +62,8 @@ export function collectWebGLFingerprint(): WebGLFingerprint | undefined {
     for (const [name, enumValue] of paramEntries) {
       try {
         parameters[name] = gl.getParameter(enumValue) as unknown;
-      } catch {
+      } catch (_parameterError) {
+        void _parameterError;
         // Ignore parameter read errors
       }
     }

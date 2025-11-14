@@ -1,4 +1,10 @@
-import type { FingerprintResult, CollectorSummary, CollectorTimings } from '@creepjs/core';
+import type {
+  FingerprintResult,
+  FingerprintData,
+  CollectorSummary,
+  CollectorTimings,
+  CollectorCoverage,
+} from '@creepjs/core';
 import { collectFingerprint } from '@creepjs/core';
 
 export interface SDKConfig {
@@ -10,8 +16,10 @@ export interface SDKConfig {
 
 export interface SDKResponse {
   fingerprintId: string;
+  data: FingerprintData;
   timestamp: number;
   confidence: number;
+  coverage: CollectorCoverage;
   collectors?: Record<string, CollectorSummary>;
   timings?: CollectorTimings;
   cached?: boolean;
@@ -49,17 +57,18 @@ export class CreepJS {
       if (!cached) return null;
 
       const data = JSON.parse(cached) as {
-        fingerprint: SDKResponse;
+        fingerprint: Omit<SDKResponse, 'coverage'> & { coverage?: CollectorCoverage };
         expiry: number;
       };
 
-      if (Date.now() > data.expiry) {
+      if (Date.now() > data.expiry || !data.fingerprint.data) {
         localStorage.removeItem(CACHE_KEY);
         return null;
       }
 
-      return { ...data.fingerprint, cached: true };
-    } catch {
+      return { ...this.ensureCoverage(data.fingerprint), cached: true };
+    } catch (_error) {
+      void _error;
       return null;
     }
   }
@@ -74,11 +83,12 @@ export class CreepJS {
 
     try {
       const data = {
-        fingerprint,
+        fingerprint: this.ensureCoverage(fingerprint),
         expiry: Date.now() + this.config.cacheTtl,
       };
       localStorage.setItem(CACHE_KEY, JSON.stringify(data));
-    } catch {
+    } catch (_error) {
+      void _error;
       // Ignore cache errors
     }
   }
@@ -104,20 +114,24 @@ export class CreepJS {
 
     const result = (await response.json()) as {
       fingerprintId: string;
+      data?: FingerprintData;
       timestamp: number;
       confidence?: number;
+      coverage?: CollectorCoverage;
       collectors?: Record<string, CollectorSummary>;
       timings?: CollectorTimings;
     };
 
-    return {
+    return this.ensureCoverage({
       fingerprintId: result.fingerprintId,
+      data: result.data ?? fingerprintData.data,
       timestamp: result.timestamp,
       confidence: result.confidence ?? fingerprintData.confidence,
+      coverage: result.coverage ?? fingerprintData.coverage,
       collectors: result.collectors ?? fingerprintData.collectors,
       timings: result.timings ?? fingerprintData.timings,
       cached: false,
-    };
+    });
   }
 
   /**
@@ -149,6 +163,21 @@ export class CreepJS {
     if (typeof localStorage !== 'undefined') {
       localStorage.removeItem(CACHE_KEY);
     }
+  }
+
+  private ensureCoverage(
+    response: Omit<SDKResponse, 'coverage'> & { coverage?: CollectorCoverage }
+  ): SDKResponse {
+    return {
+      ...response,
+      coverage:
+        response.coverage ?? {
+          ratio: response.confidence,
+          successful: 0,
+          failed: 0,
+          skipped: 0,
+        },
+    };
   }
 }
 

@@ -11,17 +11,12 @@ Development: http://localhost:8787
 
 **Optional Fields (Advanced Collectors)**:
 
-- `domBlockers.detected: string[]`
-- `fontPreferences.serif|sansSerif|monospace: string`
-- `colorGamut`: `srgb | p3 | rec2020`
-- `contrast`: `more | less | custom | no-preference`
-- `forcedColors.active: boolean`
-- `monochrome: number`
-- `reducedMotion`: `reduce | no-preference`
-- `reducedTransparency`: `reduce | no-preference`
-- `hdr`: `high | standard`
-- `audioBaseLatency.{supported,baseLatency,outputLatency,sampleRate}`
-- `applePay.{isSupported,canMakePayments,supportedVersions}`
+- Graphics: `canvas`, `webgl`, `svg`, `domRect`, `textMetrics`
+- Locale: `languages`, `timezone`, `dateTimeLocale`, `relativeTimeFormat`, `displayNames`
+- Hardware/Env: `screenFrame`, `screenResolution`, `colorDepth`, `audio`, `webrtc`, `serviceWorker`, `media`
+- Platform/Storage: `localStorage`, `sessionStorage`, `indexedDB`, `openDatabase`, `cookiesEnabled`, `plugins`, `applePay`, `privateClickMeasurement`
+- Accessibility: `reducedMotion`, `reducedTransparency`, `forcedColors`, `HDR`, `contrast`, `invertedColors`
+- Integrity: `resistance`, `lies`, `consoleErrors`, `contentWindow`
 
 ### Authentication
 
@@ -80,62 +75,38 @@ Content-Type: application/json
 X-API-Token: cfp_your_token_here
 ```
 
-**Body**:
-```typescript
+**Body** (produced by `@creepjs/core.collectFingerprint()`):
+
+```jsonc
 {
-  "components": {
-    "canvas"?: string,           // Canvas fingerprint (DataURL)
-    "webgl"?: WebGLInfo,         // WebGL information
-    "navigator"?: NavigatorInfo, // Navigator properties
-    "screen"?: ScreenInfo,       // Screen information
-    "fonts"?: string[]           // Installed fonts list
+  "fingerprintId": "fpr_123",
+  "data": {
+    "canvas": { "hash": "hash", "dataURL": "data:,..." },
+    "screen": {
+      "width": 1920,
+      "height": 1080,
+      "screenFrame": { "top": 0, "right": 0, "bottom": 40, "left": 0 }
+    },
+    "plugins": [
+      { "name": "PDF Viewer", "description": "", "mimeTypes": [{ "type": "application/pdf", "suffixes": "pdf" }] }
+    ],
+    "serviceWorker": { "supported": true, "controller": false, "ready": false, "hash": "...", "features": { ... } }
   },
-  "metadata"?: {
-    "timestamp"?: number,        // Client timestamp
-    "userAgent"?: string         // User Agent
+  "timestamp": 1700000000000,
+  "confidence": 0.92,
+  "collectors": {
+    "canvas": { "status": "success", "duration": 4.12 },
+    "audioBaseLatency": { "status": "error", "duration": 1.05, "error": "AudioContext not supported" }
+  },
+  "timings": {
+    "canvas": 4.12,
+    "audioBaseLatency": 1.05,
+    "total": 57.81
   }
 }
 ```
 
-**TypeScript Type Definitions**:
-
-```typescript
-interface FingerprintRequest {
-  components: {
-    canvas?: string;
-    webgl?: {
-      vendor: string;
-      renderer: string;
-      version: string;
-      shadingLanguageVersion: string;
-      unmaskedVendor?: string;
-      unmaskedRenderer?: string;
-    };
-    navigator?: {
-      userAgent: string;
-      language: string;
-      languages: string[];
-      platform: string;
-      hardwareConcurrency?: number;
-      deviceMemory?: number;
-      maxTouchPoints?: number;
-    };
-    screen?: {
-      width: number;
-      height: number;
-      availWidth: number;
-      availHeight: number;
-      colorDepth: number;
-      pixelDepth: number;
-    };
-    fonts?: string[];
-  };
-  metadata?: {
-    timestamp?: number;
-    userAgent?: string;
-  };
-}
-```
+> 💡 The request body mirrors the `FingerprintResult` returned by the SDK/core package to guarantee end-to-end parity.
 
 #### Response
 
@@ -144,6 +115,12 @@ interface FingerprintRequest {
 ```json
 {
   "fingerprintId": "3mK9vN2Lx8pQ",
+  "data": {
+    "canvas": { "hash": "hash" },
+    "screenFrame": { "top": 0, "right": 0, "bottom": 32, "left": 0 },
+    "plugins": [],
+    "lies": { "hash": "...", "liesCount": 0, "trustScore": 100, "lies": {}, "inconsistencies": [] }
+  },
   "confidence": 0.95,
   "timestamp": 1704816000000,
   "collectors": {
@@ -165,7 +142,8 @@ interface FingerprintRequest {
 | Field | Type | Description |
 |-------|------|-------------|
 | `fingerprintId` | string | Unique fingerprint ID (12-16 characters) |
-| `confidence` | number | Confidence score (0-1), representing successful collection ratio |
+| `data` | object | Full `FingerprintData` map (40+ optional collectors) |
+| `confidence` | number | Coverage ratio (0-1), representing the share of collectors that succeeded |
 | `timestamp` | number | Server timestamp (milliseconds) |
 | `collectors` | object | Each collector's `status/duration/value/error` for UI transparency |
 | `timings` | object | Collector execution times (ms), includes `total` |
@@ -286,7 +264,7 @@ Generate a new API Token for authentication.
 
 **Example**:
 ```http
-GET /v1/token?email=user@example.com
+GET /v1/token?email=hello@creepjs.org
 ```
 
 #### Response
@@ -330,12 +308,12 @@ GET /v1/token?email=user@example.com
 
 **cURL**:
 ```bash
-curl -X GET "https://api.creepjs.org/v1/token?email=user@example.com"
+curl -X GET "https://api.creepjs.org/v1/token?email=hello@creepjs.org"
 ```
 
 **JavaScript**:
 ```javascript
-const email = 'user@example.com';
+const email = 'hello@creepjs.org';
 const response = await fetch(`https://api.creepjs.org/v1/token?email=${encodeURIComponent(email)}`);
 const data = await response.json();
 console.log(data.token); // "cfp_a1b2c3d4e5f6g7h8"
@@ -618,4 +596,4 @@ For specific compliance requirements, please consult legal counsel.
 
 - **Documentation**: https://creepjs.org/docs
 - **GitHub**: https://github.com/taoyadev/creepjs/issues
-- **Email**: support@creepjs.org
+- **Email**: hello@creepjs.org

@@ -24,7 +24,7 @@ I don't need cookies to track you. That combination is probably unique among mil
 
 ## The 21 Fingerprinting Techniques
 
-CreepJS.org documents **21 different browser fingerprinting techniques** used by websites today. Each technique exploits different aspects of your browser and system:
+CreepJS 2.0 documents **21 different browser fingerprinting techniques** used by websites today. Each technique exploits different aspects of your browser and system:
 
 ### Graphics-Based Fingerprinting
 
@@ -345,9 +345,9 @@ Some jurisdictions use fingerprinting for:
 
 **Machine Learning**: AI models detect patterns across multiple fingerprinting signals.
 
-## Why CreepJS.org Exists
+## Why CreepJS 2.0 Exists
 
-We created CreepJS.org because **understanding is power**. Most people don't know they're being fingerprinted. They think "private browsing" or "clearing cookies" protects them. It doesn't.
+We created CreepJS 2.0 because **understanding is power**. Most people don't know they're being fingerprinted. They think "private browsing" or "clearing cookies" protects them. It doesn't.
 
 Our mission:
 

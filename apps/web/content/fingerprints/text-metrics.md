@@ -8,7 +8,7 @@ function getTextMetricsFingerprint() {
   const ctx = canvas.getContext('2d');
 
   ctx.font = '14px Arial';
-  const metrics = ctx.measureText('CreepJS.org');
+  const metrics = ctx.measureText('CreepJS 2.0');
 
   return {
     width: metrics.width,

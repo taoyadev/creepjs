@@ -58,7 +58,8 @@ export function collectConsoleErrorsFingerprint(): ConsoleErrorsFingerprint | un
       if (testError.stack) {
         stackDepth = testError.stack.split('\n').length;
       }
-    } catch {
+    } catch (_stackError) {
+      void _stackError;
       // Ignore
     }
 

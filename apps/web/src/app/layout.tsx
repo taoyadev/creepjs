@@ -35,12 +35,17 @@ export default function RootLayout({
             structuredData.webApplication(),
           ]}
         />
-        {/* PWA Manifest */}
-        <link rel="manifest" href="/manifest.json" />
+        {/* Favicons and PWA Manifest */}
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" sizes="any" />
+        <link rel="icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="manifest" href="/site.webmanifest" />
+        <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+        <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="CreepJS" />
+        <meta name="apple-mobile-web-app-title" content="CreepJS 2.0" />
       </head>
       <body className={inter.className}>
         <ThemeProvider>

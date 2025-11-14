@@ -93,9 +93,9 @@ export default function DocsPage() {
                     </p>
                   </div>
                   <div>
-                    <h4 className="font-semibold mb-1">3. Confidence Scoring</h4>
+                    <h4 className="font-semibold mb-1">3. Coverage Scoring</h4>
                     <p className="text-muted-foreground">
-                      Each fingerprint includes a confidence score (0-1) indicating its reliability and uniqueness. Higher scores mean more distinguishing characteristics were successfully collected, resulting in better identification accuracy.
+                      Each fingerprint includes a coverage ratio (0-1) indicating how many collectors finished successfully. Higher coverage means more browser APIs responded, which gives the fingerprint better stability (but it is not a uniqueness metric).
                     </p>
                   </div>
                 </div>
@@ -225,7 +225,7 @@ const result = await getFingerprint({
 });
 
 console.log('Fingerprint ID:', result.fingerprintId);
-console.log('Confidence:', result.confidence);
+console.log('Coverage:', result.confidence);
 console.log('Uniqueness:', result.uniqueness);
 console.log('Timestamp:', result.timestamp);
 
@@ -718,7 +718,7 @@ Headers:
                 <div>
                   <h4 className="font-semibold mb-2">How do I upgrade my rate limit?</h4>
                   <p className="text-sm text-muted-foreground">
-                    Contact us at contact@creepjs.org to discuss Pro (100K req/day) or Enterprise (unlimited) plans. Enterprise plans include custom SLAs, dedicated support, and advanced analytics features.
+                    Contact us at hello@creepjs.org to discuss Pro (100K req/day) or Enterprise (unlimited) plans. Enterprise plans include custom SLAs, dedicated support, and advanced analytics features.
                   </p>
                 </div>
               </CardContent>

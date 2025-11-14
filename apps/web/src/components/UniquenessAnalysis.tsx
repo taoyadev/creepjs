@@ -37,14 +37,14 @@ export function UniquenessAnalysis({ result }: UniquenessAnalysisProps) {
       // Current fingerprint features
       const currentFeatures: Record<string, string> = {
         canvas: result.data.canvas?.hash || 'none',
-        webgl: result.data.webgl?.hash || 'none',
+        webgl: result.data.webgl?.renderer || 'none',
         navigator: result.data.navigator?.userAgent || 'none',
         screen: `${result.data.screen?.width}x${result.data.screen?.height}` || 'none',
-        fonts: result.data.fonts?.hash || 'none',
+        fonts: String(result.data.fonts?.count || 0),
         timezone: result.data.timezone?.timezone || 'none',
         audio: result.data.audio?.hash || 'none',
         webrtc: result.data.webrtc?.hash || 'none',
-        lies: String(result.data.lies?.totalLies) || '0',
+        lies: String(result.data.lies?.liesCount || 0),
       };
 
       // Store current fingerprint

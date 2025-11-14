@@ -1,7 +1,7 @@
 {
   "name": "creepjs-monorepo",
   "version": "1.0.0",
-  "description": "CreepJS.org - Educational browser fingerprinting platform",
+  "description": "CreepJS 2.0 - Educational browser fingerprinting platform",
   "private": true,
   "scripts": {
     "dev": "turbo run dev",

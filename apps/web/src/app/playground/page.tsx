@@ -11,6 +11,8 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://creepjs-api.yonglivelo.workers.dev';
+
 export default function PlaygroundPage() {
   const [apiToken, setApiToken] = useState('');
   const [email, setEmail] = useState('');
@@ -46,7 +48,7 @@ export default function PlaygroundPage() {
   const generateToken = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/v1/token', {
+      const res = await fetch(`${API_URL}/v1/token`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
@@ -84,7 +86,7 @@ export default function PlaygroundPage() {
 
     setLoading(true);
     try {
-      const res = await fetch('/api/v1/fingerprint', {
+      const res = await fetch(`${API_URL}/v1/fingerprint`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -208,7 +210,7 @@ type FingerprintRequest struct {
     FingerprintID string                 \`json:"fingerprintId"\`
     Data          map[string]interface{} \`json:"data"\`
     Timestamp     int64                  \`json:"timestamp"\`
-    Confidence    float64                \`json:"confidence"\`
+    Coverage      float64                \`json:"confidence"\`
 }
 
 func main() {
@@ -220,7 +222,7 @@ func main() {
         FingerprintID: "abc123...",
         Data:          make(map[string]interface{}),
         Timestamp:     time.Now().UnixMilli(),
-        Confidence:    0.95,
+        Coverage:      0.95,
     }
 
     jsonData, _ := json.Marshal(payload)
@@ -803,7 +805,7 @@ func main() {
               </div>
 
               <div className="border-l-4 border-blue-500 pl-4 py-2">
-                <h4 className="font-semibold mb-1">Low Confidence Scores (below 0.6)</h4>
+                <h4 className="font-semibold mb-1">Low Coverage Scores (below 0.6)</h4>
                 <p className="text-xs text-muted-foreground mb-2">
                   Not enough distinguishing characteristics were collected.
                 </p>
@@ -838,7 +840,7 @@ func main() {
               <ul className="text-xs space-y-1 ml-4 list-disc">
                 <li>Check the <Link href="/docs" className="text-blue-500 underline">full documentation</Link> for detailed API specifications</li>
                 <li>Review the <Link href="/demo" className="text-blue-500 underline">demo page</Link> to see expected fingerprint structure</li>
-                <li>Email us at <a href="mailto:support@creepjs.org" className="text-blue-500 underline">support@creepjs.org</a> with your issue details</li>
+                <li>Email us at <a href="mailto:hello@creepjs.org" className="text-blue-500 underline">hello@creepjs.org</a> with your issue details</li>
                 <li>Include error messages, request/response examples, and your use case for faster resolution</li>
               </ul>
             </div>
@@ -874,7 +876,7 @@ func main() {
             <div className="mt-4 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
               <p className="text-xs flex items-center gap-2">
                 <CheckCircle className="h-4 w-4 text-green-500" />
-                <span><strong>Ready for Production?</strong> Contact us at <a href="mailto:sales@creepjs.org" className="underline">sales@creepjs.org</a> to discuss Pro or Enterprise plans with higher rate limits, SLA guarantees, and dedicated support.</span>
+                <span><strong>Ready for Production?</strong> Contact us at <a href="mailto:hello@creepjs.org" className="underline">hello@creepjs.org</a> to discuss Pro or Enterprise plans with higher rate limits, SLA guarantees, and dedicated support.</span>
               </p>
             </div>
           </CardContent>

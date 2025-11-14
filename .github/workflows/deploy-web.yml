@@ -138,9 +138,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: nextjs-build
-          path: |
-            apps/web/.next
-            apps/web/public
+          path: apps/web/out
           retention-days: 1
 
   deploy-production:
@@ -170,8 +168,8 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: creepjs-web
-          directory: apps/web/.next
+          projectName: creepjs
+          directory: apps/web/out
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
           branch: main
 
@@ -260,8 +258,8 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: creepjs-web
-          directory: apps/web/.next
+          projectName: creepjs
+          directory: apps/web/out
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.head_ref }}
 
@@ -274,7 +272,7 @@ jobs:
         with:
           script: |
             const pr_number = context.payload.pull_request.number;
-            const preview_url = `https://${{ github.head_ref }}.creepjs-web.pages.dev`;
+            const preview_url = `https://${{ github.head_ref }}.creepjs.pages.dev`;
 
             github.rest.issues.createComment({
               issue_number: pr_number,
@@ -298,8 +296,8 @@ jobs:
         uses: treosh/lighthouse-ci-action@v10
         with:
           urls: |
-            https://${{ github.head_ref }}.creepjs-web.pages.dev
-            https://${{ github.head_ref }}.creepjs-web.pages.dev/demo
+            https://${{ github.head_ref }}.creepjs.pages.dev
+            https://${{ github.head_ref }}.creepjs.pages.dev/demo
           configPath: '.github/lighthouserc.json'
           uploadArtifacts: true
           temporaryPublicStorage: true

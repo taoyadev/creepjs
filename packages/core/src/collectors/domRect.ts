@@ -40,7 +40,8 @@ export function collectDomRectFingerprint(): DomRectFingerprint | undefined {
     try {
       const testRect = new DOMRect(0, 0, 100, 100);
       domRectSupport = testRect instanceof DOMRect;
-    } catch {
+    } catch (_domRectError) {
+      void _domRectError;
       domRectSupport = false;
     }
 
@@ -55,7 +56,8 @@ export function collectDomRectFingerprint(): DomRectFingerprint | undefined {
       const rangeRect = range.getBoundingClientRect();
       measurements.push(rangeRect.width, rangeRect.height);
       rangeRectSupport = true;
-    } catch {
+    } catch (_rangeError) {
+      void _rangeError;
       rangeRectSupport = false;
     }
 

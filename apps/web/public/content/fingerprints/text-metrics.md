@@ -4,7 +4,7 @@ Okay, so here's something wild that most people don't know about: every time you
 
 ## What's Really Going On Here?
 
-Think about it this way. When you write the word "CreepJS.org" on a piece of paper, the exact spacing, height, and width of each letter depends on your handwriting, right? Well, browsers do the same thing, except instead of handwriting, they use something called text rendering engines.
+Think about it this way. When you write the word "CreepJS 2.0" on a piece of paper, the exact spacing, height, and width of each letter depends on your handwriting, right? Well, browsers do the same thing, except instead of handwriting, they use something called text rendering engines.
 
 Here's the kicker: **Chrome on Windows renders text differently than Chrome on macOS. And Firefox does it differently from both. And Linux? That's a whole other story.** Each combination of browser, operating system, and graphics card creates slightly different measurements when drawing text on a canvas element.
 
@@ -16,7 +16,7 @@ So how does this become a tracking method? It's actually pretty clever (and hone
 
 Websites can use the Canvas API's `measureText()` function to measure how your browser draws specific text. They'll typically measure things like:
 
-- **Width**: How many pixels wide is "CreepJS.org" in Arial 14px?
+- **Width**: How many pixels wide is "CreepJS 2.0" in Arial 14px?
 - **Ascent**: How far above the baseline do the tall letters go?
 - **Descent**: How far below the baseline do letters like "g" and "y" drop?
 - **Bounding boxes**: The exact rectangle that contains the text
@@ -32,7 +32,7 @@ function getTextMetricsFingerprint() {
   ctx.font = '14px Arial';
 
   // Measure a specific string
-  const metrics = ctx.measureText('CreepJS.org 🔒 Privacy2024');
+  const metrics = ctx.measureText('CreepJS 2.0 🔒 Privacy2024');
 
   return {
     width: metrics.width,
@@ -108,7 +108,7 @@ function getAdvancedTextMetrics() {
   const results = [];
 
   const testStrings = [
-    'CreepJS.org',
+    'CreepJS 2.0',
     '1234567890',
     'The quick brown fox',
     '€£¥₹',

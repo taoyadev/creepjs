@@ -4,9 +4,26 @@ import { createTestEnv, seedToken } from './utils';
 
 const basePayload = {
   fingerprintId: 'fpr_123',
-  data: {},
+  data: {
+    canvas: { hash: 'hash', dataURL: 'data:,' },
+    screen: {
+      width: 1920,
+      height: 1080,
+      availWidth: 1920,
+      availHeight: 1040,
+      colorDepth: 24,
+      pixelDepth: 24,
+      devicePixelRatio: 1,
+    },
+  },
   timestamp: 1700000000000,
   confidence: 0.9,
+  coverage: {
+    ratio: 0.9,
+    successful: 45,
+    failed: 5,
+    skipped: 10,
+  },
 };
 
 describe('Fingerprint route', () => {
@@ -35,7 +52,11 @@ describe('Fingerprint route', () => {
     expect(json).toMatchObject({
       fingerprintId: 'fpr_123',
       confidence: 0.9,
+      coverage: {
+        ratio: 0.9,
+      },
     });
+    expect(json.data).toEqual(basePayload.data);
 
     const storedToken = await env.TOKENS.get(token, 'json');
     expect(storedToken.usageCount).toBe(1);

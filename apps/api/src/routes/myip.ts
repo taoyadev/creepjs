@@ -1,5 +1,7 @@
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import { Hono } from 'hono';
+import type { Env } from '../types';
+
+const app = new Hono<Env>();
 
 interface IpInfoResponse {
   ip?: string;
@@ -13,23 +15,56 @@ interface IpInfoResponse {
   hostname?: string;
 }
 
-export async function GET(request: NextRequest) {
+interface TransformedIPData {
+  ip: string;
+  location?: {
+    country_code?: string | null;
+    city?: string | null;
+    region?: string | null;
+    postal?: string | null;
+    latitude?: number;
+    longitude?: number;
+    timezone?: string | null;
+  };
+  asn?: {
+    organization?: string;
+    number?: number;
+  };
+  hostname?: string | null;
+}
+
+// Cache TTL: 1 hour
+const CACHE_TTL = 3600;
+
+app.get('/', async (c) => {
   try {
-    // Get client IP from headers (works with Cloudflare, Vercel, etc.)
-    const forwarded = request.headers.get('x-forwarded-for');
-    const realIp = request.headers.get('x-real-ip');
-    const cfConnectingIp = request.headers.get('cf-connecting-ip');
+    // Get client IP from headers
+    const cfConnectingIp = c.req.header('cf-connecting-ip');
+    const xForwardedFor = c.req.header('x-forwarded-for');
+    const xRealIp = c.req.header('x-real-ip');
 
     // Priority: CF-Connecting-IP > X-Real-IP > X-Forwarded-For
-    let clientIp = cfConnectingIp || realIp || forwarded?.split(',')[0] || '127.0.0.1';
+    let clientIp = cfConnectingIp || xRealIp || xForwardedFor?.split(',')[0] || '127.0.0.1';
     clientIp = clientIp.trim();
 
     console.log('Detected client IP:', clientIp);
 
-    // Get IPInfo token from environment
-    const token = process.env.IPINFO_TOKEN || '1562dc669bda56';
+    // Check KV cache first
+    const cacheKey = `ip:${clientIp}`;
+    const cached = await c.env.IP_CACHE.get(cacheKey, 'json');
 
-    // Fetch IP data from IPInfo.io API
+    if (cached) {
+      console.log('Cache hit for IP:', clientIp);
+      return c.json({
+        ...cached,
+        cached: true,
+      });
+    }
+
+    console.log('Cache miss for IP:', clientIp);
+
+    // Fetch from IPInfo.io API
+    const token = c.env.IPINFO_TOKEN;
     const ipinfoUrl = clientIp === '::1' || clientIp === '127.0.0.1' || clientIp.startsWith('192.168.')
       ? `https://ipinfo.io/json?token=${token}` // Auto-detect for local IPs
       : `https://ipinfo.io/${clientIp}?token=${token}`;
@@ -50,7 +85,7 @@ export async function GET(request: NextRequest) {
     const data = (await response.json()) as IpInfoResponse;
     console.log('IPInfo response:', data);
 
-    // Transform IPInfo.io format to match our expected format
+    // Transform data
     const [latitudeRaw, longitudeRaw] = data.loc?.split(',') ?? [];
     const latitude = latitudeRaw ? Number.parseFloat(latitudeRaw) : undefined;
     const longitude = longitudeRaw ? Number.parseFloat(longitudeRaw) : undefined;
@@ -58,35 +93,47 @@ export async function GET(request: NextRequest) {
     const asMatch = data.org?.match(/^AS(\d+)/);
     const organization = data.org?.replace(/^AS\d+\s+/, '').trim();
 
-    const transformedData = {
+    const transformedData: TransformedIPData = {
       ip: data.ip ?? clientIp,
       location: {
         country_code: data.country ?? null,
         city: data.city ?? null,
         region: data.region ?? null,
+        postal: data.postal ?? null,
         latitude,
         longitude,
-        postal: data.postal ?? null,
         timezone: data.timezone ?? null,
       },
       asn: data.org
         ? {
             organization: organization || undefined,
-            number: asMatch ? Number.parseInt(asMatch[1], 10) : undefined,
+            number: asMatch?.[1] ? Number.parseInt(asMatch[1], 10) : undefined,
           }
         : undefined,
       hostname: data.hostname ?? null,
     };
 
-    return NextResponse.json(transformedData);
+    // Store in KV cache with TTL
+    await c.env.IP_CACHE.put(cacheKey, JSON.stringify(transformedData), {
+      expirationTtl: CACHE_TTL,
+    });
+
+    console.log('Stored in cache with TTL:', CACHE_TTL);
+
+    return c.json({
+      ...transformedData,
+      cached: false,
+    });
   } catch (error) {
     console.error('Error fetching IP data:', error);
-    return NextResponse.json(
+    return c.json(
       {
         error: 'Failed to fetch IP data',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 }
+      500
     );
   }
-}
+});
+
+export default app;

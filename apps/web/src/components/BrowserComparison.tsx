@@ -40,8 +40,8 @@ export function BrowserComparison({ result }: BrowserComparisonProps) {
     else if (ua.includes('Chrome')) browserType = 'chrome';
 
     // Analyze current protections
-    const hasWebRTCLeak = result.data.webrtc && result.data.webrtc.candidates.ipv4.length > 0;
-    const hasCanvasProtection = result.data.lies && result.data.lies.totalLies > 2;
+    const hasWebRTCLeak = !!(result.data.webrtc && result.data.webrtc.candidates.ipv4.length > 0);
+    const hasCanvasProtection = !!(result.data.lies && result.data.lies.liesCount > 2);
     const uniqueFonts = result.data.fonts?.available?.length || 0;
 
     return {
@@ -61,7 +61,7 @@ export function BrowserComparison({ result }: BrowserComparisonProps) {
       trackingProtection: currentBrowserAnalysis.privacyScore >= 70 ? 'strict' : currentBrowserAnalysis.privacyScore >= 50 ? 'basic' : 'none',
       features: {
         webrtcLeak: !currentBrowserAnalysis.hasWebRTCLeak,
-        canvasProtection: currentBrowserAnalysis.hasCanvasProtection,
+        canvasProtection: currentBrowserAnalysis.hasCanvasProtection || false,
         fontEnumeration: currentBrowserAnalysis.uniqueFonts < 20,
         audioProtection: !!result.data.audio,
         timezoneSpoof: false, // Hard to detect automatically
@@ -457,7 +457,7 @@ function calculatePrivacyScore(result: FingerprintResult): number {
     riskPoints += 10;
   }
   // Canvas fingerprinting not blocked
-  if (result.data.canvas && (!result.data.lies || result.data.lies.totalLies < 2)) {
+  if (result.data.canvas && (!result.data.lies || result.data.lies.liesCount < 2)) {
     riskPoints += 10;
   }
   // Many unique fonts (highly identifiable)
@@ -488,11 +488,11 @@ function calculatePrivacyScore(result: FingerprintResult): number {
 
   // Low risk items (1 point each)
   // Language preferences
-  if (result.data.navigator?.languages && result.data.navigator.languages.length > 0) {
+  if (result.data.languages && result.data.languages.length > 0) {
     riskPoints += 1;
   }
   // Hardware concurrency
-  if (result.data.navigator?.hardwareConcurrency) {
+  if (result.data.hardwareConcurrency) {
     riskPoints += 1;
   }
 

@@ -38,7 +38,8 @@ export function collectTimezoneFingerprint():
         hourCycle: new Intl.DateTimeFormat(undefined, { hour: 'numeric' }).resolvedOptions().hourCycle,
         timeZoneName: new Intl.DateTimeFormat(undefined, { timeZoneName: 'long' }).resolvedOptions().timeZoneName,
       };
-    } catch {
+    } catch (_error) {
+      void _error;
       // DateTimeFormat not fully supported
     }
 
@@ -57,7 +58,8 @@ export function collectTimezoneFingerprint():
         notation: new Intl.NumberFormat(undefined, { notation: 'standard' }).resolvedOptions().notation,
         signDisplay: new Intl.NumberFormat(undefined, { signDisplay: 'auto' }).resolvedOptions().signDisplay,
       };
-    } catch {
+    } catch (_error) {
+      void _error;
       // NumberFormat not fully supported
     }
 
@@ -77,7 +79,8 @@ export function collectTimezoneFingerprint():
         numeric: collatorOptions.numeric,
         comparisons,
       };
-    } catch {
+    } catch (_error) {
+      void _error;
       // Collator not supported
     }
 
@@ -99,7 +102,8 @@ export function collectTimezoneFingerprint():
           ordinalRules,
         };
       }
-    } catch {
+    } catch (_error) {
+      void _error;
       // PluralRules not supported
     }
 
@@ -114,7 +118,8 @@ export function collectTimezoneFingerprint():
         ['en', 'es', 'fr', 'de', 'zh', 'ja'].forEach(code => {
           try {
             languages[code] = langDisplay.of(code) || '';
-          } catch {
+          } catch (_error) {
+            void _error;
             // Skip invalid code
           }
         });
@@ -123,7 +128,8 @@ export function collectTimezoneFingerprint():
         ['US', 'GB', 'CN', 'JP', 'DE', 'FR'].forEach(code => {
           try {
             regions[code] = regionDisplay.of(code) || '';
-          } catch {
+          } catch (_error) {
+            void _error;
             // Skip invalid code
           }
         });
@@ -132,7 +138,8 @@ export function collectTimezoneFingerprint():
         ['USD', 'EUR', 'GBP', 'JPY', 'CNY'].forEach(code => {
           try {
             currencies[code] = currencyDisplay.of(code) || '';
-          } catch {
+          } catch (_error) {
+            void _error;
             // Skip invalid code
           }
         });
@@ -143,7 +150,8 @@ export function collectTimezoneFingerprint():
           currencies,
         };
       }
-    } catch {
+    } catch (_error) {
+      void _error;
       // DisplayNames not supported
     }
 
@@ -161,7 +169,8 @@ export function collectTimezoneFingerprint():
           formats,
         };
       }
-    } catch {
+    } catch (_error) {
+      void _error;
       // ListFormat not supported
     }
 
@@ -183,7 +192,8 @@ export function collectTimezoneFingerprint():
           formats,
         };
       }
-    } catch {
+    } catch (_error) {
+      void _error;
       // RelativeTimeFormat not supported
     }
 
@@ -198,7 +208,8 @@ export function collectTimezoneFingerprint():
           ? Intl.PluralRules.supportedLocalesOf(testLocales).length
           : 0,
       };
-    } catch {
+    } catch (_error) {
+      void _error;
       // supportedLocalesOf not available
     }
 

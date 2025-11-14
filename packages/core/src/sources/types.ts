@@ -7,6 +7,7 @@ export type SourceRegistry = Record<string, Source<unknown>>;
 
 export interface RunSourcesOptions {
   idleDelay?: number;
+  concurrency?: number;
 }
 
 const now = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
@@ -15,8 +16,9 @@ async function runSource<T>(source: Source<T>): Promise<CollectorSummary<T>> {
   const start = now();
   try {
     const value = await source();
+    const status = value === undefined || value === null ? 'skipped' : 'success';
     return {
-      status: 'success',
+      status,
       value,
       duration: now() - start,
     };
@@ -38,7 +40,8 @@ function normalizeError(error: unknown): string {
   }
   try {
     return JSON.stringify(error);
-  } catch {
+  } catch (_jsonError) {
+    void _jsonError;
     return 'Unknown error';
   }
 }
@@ -52,7 +55,7 @@ export async function runSources(
   const components = await mapWithIdleBreaks(
     entries,
     async ([name, source]) => ({ name, component: await runSource(source) }),
-    options.idleDelay
+    { idleDelay: options.idleDelay, concurrency: options.concurrency }
   );
 
   return components.reduce<Record<string, CollectorSummary>>((acc, { name, component }) => {

@@ -1,4 +1,4 @@
-# CreepJS.org - Educational Browser Fingerprinting Platform
+# CreepJS 2.0 - Educational Browser Fingerprinting Platform
 
 > Privacy-first browser fingerprinting platform built as a SaaS service for developers
 
@@ -12,14 +12,14 @@
 
 ---
 
-## 🎯 What is CreepJS.org?
+## 🎯 What is CreepJS 2.0?
 
-CreepJS.org is an **educational, privacy-first browser fingerprinting platform** designed to help developers understand and implement browser fingerprinting technology responsibly. It provides:
+CreepJS 2.0 is an **educational, privacy-first browser fingerprinting platform** designed to help developers understand and implement browser fingerprinting technology responsibly. It provides:
 
 - **🔍 Interactive Demo** - Visualize how browser fingerprinting works in real-time
 - **⚡ RESTful API** - Production-ready API running on Cloudflare Workers (<50ms response time)
 - **📦 JavaScript SDK** - One-line integration with TypeScript support
-- **📚 Educational Content** - Comprehensive guides explaining 24+ fingerprinting techniques
+- **📚 Educational Content** - Comprehensive guides explaining 40+ fingerprinting techniques
 - **🔒 Privacy-First** - Transparent, minimal data collection, user-controlled
 
 ### Core Value Proposition
@@ -36,7 +36,8 @@ CreepJS.org is an **educational, privacy-first browser fingerprinting platform**
 - **Live Demo** - Real-time browser fingerprint analysis with detailed breakdowns
 - **Interactive Playground** - Test API endpoints with live examples
 - **Documentation Center** - Complete guides, API reference, and tutorials
-- **24+ Fingerprint Types** - Canvas, WebGL, Audio, Fonts, Navigator, WebRTC, and more
+- **40+ Fingerprint Types** - Canvas, WebGL, Audio, Fonts, Navigator, WebRTC, storage APIs, PCM, Service Workers, and more
+- **Performance Controls** - Adaptive concurrency & idle-delay knobs keep UX smooth (see `docs/PERFORMANCE.md`)
 
 ### 🚀 API Service
 
@@ -65,6 +66,19 @@ console.log(result.fingerprintId); // "a1b2c3d4e5f6..."
 - <15KB gzipped
 - localStorage caching
 
+#### Collector Coverage Snapshot
+
+The core engine now exposes **40+ entropy sources**, spanning:
+
+- **Graphics**: Canvas, WebGL, SVG, DOMRect, TextMetrics
+- **Hardware & Device**: Screen/ScreenFrame, Color Gamut/Depth, Audio, WebRTC, Service Workers, Media Devices
+- **Storage & Platform**: localStorage/sessionStorage/indexedDB/WebSQL, Cookie availability, plugins, Apple Pay, Private Click Measurement
+- **Navigator & Locale**: Languages, Intl/Timezone, Reduced Motion/Transparency, HDR, Forced Colors, Vendor flavors, Architecture hints
+
+Each collector is optional in the final payload so you can consume only the signals you need.
+
+> Need deeper tuning? Check out [`docs/PERFORMANCE.md`](docs/PERFORMANCE.md) for concurrency, profiling, and troubleshooting tips.
+
 ---
 
 ## 🏗️ Architecture
@@ -86,7 +100,7 @@ Backend API (apps/api)
 └── <50ms response time globally
 
 Core Engine (packages/core)
-├── 24+ fingerprint collectors
+├── 40+ fingerprint collectors
 ├── MurmurHash3 + Base62 encoding
 ├── TypeScript
 └── Modular design
@@ -137,7 +151,7 @@ creepjs/
 ├── packages/
 │   ├── core/                    # Core fingerprinting engine
 │   │   ├── src/
-│   │   │   ├── collectors/      # 24+ fingerprint collectors
+│   │   │   ├── collectors/      # 40+ fingerprint collectors
 │   │   │   └── utils/           # Hashing, async helpers
 │   │   └── tests/               # Unit tests
 │   │
@@ -397,7 +411,7 @@ See [SECURITY.md](./docs/SECURITY.md) for details.
 
 ### ✅ Phase 1: MVP (Complete)
 
-- [x] Core fingerprinting engine (24+ collectors)
+- [x] Core fingerprinting engine (40+ collectors)
 - [x] Cloudflare Workers API
 - [x] Next.js web application
 - [x] JavaScript SDK

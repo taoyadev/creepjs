@@ -1,6 +1,8 @@
 import type { MetadataRoute } from 'next';
 import { SITE_CONFIG } from '@/lib/metadata';
 
+export const dynamic = 'force-static';
+
 /**
  * Generate robots.txt for the CreepJS website
  *

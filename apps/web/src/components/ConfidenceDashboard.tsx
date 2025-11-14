@@ -2,142 +2,176 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import type { FingerprintResult } from '@creepjs/core';
+import type { CollectorSummary, FingerprintResult } from '@creepjs/core';
 
 interface ConfidenceDashboardProps {
   result: FingerprintResult;
 }
 
-interface CategoryStats {
+interface CategoryStat {
   name: string;
-  total: number;
-  successful: number;
   color: string;
+  collectors: string[];
+  successful: number;
+  failed: number;
+  skipped: number;
 }
 
-const hasValue = <T,>(value: T | undefined | null): value is T => value !== undefined && value !== null;
+const CATEGORY_CONFIG = [
+  {
+    name: 'Graphics',
+    color: 'hsl(var(--chart-1))',
+    collectors: ['canvas', 'webgl', 'svg', 'css', 'textMetrics'],
+  },
+  {
+    name: 'Hardware',
+    color: 'hsl(var(--chart-2))',
+    collectors: [
+      'screen',
+      'screenFrame',
+      'screenResolution',
+      'colorDepth',
+      'colorGamut',
+      'hardwareConcurrency',
+      'deviceMemory',
+      'media',
+      'touchSupport',
+      'monochrome',
+      'hdr',
+    ],
+  },
+  {
+    name: 'Browser',
+    color: 'hsl(var(--chart-3))',
+    collectors: [
+      'navigator',
+      'platform',
+      'languages',
+      'cookiesEnabled',
+      'localStorage',
+      'sessionStorage',
+      'indexedDB',
+      'openDatabase',
+      'plugins',
+      'mimeTypes',
+      'pdfViewerEnabled',
+      'htmlElement',
+      'contentWindow',
+    ],
+  },
+  {
+    name: 'System',
+    color: 'hsl(var(--chart-4))',
+    collectors: [
+      'fonts',
+      'fontPreferences',
+      'timezone',
+      'dateTimeLocale',
+      'math',
+      'architecture',
+      'cssMedia',
+      'domRect',
+      'consoleErrors',
+    ],
+  },
+  {
+    name: 'Audio',
+    color: 'hsl(var(--chart-5))',
+    collectors: ['audio', 'audioBaseLatency'],
+  },
+  {
+    name: 'Accessibility',
+    color: 'hsl(var(--primary))',
+    collectors: ['reducedMotion', 'reducedTransparency', 'forcedColors', 'contrast', 'invertedColors'],
+  },
+  {
+    name: 'Privacy',
+    color: 'hsl(var(--chart-6, 210 90% 60%))',
+    collectors: ['resistance', 'domBlockers', 'lies'],
+  },
+  {
+    name: 'Network',
+    color: 'hsl(var(--warning))',
+    collectors: ['webrtc', 'serviceWorker'],
+  },
+] as const;
+
+const ensureCoverageStats = (
+  result: FingerprintResult,
+  collectorEntries: Array<[string, CollectorSummary]>
+) => {
+  if (result.coverage) {
+    return result.coverage;
+  }
+
+  if (collectorEntries.length === 0) {
+    return { ratio: result.confidence, successful: 0, failed: 0, skipped: 0 };
+  }
+
+  const successful = collectorEntries.filter(([, summary]) => summary.status === 'success').length;
+  const failed = collectorEntries.filter(([, summary]) => summary.status === 'error').length;
+  const skipped = collectorEntries.filter(([, summary]) => summary.status === 'skipped').length;
+  const considered = successful + failed;
+  return {
+    ratio: considered === 0 ? result.confidence : successful / considered,
+    successful,
+    failed,
+    skipped,
+  };
+};
+
+const resolveCollectorStatus = (
+  key: string,
+  summaries: Record<string, CollectorSummary> | undefined,
+  fingerprintData: Record<string, unknown>
+): CollectorSummary['status'] => {
+  const summary = summaries?.[key];
+  if (summary) {
+    return summary.status;
+  }
+  return fingerprintData[key] !== undefined && fingerprintData[key] !== null ? 'success' : 'skipped';
+};
 
 export function ConfidenceDashboard({ result }: ConfidenceDashboardProps) {
-  const { confidence, timings, data, collectors } = result;
-  const confidencePercent = Math.round(confidence * 100);
+  const { collectors, timings, data } = result;
   const collectorEntries = Object.entries(collectors || {});
+  const coverage = React.useMemo(() => ensureCoverageStats(result, collectorEntries), [result, collectorEntries]);
+  const coveragePercent = Math.round(coverage.ratio * 100);
+  const totalTime = typeof timings.total === 'number'
+    ? timings.total
+    : Object.values(timings).reduce((sum, duration = 0) => (sum || 0) + (duration ?? 0), 0);
+  const attemptedCollectors = coverage.successful + coverage.failed;
+  const avgPerCollector = attemptedCollectors > 0 ? (totalTime || 0) / attemptedCollectors : 0;
+  const totalCollectors = coverage.successful + coverage.failed + coverage.skipped;
 
-  // Calculate category statistics (updated to match 55 collectors)
-  const categories: CategoryStats[] = [
-    {
-      name: 'Graphics',
-      total: 5,
-      successful: [
-        data.canvas,
-        data.webgl,
-        data.svg,
-        data.css,
-        data.textMetrics,
-      ].filter(hasValue).length,
-      color: 'hsl(var(--chart-1))',
-    },
-    {
-      name: 'Hardware',
-      total: 11,
-      successful: [
-        data.screen,
-        data.screenFrame,
-        data.screenResolution,
-        data.colorDepth,
-        data.colorGamut,
-        data.hardwareConcurrency,
-        data.deviceMemory,
-        data.media, // Media Devices
-        data.touchSupport,
-        data.monochrome,
-        data.hdr,
-      ].filter(hasValue).length,
-      color: 'hsl(var(--chart-2))',
-    },
-    {
-      name: 'Browser',
-      total: 16,
-      successful: [
-        data.navigator,
-        data.userAgent,
-        data.platform,
-        data.languages,
-        data.cookies,
-        data.storage,
-        data.plugins,
-        data.mimeTypes,
-        data.permissions,
-        data.battery,
-        data.networkInfo,
-        data.connectionType,
-        data.webdriver,
-        data.pdfViewer,
-        data.htmlElement,
-        data.contentWindow,
-      ].filter(hasValue).length,
-      color: 'hsl(var(--chart-3))',
-    },
-    {
-      name: 'System',
-      total: 11,
-      successful: [
-        data.fonts,
-        data.fontPreferences,
-        data.timezone,
-        data.locale,
-        data.calendar,
-        data.math,
-        data.architecture,
-        data.css,
-        data.cssMedia,
-        data.domRect,
-        data.consoleErrors,
-      ].filter(hasValue).length,
-      color: 'hsl(var(--chart-4))',
-    },
-    {
-      name: 'Audio',
-      total: 2,
-      successful: [
-        data.audio,
-        data.audioBaseLatency,
-      ].filter(hasValue).length,
-      color: 'hsl(var(--chart-5))',
-    },
-    {
-      name: 'Accessibility',
-      total: 5,
-      successful: [
-        data.reducedMotion,
-        data.reducedTransparency,
-        data.forcedColors,
-        data.contrast,
-        data.invertedColors,
-      ].filter(hasValue).length,
-      color: 'hsl(var(--primary))',
-    },
-    {
-      name: 'Privacy',
-      total: 2,
-      successful: [
-        data.resistance,
-        data.lies,
-      ].filter(hasValue).length,
-      color: 'hsl(var(--destructive))',
-    },
-    {
-      name: 'Network',
-      total: 3,
-      successful: [
-        data.webrtc,
-        data.serviceWorker,
-        data.voices,
-      ].filter(hasValue).length,
-      color: 'hsl(var(--warning))',
-    },
-  ];
+  const dataRecord = data as Record<string, unknown>;
+  const categoryStats: CategoryStat[] = CATEGORY_CONFIG.map((category) => {
+    const collectors = [...category.collectors];
+    let successful = 0;
+    let failed = 0;
+    let skipped = 0;
 
-  // Timing statistics
+    collectors.forEach((collectorKey) => {
+      const status = resolveCollectorStatus(collectorKey, collectors as any, dataRecord);
+      if (status === 'success') {
+        successful += 1;
+      } else if (status === 'error') {
+        failed += 1;
+      } else {
+        skipped += 1;
+      }
+    });
+
+    return {
+      name: category.name,
+      color: category.color,
+      collectors: collectors,
+      successful,
+      failed,
+      skipped,
+    };
+  });
+
   const topSlowCollectors = collectorEntries
     .filter(([, component]) => typeof component.duration === 'number')
     .sort(([, a], [, b]) => (b.duration ?? 0) - (a.duration ?? 0))
@@ -147,83 +181,75 @@ export function ConfidenceDashboard({ result }: ConfidenceDashboardProps) {
       time: component.duration?.toFixed(2) ?? '0',
       status: component.status,
     }));
-  const failingCollectors = collectorEntries.filter(([, component]) => component.status === 'error');
 
-  // Calculate overall success rate
-  const totalCollectors = categories.reduce((sum, cat) => sum + cat.total, 0);
-  const successfulCollectors = categories.reduce((sum, cat) => sum + cat.successful, 0);
-  const totalTime = typeof timings.total === 'number' ? timings.total : 0;
-  const avgPerCollector = successfulCollectors > 0 ? totalTime / successfulCollectors : 0;
+  const failingCollectors = collectorEntries.filter(([, component]) => component.status === 'error');
+  const skippedCollectors = collectorEntries.filter(([, component]) => component.status === 'skipped');
 
   return (
     <div className="space-y-6">
-      {/* Overall Confidence Card */}
-      <Card className="border-2 shadow-lg">
+      <Card>
         <CardHeader>
-          <CardTitle>Fingerprint Confidence Score</CardTitle>
-          <CardDescription>Overall quality and completeness of your browser fingerprint</CardDescription>
+          <CardTitle>Collector Coverage</CardTitle>
+          <CardDescription>Real-time breakdown of which signals loaded successfully</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col md:flex-row items-center gap-8">
-            {/* Circular Progress */}
-            <div className="relative flex-shrink-0">
-              <svg className="w-48 h-48 transform -rotate-90">
-                {/* Background circle */}
-                <circle
-                  cx="96"
-                  cy="96"
-                  r="88"
-                  fill="none"
-                  stroke="hsl(var(--muted))"
-                  strokeWidth="12"
-                  className="opacity-20"
-                />
-                {/* Progress circle */}
-                <circle
-                  cx="96"
-                  cy="96"
-                  r="88"
-                  fill="none"
-                  stroke={
-                    confidencePercent >= 90
-                      ? 'hsl(var(--success))'
-                      : confidencePercent >= 70
-                        ? 'hsl(var(--warning))'
-                        : 'hsl(var(--destructive))'
-                  }
-                  strokeWidth="12"
-                  strokeDasharray={`${(confidencePercent / 100) * 552.92} 552.92`}
-                  strokeLinecap="round"
-                  className="transition-all duration-1000 ease-out"
-                  style={{
-                    filter: 'drop-shadow(0 0 8px currentColor)',
-                  }}
-                />
-              </svg>
-              {/* Center text */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <div className="text-5xl font-bold">{confidencePercent}%</div>
-                <div className="text-sm text-muted-foreground mt-1">Confidence</div>
+          <div className="flex flex-col gap-6 md:flex-row md:items-center">
+            <div className="w-full md:w-auto flex justify-center">
+              <div className="relative h-48 w-48">
+                <svg viewBox="0 0 192 192" className="h-full w-full">
+                  <circle cx="96" cy="96" r="88" fill="none" stroke="hsl(var(--muted))" strokeWidth="12" className="opacity-20" />
+                  <circle
+                    cx="96"
+                    cy="96"
+                    r="88"
+                    fill="none"
+                    stroke={
+                      coveragePercent >= 90
+                        ? 'hsl(var(--success))'
+                        : coveragePercent >= 70
+                          ? 'hsl(var(--warning))'
+                          : 'hsl(var(--destructive))'
+                    }
+                    strokeWidth="12"
+                    strokeDasharray={`${(coveragePercent / 100) * 552.92} 552.92`}
+                    strokeLinecap="round"
+                    className="transition-all duration-1000 ease-out"
+                    style={{
+                      filter: 'drop-shadow(0 0 8px currentColor)',
+                    }}
+                  />
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <div className="text-5xl font-bold">{coveragePercent}%</div>
+                  <div className="text-sm text-muted-foreground mt-1">Coverage</div>
+                </div>
               </div>
             </div>
 
-            {/* Stats Grid */}
             <div className="flex-1 w-full grid grid-cols-2 gap-4">
               <div className="space-y-1 p-4 bg-muted/50 rounded-lg">
-                <div className="text-2xl font-bold text-primary">{successfulCollectors}</div>
-                <div className="text-sm text-muted-foreground">Successful Collectors</div>
+                <div className="text-2xl font-bold text-primary">{coverage.successful}</div>
+                <div className="text-sm text-muted-foreground">Successful</div>
+              </div>
+              <div className="space-y-1 p-4 bg-muted/50 rounded-lg">
+                <div className="text-2xl font-bold text-primary">{coverage.failed}</div>
+                <div className="text-sm text-muted-foreground">Failed</div>
+              </div>
+              <div className="space-y-1 p-4 bg-muted/50 rounded-lg">
+                <div className="text-2xl font-bold text-primary">{coverage.skipped}</div>
+                <div className="text-sm text-muted-foreground">Skipped</div>
               </div>
               <div className="space-y-1 p-4 bg-muted/50 rounded-lg">
                 <div className="text-2xl font-bold text-primary">{totalCollectors}</div>
                 <div className="text-sm text-muted-foreground">Total Collectors</div>
               </div>
               <div className="space-y-1 p-4 bg-muted/50 rounded-lg">
-                <div className="text-2xl font-bold text-primary">{totalTime.toFixed(0)}ms</div>
+                <div className="text-2xl font-bold text-primary">{(totalTime || 0).toFixed(0)}ms</div>
                 <div className="text-sm text-muted-foreground">Total Time</div>
               </div>
               <div className="space-y-1 p-4 bg-muted/50 rounded-lg">
                 <div className="text-2xl font-bold text-primary">{avgPerCollector.toFixed(0)}ms</div>
-                <div className="text-sm text-muted-foreground">Avg per Collector</div>
+                <div className="text-sm text-muted-foreground">Avg per Attempted</div>
               </div>
             </div>
           </div>
@@ -231,22 +257,22 @@ export function ConfidenceDashboard({ result }: ConfidenceDashboardProps) {
       </Card>
 
       <div className="grid md:grid-cols-2 gap-6">
-        {/* Category Breakdown */}
         <Card>
           <CardHeader>
             <CardTitle>Category Breakdown</CardTitle>
-            <CardDescription>Success rate by collector category</CardDescription>
+            <CardDescription>Success/failure ratio by signal family</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {categories.map((category) => {
-                const percent = (category.successful / category.total) * 100;
+              {categoryStats.map((category) => {
+                const total = category.collectors.length;
+                const percent = total === 0 ? 0 : (category.successful / total) * 100;
                 return (
                   <div key={category.name} className="space-y-2">
                     <div className="flex justify-between items-center text-sm">
                       <span className="font-medium">{category.name}</span>
                       <span className="text-muted-foreground">
-                        {category.successful}/{category.total}
+                        {category.successful}/{total}
                       </span>
                     </div>
                     <div className="w-full bg-muted rounded-full h-2.5 overflow-hidden">
@@ -258,6 +284,11 @@ export function ConfidenceDashboard({ result }: ConfidenceDashboardProps) {
                         }}
                       />
                     </div>
+                    <div className="text-xs text-muted-foreground flex gap-3">
+                      <span>OK: {category.successful}</span>
+                      <span>Failed: {category.failed}</span>
+                      <span>Skipped: {category.skipped}</span>
+                    </div>
                   </div>
                 );
               })}
@@ -265,21 +296,20 @@ export function ConfidenceDashboard({ result }: ConfidenceDashboardProps) {
           </CardContent>
         </Card>
 
-        {/* Collector Insights */}
         <Card>
           <CardHeader>
             <CardTitle>Collector Insights</CardTitle>
-            <CardDescription>Slowest and failing collectors</CardDescription>
+            <CardDescription>Slowest, failing, and skipped collectors</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 md:grid-cols-3">
               <div>
                 <div className="text-sm font-semibold mb-2">Slowest</div>
                 <div className="space-y-2">
                   {topSlowCollectors.length === 0 && (
                     <div className="text-sm text-muted-foreground">No timing data available</div>
                   )}
-                  {topSlowCollectors.map((collector, index) => (
+                  {topSlowCollectors.map((collector) => (
                     <div key={collector.name} className="flex items-center justify-between rounded-lg border p-2">
                       <div>
                         <div className="text-sm font-medium">{collector.name}</div>
@@ -287,10 +317,18 @@ export function ConfidenceDashboard({ result }: ConfidenceDashboardProps) {
                       </div>
                       <span
                         className={`text-xs font-semibold ${
-                          collector.status === 'success' ? 'text-green-500' : 'text-red-500'
+                          collector.status === 'success'
+                            ? 'text-green-500'
+                            : collector.status === 'error'
+                              ? 'text-red-500'
+                              : 'text-muted-foreground'
                         }`}
                       >
-                        {collector.status === 'success' ? 'OK' : 'Error'}
+                        {collector.status === 'success'
+                          ? 'OK'
+                          : collector.status === 'error'
+                            ? 'Error'
+                            : 'Skipped'}
                       </span>
                     </div>
                   ))}
@@ -311,86 +349,25 @@ export function ConfidenceDashboard({ result }: ConfidenceDashboardProps) {
                   </div>
                 )}
               </div>
+              <div>
+                <div className="text-sm font-semibold mb-2">Skipped APIs</div>
+                {skippedCollectors.length === 0 ? (
+                  <div className="text-sm text-muted-foreground">Nothing was skipped</div>
+                ) : (
+                  <div className="space-y-2">
+                    {skippedCollectors.slice(0, 4).map(([name]) => (
+                      <div key={name} className="rounded-lg border p-2">
+                        <div className="text-sm font-medium capitalize">{name}</div>
+                        <div className="text-xs text-muted-foreground">API disabled or unavailable in this browser</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
       </div>
-
-      {/* Quality Indicators */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Fingerprint Quality Indicators</CardTitle>
-          <CardDescription>Assessment of fingerprint reliability and uniqueness</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid md:grid-cols-3 gap-6">
-            {/* Completeness */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <div
-                  className={`w-3 h-3 rounded-full ${
-                    confidencePercent >= 90
-                      ? 'bg-green-500'
-                      : confidencePercent >= 70
-                        ? 'bg-yellow-500'
-                        : 'bg-red-500'
-                  }`}
-                />
-                <h4 className="font-semibold">Completeness</h4>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                {confidencePercent >= 90
-                  ? 'Excellent: All major collectors succeeded'
-                  : confidencePercent >= 70
-                    ? 'Good: Most collectors succeeded'
-                    : 'Limited: Several collectors failed'}
-              </p>
-            </div>
-
-            {/* Stability */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <div
-                  className={`w-3 h-3 rounded-full ${
-                    data.lies?.totalLies === 0
-                      ? 'bg-green-500'
-                      : data.lies && data.lies.totalLies <= 3
-                        ? 'bg-yellow-500'
-                        : 'bg-red-500'
-                  }`}
-                />
-                <h4 className="font-semibold">Stability</h4>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                {data.lies?.totalLies === 0
-                  ? 'Stable: No inconsistencies detected'
-                  : data.lies && data.lies.totalLies <= 3
-                    ? 'Minor: Few inconsistencies found'
-                    : 'Unstable: Multiple inconsistencies detected'}
-              </p>
-            </div>
-
-            {/* Performance */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <div
-                  className={`w-3 h-3 rounded-full ${
-                    timings.total < 1000 ? 'bg-green-500' : timings.total < 2000 ? 'bg-yellow-500' : 'bg-red-500'
-                  }`}
-                />
-                <h4 className="font-semibold">Performance</h4>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                {timings.total < 1000
-                  ? 'Fast: Completed in under 1 second'
-                  : timings.total < 2000
-                    ? 'Normal: Completed in 1-2 seconds'
-                    : 'Slow: Took over 2 seconds'}
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }

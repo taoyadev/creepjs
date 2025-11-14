@@ -61,6 +61,13 @@ const fingerprintMetaForSEO: Record<string, {
   'font-preferences': { name: 'Font Preferences', description: 'System font preferences detection for OS identification.', category: 'System' },
 };
 
+// Generate static params for all fingerprint types (required for static export)
+export function generateStaticParams() {
+  return Object.keys(fingerprintMetaForSEO).map((type) => ({
+    type,
+  }));
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ type: string }> }): Promise<Metadata> {
   const { type } = await params;
   const meta = fingerprintMetaForSEO[type];
@@ -72,7 +79,7 @@ export async function generateMetadata({ params }: { params: Promise<{ type: str
   }
 
   return {
-    title: `${meta.name} | Browser Fingerprinting API | CreepJS.org`,
+    title: `${meta.name} | Browser Fingerprinting Checker API | CreepJS`,
     description: meta.description,
     keywords: [
       'browser fingerprinting',
@@ -86,14 +93,14 @@ export async function generateMetadata({ params }: { params: Promise<{ type: str
       meta.category.toLowerCase(),
     ],
     openGraph: {
-      title: `${meta.name} - Browser Fingerprinting`,
+      title: `${meta.name} - Browser Fingerprinting | CreepJS`,
       description: meta.description,
       type: 'website',
       url: `https://creepjs.org/fingerprint/${type}`,
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${meta.name} - Browser Fingerprinting`,
+      title: `${meta.name} - Browser Fingerprinting | CreepJS`,
       description: meta.description,
     },
   };

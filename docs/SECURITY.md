@@ -179,5 +179,5 @@ If a security incident occurs:
 ## Contact
 
 For security issues:
-- **Email**: security@creepjs.org
+- **Email**: hello@creepjs.org
 - **Bug Bounty**: (Coming soon)

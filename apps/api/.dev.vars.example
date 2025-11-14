@@ -45,6 +45,10 @@
 # Rate limit per day per token
 # RATE_LIMIT_PER_DAY=1000
 
+# IPInfo.io API token for IP geolocation lookups
+# Get your free token at: https://ipinfo.io/signup
+IPINFO_TOKEN=1562dc669bda56
+
 # ---------------------------------------------------------------------
 # KV Namespace Bindings (managed via wrangler.toml)
 # ---------------------------------------------------------------------
@@ -52,6 +56,7 @@
 # No environment variables needed - bindings are:
 # - TOKENS (stores API token data)
 # - RATE_LIMIT (stores rate limiting data)
+# - IP_CACHE (stores IP geolocation cache with 1h TTL)
 #
 # Setup KV namespaces with: ./scripts/setup-kv.sh
 # ---------------------------------------------------------------------

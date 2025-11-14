@@ -253,7 +253,7 @@ Want to see if your privacy setup is creating red flags? Here's how:
 
 ### Quick Checks
 
-1. **Visit CreepJS.org** (this site!) and run the Lies Detection test
+1. **Visit CreepJS 2.0** (this site!) and run the Lies Detection test
 2. **Check consistency**:
    - Does your User-Agent match your platform?
    - Does your timezone match your IP location?

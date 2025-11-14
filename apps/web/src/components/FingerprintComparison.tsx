@@ -46,7 +46,7 @@ export function FingerprintComparison({ fingerprint1, fingerprint2, onClose }: F
 
     items.push({
       category: 'Basic Info',
-      field: 'Confidence',
+      field: 'Coverage',
       value1: `${(fingerprint1.confidence * 100).toFixed(1)}%`,
       value2: `${(fingerprint2.confidence * 100).toFixed(1)}%`,
       changed: fingerprint1.confidence !== fingerprint2.confidence,
@@ -61,13 +61,13 @@ export function FingerprintComparison({ fingerprint1, fingerprint2, onClose }: F
     items.push({
       category: 'Basic Info',
       field: 'Total Collection Time',
-      value1: `${fingerprint1.timings.total.toFixed(0)}ms`,
-      value2: `${fingerprint2.timings.total.toFixed(0)}ms`,
-      changed: fingerprint1.timings.total !== fingerprint2.timings.total,
+      value1: `${(fingerprint1.timings.total ?? 0).toFixed(0)}ms`,
+      value2: `${(fingerprint2.timings.total ?? 0).toFixed(0)}ms`,
+      changed: (fingerprint1.timings.total ?? 0) !== (fingerprint2.timings.total ?? 0),
       changeType:
-        fingerprint2.timings.total < fingerprint1.timings.total
+        (fingerprint2.timings.total ?? 0) < (fingerprint1.timings.total ?? 0)
           ? 'improved'
-          : fingerprint2.timings.total > fingerprint1.timings.total
+          : (fingerprint2.timings.total ?? 0) > (fingerprint1.timings.total ?? 0)
             ? 'degraded'
             : undefined,
     });
@@ -101,15 +101,6 @@ export function FingerprintComparison({ fingerprint1, fingerprint2, onClose }: F
 
     // WebGL
     if (fingerprint1.data.webgl || fingerprint2.data.webgl) {
-      items.push({
-        category: 'WebGL',
-        field: 'Hash',
-        value1: fingerprint1.data.webgl?.hash || 'N/A',
-        value2: fingerprint2.data.webgl?.hash || 'N/A',
-        changed: fingerprint1.data.webgl?.hash !== fingerprint2.data.webgl?.hash,
-        changeType: fingerprint1.data.webgl?.hash !== fingerprint2.data.webgl?.hash ? 'neutral' : undefined,
-      });
-
       items.push({
         category: 'WebGL',
         field: 'Vendor',
@@ -157,14 +148,14 @@ export function FingerprintComparison({ fingerprint1, fingerprint2, onClose }: F
       items.push({
         category: 'Navigator',
         field: 'Languages',
-        value1: fingerprint1.data.navigator?.languages?.join(', ') || 'N/A',
-        value2: fingerprint2.data.navigator?.languages?.join(', ') || 'N/A',
+        value1: fingerprint1.data.languages?.flat().join(', ') || 'N/A',
+        value2: fingerprint2.data.languages?.flat().join(', ') || 'N/A',
         changed:
-          JSON.stringify(fingerprint1.data.navigator?.languages) !==
-          JSON.stringify(fingerprint2.data.navigator?.languages),
+          JSON.stringify(fingerprint1.data.languages) !==
+          JSON.stringify(fingerprint2.data.languages),
         changeType:
-          JSON.stringify(fingerprint1.data.navigator?.languages) !==
-          JSON.stringify(fingerprint2.data.navigator?.languages)
+          JSON.stringify(fingerprint1.data.languages) !==
+          JSON.stringify(fingerprint2.data.languages)
             ? 'neutral'
             : undefined,
       });
@@ -206,21 +197,12 @@ export function FingerprintComparison({ fingerprint1, fingerprint2, onClose }: F
     if (fingerprint1.data.fonts || fingerprint2.data.fonts) {
       items.push({
         category: 'Fonts',
-        field: 'Hash',
-        value1: fingerprint1.data.fonts?.hash || 'N/A',
-        value2: fingerprint2.data.fonts?.hash || 'N/A',
-        changed: fingerprint1.data.fonts?.hash !== fingerprint2.data.fonts?.hash,
-        changeType: fingerprint1.data.fonts?.hash !== fingerprint2.data.fonts?.hash ? 'neutral' : undefined,
-      });
-
-      items.push({
-        category: 'Fonts',
         field: 'Detected Count',
-        value1: fingerprint1.data.fonts?.fonts?.length || 0,
-        value2: fingerprint2.data.fonts?.fonts?.length || 0,
-        changed: fingerprint1.data.fonts?.fonts?.length !== fingerprint2.data.fonts?.fonts?.length,
+        value1: fingerprint1.data.fonts?.count || 0,
+        value2: fingerprint2.data.fonts?.count || 0,
+        changed: fingerprint1.data.fonts?.count !== fingerprint2.data.fonts?.count,
         changeType:
-          fingerprint1.data.fonts?.fonts?.length !== fingerprint2.data.fonts?.fonts?.length
+          fingerprint1.data.fonts?.count !== fingerprint2.data.fonts?.count
             ? 'neutral'
             : undefined,
       });
@@ -241,11 +223,11 @@ export function FingerprintComparison({ fingerprint1, fingerprint2, onClose }: F
       items.push({
         category: 'Timezone',
         field: 'Offset',
-        value1: fingerprint1.data.timezone?.offset ?? 'N/A',
-        value2: fingerprint2.data.timezone?.offset ?? 'N/A',
-        changed: fingerprint1.data.timezone?.offset !== fingerprint2.data.timezone?.offset,
+        value1: fingerprint1.data.timezone?.timezoneOffset ?? 'N/A',
+        value2: fingerprint2.data.timezone?.timezoneOffset ?? 'N/A',
+        changed: fingerprint1.data.timezone?.timezoneOffset !== fingerprint2.data.timezone?.timezoneOffset,
         changeType:
-          fingerprint1.data.timezone?.offset !== fingerprint2.data.timezone?.offset ? 'neutral' : undefined,
+          fingerprint1.data.timezone?.timezoneOffset !== fingerprint2.data.timezone?.timezoneOffset ? 'neutral' : undefined,
       });
     }
 
@@ -266,14 +248,14 @@ export function FingerprintComparison({ fingerprint1, fingerprint2, onClose }: F
       items.push({
         category: 'Lies Detection',
         field: 'Total Lies',
-        value1: fingerprint1.data.lies?.totalLies || 0,
-        value2: fingerprint2.data.lies?.totalLies || 0,
-        changed: fingerprint1.data.lies?.totalLies !== fingerprint2.data.lies?.totalLies,
+        value1: fingerprint1.data.lies?.liesCount || 0,
+        value2: fingerprint2.data.lies?.liesCount || 0,
+        changed: fingerprint1.data.lies?.liesCount !== fingerprint2.data.lies?.liesCount,
         changeType:
           fingerprint2.data.lies && fingerprint1.data.lies
-            ? fingerprint2.data.lies.totalLies < fingerprint1.data.lies.totalLies
+            ? fingerprint2.data.lies.liesCount < fingerprint1.data.lies.liesCount
               ? 'improved'
-              : fingerprint2.data.lies.totalLies > fingerprint1.data.lies.totalLies
+              : fingerprint2.data.lies.liesCount > fingerprint1.data.lies.liesCount
                 ? 'degraded'
                 : undefined
             : undefined,

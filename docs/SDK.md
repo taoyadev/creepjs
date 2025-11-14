@@ -86,13 +86,17 @@ Generate browser fingerprint.
 
 ```typescript
 interface FingerprintResult {
-  fingerprintId: string;    // Unique fingerprint ID
-  confidence: number;        // Confidence (0-1)
-  uniqueness: number;        // Uniqueness score (0-1)
-  timestamp: number;         // Timestamp (ms)
-  cached: boolean;           // From cache?
+  fingerprintId: string;          // Unique fingerprint ID
+  data: FingerprintData;          // 40+ optional collectors
+  confidence: number;             // Successful collector ratio (0-1)
+  collectors?: Record<string, CollectorSummary>;
+  timings?: CollectorTimings;     // Per-collector durations + total
+  timestamp: number;              // Timestamp (ms)
+  cached?: boolean;               // From cache?
 }
 ```
+
+> Refer to `@creepjs/core` for the exhaustive `FingerprintData` and collector telemetry types.
 
 **Example**:
 
@@ -237,6 +241,21 @@ onMounted(async () => {
 </template>
 ```
 
+### Engine Performance Controls
+
+Need tighter control over how the collectors run? Call `collectFingerprint` directly with concurrency/idle overrides before sending the payload:
+
+```ts
+import { collectFingerprint } from '@creepjs/core';
+
+const fingerprint = await collectFingerprint({
+  concurrency: 4,  // parallel workers (auto-tuned by default)
+  idleDelay: 8,    // ms to yield between tasks
+});
+```
+
+You can still forward the result to the SDK/API afterwards—the payload stays identical. See [`docs/PERFORMANCE.md`](./PERFORMANCE.md) for deeper profiling tips.
+
 ## Best Practices
 
 ### 1. Cache Results
@@ -303,4 +322,4 @@ if (navigator.doNotTrack === '1') {
 
 - **Documentation**: https://creepjs.org/docs
 - **GitHub**: https://github.com/taoyadev/creepjs
-- **Email**: support@creepjs.org
+- **Email**: hello@creepjs.org

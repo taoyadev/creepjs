@@ -94,10 +94,10 @@ export function PrivacyLeakageAssessment({ result }: PrivacyLeakageAssessmentPro
       riskCount++;
     }
 
-    if (result.data.webgl?.parameters?.UNMASKED_RENDERER_WEBGL) {
+    if (result.data.webgl?.unmaskedRenderer) {
       deviceLeaks.push({
         name: 'GPU Information',
-        value: result.data.webgl.parameters.UNMASKED_RENDERER_WEBGL,
+        value: result.data.webgl.unmaskedRenderer,
         sensitivity: 'high',
         description: 'Reveals your graphics card model and driver version',
       });
@@ -105,10 +105,10 @@ export function PrivacyLeakageAssessment({ result }: PrivacyLeakageAssessmentPro
       riskCount++;
     }
 
-    if (result.data.navigator?.hardwareConcurrency) {
+    if (result.data.hardwareConcurrency) {
       deviceLeaks.push({
         name: 'CPU Cores',
-        value: String(result.data.navigator.hardwareConcurrency),
+        value: String(result.data.hardwareConcurrency),
         sensitivity: 'medium',
         description: 'Indicates your processor capabilities',
       });
@@ -116,10 +116,10 @@ export function PrivacyLeakageAssessment({ result }: PrivacyLeakageAssessmentPro
       riskCount++;
     }
 
-    if (result.data.navigator?.deviceMemory) {
+    if (result.data.deviceMemory) {
       deviceLeaks.push({
         name: 'Device Memory',
-        value: `${result.data.navigator.deviceMemory}GB`,
+        value: `${result.data.deviceMemory}GB`,
         sensitivity: 'medium',
         description: 'Reveals your system RAM capacity',
       });
@@ -188,10 +188,10 @@ export function PrivacyLeakageAssessment({ result }: PrivacyLeakageAssessmentPro
       riskCount++;
     }
 
-    if (result.data.navigator?.languages && result.data.navigator.languages.length > 0) {
+    if (result.data.languages && result.data.languages.length > 0) {
       browserLeaks.push({
         name: 'Language Preferences',
-        value: result.data.navigator.languages.join(', '),
+        value: result.data.languages.flat().join(', '),
         sensitivity: 'low',
         description: 'Shows your browser language settings',
       });
@@ -294,10 +294,10 @@ export function PrivacyLeakageAssessment({ result }: PrivacyLeakageAssessmentPro
       riskCount++;
     }
 
-    if (result.data.lies && result.data.lies.totalLies > 0) {
+    if (result.data.lies && result.data.lies.liesCount > 0) {
       trackingLeaks.push({
         name: 'Lie Detection',
-        value: `${result.data.lies.totalLies} inconsistencies detected`,
+        value: `${result.data.lies.liesCount} inconsistencies detected`,
         sensitivity: 'high',
         description: 'Indicates use of privacy tools or browser modifications',
       });

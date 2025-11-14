@@ -2,6 +2,11 @@ export type MaybePromise<T> = T | Promise<T>;
 
 const DEFAULT_IDLE_DELAY = 16;
 
+export interface IdleMapOptions {
+  idleDelay?: number;
+  concurrency?: number;
+}
+
 /**
  * Waits until the browser is idle (using requestIdleCallback when available) before resolving.
  * Falls back to setTimeout so code also works in Node/jsdom environments.
@@ -27,16 +32,33 @@ export function waitForIdle(delay: number = DEFAULT_IDLE_DELAY): Promise<void> {
 export async function mapWithIdleBreaks<T, R>(
   items: readonly T[],
   iteratee: (item: T, index: number) => MaybePromise<R>,
-  idleDelay: number = DEFAULT_IDLE_DELAY
+  options: IdleMapOptions | number = {}
 ): Promise<R[]> {
-  const results: R[] = [];
+  const normalizedOptions: IdleMapOptions =
+    typeof options === 'number' ? { idleDelay: options } : options;
+  const idleDelay = normalizedOptions.idleDelay ?? DEFAULT_IDLE_DELAY;
+  const concurrency = Math.max(1, Math.floor(normalizedOptions.concurrency ?? 1));
 
-  for (let index = 0; index < items.length; index += 1) {
-    results.push(await iteratee(items[index], index));
-    if (index < items.length - 1) {
-      await waitForIdle(idleDelay);
+  const results: R[] = [];
+  let cursor = 0;
+
+  const worker = async () => {
+    while (true) {
+      const currentIndex = cursor;
+      cursor += 1;
+      if (currentIndex >= items.length) {
+        break;
+      }
+
+      results[currentIndex] = await iteratee(items[currentIndex]!, currentIndex);
+      if (currentIndex < items.length - 1) {
+        await waitForIdle(idleDelay);
+      }
     }
-  }
+  };
+
+  const workerCount = Math.min(concurrency, items.length || 1);
+  await Promise.all(Array.from({ length: workerCount }, () => worker()));
 
   return results;
 }

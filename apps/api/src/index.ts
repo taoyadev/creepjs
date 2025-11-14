@@ -4,6 +4,7 @@ import { corsMiddleware } from './middleware/cors';
 import { errorMiddleware } from './middleware/error';
 import fingerprintRoutes from './routes/fingerprint';
 import tokenRoutes from './routes/token';
+import myipRoutes from './routes/myip';
 
 const app = new Hono<Env>();
 
@@ -24,6 +25,7 @@ app.get('/', (c) => {
 // Routes
 app.route('/v1/fingerprint', fingerprintRoutes);
 app.route('/v1/token', tokenRoutes);
+app.route('/my-ip', myipRoutes);
 
 // 404 handler
 app.notFound((c) => {

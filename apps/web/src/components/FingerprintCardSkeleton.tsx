@@ -17,7 +17,7 @@ export function FingerprintCardSkeleton() {
           <Skeleton className="h-10 w-full" />
         </div>
 
-        {/* Confidence Score */}
+        {/* Coverage Score */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <Skeleton className="h-5 w-36" />

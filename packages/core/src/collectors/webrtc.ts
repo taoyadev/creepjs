@@ -176,7 +176,8 @@ export async function collectWebRTCFingerprint(): Promise<WebRTCFingerprint | un
           );
         }
       }
-    } catch {
+    } catch (_capabilitiesError) {
+      void _capabilitiesError;
       // Capabilities not supported
     }
 

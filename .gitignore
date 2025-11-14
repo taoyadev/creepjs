@@ -18,3 +18,6 @@ apps/api/.turbo
 packages/**/dist
 playwright-report
 *.log
+apps/creepjs-web-build.tar.gz
+apps/web/creepjs-deploy.zip
+apps/web/out/

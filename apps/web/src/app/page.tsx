@@ -20,7 +20,10 @@ import {
   Cpu,
   HardDrive,
   Languages,
-  Eye
+  Eye,
+  Clock,
+  Mail,
+  Server
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -29,14 +32,18 @@ interface IPData {
   location?: {
     country_code?: string;
     city?: string;
+    region?: string;
+    postal?: string;
     latitude?: number;
     longitude?: number;
+    timezone?: string;
   };
   asn?: {
     number?: number;
     organization?: string;
     website?: string;
   };
+  hostname?: string;
 }
 
 interface CollectionProgress {
@@ -93,10 +100,11 @@ export default function Home() {
         ];
 
         // Start collecting data in background
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://creepjs-api.yonglivelo.workers.dev';
         const dataPromise = Promise.allSettled([
           collectFingerprint(),
           // Fetch IP data in background (don't block fingerprint display)
-          fetch('/api/my-ip')
+          fetch(`${apiUrl}/my-ip`)
             .then(res => res.ok ? res.json() : null)
             .then((data: IPData | null) => {
               if (data && !cancelled) setIpData(data);
@@ -253,7 +261,7 @@ export default function Home() {
       <div className="container mx-auto max-w-7xl px-4 py-4 md:py-8">
         {/* Header */}
         <div className="mb-6 md:mb-8 text-center">
-          <h1 className="mb-2 text-2xl md:text-4xl font-bold">Your Browser Fingerprint</h1>
+          <h1 className="mb-2 text-2xl md:text-4xl font-bold">CreepJS - Your Browser Fingerprint</h1>
           <p className="text-sm md:text-base text-muted-foreground max-w-3xl mx-auto">
             Real-time analysis of your browser's unique characteristics. Discover what makes your device identifiable and learn about modern tracking techniques used across the web.
           </p>
@@ -349,7 +357,7 @@ export default function Home() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <div className="flex items-start gap-3">
                   <Wifi className="mt-1 h-5 w-5 text-muted-foreground" />
                   <div>
@@ -359,20 +367,52 @@ export default function Home() {
                 </div>
 
                 {ipData.location && (
-                  <div className="flex items-start gap-3">
-                    <MapPin className="mt-1 h-5 w-5 text-muted-foreground" />
-                    <div>
-                      <div className="text-sm font-medium text-muted-foreground">Location</div>
-                      <div className="text-lg font-semibold">
-                        {ipData.location.city || 'Unknown'}, {ipData.location.country_code || 'N/A'}
-                      </div>
-                      {ipData.location.latitude && ipData.location.longitude && (
-                        <div className="text-xs text-muted-foreground">
-                          {ipData.location.latitude.toFixed(4)}, {ipData.location.longitude.toFixed(4)}
+                  <>
+                    <div className="flex items-start gap-3">
+                      <MapPin className="mt-1 h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <div className="text-sm font-medium text-muted-foreground">Location</div>
+                        <div className="text-lg font-semibold">
+                          {ipData.location.city || 'Unknown'}, {ipData.location.country_code || 'N/A'}
                         </div>
-                      )}
+                        {ipData.location.latitude && ipData.location.longitude && (
+                          <div className="text-xs text-muted-foreground">
+                            {ipData.location.latitude.toFixed(4)}, {ipData.location.longitude.toFixed(4)}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
+
+                    {ipData.location.region && (
+                      <div className="flex items-start gap-3">
+                        <MapPin className="mt-1 h-5 w-5 text-muted-foreground" />
+                        <div>
+                          <div className="text-sm font-medium text-muted-foreground">Region</div>
+                          <div className="text-lg font-semibold">{ipData.location.region}</div>
+                        </div>
+                      </div>
+                    )}
+
+                    {ipData.location.postal && (
+                      <div className="flex items-start gap-3">
+                        <Mail className="mt-1 h-5 w-5 text-muted-foreground" />
+                        <div>
+                          <div className="text-sm font-medium text-muted-foreground">Postal Code</div>
+                          <div className="text-lg font-semibold">{ipData.location.postal}</div>
+                        </div>
+                      </div>
+                    )}
+
+                    {ipData.location.timezone && (
+                      <div className="flex items-start gap-3">
+                        <Clock className="mt-1 h-5 w-5 text-muted-foreground" />
+                        <div>
+                          <div className="text-sm font-medium text-muted-foreground">Timezone</div>
+                          <div className="text-lg font-semibold">{ipData.location.timezone}</div>
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
 
                 {ipData.asn && (
@@ -388,6 +428,16 @@ export default function Home() {
                           AS{ipData.asn.number}
                         </div>
                       )}
+                    </div>
+                  </div>
+                )}
+
+                {ipData.hostname && (
+                  <div className="flex items-start gap-3">
+                    <Server className="mt-1 h-5 w-5 text-muted-foreground" />
+                    <div>
+                      <div className="text-sm font-medium text-muted-foreground">Hostname</div>
+                      <div className="text-sm font-semibold break-all">{ipData.hostname}</div>
                     </div>
                   </div>
                 )}
@@ -423,12 +473,12 @@ export default function Home() {
             </div>
             <div className="mt-4 flex items-center justify-between text-sm">
               <span className="text-muted-foreground">
-                Confidence: <span className="font-semibold text-foreground">
+                Coverage: <span className="font-semibold text-foreground">
                   {(fingerprint.confidence * 100).toFixed(1)}%
                 </span>
               </span>
               <span className="text-muted-foreground">
-                This ID is unique to your browser configuration
+                Shows how many fingerprinting signals were collected (not a uniqueness score)
               </span>
             </div>
           </CardContent>
@@ -522,12 +572,14 @@ export default function Home() {
                   <div className="text-sm font-medium text-muted-foreground">Language</div>
                   <div className="font-semibold">{fingerprint.data.navigator.language}</div>
                 </div>
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">CPU Cores</div>
-                  <div className="font-semibold">
-                    {fingerprint.data.navigator.hardwareConcurrency}
+                {fingerprint.data.hardwareConcurrency && (
+                  <div>
+                    <div className="text-sm font-medium text-muted-foreground">CPU Cores</div>
+                    <div className="font-semibold">
+                      {fingerprint.data.hardwareConcurrency}
+                    </div>
                   </div>
-                </div>
+                )}
                 <div>
                   <div className="text-sm font-medium text-muted-foreground">User Agent</div>
                   <code className="text-xs break-all">

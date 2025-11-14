@@ -152,13 +152,13 @@ export function FingerprintHistory({ currentResult, onCompare }: FingerprintHist
   };
 
   // Calculate statistics
-  const avgConfidence = history.length > 0
+  const avgCoverage = history.length > 0
     ? history.reduce((sum, r) => sum + r.confidence, 0) / history.length
     : 0;
 
   const uniqueFingerprints = new Set(history.map((r) => r.fingerprintId)).size;
 
-  const confidenceTrend = history.length >= 2
+  const coverageTrend = history.length >= 2
     ? history[0].confidence - history[history.length - 1].confidence
     : 0;
 
@@ -194,9 +194,9 @@ export function FingerprintHistory({ currentResult, onCompare }: FingerprintHist
             <div className="space-y-1 p-4 bg-muted/50 rounded-lg">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Check className="h-4 w-4" />
-                <span>Avg Confidence</span>
+                <span>Avg Coverage</span>
               </div>
-              <div className="text-2xl font-bold">{(avgConfidence * 100).toFixed(1)}%</div>
+              <div className="text-2xl font-bold">{(avgCoverage * 100).toFixed(1)}%</div>
             </div>
             <div className="space-y-1 p-4 bg-muted/50 rounded-lg">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -205,15 +205,15 @@ export function FingerprintHistory({ currentResult, onCompare }: FingerprintHist
               </div>
               <div
                 className={`text-2xl font-bold ${
-                  confidenceTrend > 0
+                  coverageTrend > 0
                     ? 'text-green-600 dark:text-green-400'
-                    : confidenceTrend < 0
+                    : coverageTrend < 0
                       ? 'text-red-600 dark:text-red-400'
                       : ''
                 }`}
               >
-                {confidenceTrend > 0 ? '+' : ''}
-                {(confidenceTrend * 100).toFixed(1)}%
+                {coverageTrend > 0 ? '+' : ''}
+                {(coverageTrend * 100).toFixed(1)}%
               </div>
             </div>
           </div>
@@ -315,7 +315,7 @@ export function FingerprintHistory({ currentResult, onCompare }: FingerprintHist
                           </code>
                         </div>
                         <div className="space-y-1">
-                          <div className="text-xs text-muted-foreground">Confidence</div>
+                          <div className="text-xs text-muted-foreground">Coverage</div>
                           <div className="flex items-center gap-2">
                             <div
                               className={`text-lg font-bold ${
@@ -345,7 +345,7 @@ export function FingerprintHistory({ currentResult, onCompare }: FingerprintHist
                         <div className="space-y-1">
                           <div className="text-xs text-muted-foreground">Collection Time</div>
                           <div className="text-sm font-medium">
-                            {record.timings.total.toFixed(0)}ms
+                            {(record.timings.total ?? 0).toFixed(0)}ms
                           </div>
                         </div>
                       </div>

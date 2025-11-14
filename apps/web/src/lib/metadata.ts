@@ -1,5 +1,5 @@
 /**
- * Shared metadata configuration for CreepJS.org
+ * Shared metadata configuration for CreepJS 2.0
  *
  * This file provides consistent metadata across all pages using Next.js
  * Metadata API. It includes SEO, Open Graph, Twitter Cards, and more.
@@ -16,7 +16,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.creepjs.org';
  */
 export const SITE_CONFIG = {
   name: 'CreepJS',
-  title: 'CreepJS.org - Browser Fingerprinting Platform',
+  title: 'CreepJS - Browser Fingerprinting Platform',
   description:
     'Educational, privacy-first browser fingerprinting platform for developers. Generate unique browser fingerprints, test fingerprinting resistance, and learn about browser privacy.',
   url: SITE_URL,
@@ -77,7 +77,7 @@ export function generateMetadata({
     // Basic metadata
     title: pageTitle,
     description: pageDescription,
-    keywords: SITE_CONFIG.keywords,
+    keywords: [...SITE_CONFIG.keywords],
     authors: [{ name: SITE_CONFIG.author.name, url: SITE_CONFIG.author.url }],
     creator: SITE_CONFIG.author.name,
     publisher: SITE_CONFIG.author.name,
@@ -175,7 +175,7 @@ export const defaultMetadata: Metadata = {
     template: `%s | ${SITE_CONFIG.name}`,
   },
   description: SITE_CONFIG.description,
-  keywords: SITE_CONFIG.keywords,
+  keywords: [...SITE_CONFIG.keywords],
   authors: [{ name: SITE_CONFIG.author.name, url: SITE_CONFIG.author.url }],
   creator: SITE_CONFIG.author.name,
   publisher: SITE_CONFIG.author.name,

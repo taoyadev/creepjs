@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-CreepJS.org is an **educational, privacy-first browser fingerprinting platform** built as a SaaS service. It provides developers with easy-to-integrate APIs for browser fingerprinting while prioritizing transparency and user privacy.
+CreepJS 2.0 is an **educational, privacy-first browser fingerprinting platform** built as a SaaS service. It provides developers with easy-to-integrate APIs for browser fingerprinting while prioritizing transparency and user privacy.
 
 **Tech Stack**: pnpm monorepo (Turborepo) with Next.js 15 (frontend), Cloudflare Workers + Hono.js (API), and TypeScript throughout.
 

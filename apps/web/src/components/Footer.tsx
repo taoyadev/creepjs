@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Github, Twitter, Mail } from 'lucide-react';
+import { Github, Mail } from 'lucide-react';
 
 export function Footer() {
   return (
@@ -8,7 +8,7 @@ export function Footer() {
         <div className="grid gap-8 md:grid-cols-4">
           {/* About */}
           <div className="space-y-3">
-            <h3 className="text-lg font-semibold">CreepJS.org</h3>
+            <h3 className="text-lg font-semibold">CreepJS</h3>
             <p className="text-sm text-muted-foreground">
               Educational, privacy-first browser fingerprinting platform for developers.
             </p>
@@ -19,8 +19,8 @@ export function Footer() {
             <h3 className="text-sm font-semibold">Product</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/demo" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Demo
+                <Link href="/checker" className="text-muted-foreground hover:text-foreground transition-colors">
+                  Checker
                 </Link>
               </li>
               <li>
@@ -42,12 +42,12 @@ export function Footer() {
             <ul className="space-y-2 text-sm">
               <li>
                 <a
-                  href="https://github.com/abrahamjuliot/creepjs"
+                  href="https://github.com/taoyadev/creepjs"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  Original CreepJS
+                  CreepJS 2.0
                 </a>
               </li>
               <li>
@@ -68,7 +68,7 @@ export function Footer() {
             <h3 className="text-sm font-semibold">Connect</h3>
             <div className="flex gap-4">
               <a
-                href="https://github.com"
+                href="https://github.com/taoyadev/creepjs"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-foreground transition-colors"
@@ -77,16 +77,7 @@ export function Footer() {
                 <Github className="h-5 w-5" />
               </a>
               <a
-                href="https://twitter.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-foreground transition-colors"
-                aria-label="Twitter"
-              >
-                <Twitter className="h-5 w-5" />
-              </a>
-              <a
-                href="mailto:contact@creepjs.org"
+                href="mailto:hello@creepjs.org"
                 className="text-muted-foreground hover:text-foreground transition-colors"
                 aria-label="Email"
               >
@@ -97,24 +88,10 @@ export function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-8 pt-8 border-t">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
-            <p>
-              &copy; {new Date().getFullYear()} CreepJS.org. All rights reserved.
-            </p>
-            <p className="flex items-center gap-1">
-              Based on{' '}
-              <a
-                href="https://github.com/abrahamjuliot/creepjs"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline hover:text-foreground transition-colors"
-              >
-                CreepJS
-              </a>{' '}
-              by Abraham Juliot
-            </p>
-          </div>
+        <div className="mt-8 pt-8 border-t text-center">
+          <p className="text-sm text-muted-foreground">
+            &copy; {new Date().getFullYear()} CreepJS. All rights reserved.
+          </p>
         </div>
       </div>
     </footer>

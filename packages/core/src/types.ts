@@ -6,10 +6,22 @@ export interface FingerprintData {
   webgl?: WebGLFingerprint;
   navigator?: NavigatorFingerprint;
   screen?: ScreenFingerprint;
+  screenFrame?: ScreenFrameFingerprint;
+  screenResolution?: ScreenResolutionFingerprint;
+  colorDepth?: number;
+  languages?: LanguagesFingerprint;
+  deviceMemory?: number;
+  hardwareConcurrency?: number;
+  osCpu?: string;
+  cpuClass?: string;
+  platform?: string;
+  vendor?: string;
+  vendorFlavors?: string[];
   fonts?: FontsFingerprint;
   domBlockers?: DomBlockerFingerprint;
   fontPreferences?: FontPreferencesFingerprint;
   colorGamut?: ColorGamutFingerprint;
+  invertedColors?: boolean | undefined;
   contrast?: ContrastPreference;
   forcedColors?: ForcedColorsFingerprint;
   monochrome?: number;
@@ -18,6 +30,7 @@ export interface FingerprintData {
   hdr?: HDRStatus;
   audioBaseLatency?: AudioBaseLatencyFingerprint;
   applePay?: ApplePayFingerprint;
+  dateTimeLocale?: DateTimeLocaleFingerprint;
   timezone?: TimezoneFingerprint;
   audio?: AudioFingerprint;
   media?: MediaDevicesFingerprint;
@@ -31,11 +44,21 @@ export interface FingerprintData {
   consoleErrors?: ConsoleErrorsFingerprint;
   domRect?: DomRectFingerprint;
   mimeTypes?: MimeTypesFingerprint;
+  plugins?: PluginFingerprint[];
   resistance?: ResistanceFingerprint;
   contentWindow?: ContentWindowFingerprint;
   cssMedia?: CSSMediaFingerprint;
   webrtc?: WebRTCFingerprint;
   serviceWorker?: ServiceWorkerFingerprint;
+  sessionStorage?: boolean;
+  localStorage?: boolean;
+  indexedDB?: boolean;
+  openDatabase?: boolean;
+  touchSupport?: TouchSupportFingerprint;
+  cookiesEnabled?: boolean;
+  pdfViewerEnabled?: boolean;
+  architecture?: number;
+  privateClickMeasurement?: string;
   lies?: LiesFingerprint;
 }
 
@@ -68,22 +91,13 @@ export interface NavigatorFingerprint {
   appVersion: string;
   appName: string;
   language: string;
-  languages: readonly string[];
   platform: string;
   product: string;
   productSub: string;
-  vendor: string;
-  vendorSub: string;
-  hardwareConcurrency: number;
-  deviceMemory?: number;
-  maxTouchPoints: number;
   cookieEnabled: boolean;
   doNotTrack: string | null;
   onLine: boolean;
   webdriver?: boolean;
-  pdfViewerEnabled?: boolean;
-  pluginsLength: number;
-  mimeTypesLength: number;
   connection?: {
     effectiveType?: string;
     rtt?: number;
@@ -104,6 +118,17 @@ export interface ScreenFingerprint {
   pixelDepth: number;
   devicePixelRatio: number;
 }
+
+export interface ScreenFrameFingerprint {
+  top: number | null;
+  right: number | null;
+  bottom: number | null;
+  left: number | null;
+}
+
+export type ScreenResolutionFingerprint = [number | null, number | null];
+
+export type LanguagesFingerprint = string[][];
 
 /**
  * Font detection fingerprint
@@ -195,6 +220,15 @@ export interface TimezoneFingerprint {
     pluralRules: number;
   };
 }
+
+export const DateTimeLocaleStatus = {
+  IntlAPINotSupported: -1,
+  DateTimeFormatNotSupported: -2,
+  LocaleNotAvailable: -3,
+} as const;
+
+export type DateTimeLocaleStatus = typeof DateTimeLocaleStatus[keyof typeof DateTimeLocaleStatus];
+export type DateTimeLocaleFingerprint = string | DateTimeLocaleStatus;
 
 /**
  * Audio Context fingerprint
@@ -341,6 +375,15 @@ export interface MimeTypesFingerprint {
   }>;
 }
 
+export interface PluginFingerprint {
+  name: string;
+  description: string;
+  mimeTypes: Array<{
+    type: string;
+    suffixes: string;
+  }>;
+}
+
 /**
  * Resistance Detection fingerprint
  */
@@ -348,6 +391,12 @@ export interface ResistanceFingerprint {
   detections: Record<string, boolean>;
   totalDetections: number;
   privacyToolDetected: boolean;
+}
+
+export interface TouchSupportFingerprint {
+  maxTouchPoints: number;
+  touchEvent: boolean;
+  touchStart: boolean;
 }
 
 /**
@@ -447,11 +496,20 @@ export interface LiesFingerprint {
   inconsistencies: string[];
 }
 
+export type CollectorStatus = 'success' | 'error' | 'skipped';
+
 export interface CollectorSummary<T = unknown> {
-  status: 'success' | 'error';
+  status: CollectorStatus;
   duration: number;
   value?: T;
   error?: string;
+}
+
+export interface CollectorCoverage {
+  ratio: number;
+  successful: number;
+  failed: number;
+  skipped: number;
 }
 
 /**
@@ -462,6 +520,17 @@ export interface CollectorTimings {
   webgl?: number;
   navigator?: number;
   screen?: number;
+  screenFrame?: number;
+  screenResolution?: number;
+  colorDepth?: number;
+  languages?: number;
+  deviceMemory?: number;
+  hardwareConcurrency?: number;
+  osCpu?: number;
+  cpuClass?: number;
+  platform?: number;
+  vendor?: number;
+  vendorFlavors?: number;
   fonts?: number;
   timezone?: number;
   audio?: number;
@@ -476,11 +545,23 @@ export interface CollectorTimings {
   consoleErrors?: number;
   domRect?: number;
   mimeTypes?: number;
+  plugins?: number;
   resistance?: number;
   contentWindow?: number;
   cssMedia?: number;
   webrtc?: number;
   serviceWorker?: number;
+  sessionStorage?: number;
+  localStorage?: number;
+  indexedDB?: number;
+  openDatabase?: number;
+  touchSupport?: number;
+  cookiesEnabled?: number;
+  pdfViewerEnabled?: number;
+  architecture?: number;
+  privateClickMeasurement?: number;
+  dateTimeLocale?: number;
+  invertedColors?: number;
   lies?: number;
   total?: number;
   [key: string]: number | undefined;
@@ -494,6 +575,7 @@ export interface FingerprintResult {
   data: FingerprintData;
   timestamp: number;
   confidence: number;
+  coverage: CollectorCoverage;
   timings: CollectorTimings;
   collectors: Record<string, CollectorSummary>;
 }

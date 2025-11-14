@@ -1,6 +1,8 @@
 import type { MetadataRoute } from 'next';
 import { SITE_CONFIG } from '@/lib/metadata';
 
+export const dynamic = 'force-static';
+
 /**
  * Generate sitemap.xml for the CreepJS website
  *
@@ -19,7 +21,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1.0,
     },
     {
-      url: `${baseUrl}/demo`,
+      url: `${baseUrl}/checker`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.9,

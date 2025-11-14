@@ -29,7 +29,8 @@ export async function collectApplePayFingerprint(): Promise<ApplePayFingerprint 
     try {
       const result = ApplePaySession.canMakePayments();
       fingerprint.canMakePayments = typeof result === 'boolean' ? result : await result;
-    } catch {
+    } catch (_applePayError) {
+      void _applePayError;
       // Swallow errors—Safari may throw if Apple Pay not configured
       fingerprint.canMakePayments = undefined;
     }

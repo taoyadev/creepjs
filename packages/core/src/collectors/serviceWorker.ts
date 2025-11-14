@@ -52,7 +52,8 @@ export async function collectServiceWorkerFingerprint(): Promise<ServiceWorkerFi
       scope = registration.scope;
       state = registration.active?.state;
     }
-  } catch {
+  } catch (_readyError) {
+    void _readyError;
     // Ignore readiness errors
   }
 
@@ -67,8 +68,8 @@ export async function collectServiceWorkerFingerprint(): Promise<ServiceWorkerFi
     backgroundFetch: 'BackgroundFetchManager' in window || 'backgroundFetch' in proto,
     cacheAPI: typeof caches !== 'undefined',
     notifications: typeof Notification !== 'undefined',
-    paymentManager: typeof PaymentManager !== 'undefined' || 'paymentManager' in proto,
-    cookieStore: typeof CookieStore !== 'undefined' || 'cookieStore' in proto,
+    paymentManager: (typeof window !== 'undefined' && 'PaymentManager' in window) || 'paymentManager' in proto,
+    cookieStore: 'CookieStore' in globalThis || 'cookieStore' in proto,
     getRegistrations: typeof sw.getRegistrations === 'function',
   } satisfies ServiceWorkerFingerprint['features'];
 
@@ -78,16 +79,28 @@ export async function collectServiceWorkerFingerprint(): Promise<ServiceWorkerFi
 
   if (permissionsApi?.query) {
     try {
-      const notifPerm = await permissionsApi.query({ name: 'notifications' as PermissionName });
-      permissions.notifications = notifPerm.state;
-    } catch {
+      const notifPerm = await Promise.race([
+        permissionsApi.query({ name: 'notifications' as PermissionName }),
+        new Promise<null>((resolve) => setTimeout(() => resolve(null), 100)),
+      ]);
+      if (notifPerm) {
+        permissions.notifications = notifPerm.state;
+      }
+    } catch (_notificationPermissionError) {
+      void _notificationPermissionError;
       // ignore
     }
 
     try {
-      const pushPerm = await permissionsApi.query({ name: 'push', userVisibleOnly: true } as PermissionDescriptor);
-      permissions.push = pushPerm.state;
-    } catch {
+      const pushPerm = await Promise.race([
+        permissionsApi.query({ name: 'push', userVisibleOnly: true } as PermissionDescriptor),
+        new Promise<null>((resolve) => setTimeout(() => resolve(null), 100)),
+      ]);
+      if (pushPerm) {
+        permissions.push = pushPerm.state;
+      }
+    } catch (_pushPermissionError) {
+      void _pushPermissionError;
       // ignore
     }
   }

@@ -129,7 +129,8 @@ export function collectResistanceFingerprint(): ResistanceFingerprint | undefine
         const data = canvas.toDataURL();
         detections.canvasBlocked = data.length < 100;
       }
-    } catch {
+    } catch (_canvasError) {
+      void _canvasError;
       detections.canvasBlocked = true;
     }
 
@@ -155,7 +156,8 @@ export function collectResistanceFingerprint(): ResistanceFingerprint | undefine
             !vendor || !renderer || vendor === 'Google Inc.' || renderer === 'ANGLE';
         }
       }
-    } catch {
+    } catch (_webglError) {
+      void _webglError;
       detections.webglBlocked = true;
     }
 
@@ -172,7 +174,8 @@ export function collectResistanceFingerprint(): ResistanceFingerprint | undefine
       if (timezone === 'UTC' && offset !== 0) {
         detections.timezoneSpoofed = true;
       }
-    } catch {
+    } catch (_timezoneError) {
+      void _timezoneError;
       // Ignore
     }
 
@@ -284,7 +287,8 @@ export function collectResistanceFingerprint(): ResistanceFingerprint | undefine
       if (window.self !== window.top) {
         detections.iframeDetected = true;
       }
-    } catch {
+    } catch (_frameError) {
+      void _frameError;
       // Cross-origin iframe - can't access window.top
     }
 

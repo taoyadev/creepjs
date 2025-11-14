@@ -5,6 +5,45 @@
 
 import type { FingerprintData, LiesFingerprint } from '../types';
 
+const LIE_DEFAULT_WEIGHT = 1;
+const LIE_WEIGHTS: Record<string, number> = {
+  screenDimensionsZero: 3,
+  availSizeExceedsScreen: 2,
+  windowDimensionsZero: 3,
+  outerSmallerThanInner: 2,
+  suspiciousPixelRatio: 2,
+  userAgentPlatformMismatch: 3,
+  mobileWithoutTouch: 2,
+  emptyLanguages: 1,
+  suspiciousHardwareConcurrency: 2,
+  missingPlugins: 1,
+  genericWebGL: 1,
+  webglVendorMismatch: 4,
+  timezoneSpoofed: 4,
+  impossibleTimezoneOffset: 4,
+  suspiciousCanvasHash: 3,
+  canvasBlocked: 3,
+  unusualAudioSampleRate: 2,
+  mathConstantsModified: 5,
+  noMediaDevices: 3,
+  tooFewFonts: 2,
+  tooManyFonts: 2,
+  privacyToolsDetected: 5,
+};
+
+const TOTAL_LIE_WEIGHT = Object.values(LIE_WEIGHTS).reduce((sum, weight) => sum + weight, 0);
+
+const BENIGN_RESISTANCE_KEYS = new Set([
+  'deviceEventsBlocked',
+  'batteryMissing',
+  'notificationMissing',
+  'permissionsInconsistent',
+  'connectionRttZero',
+  'navigatorInconsistent',
+  'screenInconsistent',
+  'windowSizeInconsistent',
+]);
+
 /**
  * Collect lies detection data by analyzing other fingerprint data for inconsistencies
  */
@@ -49,7 +88,7 @@ export async function collectLiesFingerprint(data: FingerprintData): Promise<Lie
 
     // Navigator consistency checks
     if (data.navigator) {
-      const { userAgent, platform, languages, maxTouchPoints, hardwareConcurrency } = data.navigator;
+      const { userAgent, platform } = data.navigator;
 
       // User-Agent vs Platform mismatch
       const ua = userAgent.toLowerCase();
@@ -59,32 +98,36 @@ export async function collectLiesFingerprint(data: FingerprintData): Promise<Lie
           (ua.includes('mac') && !plat.includes('mac')) ||
           (ua.includes('linux') && !plat.includes('linux'))) {
         lies.userAgentPlatformMismatch = true;
-        inconsistencies.push(`User-Agent (${platform}) doesn't match Platform (${platform})`);
+        inconsistencies.push(`User-Agent (${userAgent}) doesn't match platform (${platform})`);
       }
 
       // Mobile UA without touch support
-      if ((ua.includes('mobile') || ua.includes('android') || ua.includes('iphone')) && maxTouchPoints === 0) {
+      const touchPoints = data.touchSupport?.maxTouchPoints ?? 0;
+      if ((ua.includes('mobile') || ua.includes('android') || ua.includes('iphone')) && touchPoints === 0) {
         lies.mobileWithoutTouch = true;
         inconsistencies.push('Mobile User-Agent but no touch support');
       }
 
       // Empty languages array
-      if (!languages || languages.length === 0) {
+      const languages = data.languages?.flat() ?? [];
+      if (languages.length === 0) {
         lies.emptyLanguages = true;
         inconsistencies.push('Navigator languages array is empty');
       }
 
       // Suspicious hardware concurrency
-      if (hardwareConcurrency === 0 || hardwareConcurrency === 1 || hardwareConcurrency > 128) {
-        lies.suspiciousHardwareConcurrency = true;
-        inconsistencies.push(`Unusual hardware concurrency: ${hardwareConcurrency}`);
+      if (typeof data.hardwareConcurrency === 'number') {
+        if (data.hardwareConcurrency === 0 || data.hardwareConcurrency === 1 || data.hardwareConcurrency > 128) {
+          lies.suspiciousHardwareConcurrency = true;
+          inconsistencies.push(`Unusual hardware concurrency: ${data.hardwareConcurrency}`);
+        }
       }
 
       // Missing plugins/mimeTypes on non-mobile
       if (!ua.includes('mobile') && !ua.includes('android') && !ua.includes('iphone')) {
-        if (data.navigator.pluginsLength === 0) {
+        if (Array.isArray(data.plugins) && data.plugins.length === 0) {
           lies.missingPlugins = true;
-          inconsistencies.push('Desktop browser with no plugins (unusual)');
+          inconsistencies.push('Desktop browser reported zero plugins after enumeration');
         }
       }
     }
@@ -94,14 +137,22 @@ export async function collectLiesFingerprint(data: FingerprintData): Promise<Lie
       const { vendor, renderer, unmaskedVendor, unmaskedRenderer } = data.webgl;
 
       // Check for generic/suspicious values
-      if (vendor === 'Google Inc.' && renderer === 'ANGLE') {
+      const genericMasked = vendor === 'Google Inc.' && renderer === 'ANGLE';
+      const hasUnmaskedValues = Boolean(unmaskedVendor && unmaskedRenderer);
+      if (genericMasked && !hasUnmaskedValues) {
         lies.genericWebGL = true;
-        inconsistencies.push('Generic WebGL vendor/renderer (possible spoofing)');
+        inconsistencies.push('WebGL exposes only generic Google/ANGLE identifiers');
       }
 
       // Check if unmasked values differ significantly
-      if (unmaskedVendor && unmaskedRenderer) {
-        if (!unmaskedVendor.includes(vendor) && !vendor.includes('Google')) {
+      if (unmaskedVendor && unmaskedRenderer && vendor) {
+        const maskedVendor = vendor.toLowerCase();
+        const rawVendor = unmaskedVendor.toLowerCase();
+        const mismatch =
+          maskedVendor.length > 0 &&
+          !rawVendor.includes(maskedVendor) &&
+          maskedVendor !== 'google inc.';
+        if (mismatch) {
           lies.webglVendorMismatch = true;
           inconsistencies.push('WebGL vendor mismatch between masked and unmasked');
         }
@@ -198,11 +249,17 @@ export async function collectLiesFingerprint(data: FingerprintData): Promise<Lie
 
     // Resistance detection analysis
     if (data.resistance) {
-      const { totalDetections, privacyToolDetected } = data.resistance;
+      const { totalDetections, privacyToolDetected, detections } = data.resistance;
+      const benignSignals = detections
+        ? Object.entries(detections).reduce((sum, [key, value]) =>
+            value && BENIGN_RESISTANCE_KEYS.has(key) ? sum + 1 : sum,
+          0)
+        : 0;
+      const meaningfulSignals = Math.max(0, totalDetections - benignSignals);
 
-      if (privacyToolDetected || totalDetections > 3) {
+      if ((privacyToolDetected && meaningfulSignals >= 4) || meaningfulSignals >= 8) {
         lies.privacyToolsDetected = true;
-        inconsistencies.push(`Privacy tools or anti-fingerprinting detected (${totalDetections} signals)`);
+        inconsistencies.push(`Privacy tooling indicators detected (${meaningfulSignals} strong signals)`);
       }
     }
 
@@ -210,8 +267,13 @@ export async function collectLiesFingerprint(data: FingerprintData): Promise<Lie
     const liesCount = Object.values(lies).filter(v => v === true).length;
 
     // Calculate trust score (0-100, higher is more trustworthy)
-    const maxPossibleLies = 25; // Approximate max number of lie types we check
-    const trustScore = Math.max(0, Math.round(100 * (1 - liesCount / maxPossibleLies)));
+    const triggeredWeight = Object.entries(lies).reduce((sum, [flag, value]) =>
+      value ? sum + (LIE_WEIGHTS[flag] ?? LIE_DEFAULT_WEIGHT) : sum, 0);
+    const unknownTriggered = Object.keys(lies).filter((flag) => !(flag in LIE_WEIGHTS)).length;
+    const maxWeight = TOTAL_LIE_WEIGHT + unknownTriggered * LIE_DEFAULT_WEIGHT;
+    const trustScore = maxWeight === 0
+      ? 100
+      : Math.max(0, Math.round(100 * (1 - triggeredWeight / maxWeight)));
 
     // Generate hash
     const dataString = JSON.stringify({ lies, liesCount, trustScore, inconsistencies });

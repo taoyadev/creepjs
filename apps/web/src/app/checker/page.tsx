@@ -226,7 +226,7 @@ export default function DemoPage() {
               <div className="bg-background/50 rounded-lg p-4 border border-border">
                 <div className="font-semibold mb-2 text-green-500">What You Can Learn</div>
                 <p className="text-xs text-muted-foreground">
-                  Explore each collector below to see exactly what data is gathered. The Confidence Score indicates how unique your fingerprint is. Higher confidence means your device configuration is more distinguishable from other users. Check the tabs below for advanced analysis and privacy insights.
+                  Explore each collector below to see exactly what data is gathered. The Coverage Score shows how many signals were successfully collected, not how unique you are. Higher coverage means more browser APIs responded without being blocked, which gives the analyzer better context. Check the tabs below for advanced analysis and privacy insights.
                 </p>
               </div>
             </div>
@@ -252,7 +252,7 @@ export default function DemoPage() {
                   level={
                     fingerprint.confidence >= 0.8 ? 'low' : fingerprint.confidence >= 0.6 ? 'medium' : 'high'
                   }
-                  label={`Confidence: ${(fingerprint.confidence * 100).toFixed(1)}%`}
+                  label={`Coverage: ${(fingerprint.confidence * 100).toFixed(1)}%`}
                 />
                 <span className="text-sm font-normal text-muted-foreground">
                   Total Time: {fingerprint.timings.total?.toFixed(2)}ms
@@ -276,7 +276,7 @@ export default function DemoPage() {
           </CardContent>
         </Card>
 
-        {/* Confidence Dashboard */}
+        {/* Coverage Dashboard */}
         <ConfidenceDashboard result={fingerprint} />
 
         {/* Uniqueness Analysis */}
@@ -360,15 +360,21 @@ export default function DemoPage() {
                 <div className="space-y-1">
                   <DataRow label="Platform" value={fingerprint.data.navigator.platform} />
                   <DataRow label="Language" value={fingerprint.data.navigator.language} />
-                  <DataRow
-                    label="Languages"
-                    value={Array.isArray(fingerprint.data.navigator.languages) ? fingerprint.data.navigator.languages.join(', ') : String(fingerprint.data.navigator.languages)}
-                  />
-                  <DataRow label="Hardware Concurrency" value={`${fingerprint.data.navigator.hardwareConcurrency ?? 'N/A'} cores`} />
-                  {fingerprint.data.navigator.deviceMemory && (
-                    <DataRow label="Device Memory" value={`${fingerprint.data.navigator.deviceMemory}GB`} />
+                  {fingerprint.data.languages && (
+                    <DataRow
+                      label="Languages"
+                      value={Array.isArray(fingerprint.data.languages) ? fingerprint.data.languages.flat().join(', ') : String(fingerprint.data.languages)}
+                    />
                   )}
-                  <DataRow label="Max Touch Points" value={String(fingerprint.data.navigator.maxTouchPoints ?? 'N/A')} />
+                  {fingerprint.data.hardwareConcurrency && (
+                    <DataRow label="Hardware Concurrency" value={`${fingerprint.data.hardwareConcurrency} cores`} />
+                  )}
+                  {fingerprint.data.deviceMemory && (
+                    <DataRow label="Device Memory" value={`${fingerprint.data.deviceMemory}GB`} />
+                  )}
+                  {fingerprint.data.touchSupport?.maxTouchPoints !== undefined && (
+                    <DataRow label="Max Touch Points" value={String(fingerprint.data.touchSupport.maxTouchPoints)} />
+                  )}
                 </div>
                 <div className="space-y-1">
                   <DataRow label="Cookie Enabled" value={fingerprint.data.navigator.cookieEnabled ? 'Yes' : 'No'} />
@@ -380,8 +386,8 @@ export default function DemoPage() {
                       value={fingerprint.data.navigator.webdriver ? <RiskBadge level="high" label="Detected" /> : <RiskBadge level="low" label="Not Detected" />}
                     />
                   )}
-                  {fingerprint.data.navigator.pdfViewerEnabled !== undefined && (
-                    <DataRow label="PDF Viewer" value={fingerprint.data.navigator.pdfViewerEnabled ? 'Yes' : 'No'} />
+                  {fingerprint.data.pdfViewerEnabled !== undefined && (
+                    <DataRow label="PDF Viewer" value={fingerprint.data.pdfViewerEnabled ? 'Yes' : 'No'} />
                   )}
                 </div>
               </div>
@@ -1072,10 +1078,18 @@ export default function DemoPage() {
                     <div className="space-y-1">
                       <DataRow label="Platform" value={fingerprint.data.navigator.platform} />
                       <DataRow label="Language" value={fingerprint.data.navigator.language} />
-                      <DataRow label="Languages" value={fingerprint.data.navigator.languages.join(', ')} />
-                      <DataRow label="Hardware Concurrency" value={`${fingerprint.data.navigator.hardwareConcurrency} cores`} />
-                      {fingerprint.data.navigator.deviceMemory && <DataRow label="Device Memory" value={`${fingerprint.data.navigator.deviceMemory}GB`} />}
-                      <DataRow label="Max Touch Points" value={fingerprint.data.navigator.maxTouchPoints} />
+                      {fingerprint.data.languages && (
+                        <DataRow label="Languages" value={fingerprint.data.languages.flat().join(', ')} />
+                      )}
+                      {fingerprint.data.hardwareConcurrency && (
+                        <DataRow label="Hardware Concurrency" value={`${fingerprint.data.hardwareConcurrency} cores`} />
+                      )}
+                      {fingerprint.data.deviceMemory && (
+                        <DataRow label="Device Memory" value={`${fingerprint.data.deviceMemory}GB`} />
+                      )}
+                      {fingerprint.data.touchSupport?.maxTouchPoints !== undefined && (
+                        <DataRow label="Max Touch Points" value={String(fingerprint.data.touchSupport.maxTouchPoints)} />
+                      )}
                     </div>
                     <div className="space-y-1">
                       <DataRow label="Cookie Enabled" value={fingerprint.data.navigator.cookieEnabled ? 'Yes' : 'No'} />
@@ -1084,7 +1098,7 @@ export default function DemoPage() {
                       {fingerprint.data.navigator.webdriver !== undefined && (
                         <DataRow label="Webdriver" value={fingerprint.data.navigator.webdriver ? <RiskBadge level="high" label="Detected" /> : <RiskBadge level="low" label="Not Detected" />} />
                       )}
-                      {fingerprint.data.navigator.pdfViewerEnabled !== undefined && <DataRow label="PDF Viewer" value={fingerprint.data.navigator.pdfViewerEnabled ? 'Yes' : 'No'} />}
+                      {fingerprint.data.pdfViewerEnabled !== undefined && <DataRow label="PDF Viewer" value={fingerprint.data.pdfViewerEnabled ? 'Yes' : 'No'} />}
                     </div>
                   </div>
                 </FingerprintCollectorCard>

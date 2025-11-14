@@ -26,10 +26,19 @@ app.post(
     await c.env.TOKENS.put(token, JSON.stringify(updatedTokenData));
 
     // Return fingerprint response
+    const coverage = data.coverage ?? {
+      ratio: data.confidence,
+      successful: 0,
+      failed: 0,
+      skipped: 0,
+    };
+
     return c.json({
       fingerprintId: data.fingerprintId,
+      data: data.data,
       timestamp: Date.now(),
       confidence: data.confidence,
+      coverage,
       collectors: data.collectors,
       timings: data.timings,
     });
