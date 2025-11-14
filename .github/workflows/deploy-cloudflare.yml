@@ -46,6 +46,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
+      - name: Clean build artifacts
+        run: |
+          find . -name "*.tsbuildinfo" -type f -delete
+          pnpm --filter @creepjs/core clean || true
+          pnpm --filter @creepjs/sdk clean || true
+
       - name: Build dependency packages
         run: |
           pnpm --filter @creepjs/core build
