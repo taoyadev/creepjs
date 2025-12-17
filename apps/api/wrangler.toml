@@ -1,0 +1,28 @@
+name = "creepjs-api"
+main = "src/index.ts"
+compatibility_date = "2024-12-30"
+compatibility_flags = ["nodejs_compat"]
+account_id = "fe394f7c37b25babc4e351d704a6a97c"
+
+[dev]
+port = 8788
+
+[[kv_namespaces]]
+binding = "TOKENS"
+id = "ae71fcdee0c84e8eb3f14f2270330c57"
+
+[[kv_namespaces]]
+binding = "RATE_LIMIT"
+id = "8ec5c58120de4f26b21a85717dd8a84c"
+
+[[kv_namespaces]]
+binding = "IP_CACHE"
+id = "06d882d1a9a946dbaf6204a542d5df58"
+
+
+[vars]
+ENVIRONMENT = "production"
+CORS_ORIGIN = "*"
+RATE_LIMIT_PER_DAY = "1000"
+# IPINFO_TOKEN should be set as a secret, not hardcoded here
+# Set via: wrangler secret put IPINFO_TOKEN

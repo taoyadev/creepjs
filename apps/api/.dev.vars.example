@@ -1,0 +1,85 @@
+# ═══════════════════════════════════════════════════════════════
+# CreepJS API (Cloudflare Workers) - Local Development Variables
+# ═══════════════════════════════════════════════════════════════
+#
+# This file defines environment variables for local development with
+# wrangler dev. Copy this file to `.dev.vars` and update the values.
+#
+# IMPORTANT:
+# - .dev.vars is gitignored and should NEVER be committed
+# - Production secrets are managed via `wrangler secret put`
+# - KV namespaces are bound via wrangler.toml (no env vars needed)
+#
+# Usage:
+#   1. Copy this file: cp .dev.vars.example .dev.vars
+#   2. Update values in .dev.vars
+#   3. Run: wrangler dev
+#
+# ═══════════════════════════════════════════════════════════════
+
+# ---------------------------------------------------------------------
+# Application Secrets (optional for local dev)
+# ---------------------------------------------------------------------
+# These are typically managed via `wrangler secret put` in production
+# For local development, you can define them here for testing
+# ---------------------------------------------------------------------
+
+# Private key for signing API tokens (optional - future enhancement)
+# Generate with: openssl rand -base64 32
+# Note: Current implementation uses hash-based tokens without signing
+# CREEPJS_TOKEN_PRIVATE_KEY=your_base64_encoded_private_key_here
+
+# ---------------------------------------------------------------------
+# Environment Configuration (read from wrangler.toml in production)
+# ---------------------------------------------------------------------
+# These are typically defined in wrangler.toml [vars] section
+# You can override them here for local testing if needed
+# ---------------------------------------------------------------------
+
+# Environment name (development | staging | production)
+# ENVIRONMENT=development
+
+# CORS allowed origins (* for all, or specific domain)
+# CORS_ORIGIN=*
+
+# Rate limit per day per token
+# RATE_LIMIT_PER_DAY=1000
+
+# IPInfo.io API token for IP geolocation lookups
+# Get your free token at: https://ipinfo.io/signup
+# IPINFO_TOKEN=your_ipinfo_token_here
+
+# ---------------------------------------------------------------------
+# KV Namespace Bindings (managed via wrangler.toml)
+# ---------------------------------------------------------------------
+# KV namespaces are automatically bound via wrangler.toml
+# No environment variables needed - bindings are:
+# - TOKENS (stores API token data)
+# - RATE_LIMIT (stores rate limiting data)
+# - IP_CACHE (stores IP geolocation cache with 1h TTL)
+#
+# Setup KV namespaces with: ./scripts/setup-kv.sh
+# ---------------------------------------------------------------------
+
+# ---------------------------------------------------------------------
+# Local Development Notes
+# ---------------------------------------------------------------------
+#
+# KV Storage:
+# - `wrangler dev` uses local KV storage (persisted in .wrangler/state)
+# - Data is not shared with production
+# - Use `wrangler kv:key put` for manual testing
+#
+# Testing:
+# - API runs on http://localhost:8787 by default
+# - Health check: curl http://localhost:8787/
+# - Generate token: curl -X POST http://localhost:8787/v1/token \
+#                        -H "Content-Type: application/json" \
+#                        -d '{"email":"test@example.com"}'
+#
+# Debugging:
+# - Add console.log() statements in your code
+# - Logs appear in wrangler dev terminal
+# - Use `wrangler tail` for production logs
+#
+# ---------------------------------------------------------------------

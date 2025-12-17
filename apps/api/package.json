@@ -1,0 +1,35 @@
+{
+  "name": "@creepjs/api",
+  "version": "1.0.0",
+  "description": "Cloudflare Workers API for CreepJS",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "build": "tsc",
+    "lint": "eslint src --ext .ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist node_modules .turbo .wrangler"
+  },
+  "dependencies": {
+    "@creepjs/core": "workspace:*",
+    "@hono/zod-validator": "^0.7.4",
+    "hono": "^4.6.16",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.5.28",
+    "@cloudflare/workers-types": "^4.20250117.0",
+    "@types/node": "^22.10.2",
+    "@typescript-eslint/eslint-plugin": "^8.18.2",
+    "@typescript-eslint/parser": "^8.18.2",
+    "eslint": "^9.18.0",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8",
+    "wrangler": "^3.114.15"
+  },
+  "license": "MIT"
+}
