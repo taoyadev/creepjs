@@ -154,14 +154,20 @@ jobs:
         id: health-check-root
         run: |
           echo "Testing API health endpoint..."
-          response=$(curl -s -o /dev/null -w "%{http_code}" https://api.creepjs.org/ || echo "000")
-          echo "Response code: $response"
+          # Retry to tolerate edge propagation / cold-connection blips after deploy.
+          status="000"
+          for i in 1 2 3 4 5; do
+            status=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 https://api.creepjs.org/ || echo "000")
+            echo "Attempt $i: $status"
+            [ "$status" = "200" ] && break
+            sleep 6
+          done
 
-          if [ "$response" = "200" ]; then
+          if [ "$status" = "200" ]; then
             echo "✅ Health check passed!"
             echo "status=success" >> $GITHUB_OUTPUT
           else
-            echo "❌ Health check failed with status code: $response"
+            echo "❌ Health check failed with status code: $status"
             echo "status=failed" >> $GITHUB_OUTPUT
             exit 1
           fi

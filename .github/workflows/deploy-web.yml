@@ -168,7 +168,9 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: nextjs-build
-          path: apps/web
+          # Artifact holds the CONTENTS of out/, so restore it INTO apps/web/out
+          # to match `directory: apps/web/out` below.
+          path: apps/web/out
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/pages-action@v1
