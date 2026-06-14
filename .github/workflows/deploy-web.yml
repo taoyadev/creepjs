@@ -173,14 +173,11 @@ jobs:
           path: apps/web/out
 
       - name: Deploy to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
+        uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: creepjs
-          directory: apps/web/out
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-          branch: main
+          command: pages deploy apps/web/out --project-name=creepjs --branch=main
 
       - name: Wait for deployment to propagate
         run: sleep 15
