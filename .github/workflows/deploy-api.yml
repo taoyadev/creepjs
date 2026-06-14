@@ -66,6 +66,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # Build workspace deps so @creepjs/core types resolve for lint/typecheck
+      - name: Build workspace packages
+        run: |
+          pnpm --filter @creepjs/core build
+          pnpm --filter @creepjs/sdk build
+
       - name: Lint API code
         run: pnpm --filter @creepjs/api lint
 

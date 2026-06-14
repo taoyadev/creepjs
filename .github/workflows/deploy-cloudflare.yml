@@ -1,9 +1,9 @@
 name: Deploy to Cloudflare
 
+# NOTE: push trigger disabled to avoid duplicate web deploys.
+# Web is deployed by deploy-web.yml; API by deploy-api.yml. This workflow is
+# kept as a manual fallback only (uses --no-frozen-lockfile, less reproducible).
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 env:
