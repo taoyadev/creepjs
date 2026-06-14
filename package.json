@@ -1,0 +1,39 @@
+{
+  "name": "creepjs-monorepo",
+  "version": "1.0.0",
+  "description": "CreepJS 2.0 - Educational browser fingerprinting platform",
+  "private": true,
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "lint:fix": "turbo run lint -- --fix",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "test": "turbo run test",
+    "test:coverage": "turbo run test -- --coverage",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "typecheck": "turbo run typecheck"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.14.0",
+    "@next/eslint-plugin-next": "^15.1.5",
+    "@turbo/gen": "^2.3.3",
+    "eslint": "^9.18.0",
+    "globals": "^15.12.0",
+    "prettier": "^3.4.2",
+    "prettier-plugin-tailwindcss": "^0.6.10",
+    "turbo": "^2.3.3",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.18.2"
+  },
+  "engines": {
+    "node": ">=20.9.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@9.15.4",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
+}

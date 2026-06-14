@@ -1,0 +1,36 @@
+name = "creepjs-api"
+main = "src/index.ts"
+compatibility_date = "2024-12-30"
+compatibility_flags = ["nodejs_compat"]
+# account_id is NOT stored here (repo is public). Provide it via the
+# CLOUDFLARE_ACCOUNT_ID environment variable (local shell, .dev.vars, or CI secret).
+# wrangler reads it automatically. See wrangler.toml.example.
+
+[dev]
+port = 8788
+
+[[kv_namespaces]]
+binding = "TOKENS"
+id = "ae71fcdee0c84e8eb3f14f2270330c57"
+
+[[kv_namespaces]]
+binding = "RATE_LIMIT"
+id = "8ec5c58120de4f26b21a85717dd8a84c"
+
+[[kv_namespaces]]
+binding = "IP_CACHE"
+id = "06d882d1a9a946dbaf6204a542d5df58"
+
+
+[vars]
+ENVIRONMENT = "production"
+CORS_ORIGIN = "*"
+RATE_LIMIT_PER_DAY = "1000"
+# IPINFO_TOKEN should be set as a secret, not hardcoded here
+# Set via: wrangler secret put IPINFO_TOKEN
+
+# IPbot IP intelligence API. The origin is public config; the key is a secret.
+IPBOT_API_ORIGIN = "https://api.ipbot.com"
+# IPBOT_API_KEY must NEVER be hardcoded. Set it as a secret:
+#   wrangler secret put IPBOT_API_KEY
+# For local dev, put it in apps/api/.dev.vars (gitignored).

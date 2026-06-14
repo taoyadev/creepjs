@@ -1,0 +1,15 @@
+node_modules/
+.pnpm-store/
+.next/
+out/
+dist/
+coverage/
+.turbo/
+.tmp/
+.wrangler/
+**/*.tsbuildinfo
+**/.rollup.cache/
+apps/web/.vercel/
+apps/web/out/
+apps/api/dist/
+apps/api/.wrangler/

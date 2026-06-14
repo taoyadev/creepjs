@@ -1,0 +1,38 @@
+# Template for apps/api/wrangler.toml
+#
+# The real wrangler.toml is committed but MUST NOT contain account_id or any
+# secret. Provide the account id via the CLOUDFLARE_ACCOUNT_ID env var:
+#   export CLOUDFLARE_ACCOUNT_ID=<your-cloudflare-account-id>
+#   export CLOUDFLARE_API_TOKEN=<scoped-api-token>
+#   pnpm --filter @creepjs/api exec wrangler deploy
+#
+# Secrets are set per-Worker (never committed):
+#   wrangler secret put IPBOT_API_KEY
+#   wrangler secret put IPINFO_TOKEN
+
+name = "creepjs-api"
+main = "src/index.ts"
+compatibility_date = "2024-12-30"
+compatibility_flags = ["nodejs_compat"]
+
+[dev]
+port = 8788
+
+# KV namespace ids are resource identifiers (not secrets) — replace with your own.
+[[kv_namespaces]]
+binding = "TOKENS"
+id = "<tokens-kv-namespace-id>"
+
+[[kv_namespaces]]
+binding = "RATE_LIMIT"
+id = "<rate-limit-kv-namespace-id>"
+
+[[kv_namespaces]]
+binding = "IP_CACHE"
+id = "<ip-cache-kv-namespace-id>"
+
+[vars]
+ENVIRONMENT = "production"
+CORS_ORIGIN = "*"
+RATE_LIMIT_PER_DAY = "1000"
+IPBOT_API_ORIGIN = "https://api.ipbot.com"
