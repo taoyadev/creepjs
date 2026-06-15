@@ -160,3 +160,62 @@ describe('IP intelligence route', () => {
     expect(json.error).toContain('IPbot API error 503');
   });
 });
+
+describe('Public IP intelligence route (/v1/ip/public/:ip)', () => {
+  const visitor = { 'CF-Connecting-IP': '203.0.113.7' };
+
+  it('works without a token and reports the public quota', async () => {
+    const env = createTestEnv();
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(ok(GOOGLE_DNS)));
+
+    const res = await app.fetch(
+      new Request('http://localhost/v1/ip/public/8.8.8.8', { headers: visitor }),
+      env
+    );
+    const json = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(json).toMatchObject({
+      cached: false,
+      highRisk: false,
+      data: { ip: '8.8.8.8', network: { org: 'Google LLC' } },
+      rateLimit: { tier: 'public', limit: 30 },
+    });
+    // Public response must NOT leak the upstream IPbot quota.
+    expect(json.rateLimit.tier).toBe('public');
+  });
+
+  it('enforces the per-visitor-IP daily limit', async () => {
+    const env = createTestEnv({ bindings: { PUBLIC_IP_DAILY_PER_IP: '2' } });
+    // Fresh Response per call (its body can only be read once).
+    vi.stubGlobal('fetch', vi.fn().mockImplementation(() => ok(GOOGLE_DNS)));
+
+    const call = (target: string) =>
+      app.fetch(
+        new Request(`http://localhost/v1/ip/public/${target}`, { headers: visitor }),
+        env
+      );
+
+    expect((await call('1.1.1.1')).status).toBe(200);
+    expect((await call('8.8.8.8')).status).toBe(200);
+    const blocked = await call('9.9.9.9');
+    expect(blocked.status).toBe(429);
+    expect(blocked.headers.get('Retry-After')).toBeTruthy();
+    const json = await blocked.json();
+    expect(json.error).toMatch(/limit reached/i);
+  });
+
+  it('rejects invalid IPs without calling upstream or counting usage', async () => {
+    const env = createTestEnv();
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    const res = await app.fetch(
+      new Request('http://localhost/v1/ip/public/not-an-ip', { headers: visitor }),
+      env
+    );
+
+    expect(res.status).toBe(400);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+});

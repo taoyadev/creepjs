@@ -115,7 +115,6 @@ function Metric({ name, value }: { name: string; value: unknown }) {
 
 export default function IpRiskPage() {
   const [ip, setIp] = useState('');
-  const [token, setToken] = useState('');
   const [result, setResult] = useState<LookupResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -180,21 +179,11 @@ export default function IpRiskPage() {
       return;
     }
 
-    if (!token.trim()) {
-      setError('Paste your CreepJS API token to run this metered lookup.');
-      return;
-    }
-
     setLoading(true);
     try {
       const res = await fetch(
-        `${API_URL}/v1/ip/${encodeURIComponent(ip.trim())}`,
-        {
-          headers: {
-            'X-API-Token': token.trim(),
-            Accept: 'application/json',
-          },
-        }
+        `${API_URL}/v1/ip/public/${encodeURIComponent(ip.trim())}`,
+        { headers: { Accept: 'application/json' } }
       );
       const data = (await res.json()) as LookupResult | { error?: string };
 
@@ -246,7 +235,7 @@ export default function IpRiskPage() {
           <div className="max-w-3xl space-y-5">
             <div className="inline-flex items-center gap-2 rounded-md border bg-background px-3 py-1 text-xs font-medium text-muted-foreground">
               <Globe2 className="h-4 w-4 text-emerald-500" />
-              Token-gated IP intelligence
+              Free IP intelligence — no signup
             </div>
             <div className="space-y-3">
               <h1 className="text-3xl font-semibold md:text-5xl">
@@ -254,8 +243,8 @@ export default function IpRiskPage() {
               </h1>
               <p className="text-base leading-7 text-muted-foreground md:text-lg">
                 Look up geolocation, ASN, routing, proxy, VPN, Tor,
-                datacenter, and risk signals for a single IP address. The paid
-                IPbot key stays on the Worker.
+                datacenter, and risk signals for any IP address — free, no token
+                required. Just enter an IP and check.
               </p>
             </div>
           </div>
@@ -264,8 +253,7 @@ export default function IpRiskPage() {
             <CardHeader>
               <CardTitle className="text-xl">Run a lookup</CardTitle>
               <CardDescription>
-                Use a CreepJS token. No upstream secret is exposed to the
-                browser.
+                Free — no token needed. Limited to {30} lookups/day per visitor.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -283,20 +271,6 @@ export default function IpRiskPage() {
                     onChange={(event) => setIp(event.target.value)}
                     className="w-full rounded-md border bg-background px-3 py-2 font-mono text-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                     placeholder={detectingIp ? 'Detecting your IP...' : '8.8.8.8'}
-                    autoComplete="off"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label htmlFor="api-token" className="text-sm font-medium">
-                    API token
-                  </label>
-                  <input
-                    id="api-token"
-                    value={token}
-                    onChange={(event) => setToken(event.target.value)}
-                    className="w-full rounded-md border bg-background px-3 py-2 font-mono text-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                    placeholder="cfp_..."
                     autoComplete="off"
                   />
                 </div>
@@ -338,7 +312,7 @@ export default function IpRiskPage() {
               <p className="text-sm text-muted-foreground">
                 {result
                   ? `${result.data.ip} scored ${display(score?.risk_score)} risk with verdict ${display(score?.verdict).toLowerCase()}.`
-                  : 'Enter an IP and token to retrieve risk, routing, and network ownership signals.'}
+                  : 'Enter an IP address to retrieve risk, routing, and network ownership signals.'}
               </p>
             </div>
             <Button
@@ -466,13 +440,15 @@ export default function IpRiskPage() {
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
               <Metric name="Cache hit" value={result?.cached} />
-              <Metric name="Upstream tier" value={result?.rateLimit.tier} />
-              <Metric name="Rate limit" value={result?.rateLimit.limit} />
-              <Metric name="Remaining" value={result?.rateLimit.remaining} />
-              <Metric name="Reset" value={resetTime(result?.rateLimit.reset)} />
+              <Metric name="Tier" value={result?.rateLimit.tier} />
+              <Metric name="Daily limit" value={result?.rateLimit.limit} />
+              <Metric name="Remaining today" value={result?.rateLimit.remaining} />
+              <Metric name="Resets" value={resetTime(result?.rateLimit.reset)} />
               <div className="rounded-md border border-blue-500/20 bg-blue-500/10 p-3 text-xs text-muted-foreground">
-                This page is statically generated. Runtime data is fetched from
-                the Worker API after you submit the form.
+                Free public lookups are rate-limited per visitor. Developers
+                needing higher limits can call{' '}
+                <code className="font-mono">GET /v1/ip/:ip</code> with a CreepJS
+                API token. The paid upstream key stays on the Worker.
               </div>
             </CardContent>
           </Card>

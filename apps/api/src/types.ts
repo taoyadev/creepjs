@@ -9,6 +9,9 @@ export type Env = {
     IPINFO_TOKEN: string;
     IPBOT_API_ORIGIN: string;
     IPBOT_API_KEY: string;
+    // Optional public /v1/ip/public limits (defaults applied in the route).
+    PUBLIC_IP_DAILY_PER_IP?: string;
+    PUBLIC_IP_DAILY_GLOBAL?: string;
   };
   Variables: {
     token: string;
