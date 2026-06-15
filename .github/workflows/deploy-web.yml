@@ -183,12 +183,13 @@ jobs:
           # to match `directory: apps/web/out` below.
           path: apps/web/out
 
+      # Deploy via standalone wrangler (npx) — this job has no pnpm install, so
+      # wrangler-action's package-manager path fails. npx fetches wrangler directly.
       - name: Deploy to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy apps/web/out --project-name=creepjs --branch=main
+        run: npx --yes wrangler@3 pages deploy apps/web/out --project-name=creepjs --branch=main
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
       - name: Wait for deployment to propagate
         run: sleep 15
