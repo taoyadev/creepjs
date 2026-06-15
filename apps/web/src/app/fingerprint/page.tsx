@@ -27,7 +27,9 @@ const categories = Array.from(
 ).sort(([a], [b]) => a.localeCompare(b));
 
 export default function FingerprintIndexPage() {
-  const hubRoute = STATIC_SEO_ROUTES.find((route) => route.path === '/fingerprint');
+  const hubRoute = STATIC_SEO_ROUTES.find(
+    (route) => route.path === '/fingerprint'
+  );
 
   return (
     <>
@@ -54,10 +56,10 @@ export default function FingerprintIndexPage() {
         ]}
       />
 
-      <div className="min-h-screen bg-background">
-        <section className="border-b bg-muted/30">
+      <div className="bg-background min-h-screen">
+        <section className="bg-muted/30 border-b">
           <div className="container mx-auto max-w-6xl space-y-6 px-4 py-12 md:py-16">
-            <div className="inline-flex items-center gap-2 rounded-md border bg-background px-3 py-1 text-xs font-medium text-muted-foreground">
+            <div className="bg-background text-muted-foreground inline-flex items-center gap-2 rounded-md border px-3 py-1 text-xs font-medium">
               <Fingerprint className="h-4 w-4 text-blue-500" />
               Signal library
             </div>
@@ -65,7 +67,7 @@ export default function FingerprintIndexPage() {
               <h1 className="text-3xl font-semibold md:text-5xl">
                 Browser Fingerprint Signals
               </h1>
-              <p className="text-base leading-7 text-muted-foreground md:text-lg">
+              <p className="text-muted-foreground text-base leading-7 md:text-lg">
                 CreepJS documents each browser fingerprint collector as a
                 standalone page. Use this index to compare graphics, hardware,
                 browser, network, privacy, storage, accessibility, and system
@@ -73,28 +75,28 @@ export default function FingerprintIndexPage() {
               </p>
             </div>
             <div className="grid gap-4 md:grid-cols-3">
-              <div className="rounded-md border bg-background p-4">
+              <div className="bg-background rounded-md border p-4">
                 <Shield className="mb-3 h-5 w-5 text-emerald-500" />
                 <div className="font-medium">Privacy context</div>
-                <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                <p className="text-muted-foreground mt-1 text-sm leading-6">
                   Each page explains what the signal exposes and which privacy
                   tools commonly reduce or normalize it.
                 </p>
               </div>
-              <div className="rounded-md border bg-background p-4">
+              <div className="bg-background rounded-md border p-4">
                 <BookOpen className="mb-3 h-5 w-5 text-purple-500" />
                 <div className="font-medium">Technical detail</div>
-                <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                  Signal pages include live collectors, API examples, use
-                  cases, and readable explanations for developers.
+                <p className="text-muted-foreground mt-1 text-sm leading-6">
+                  Signal pages include live collectors, API examples, use cases,
+                  and readable explanations for developers.
                 </p>
               </div>
-              <div className="rounded-md border bg-background p-4">
+              <div className="bg-background rounded-md border p-4">
                 <Fingerprint className="mb-3 h-5 w-5 text-blue-500" />
                 <div className="font-medium">
                   {FINGERPRINT_TECHNIQUES.length} signal pages
                 </div>
-                <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                <p className="text-muted-foreground mt-1 text-sm leading-6">
                   All published signal pages are linked here with stable
                   canonical URLs.
                 </p>
@@ -108,7 +110,7 @@ export default function FingerprintIndexPage() {
             <div key={category} className="space-y-4">
               <div>
                 <h2 className="text-2xl font-semibold">{category}</h2>
-                <p className="mt-1 text-sm text-muted-foreground">
+                <p className="text-muted-foreground mt-1 text-sm">
                   {techniques.length} published signal
                   {techniques.length === 1 ? '' : 's'} in this category.
                 </p>
@@ -123,12 +125,12 @@ export default function FingerprintIndexPage() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <p className="text-sm leading-6 text-muted-foreground">
+                      <p className="text-muted-foreground text-sm leading-6">
                         {technique.description}
                       </p>
                       <Link
                         href={`/fingerprint/${technique.slug}`}
-                        className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
+                        className="text-primary inline-flex items-center gap-2 text-sm font-medium hover:underline"
                       >
                         Open signal page
                         <ArrowRight className="h-4 w-4" />

@@ -176,7 +176,8 @@ export const FINGERPRINT_TECHNIQUES = [
   {
     slug: 'svg-rendering',
     name: 'SVG Rendering',
-    description: 'SVG rendering characteristics. Test vector graphics rendering.',
+    description:
+      'SVG rendering characteristics. Test vector graphics rendering.',
     category: 'Graphics',
   },
   {
@@ -259,7 +260,8 @@ export const FINGERPRINT_TECHNIQUES = [
   {
     slug: 'screen-resolution',
     name: 'Screen Resolution',
-    description: 'Detailed screen resolution detection for device model inference.',
+    description:
+      'Detailed screen resolution detection for device model inference.',
     category: 'Hardware',
   },
   {
@@ -376,8 +378,7 @@ export const FINGERPRINT_TECHNIQUES = [
   {
     slug: 'date-time-locale',
     name: 'Date/Time Locale',
-    description:
-      'Date and time formatting preferences for locale detection.',
+    description: 'Date and time formatting preferences for locale detection.',
     category: 'System',
   },
   {
@@ -401,8 +402,7 @@ export const FINGERPRINT_TECHNIQUES = [
   {
     slug: 'reduced-motion',
     name: 'Reduced Motion',
-    description:
-      'Motion sensitivity preference detection for accessibility.',
+    description: 'Motion sensitivity preference detection for accessibility.',
     category: 'Accessibility',
   },
   {
@@ -438,8 +438,7 @@ export const FINGERPRINT_TECHNIQUES = [
   {
     slug: 'private-click-measurement',
     name: 'Private Click Measurement',
-    description:
-      'Apple PCM API support detection indicating Safari browser.',
+    description: 'Apple PCM API support detection indicating Safari browser.',
     category: 'Privacy',
   },
   {

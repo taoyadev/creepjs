@@ -49,12 +49,33 @@ async function main() {
 
   console.log('--- IPbot lookup result ---');
   console.log('ip:        ', first.data.ip);
-  console.log('location:  ', first.data.location?.city, first.data.location?.country_code);
+  console.log(
+    'location:  ',
+    first.data.location?.city,
+    first.data.location?.country_code
+  );
   console.log('network:   ', first.data.network?.asn, first.data.network?.org);
-  console.log('risk_score:', first.data.score?.risk_score, '| band:', first.data.score?.band, '| verdict:', first.data.score?.verdict);
-  console.log('highRisk:  ', first.highRisk, '(=> cache TTL', first.highRisk ? '1h)' : '24h)');
+  console.log(
+    'risk_score:',
+    first.data.score?.risk_score,
+    '| band:',
+    first.data.score?.band,
+    '| verdict:',
+    first.data.score?.verdict
+  );
+  console.log(
+    'highRisk:  ',
+    first.highRisk,
+    '(=> cache TTL',
+    first.highRisk ? '1h)' : '24h)'
+  );
   console.log('rateLimit: ', JSON.stringify(first.rateLimit));
-  console.log('call #1 cached:', first.cached, '| call #2 cached:', second.cached);
+  console.log(
+    'call #1 cached:',
+    first.cached,
+    '| call #2 cached:',
+    second.cached
+  );
 
   if (second.cached !== true) {
     console.error('FAIL: second call was not served from cache');

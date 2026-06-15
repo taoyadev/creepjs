@@ -126,7 +126,10 @@ describe('IP intelligence route', () => {
     vi.stubGlobal('fetch', fetchMock);
 
     const headers = { 'X-API-Token': TOKEN };
-    await app.fetch(new Request('http://localhost/v1/ip/8.8.8.8', { headers }), env);
+    await app.fetch(
+      new Request('http://localhost/v1/ip/8.8.8.8', { headers }),
+      env
+    );
 
     const cached = await app.fetch(
       new Request('http://localhost/v1/ip/8.8.8.8', { headers }),
@@ -145,7 +148,11 @@ describe('IP intelligence route', () => {
     await seed(env);
     vi.stubGlobal(
       'fetch',
-      vi.fn().mockResolvedValue(new Response('upstream unavailable', { status: 503 }))
+      vi
+        .fn()
+        .mockResolvedValue(
+          new Response('upstream unavailable', { status: 503 })
+        )
     );
 
     const res = await app.fetch(
@@ -169,7 +176,9 @@ describe('Public IP intelligence route (/v1/ip/public/:ip)', () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(ok(GOOGLE_DNS)));
 
     const res = await app.fetch(
-      new Request('http://localhost/v1/ip/public/8.8.8.8', { headers: visitor }),
+      new Request('http://localhost/v1/ip/public/8.8.8.8', {
+        headers: visitor,
+      }),
       env
     );
     const json = await res.json();
@@ -188,11 +197,16 @@ describe('Public IP intelligence route (/v1/ip/public/:ip)', () => {
   it('enforces the per-visitor-IP daily limit', async () => {
     const env = createTestEnv({ bindings: { PUBLIC_IP_DAILY_PER_IP: '2' } });
     // Fresh Response per call (its body can only be read once).
-    vi.stubGlobal('fetch', vi.fn().mockImplementation(() => ok(GOOGLE_DNS)));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockImplementation(() => ok(GOOGLE_DNS))
+    );
 
     const call = (target: string) =>
       app.fetch(
-        new Request(`http://localhost/v1/ip/public/${target}`, { headers: visitor }),
+        new Request(`http://localhost/v1/ip/public/${target}`, {
+          headers: visitor,
+        }),
         env
       );
 
@@ -211,7 +225,9 @@ describe('Public IP intelligence route (/v1/ip/public/:ip)', () => {
     vi.stubGlobal('fetch', fetchMock);
 
     const res = await app.fetch(
-      new Request('http://localhost/v1/ip/public/not-an-ip', { headers: visitor }),
+      new Request('http://localhost/v1/ip/public/not-an-ip', {
+        headers: visitor,
+      }),
       env
     );
 

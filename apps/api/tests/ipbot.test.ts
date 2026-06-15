@@ -36,8 +36,10 @@ const RL_HEADERS = {
   'x-ratelimit-tier': 'pro',
 };
 
-const ok = (body: IpbotResponse, headers: Record<string, string> = RL_HEADERS) =>
-  new Response(JSON.stringify(body), { status: 200, headers });
+const ok = (
+  body: IpbotResponse,
+  headers: Record<string, string> = RL_HEADERS
+) => new Response(JSON.stringify(body), { status: 200, headers });
 
 const throttled = (headers: Record<string, string> = {}) =>
   new Response('rate limited', { status: 429, headers });
@@ -64,7 +66,9 @@ describe('isHighRisk', () => {
     expect(isHighRisk(GOOGLE_DNS)).toBe(false);
     expect(isHighRisk(HIGH_RISK_IP)).toBe(true);
     expect(isHighRisk({ ip: 'x', score: { verdict: 'challenge' } })).toBe(true);
-    expect(isHighRisk({ ip: 'x', classification: { is_tor: true } })).toBe(true);
+    expect(isHighRisk({ ip: 'x', classification: { is_tor: true } })).toBe(
+      true
+    );
   });
 });
 

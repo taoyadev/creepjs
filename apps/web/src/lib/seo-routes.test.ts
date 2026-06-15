@@ -28,7 +28,9 @@ describe('SEO route registry', () => {
     expect(FINGERPRINT_SEO_ROUTES).toHaveLength(FINGERPRINT_TECHNIQUES.length);
     expect(FINGERPRINT_SEO_ROUTES.length).toBeGreaterThan(50);
     expect(FINGERPRINT_SEO_ROUTES.map((route) => route.path)).toEqual(
-      FINGERPRINT_TECHNIQUES.map((technique) => `/fingerprint/${technique.slug}`)
+      FINGERPRINT_TECHNIQUES.map(
+        (technique) => `/fingerprint/${technique.slug}`
+      )
     );
   });
 

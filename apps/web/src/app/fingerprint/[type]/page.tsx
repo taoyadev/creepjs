@@ -393,7 +393,10 @@ export default async function FingerprintPage({
           }),
           structuredData.breadcrumb([
             { name: 'Home', url: SITE_CONFIG.url },
-            { name: 'Fingerprint Signals', url: `${SITE_CONFIG.url}/fingerprint` },
+            {
+              name: 'Fingerprint Signals',
+              url: `${SITE_CONFIG.url}/fingerprint`,
+            },
             { name: meta.name, url: `${SITE_CONFIG.url}/fingerprint/${type}` },
           ]),
         ]}

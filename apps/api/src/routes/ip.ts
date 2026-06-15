@@ -64,7 +64,8 @@ const clientIp = (c: Context<Env>) =>
 async function readCounter(env: Env['Bindings'], key: string) {
   const now = Date.now();
   const data = await env.RATE_LIMIT.get<RateLimitData>(key, 'json');
-  if (data && now < data.resetAt) return { count: data.count, resetAt: data.resetAt };
+  if (data && now < data.resetAt)
+    return { count: data.count, resetAt: data.resetAt };
   return { count: 0, resetAt: now + DAY_MS };
 }
 
@@ -75,7 +76,10 @@ async function bumpCounter(
 ) {
   await env.RATE_LIMIT.put(
     key,
-    JSON.stringify({ count: current.count + 1, resetAt: current.resetAt } satisfies RateLimitData),
+    JSON.stringify({
+      count: current.count + 1,
+      resetAt: current.resetAt,
+    } satisfies RateLimitData),
     { expirationTtl: 86400 }
   );
 }
@@ -91,8 +95,14 @@ app.get('/public/:ip', async (c) => {
     return c.json({ error: `Invalid IP address: ${ip}`, status: 400 }, 400);
   }
 
-  const perIpLimit = intEnv(c.env.PUBLIC_IP_DAILY_PER_IP, PUBLIC_PER_IP_DEFAULT);
-  const globalLimit = intEnv(c.env.PUBLIC_IP_DAILY_GLOBAL, PUBLIC_GLOBAL_DEFAULT);
+  const perIpLimit = intEnv(
+    c.env.PUBLIC_IP_DAILY_PER_IP,
+    PUBLIC_PER_IP_DEFAULT
+  );
+  const globalLimit = intEnv(
+    c.env.PUBLIC_IP_DAILY_GLOBAL,
+    PUBLIC_GLOBAL_DEFAULT
+  );
   const visitor = clientIp(c);
   const perIpKey = `pubip:ip:${visitor}`;
   const globalKey = 'pubip:global';
@@ -117,7 +127,11 @@ app.get('/public/:ip', async (c) => {
   const global = await readCounter(c.env, globalKey);
   if (global.count >= globalLimit) {
     return c.json(
-      { error: 'Public IP lookups are temporarily at capacity. Try again later.', status: 503 },
+      {
+        error:
+          'Public IP lookups are temporarily at capacity. Try again later.',
+        status: 503,
+      },
       503
     );
   }

@@ -163,14 +163,21 @@ export function isHighRisk(data: IpbotResponse): boolean {
   const score = data.score ?? {};
   const cls = data.classification ?? {};
 
-  if (typeof score.risk_score === 'number' && score.risk_score >= HIGH_RISK_SCORE)
+  if (
+    typeof score.risk_score === 'number' &&
+    score.risk_score >= HIGH_RISK_SCORE
+  )
     return true;
 
   const verdict = (score.verdict ?? '').toLowerCase();
   if (verdict && verdict !== 'allow') return true; // block / challenge / review
 
   const band = (score.band ?? '').toLowerCase();
-  if (['suspicious', 'risky', 'bad', 'malicious', 'high', 'critical'].includes(band))
+  if (
+    ['suspicious', 'risky', 'bad', 'malicious', 'high', 'critical'].includes(
+      band
+    )
+  )
     return true;
 
   const threat = (cls.threat_level ?? '').toLowerCase();

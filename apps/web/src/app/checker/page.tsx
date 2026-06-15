@@ -261,6 +261,51 @@ export default function DemoPage() {
           </p>
         </div>
 
+        {/* Fingerprint ID Card */}
+        <Card className="bg-primary/5 border-primary/20">
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span>Fingerprint ID</span>
+              <div className="flex items-center gap-3">
+                <RiskBadge
+                  level={
+                    fingerprint.confidence >= 0.8
+                      ? 'low'
+                      : fingerprint.confidence >= 0.6
+                        ? 'medium'
+                        : 'high'
+                  }
+                  label={`Coverage: ${(fingerprint.confidence * 100).toFixed(1)}%`}
+                />
+                <span className="text-muted-foreground text-sm font-normal">
+                  Total Time: {fingerprint.timings.total?.toFixed(2)}ms
+                </span>
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between gap-4">
+              <code className="flex-1 break-all font-mono text-lg font-bold">
+                {fingerprint.fingerprintId}
+              </code>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => void copyToClipboard(fingerprint.fingerprintId)}
+              >
+                {copied ? (
+                  <Check className="h-4 w-4" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Coverage Dashboard */}
+        <ConfidenceDashboard result={fingerprint} />
+
         {/* Educational Introduction */}
         <Card className="border-purple-500/20 bg-gradient-to-br from-purple-500/10 to-blue-500/10">
           <CardHeader>
@@ -366,51 +411,6 @@ export default function DemoPage() {
             </div>
           </CardContent>
         </Card>
-
-        {/* Fingerprint ID Card */}
-        <Card className="bg-primary/5 border-primary/20">
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span>Fingerprint ID</span>
-              <div className="flex items-center gap-3">
-                <RiskBadge
-                  level={
-                    fingerprint.confidence >= 0.8
-                      ? 'low'
-                      : fingerprint.confidence >= 0.6
-                        ? 'medium'
-                        : 'high'
-                  }
-                  label={`Coverage: ${(fingerprint.confidence * 100).toFixed(1)}%`}
-                />
-                <span className="text-muted-foreground text-sm font-normal">
-                  Total Time: {fingerprint.timings.total?.toFixed(2)}ms
-                </span>
-              </div>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between gap-4">
-              <code className="flex-1 break-all font-mono text-lg font-bold">
-                {fingerprint.fingerprintId}
-              </code>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => void copyToClipboard(fingerprint.fingerprintId)}
-              >
-                {copied ? (
-                  <Check className="h-4 w-4" />
-                ) : (
-                  <Copy className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Coverage Dashboard */}
-        <ConfidenceDashboard result={fingerprint} />
 
         {/* Uniqueness Analysis */}
         <UniquenessAnalysis result={fingerprint} />

@@ -373,9 +373,7 @@ if (result.cached) {
                           <code>endpoint</code>
                         </td>
                         <td className="text-muted-foreground p-2">string</td>
-                        <td className="text-muted-foreground p-2">
-                          {apiHost}
-                        </td>
+                        <td className="text-muted-foreground p-2">{apiHost}</td>
                         <td className="p-2">
                           API base URL (for self-hosted instances)
                         </td>
