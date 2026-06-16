@@ -4,12 +4,12 @@
 
 ## Audience Map
 
-| Who you are            | Read first                               | Deep dives                                                 |
-| ---------------------- | ---------------------------------------- | ---------------------------------------------------------- |
-| Product / GTM          | [PRD](./PRD.md), [LAUNCH_PLAN](./LAUNCH_PLAN.md) | [Deployment](./DEPLOYMENT.md) for launch planning   |
-| Platform / Backend     | [ARCHITECTURE](./ARCHITECTURE.md)        | [DEVELOPMENT](./DEVELOPMENT.md), [SECURITY](./SECURITY.md) |
-| Frontend / SDK         | [API](./API.md) overview                 | [SDK](./SDK.md), [PLAYGROUND](./PLAYGROUND.md)             |
-| Site Reliability / Ops | [DEPLOYMENT](./DEPLOYMENT.md)            | [SECURITY](./SECURITY.md), [DEVELOPMENT](./DEVELOPMENT.md) |
+| Who you are            | Read first                                       | Deep dives                                                 |
+| ---------------------- | ------------------------------------------------ | ---------------------------------------------------------- |
+| Product / GTM          | [PRD](./PRD.md), [LAUNCH_PLAN](./LAUNCH_PLAN.md) | [Deployment](./DEPLOYMENT.md) for launch planning          |
+| Platform / Backend     | [ARCHITECTURE](./ARCHITECTURE.md)                | [DEVELOPMENT](./DEVELOPMENT.md), [SECURITY](./SECURITY.md) |
+| Frontend / SDK         | [API](./API.md) overview                         | [SDK](./SDK.md), [PLAYGROUND](./PLAYGROUND.md)             |
+| Site Reliability / Ops | [DEPLOYMENT](./DEPLOYMENT.md)                    | [SECURITY](./SECURITY.md), [DEVELOPMENT](./DEVELOPMENT.md) |
 
 ## Quick Start Paths
 

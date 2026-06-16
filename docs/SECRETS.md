@@ -86,8 +86,8 @@ token must fail the workflow.
 
 ## Rotation log
 
-| Date       | Secret                 | Action                                                                                                                                                                                                 |
-| ---------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Date       | Secret                 | Action                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| ---------- | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 2026-06-16 | `CLOUDFLARE_API_TOKEN` | **Rotated.** The leaked legacy token (`kbjm…tt8`) was revoked in the Cloudflare dashboard and is now confirmed **invalid** (`/user/tokens/verify` → `1000 Invalid API Token`). A replacement **account‑scoped** token (`cfat_…`) was issued and verified active (account API → `success: true`). The GitHub Actions secret `CLOUDFLARE_API_TOKEN` was updated to the new value the same day; `CLOUDFLARE_ACCOUNT_ID` unchanged. The operator-local copy of the dead token was scrubbed. |
 
 > Residual (non-blocking): the orphaned pre-cleanup commit `e78c0a8` still contains

@@ -11,8 +11,7 @@ export const errorMiddleware = createMiddleware<Env>(async (c, next) => {
       request_id: c.get('requestId') ?? null,
       path: c.req.path,
       method: c.req.method,
-      error:
-        error instanceof Error ? error.message : 'Unknown error occurred',
+      error: error instanceof Error ? error.message : 'Unknown error occurred',
     });
 
     if (error instanceof Error) {
