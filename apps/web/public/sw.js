@@ -1,11 +1,12 @@
 // Service Worker for CreepJS PWA
-const CACHE_NAME = 'creepjs-v1';
+const CACHE_NAME = 'creepjs-v2';
 const RUNTIME_CACHE = 'creepjs-runtime-v1';
 
-// Assets to cache on install
+// Assets to cache on install (must be real, 200-returning routes)
 const PRECACHE_ASSETS = [
   '/',
-  '/demo',
+  '/checker',
+  '/ip',
   '/docs',
   '/playground',
   '/manifest.json',
@@ -14,11 +15,17 @@ const PRECACHE_ASSETS = [
 // Install event - cache essential assets
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(PRECACHE_ASSETS).catch((error) => {
-        console.error('Failed to cache assets:', error);
-      });
-    })
+    caches.open(CACHE_NAME).then((cache) =>
+      // Cache each asset independently so a single missing/redirected route
+      // cannot fail the whole precache (cache.addAll is all-or-nothing).
+      Promise.allSettled(
+        PRECACHE_ASSETS.map((asset) =>
+          cache.add(asset).catch((error) => {
+            console.warn('SW precache skipped:', asset, error);
+          })
+        )
+      )
+    )
   );
   self.skipWaiting();
 });
