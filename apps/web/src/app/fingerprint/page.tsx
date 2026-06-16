@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowRight, BookOpen, Fingerprint, Shield } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { StructuredData } from '@/components/StructuredData';
 import { generateMetadata, SITE_CONFIG, structuredData } from '@/lib/metadata';
@@ -59,10 +60,10 @@ export default function FingerprintIndexPage() {
       <div className="bg-background min-h-screen">
         <section className="bg-muted/30 border-b">
           <div className="container mx-auto max-w-6xl space-y-6 px-4 py-12 md:py-16">
-            <div className="bg-background text-muted-foreground inline-flex items-center gap-2 rounded-md border px-3 py-1 text-xs font-medium">
+            <Badge variant="outline" className="w-fit">
               <Fingerprint className="h-4 w-4 text-blue-500" />
               Signal library
-            </div>
+            </Badge>
             <div className="max-w-4xl space-y-4">
               <h1 className="text-3xl font-semibold md:text-5xl">
                 Browser Fingerprint Signals

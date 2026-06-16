@@ -3,6 +3,7 @@ import type { Env, RateLimitData, TokenData } from '../types';
 import { authMiddleware } from '../middleware/auth';
 import { rateLimitMiddleware } from '../middleware/ratelimit';
 import { IpbotError, isValidIp, lookupIP } from '../services/ipbot';
+import { logEvent } from '../utils/logging';
 
 const app = new Hono<Env>();
 
@@ -144,6 +145,16 @@ app.get('/public/:ip', async (c) => {
     if (!result.cached) await bumpCounter(c.env, globalKey, global);
 
     const remaining = Math.max(0, perIpLimit - (perIp.count + 1));
+    logEvent({
+      msg: 'ip.public_lookup',
+      request_id: c.get('requestId'),
+      ip,
+      cached: result.cached,
+      high_risk: result.highRisk,
+      public_remaining: remaining,
+      global_count: result.cached ? global.count : global.count + 1,
+      ipbot_remaining: result.rateLimit.remaining,
+    });
     return c.json({
       data: result.data,
       cached: result.cached,
@@ -169,6 +180,15 @@ app.get('/:ip', authMiddleware, rateLimitMiddleware, async (c) => {
     const ip = c.req.param('ip');
     const result = await lookupIP(ip, c.env);
     await recordTokenUsage(c.env, c.get('token'), c.get('tokenData'));
+    logEvent({
+      msg: 'ip.token_lookup',
+      request_id: c.get('requestId'),
+      ip,
+      cached: result.cached,
+      high_risk: result.highRisk,
+      ipbot_remaining: result.rateLimit.remaining,
+      ipbot_tier: result.rateLimit.tier,
+    });
     return c.json(result);
   } catch (error) {
     return ipbotErrorResponse(c, error);

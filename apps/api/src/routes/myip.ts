@@ -1,21 +1,10 @@
-import { Hono } from 'hono';
+import { Hono, type Context } from 'hono';
 import type { Env } from '../types';
+import { IpbotError, type IpbotResponse, lookupIP } from '../services/ipbot';
 
 const app = new Hono<Env>();
 
-interface IpInfoResponse {
-  ip?: string;
-  country?: string;
-  city?: string;
-  region?: string;
-  loc?: string;
-  postal?: string;
-  timezone?: string;
-  org?: string;
-  hostname?: string;
-}
-
-interface TransformedIPData {
+interface MyIpResponse {
   ip: string;
   location?: {
     country_code?: string | null;
@@ -31,112 +20,106 @@ interface TransformedIPData {
     number?: number;
   };
   hostname?: string | null;
+  cached: boolean;
+  risk?: {
+    score?: number;
+    band?: string;
+    verdict?: string;
+    highRisk: boolean;
+  };
+  error?: string;
 }
 
-// Cache TTL: 1 hour
-const CACHE_TTL = 3600;
+function clientIp(c: Context<Env>) {
+  return (
+    c.req.header('cf-connecting-ip') ||
+    c.req.header('x-real-ip') ||
+    c.req.header('x-forwarded-for')?.split(',')[0] ||
+    '127.0.0.1'
+  ).trim();
+}
+
+function isPrivateOrLocalIp(ip: string) {
+  if (ip === '127.0.0.1' || ip === '::1' || ip === 'localhost') return true;
+  if (ip.startsWith('10.') || ip.startsWith('192.168.')) return true;
+  if (/^172\.(1[6-9]|2\d|3[0-1])\./.test(ip)) return true;
+  if (ip.startsWith('fc') || ip.startsWith('fd') || ip.startsWith('fe80:')) {
+    return true;
+  }
+  return false;
+}
+
+function toAsnNumber(asn: string | undefined) {
+  if (!asn) return undefined;
+  const match = /^AS(\d+)$/i.exec(asn);
+  return match?.[1] ? Number.parseInt(match[1], 10) : undefined;
+}
+
+function transformIpbotResult(
+  source: IpbotResponse | null,
+  ip: string,
+  cached: boolean,
+  error?: string
+): MyIpResponse {
+  return {
+    ip: source?.ip ?? ip,
+    location: source?.location
+      ? {
+          country_code: source.location.country_code ?? null,
+          city: source.location.city ?? null,
+          region: source.location.region ?? null,
+          postal: source.location.postal ?? null,
+          latitude: source.location.latitude,
+          longitude: source.location.longitude,
+          timezone: source.location.timezone ?? null,
+        }
+      : undefined,
+    asn: source?.network
+      ? {
+          organization: source.network.org,
+          number: toAsnNumber(source.network.asn),
+        }
+      : undefined,
+    hostname: typeof source?.hostname === 'string' ? source.hostname : null,
+    cached,
+    risk: source?.score
+      ? {
+          score: source.score.risk_score,
+          band: source.score.band,
+          verdict: source.score.verdict,
+          highRisk:
+            typeof source.score.risk_score === 'number'
+              ? source.score.risk_score >= 50
+              : (source.score.verdict ?? '').toLowerCase() !== 'allow',
+        }
+      : undefined,
+    ...(error ? { error } : {}),
+  };
+}
 
 app.get('/', async (c) => {
+  const ip = clientIp(c);
+
+  if (isPrivateOrLocalIp(ip)) {
+    return c.json(transformIpbotResult(null, ip, false));
+  }
+
   try {
-    // Get client IP from headers
-    const cfConnectingIp = c.req.header('cf-connecting-ip');
-    const xForwardedFor = c.req.header('x-forwarded-for');
-    const xRealIp = c.req.header('x-real-ip');
-
-    // Priority: CF-Connecting-IP > X-Real-IP > X-Forwarded-For
-    let clientIp =
-      cfConnectingIp || xRealIp || xForwardedFor?.split(',')[0] || '127.0.0.1';
-    clientIp = clientIp.trim();
-
-    // Check KV cache first
-    const cacheKey = `ip:${clientIp}`;
-    const cached = await c.env.IP_CACHE.get(cacheKey, 'json');
-
-    if (cached) {
-      return c.json({
-        ...cached,
-        cached: true,
-      });
-    }
-
-    // Fetch from IPInfo.io API
-    const token = c.env.IPINFO_TOKEN;
-    if (!token) {
+    const result = await lookupIP(ip, c.env);
+    return c.json(transformIpbotResult(result.data, ip, result.cached));
+  } catch (error) {
+    if (error instanceof IpbotError) {
+      console.warn(`myip.lookup_failed ip=${ip} status=${error.status ?? 500}`);
       return c.json(
-        {
-          error: 'IPINFO_TOKEN is not configured',
-        },
-        500
+        transformIpbotResult(
+          null,
+          ip,
+          false,
+          'IP intelligence temporarily unavailable'
+        )
       );
     }
-    const ipinfoUrl =
-      clientIp === '::1' ||
-      clientIp === '127.0.0.1' ||
-      clientIp.startsWith('192.168.')
-        ? `https://ipinfo.io/json?token=${token}` // Auto-detect for local IPs
-        : `https://ipinfo.io/${clientIp}?token=${token}`;
-
-    const response = await fetch(ipinfoUrl, {
-      method: 'GET',
-      headers: {
-        Accept: 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`IPInfo API responded with status: ${response.status}`);
-    }
-
-    const data: IpInfoResponse = await response.json();
-
-    // Transform data
-    const [latitudeRaw, longitudeRaw] = data.loc?.split(',') ?? [];
-    const latitude = latitudeRaw ? Number.parseFloat(latitudeRaw) : undefined;
-    const longitude = longitudeRaw
-      ? Number.parseFloat(longitudeRaw)
-      : undefined;
-
-    const asMatch = data.org?.match(/^AS(\d+)/);
-    const organization = data.org?.replace(/^AS\d+\s+/, '').trim();
-
-    const transformedData: TransformedIPData = {
-      ip: data.ip ?? clientIp,
-      location: {
-        country_code: data.country ?? null,
-        city: data.city ?? null,
-        region: data.region ?? null,
-        postal: data.postal ?? null,
-        latitude,
-        longitude,
-        timezone: data.timezone ?? null,
-      },
-      asn: data.org
-        ? {
-            organization: organization || undefined,
-            number: asMatch?.[1] ? Number.parseInt(asMatch[1], 10) : undefined,
-          }
-        : undefined,
-      hostname: data.hostname ?? null,
-    };
-
-    // Store in KV cache with TTL
-    await c.env.IP_CACHE.put(cacheKey, JSON.stringify(transformedData), {
-      expirationTtl: CACHE_TTL,
-    });
-
-    return c.json({
-      ...transformedData,
-      cached: false,
-    });
-  } catch (error) {
-    console.error('Error fetching IP data:', error);
-    return c.json(
-      {
-        error: 'Failed to fetch IP data',
-        details: error instanceof Error ? error.message : 'Unknown error',
-      },
-      500
-    );
+    throw error;
   }
 });
 

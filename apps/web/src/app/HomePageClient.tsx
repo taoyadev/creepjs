@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { collectFingerprint } from '@creepjs/core';
-import type { FingerprintResult } from '@creepjs/core';
+import { collectFingerprint, getCollectorLabel } from '@creepjs/core';
+import type { CollectorProgressEvent, FingerprintResult } from '@creepjs/core';
 import { SITE_CONFIG } from '@/lib/metadata';
 import {
   Copy,
@@ -27,6 +27,13 @@ import {
   Server,
 } from 'lucide-react';
 import Link from 'next/link';
+import { analytics } from '@/lib/analytics';
+import {
+  type BaselineResponse,
+  fetchBaseline,
+  labelForBaselineComponent,
+  summarizeBaseline,
+} from '@/lib/uniqueness-baseline';
 
 interface IPData {
   ip: string;
@@ -53,6 +60,22 @@ interface CollectionProgress {
   currentCollector: string;
 }
 
+function scheduleIdle(callback: () => void) {
+  if (
+    typeof window !== 'undefined' &&
+    typeof window.requestIdleCallback === 'function'
+  ) {
+    const idleId = window.requestIdleCallback(() => callback(), {
+      timeout: 1200,
+    });
+    return () => window.cancelIdleCallback(idleId);
+  }
+
+  const timeoutId: ReturnType<typeof globalThis.setTimeout> =
+    globalThis.setTimeout(callback, 180);
+  return () => globalThis.clearTimeout(timeoutId);
+}
+
 export default function HomePageClient() {
   const [fingerprint, setFingerprint] = useState<FingerprintResult | null>(
     null
@@ -63,9 +86,10 @@ export default function HomePageClient() {
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState<CollectionProgress>({
     current: 0,
-    total: 55,
+    total: 1,
     currentCollector: '',
   });
+  const [baseline, setBaseline] = useState<BaselineResponse | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -77,81 +101,28 @@ export default function HomePageClient() {
       setError(null);
       setProgress({
         current: 0,
-        total: 55,
+        total: 1,
         currentCollector: 'Initializing...',
       });
 
       try {
-        // Simulate progress updates for better UX
-        const collectors = [
-          // Graphics (5)
-          'Canvas',
-          'WebGL',
-          'Emoji Rendering',
-          'SVG Rendering',
-          'Text Metrics',
-          // Hardware (11)
-          'Screen',
-          'Screen Frame',
-          'Screen Resolution',
-          'Color Depth',
-          'Color Gamut',
-          'Hardware Concurrency',
-          'Device Memory',
-          'Media Devices',
-          'Touch Support',
-          'Monochrome Display',
-          'HDR Support',
-          // Browser (16)
-          'Navigator',
-          'Browser Vendor',
-          'Plugins',
-          'PDF Viewer',
-          'Cookies Enabled',
-          'IndexedDB',
-          'Local Storage',
-          'Session Storage',
-          'Open Database',
-          'CSS Styles',
-          'HTML Element',
-          'DOM Rectangle',
-          'MIME Types',
-          'Content Window',
-          'CSS Media Queries',
-          'Vendor Flavors',
-          // System (11)
-          'Fonts',
-          'Font Preferences',
-          'Timezone',
-          'Languages',
-          'Platform',
-          'Date/Time Locale',
-          'CPU Architecture',
-          'CPU Class',
-          'OS CPU',
-          'Math Precision',
-          'Console Errors',
-          // Audio (2)
-          'Audio Context',
-          'Speech Voices',
-          // Accessibility (5)
-          'Reduced Motion',
-          'Reduced Transparency',
-          'Inverted Colors',
-          'Forced Colors',
-          'Contrast Preference',
-          // Privacy (3)
-          'Anti-Fingerprinting',
-          'Private Click Measurement',
-          'Lies Detection',
-          // Network (2)
-          'WebRTC',
-          'Service Worker',
-        ];
+        const updateProgress = (event: CollectorProgressEvent) => {
+          setProgress((prev) => ({
+            current:
+              event.phase === 'finish'
+                ? Math.max(prev.current, event.index + 1)
+                : prev.current,
+            total: event.total,
+            currentCollector:
+              event.phase === 'finish'
+                ? `${getCollectorLabel(event.name)} complete`
+                : getCollectorLabel(event.name),
+          }));
+        };
 
         // Start collecting data in background
         const dataPromise = Promise.allSettled([
-          collectFingerprint(),
+          collectFingerprint({ onProgress: updateProgress }),
           // Fetch IP data in background (don't block fingerprint display)
           fetch(`${SITE_CONFIG.apiUrl}/my-ip`)
             .then((res) => (res.ok ? res.json() : null))
@@ -163,30 +134,30 @@ export default function HomePageClient() {
             }),
         ]);
 
-        // Update progress incrementally with optimized timing
-        const stepTime = 120; // 120ms per step = 6.6 seconds total for 55 collectors
-
-        for (let i = 0; i < collectors.length; i++) {
-          if (cancelled) return;
-
-          setProgress({
-            current: i + 1,
-            total: collectors.length,
-            currentCollector: collectors[i],
-          });
-          await new Promise((resolve) => setTimeout(resolve, stepTime));
-        }
-
         // Wait for data collection to complete
         const [fp] = await dataPromise;
 
         if (cancelled) return;
 
-        setProgress({ current: 24, total: 24, currentCollector: 'Complete!' });
+        setProgress((prev) => ({
+          ...prev,
+          current: prev.total,
+          currentCollector: 'Complete!',
+        }));
 
         // Set fingerprint immediately (don't wait for IP data)
         if (fp.status === 'fulfilled') {
           setFingerprint(fp.value);
+          analytics.pageView('/');
+          analytics.track.fingerprintGenerated({
+            confidence: fp.value.confidence,
+            method: 'homepage',
+          });
+          void fetchBaseline(fp.value).then((value) => {
+            if (!cancelled) {
+              setBaseline(value);
+            }
+          });
         } else {
           console.error('Fingerprint collection failed:', fp.reason);
           throw fp.reason;
@@ -204,10 +175,13 @@ export default function HomePageClient() {
       }
     }
 
-    void loadData();
+    const cancelIdle = scheduleIdle(() => {
+      void loadData();
+    });
 
     return () => {
       cancelled = true;
+      cancelIdle();
     };
   }, []);
 
@@ -215,7 +189,10 @@ export default function HomePageClient() {
     await navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+    analytics.track.fingerprintCopied();
   };
+
+  const baselineSummary = summarizeBaseline(baseline);
 
   if (loading) {
     const progressPercent = (progress.current / progress.total) * 100;
@@ -404,7 +381,16 @@ export default function HomePageClient() {
             </div>
 
             <div className="mt-4 grid gap-4 md:grid-cols-2">
-              <Link href="/demo" className="block">
+              <Link
+                href="/demo"
+                className="block"
+                onClick={() =>
+                  analytics.track.buttonClicked({
+                    buttonLabel: 'homepage_demo_cta',
+                    section: 'homepage',
+                  })
+                }
+              >
                 <div className="bg-primary/10 hover:bg-primary/20 border-primary/20 rounded-lg border p-4 transition-colors">
                   <div className="mb-1 flex items-center gap-2 font-semibold">
                     <Palette className="h-4 w-4" />
@@ -418,7 +404,16 @@ export default function HomePageClient() {
                   </p>
                 </div>
               </Link>
-              <Link href="/docs" className="block">
+              <Link
+                href="/docs"
+                className="block"
+                onClick={() =>
+                  analytics.track.buttonClicked({
+                    buttonLabel: 'homepage_docs_cta',
+                    section: 'homepage',
+                  })
+                }
+              >
                 <div className="bg-primary/10 hover:bg-primary/20 border-primary/20 rounded-lg border p-4 transition-colors">
                   <div className="mb-1 flex items-center gap-2 font-semibold">
                     <Monitor className="h-4 w-4" />
@@ -613,6 +608,53 @@ export default function HomePageClient() {
                 uniqueness score)
               </span>
             </div>
+            {baseline && (
+              <div className="mt-4 rounded-lg border p-4">
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="font-medium">Population Baseline</span>
+                  <span className="text-muted-foreground text-xs">
+                    {baseline.totalSamples} samples · k=
+                    {baseline.kAnonThreshold}
+                  </span>
+                </div>
+                {baselineSummary && (
+                  <>
+                    <div className="mb-3 rounded-md border p-3">
+                      <div className="font-medium">
+                        {baselineSummary.rarityPercent === null
+                          ? 'Not enough shared samples yet'
+                          : `${baselineSummary.rarityPercent}% rare against the current population baseline`}
+                      </div>
+                      <div className="text-muted-foreground text-xs">
+                        {baselineSummary.rarityPercent === null
+                          ? 'The API is still protecting this fingerprint behind k-anonymity suppression.'
+                          : `Based on ${baselineSummary.sampleCount} anonymous samples across ${baselineSummary.availableComponents} comparable signals.`}
+                      </div>
+                    </div>
+                  </>
+                )}
+                <div className="grid gap-2 md:grid-cols-3">
+                  {Object.values(baseline.estimates)
+                    .filter(Boolean)
+                    .slice(0, 3)
+                    .map((estimate) => (
+                      <div
+                        key={estimate.component}
+                        className="bg-muted/40 rounded-md p-3 text-sm"
+                      >
+                        <div className="font-medium">
+                          {labelForBaselineComponent(estimate.component)}
+                        </div>
+                        <div className="text-muted-foreground text-xs">
+                          {estimate.suppressed
+                            ? 'Suppressed until enough matching samples exist'
+                            : `${Math.round((1 - (estimate.rarity ?? 0)) * 100)}% rare`}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 

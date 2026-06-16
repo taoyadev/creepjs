@@ -15,7 +15,7 @@ export default function HomePage() {
     <>
       <StructuredData
         data={[
-          structuredData.webPage({
+          structuredData.webApplication({
             name: 'CreepJS Browser Fingerprinting Platform',
             description:
               'Run browser fingerprint checks, inspect IP risk, and learn how fingerprinting signals work.',

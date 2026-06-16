@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CreepJS SDK UMD Example</title>
+  </head>
+  <body>
+    <h1>CreepJS SDK UMD Example</h1>
+    <p>Open the console after clicking the button.</p>
+    <button id="run">Collect Fingerprint</button>
+
+    <script src="../dist/creepjs.umd.js"></script>
+    <script>
+      document.getElementById('run').addEventListener('click', async () => {
+        try {
+          const client = new CreepJS.CreepJS({
+            token: 'cfp_your_token_here',
+            fullBundleUrl: '../dist/creepjs.full.umd.js',
+          });
+
+          const result = await client.getFingerprint();
+          console.log('Fingerprint result:', result);
+        } catch (error) {
+          console.error('SDK example failed:', error);
+        }
+      });
+    </script>
+  </body>
+</html>

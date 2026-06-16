@@ -134,6 +134,11 @@ jobs:
           pnpm --filter @creepjs/core build
           pnpm --filter @creepjs/sdk build
 
+      - name: Stage SDK browser bundles
+        run: |
+          cp packages/sdk/dist/creepjs.umd.js apps/web/public/sdk.js
+          cp packages/sdk/dist/creepjs.full.umd.js apps/web/public/sdk.full.js
+
       - name: Build Next.js app
         run: pnpm --filter @creepjs/web build
         env:
@@ -316,6 +321,8 @@ jobs:
           urls: |
             https://${{ github.head_ref }}.creepjs.pages.dev
             https://${{ github.head_ref }}.creepjs.pages.dev/checker
+            https://${{ github.head_ref }}.creepjs.pages.dev/guide/what-is-browser-fingerprinting
+            https://${{ github.head_ref }}.creepjs.pages.dev/fingerprint/canvas
           configPath: '.github/lighthouserc.json'
           uploadArtifacts: true
           temporaryPublicStorage: true

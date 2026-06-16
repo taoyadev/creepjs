@@ -14,6 +14,7 @@ describe('API Health Check', () => {
     const json = await res.json();
 
     expect(res.status).toBe(200);
+    expect(res.headers.get('X-Request-Id')).toBeTruthy();
     expect(json).toHaveProperty('status', 'ok');
     expect(json).toHaveProperty('service', 'creepjs-api');
     expect(json).toHaveProperty('version', '1.0.0');
@@ -31,6 +32,7 @@ describe('API Health Check', () => {
     const json = await res.json();
 
     expect(res.status).toBe(200);
+    expect(res.headers.get('X-Request-Id')).toBeTruthy();
     expect(json).toMatchObject({
       status: 'ok',
       service: 'creepjs-api',
@@ -51,6 +53,7 @@ describe('API Health Check', () => {
     const json = await res.json();
 
     expect(res.status).toBe(404);
+    expect(res.headers.get('X-Request-Id')).toBeTruthy();
     expect(json).toHaveProperty('error', 'Not found');
   });
 });

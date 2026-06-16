@@ -1,8 +1,10 @@
 import type { Metadata } from 'next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
-import { generateMetadata, SITE_CONFIG } from '@/lib/metadata';
+import { StructuredData } from '@/components/StructuredData';
+import { generateMetadata, SITE_CONFIG, structuredData } from '@/lib/metadata';
 import { SeoInternalLinks } from '@/components/SeoInternalLinks';
+import { TrackedLink } from '@/components/TrackedLink';
 
 const CANONICAL_PATH = '/guide/what-is-browser-fingerprinting';
 const CANONICAL_URL = `${SITE_CONFIG.url}${CANONICAL_PATH}`;
@@ -68,36 +70,32 @@ const faqSchema = {
   ],
 };
 
-const breadcrumbSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'BreadcrumbList',
-  itemListElement: [
-    {
-      '@type': 'ListItem',
-      position: 1,
-      name: 'Home',
-      item: SITE_CONFIG.url,
-    },
-    {
-      '@type': 'ListItem',
-      position: 2,
-      name: 'What is Browser Fingerprinting',
-      item: CANONICAL_URL,
-    },
-  ],
-};
-
 export default function BrowserFingerprintingGuide() {
   return (
     <>
-      {/* Structured Data */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      <StructuredData
+        data={[
+          structuredData.techArticle({
+            headline: 'What Is Browser Fingerprinting? Complete Guide',
+            description:
+              'Learn what browser fingerprinting is, how it works, privacy implications, and how to protect yourself.',
+            path: CANONICAL_PATH,
+            keywords: [
+              'browser fingerprinting',
+              'online privacy',
+              'tracking',
+              'fingerprinting guide',
+            ],
+          }),
+          faqSchema,
+          structuredData.breadcrumb([
+            { name: 'Home', url: SITE_CONFIG.url },
+            {
+              name: 'What is Browser Fingerprinting',
+              url: CANONICAL_URL,
+            },
+          ]),
+        ]}
       />
 
       <div className="from-background to-secondary min-h-screen bg-gradient-to-b">
@@ -602,12 +600,15 @@ export default function BrowserFingerprintingGuide() {
                 See exactly what information your browser exposes to websites.
                 Test your privacy protections and learn how to improve them.
               </p>
-              <Link
+              <TrackedLink
                 href="/checker"
                 className="text-primary inline-block rounded-full bg-white px-6 py-3 font-semibold"
+                eventLabel="guide_checker_cta"
+                eventSection="guide-what-is-browser-fingerprinting"
+                eventKind="button"
               >
                 Check My Fingerprint
-              </Link>
+              </TrackedLink>
             </CardContent>
           </Card>
 

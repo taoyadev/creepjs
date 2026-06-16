@@ -8,7 +8,6 @@
 #
 # Secrets are set per-Worker (never committed):
 #   wrangler secret put IPBOT_API_KEY
-#   wrangler secret put IPINFO_TOKEN
 
 name = "creepjs-api"
 main = "src/index.ts"
@@ -31,8 +30,13 @@ id = "<rate-limit-kv-namespace-id>"
 binding = "IP_CACHE"
 id = "<ip-cache-kv-namespace-id>"
 
+[[kv_namespaces]]
+binding = "FP_STATS"
+id = "<fp-stats-kv-namespace-id>"
+
 [vars]
 ENVIRONMENT = "production"
 CORS_ORIGIN = "*"
 RATE_LIMIT_PER_DAY = "1000"
+FP_STATS_K_ANON = "20"
 IPBOT_API_ORIGIN = "https://api.ipbot.com"

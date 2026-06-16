@@ -2,6 +2,9 @@
 
 Complete guide for deploying CreepJS.org to production with automated CI/CD pipelines, infrastructure scripts, and monitoring.
 
+Current secret inventory and rotation steps live in
+[SECRETS.md](/Volumes/SSD/dev/ip-dataset/creepjs/docs/SECRETS.md).
+
 ---
 
 ## Table of Contents
@@ -28,7 +31,7 @@ git clone <repository-url>
 cd creepjs
 pnpm install
 
-# 2. Configure GitHub Secrets (see .github/SECRETS.md)
+# 2. Configure GitHub Secrets (see docs/SECRETS.md)
 # - CLOUDFLARE_API_TOKEN
 # - CLOUDFLARE_ACCOUNT_ID
 
@@ -428,12 +431,15 @@ curl https://creepjs.org/sitemap.xml
 # Verify robots.txt
 curl https://creepjs.org/robots.txt
 
-# Verify Open Graph images
-curl -I https://creepjs.org/opengraph-image.png
+# Verify Open Graph image
+curl -I https://creepjs.org/og-image.png
 
 # Verify structured data (view source)
 curl https://creepjs.org | grep 'application/ld+json'
 ```
+
+For Search Console, Bing, indexing requests, and IndexNow operations, use
+[SEO_OPERATIONS.md](/Volumes/SSD/dev/ip-dataset/creepjs/docs/SEO_OPERATIONS.md).
 
 ### Analytics Setup
 

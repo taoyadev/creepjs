@@ -14,6 +14,8 @@ import {
   Info,
 } from 'lucide-react';
 import { SITE_CONFIG } from '@/lib/metadata';
+import { DocsSectionAnalytics } from '@/components/DocsSectionAnalytics';
+import { TrackedLink } from '@/components/TrackedLink';
 
 export default function DocsPage() {
   const apiUrl = SITE_CONFIG.apiUrl;
@@ -22,6 +24,10 @@ export default function DocsPage() {
   return (
     <div className="from-background to-secondary min-h-screen bg-gradient-to-b">
       <div className="container mx-auto max-w-6xl p-4 md:p-8">
+        <DocsSectionAnalytics
+          rootId="docs-tabs-root"
+          defaultSection="introduction"
+        />
         {/* Page Header */}
         <div className="mb-8 space-y-4 text-center">
           <h1 className="text-3xl font-bold md:text-5xl">Documentation</h1>
@@ -33,21 +39,45 @@ export default function DocsPage() {
           </p>
         </div>
 
-        <Tabs defaultValue="introduction" className="space-y-8">
+        <Tabs
+          defaultValue="introduction"
+          className="space-y-8"
+          id="docs-tabs-root"
+        >
           <TabsList className="grid h-auto w-full grid-cols-2 md:grid-cols-5">
-            <TabsTrigger value="introduction" className="text-xs md:text-sm">
+            <TabsTrigger
+              value="introduction"
+              className="text-xs md:text-sm"
+              data-docs-tab="introduction"
+            >
               Introduction
             </TabsTrigger>
-            <TabsTrigger value="quickstart" className="text-xs md:text-sm">
+            <TabsTrigger
+              value="quickstart"
+              className="text-xs md:text-sm"
+              data-docs-tab="quickstart"
+            >
               Quick Start
             </TabsTrigger>
-            <TabsTrigger value="api" className="text-xs md:text-sm">
+            <TabsTrigger
+              value="api"
+              className="text-xs md:text-sm"
+              data-docs-tab="api"
+            >
               API Reference
             </TabsTrigger>
-            <TabsTrigger value="collectors" className="text-xs md:text-sm">
+            <TabsTrigger
+              value="collectors"
+              className="text-xs md:text-sm"
+              data-docs-tab="collectors"
+            >
               Collectors
             </TabsTrigger>
-            <TabsTrigger value="faq" className="text-xs md:text-sm">
+            <TabsTrigger
+              value="faq"
+              className="text-xs md:text-sm"
+              data-docs-tab="faq"
+            >
               FAQ
             </TabsTrigger>
           </TabsList>
@@ -277,10 +307,14 @@ pnpm add @creepjs/sdk`}
                     Option 2: CDN (UMD)
                   </h4>
                   <pre className="bg-muted overflow-x-auto rounded-lg p-4 text-xs md:text-sm">
-                    {`<script src="https://cdn.creepjs.org/sdk/v1/creepjs.min.js"></script>
+                    {`<script src="https://cdn.creepjs.org/v1/sdk.js"></script>
 <script>
-  // CreepJS is now available globally
-  CreepJS.getFingerprint({ token: 'YOUR_TOKEN' })
+  const client = new CreepJS.CreepJS({
+    token: 'YOUR_TOKEN',
+    fullBundleUrl: 'https://cdn.creepjs.org/v1/sdk.full.js'
+  });
+
+  client.getFingerprint()
     .then(fp => console.log(fp.fingerprintId));
 </script>`}
                   </pre>
@@ -512,41 +546,6 @@ X-API-Token: cfp_your_token_here`}
     "firstSeen": "2024-01-01T00:00:00Z",
     "lastSeen": "2024-01-10T12:30:00Z",
     "visitCount": 5
-  }
-}`}
-                  </pre>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>GET /v1/fingerprint/:id</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm md:text-base">
-                  Retrieve a previously stored fingerprint by its ID.
-                </p>
-                <div>
-                  <h4 className="mb-2 font-semibold">Request</h4>
-                  <pre className="bg-muted overflow-x-auto rounded-lg p-4 text-xs">
-                    {`GET /v1/fingerprint/abc123def456
-Headers:
-  X-API-Token: cfp_your_token_here`}
-                  </pre>
-                </div>
-                <div>
-                  <h4 className="mb-2 font-semibold">Response (200 OK)</h4>
-                  <pre className="bg-muted overflow-x-auto rounded-lg p-4 text-xs">
-                    {`{
-  "fingerprintId": "abc123def456",
-  "confidence": 0.95,
-  "uniqueness": 0.89,
-  "metadata": {
-    "firstSeen": "2024-01-01T00:00:00Z",
-    "lastSeen": "2024-01-10T12:30:00Z",
-    "visitCount": 5,
-    "devices": ["desktop", "mobile"]
   }
 }`}
                   </pre>
@@ -1014,24 +1013,30 @@ Headers:
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 md:grid-cols-3">
-              <Link
+              <TrackedLink
                 href="/demo"
                 className="hover:border-primary block rounded-lg border p-4 transition-colors"
+                eventLabel="docs_live_demo_cta"
+                eventSection="docs"
+                eventKind="button"
               >
                 <div className="mb-1 font-semibold">Live Demo</div>
                 <div className="text-muted-foreground text-xs">
                   See your browser's fingerprint in action
                 </div>
-              </Link>
-              <Link
+              </TrackedLink>
+              <TrackedLink
                 href="/playground"
                 className="hover:border-primary block rounded-lg border p-4 transition-colors"
+                eventLabel="docs_playground_cta"
+                eventSection="docs"
+                eventKind="button"
               >
                 <div className="mb-1 font-semibold">API Playground</div>
                 <div className="text-muted-foreground text-xs">
                   Test the API interactively with code examples
                 </div>
-              </Link>
+              </TrackedLink>
               <a
                 href="https://github.com/abrahamjuliot/creepjs"
                 target="_blank"

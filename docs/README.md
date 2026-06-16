@@ -6,7 +6,7 @@
 
 | Who you are            | Read first                               | Deep dives                                                 |
 | ---------------------- | ---------------------------------------- | ---------------------------------------------------------- |
-| Product / GTM          | [PRD](./PRD.md), [ROADMAP](./ROADMAP.md) | [Deployment](./DEPLOYMENT.md) for launch planning          |
+| Product / GTM          | [PRD](./PRD.md), [LAUNCH_PLAN](./LAUNCH_PLAN.md) | [Deployment](./DEPLOYMENT.md) for launch planning   |
 | Platform / Backend     | [ARCHITECTURE](./ARCHITECTURE.md)        | [DEVELOPMENT](./DEVELOPMENT.md), [SECURITY](./SECURITY.md) |
 | Frontend / SDK         | [API](./API.md) overview                 | [SDK](./SDK.md), [PLAYGROUND](./PLAYGROUND.md)             |
 | Site Reliability / Ops | [DEPLOYMENT](./DEPLOYMENT.md)            | [SECURITY](./SECURITY.md), [DEVELOPMENT](./DEVELOPMENT.md) |
@@ -23,7 +23,8 @@
 ### Product Strategy
 
 - [PRD](./PRD.md) — product positioning, personas, KPIs, and release criteria.
-- [ROADMAP](./ROADMAP.md) — phased execution plan with week-by-week deliverables.
+- [LAUNCH_PLAN](./LAUNCH_PLAN.md) — single source of truth for delivery sequencing and acceptance.
+- [ROADMAP](./ROADMAP.md) — lightweight public summary of phases and priorities.
 
 ### Architecture & Implementation
 
@@ -34,7 +35,9 @@
 ### Operations & Compliance
 
 - [DEPLOYMENT](./DEPLOYMENT.md) — environment prep, Cloudflare commands, rollback, and monitoring.
+- [SEO_OPERATIONS](./SEO_OPERATIONS.md) — Search Console, Bing, sitemap submission, IndexNow, and recurring SEO review workflow.
 - [SECURITY](./SECURITY.md) — threat model, data handling, incident response, and compliance posture.
+- [Terms of Use](/Volumes/SSD/dev/ip-dataset/creepjs/apps/web/src/app/terms/page.tsx) — responsible use, privacy boundaries, and legal expectations for the site, API, and SDK.
 
 ### Experience Guides
 

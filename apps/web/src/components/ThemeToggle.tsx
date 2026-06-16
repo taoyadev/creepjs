@@ -6,7 +6,19 @@ import { Button } from '@/components/ui/button';
 import { useTheme } from '@/components/ThemeProvider';
 
 export function ThemeToggle() {
-  const { theme, toggleTheme } = useTheme();
+  const { theme, mounted, toggleTheme } = useTheme();
+
+  if (!mounted) {
+    return (
+      <Button
+        variant="ghost"
+        size="icon"
+        disabled
+        aria-hidden="true"
+        className="opacity-0"
+      />
+    );
+  }
 
   return (
     <Button

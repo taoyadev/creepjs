@@ -61,6 +61,9 @@ describe('Fingerprint route', () => {
     const storedToken = await env.TOKENS.get(token, 'json');
     expect(storedToken.usageCount).toBe(1);
 
+    const totalStats = await env.FP_STATS.get('fpstats:v1:total', 'text');
+    expect(totalStats).toBe('1');
+
     const rateLimitEntry = await env.RATE_LIMIT.get(
       `ratelimit:${token}`,
       'json'

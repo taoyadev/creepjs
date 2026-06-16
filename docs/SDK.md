@@ -26,6 +26,10 @@ pnpm add @creepjs/sdk
 <script src="https://cdn.creepjs.org/v1/sdk.js"></script>
 ```
 
+The default browser bundle is intentionally slim. It lazy-loads the full
+collector bundle on first fingerprint request from the sibling path
+`sdk.full.js` unless you override `fullBundleUrl`.
+
 ## Quick Start
 
 ### ES Modules
@@ -59,9 +63,12 @@ getFingerprint({
 ```html
 <script src="https://cdn.creepjs.org/v1/sdk.js"></script>
 <script>
-  CreepJS.getFingerprint({
+  const client = new CreepJS.CreepJS({
     token: 'cfp_your_token_here',
-  }).then((result) => {
+    fullBundleUrl: 'https://cdn.creepjs.org/v1/sdk.full.js',
+  });
+
+  client.getFingerprint().then((result) => {
     console.log('Fingerprint:', result.fingerprintId);
   });
 </script>
@@ -75,12 +82,14 @@ Generate browser fingerprint.
 
 **Parameters**:
 
-| Parameter  | Type    | Required | Default                   | Description         |
-| ---------- | ------- | -------- | ------------------------- | ------------------- |
-| `token`    | string  | Yes      | -                         | API Token           |
-| `endpoint` | string  | No       | `https://api.creepjs.org` | API endpoint        |
-| `cache`    | boolean | No       | `true`                    | Enable caching      |
-| `cacheTtl` | number  | No       | `3600`                    | Cache TTL (seconds) |
+| Parameter       | Type    | Required | Default                   | Description                                |
+| --------------- | ------- | -------- | ------------------------- | ------------------------------------------ |
+| `token`         | string  | Yes      | -                         | API Token                                  |
+| `endpoint`      | string  | No       | `https://api.creepjs.org` | API endpoint                               |
+| `cache`         | boolean | No       | `true`                    | Enable caching                             |
+| `cacheTtl`      | number  | No       | `86400000`                | Cache TTL (milliseconds)                   |
+| `timeoutMs`     | number  | No       | `10000`                   | Request timeout in milliseconds            |
+| `fullBundleUrl` | string  | No       | sibling `sdk.full.js`     | Override URL for the full collector bundle |
 
 **Returns**: `Promise<FingerprintResult>`
 
@@ -117,13 +126,17 @@ import { CreepJS } from '@creepjs/sdk';
 
 const client = new CreepJS({
   token: 'cfp_your_token_here',
-  endpoint: 'https://api.creepjs.org',
+  endpoint: 'https://api.creepjs.org/v1/fingerprint',
   cache: true,
   cacheTtl: 3600,
+  timeoutMs: 10000,
 });
 
 // Get fingerprint
 const fp = await client.getFingerprint();
+
+// Query IP intelligence
+const ip = await client.getIpIntelligence('8.8.8.8');
 
 // Clear cache
 client.clearCache();
@@ -164,12 +177,14 @@ const fp = await getFingerprint({
 try {
   const fp = await getFingerprint({ token: 'cfp_xxx' });
 } catch (error) {
-  if (error.code === 'INVALID_TOKEN') {
-    console.error('Invalid API token');
-  } else if (error.code === 'RATE_LIMIT_EXCEEDED') {
-    console.error('Rate limit exceeded');
-  } else if (error.code === 'NETWORK_ERROR') {
-    console.error('Network error, please try again');
+  if (error.code === 'api_error') {
+    console.error('API request failed:', error.status);
+  } else if (error.code === 'request_timeout') {
+    console.error('Request timed out');
+  } else if (error.code === 'core_load_failed') {
+    console.error('Could not load the full collector bundle');
+  } else if (error.code === 'invalid_response') {
+    console.error('The API returned an invalid response');
   } else {
     console.error('Unknown error:', error.message);
   }
@@ -178,13 +193,12 @@ try {
 
 ### Error Codes
 
-| Code                    | Description               |
-| ----------------------- | ------------------------- |
-| `INVALID_TOKEN`         | Invalid API token         |
-| `RATE_LIMIT_EXCEEDED`   | Rate limit exceeded       |
-| `NETWORK_ERROR`         | Network connection failed |
-| `INVALID_RESPONSE`      | Invalid API response      |
-| `BROWSER_NOT_SUPPORTED` | Browser not supported     |
+| Code               | Description                                              |
+| ------------------ | -------------------------------------------------------- |
+| `api_error`        | API returned a non-2xx response                          |
+| `request_timeout`  | Request exceeded `timeoutMs`                             |
+| `core_load_failed` | The slim bundle could not load the full collector bundle |
+| `invalid_response` | The API returned an invalid payload                      |
 
 ## Advanced Usage
 

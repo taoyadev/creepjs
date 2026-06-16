@@ -1,16 +1,14 @@
 # CreepJS 2.0 — Execution Plan (Codex-Ready Roadmap)
 
-> **Audience:** an autonomous coding agent (codex). This document is the single
-> source of truth for delivery. Execute tasks **in ID order within a phase**,
-> respect the **Global Invariants**, and do not exceed a task's stated scope.
-> When a task says "Acceptance", that is the Definition of Done — do not mark a
-> task complete without meeting every bullet and showing command output.
+> **Audience:** an autonomous coding agent (codex). This document is a detailed
+> task-spec reference. The delivery source of truth is
+> `docs/LAUNCH_PLAN.md`. Use this file for task-level details, not sequencing.
 
 - **Status of repo when this plan was written:** feature-rich but un-hardened.
   Web + API + core + SDK exist and were deployed once (2025-11-14) to
   `*.pages.dev` / `*.workers.dev`. Many files uncommitted. One git commit.
-- **Supersedes:** `docs/ROADMAP.md` (that file stays as the 4-line elevator
-  version; this file is the executable version).
+- **Referenced by:** `docs/LAUNCH_PLAN.md` (that file sets sequencing and
+  acceptance gates); `docs/ROADMAP.md` stays the 4-line elevator version.
 
 ---
 

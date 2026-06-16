@@ -251,19 +251,13 @@ import { getFingerprint } from '@creepjs/sdk';
 // Get fingerprint with API token
 const result = await getFingerprint({
   token: 'cfp_your_token',
-  endpoint: 'https://api.creepjs.org', // optional
+  endpoint: 'https://api.creepjs.org/v1/fingerprint', // optional
   cache: true, // Enable localStorage caching
-  cacheTtl: 3600, // Cache TTL in seconds
+  cacheTtl: 3600_000, // Cache TTL in milliseconds
 });
 
 console.log(result);
-// {
-//   fingerprintId: "a1b2c3d4e5f6...",
-//   confidence: 0.95,
-//   uniqueness: 0.87,
-//   timestamp: 1700000000000,
-//   cached: false
-// }
+// { fingerprintId, confidence, coverage, timestamp, cached, ... }
 ```
 
 **CDN (UMD):**
@@ -271,9 +265,12 @@ console.log(result);
 ```html
 <script src="https://cdn.creepjs.org/v1/sdk.js"></script>
 <script>
-  CreepJS.getFingerprint({
+  const client = new CreepJS.CreepJS({
     token: 'cfp_your_token',
-  }).then((result) => {
+    fullBundleUrl: 'https://cdn.creepjs.org/v1/sdk.full.js',
+  });
+
+  client.getFingerprint().then((result) => {
     console.log('Fingerprint ID:', result.fingerprintId);
   });
 </script>
@@ -435,7 +432,7 @@ See [SECURITY.md](./docs/SECURITY.md) for details.
 - [ ] WordPress plugin
 - [ ] React/Vue component library
 
-See [ROADMAP.md](./docs/ROADMAP.md) for complete roadmap.
+See [LAUNCH_PLAN.md](./docs/LAUNCH_PLAN.md) for the execution source of truth.
 
 ---
 

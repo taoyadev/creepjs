@@ -58,4 +58,51 @@ describe('runSources', () => {
     expect(components.failure.status).toBe('error');
     expect(components.failure.error).toContain('boom');
   });
+
+  it('emits start and finish progress events for each source', async () => {
+    const events: Array<{
+      name: string;
+      phase: string;
+      status?: string;
+      index: number;
+      total: number;
+    }> = [];
+
+    const registry: SourceRegistry = {
+      alpha: () => 'ok',
+      beta: () => null,
+    };
+
+    await runSources(registry, {
+      idleDelay: 0,
+      onProgress: (event) => {
+        events.push({
+          name: event.name,
+          phase: event.phase,
+          status: event.status,
+          index: event.index,
+          total: event.total,
+        });
+      },
+    });
+
+    expect(events).toEqual([
+      { name: 'alpha', phase: 'start', status: undefined, index: 0, total: 2 },
+      {
+        name: 'alpha',
+        phase: 'finish',
+        status: 'success',
+        index: 0,
+        total: 2,
+      },
+      { name: 'beta', phase: 'start', status: undefined, index: 1, total: 2 },
+      {
+        name: 'beta',
+        phase: 'finish',
+        status: 'skipped',
+        index: 1,
+        total: 2,
+      },
+    ]);
+  });
 });

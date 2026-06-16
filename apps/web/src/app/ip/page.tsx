@@ -15,6 +15,8 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Card,
   CardContent,
@@ -22,8 +24,10 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { SITE_CONFIG } from '@/lib/metadata';
 import { cn } from '@/lib/utils';
+import { analytics } from '@/lib/analytics';
 
 type RateLimit = {
   limit: number | null;
@@ -123,6 +127,8 @@ export default function IpRiskPage() {
   useEffect(() => {
     let cancelled = false;
 
+    analytics.pageView('/ip');
+
     async function loadCurrentIp() {
       setDetectingIp(true);
       try {
@@ -204,6 +210,16 @@ export default function IpRiskPage() {
 
       setResult(data as LookupResult);
       toast.success('IP risk lookup complete');
+      analytics.track.playgroundUsed({ endpoint: '/v1/ip/public/:ip' });
+      analytics.track.buttonClicked({
+        buttonLabel: 'check_ip_risk',
+        section: 'ip-checker',
+      });
+      analytics.track.apiCall({
+        endpoint: '/v1/ip/public/:ip',
+        statusCode: res.status,
+        success: true,
+      });
     } catch (lookupError) {
       setResult(null);
       setError(
@@ -211,6 +227,14 @@ export default function IpRiskPage() {
           ? lookupError.message
           : 'Unable to reach the CreepJS API.'
       );
+      analytics.track.apiError({
+        endpoint: '/v1/ip/public/:ip',
+        statusCode: 0,
+        errorMessage:
+          lookupError instanceof Error
+            ? lookupError.message
+            : 'Unable to reach the CreepJS API.',
+      });
     } finally {
       setLoading(false);
     }
@@ -220,6 +244,10 @@ export default function IpRiskPage() {
     if (!result) return;
     await navigator.clipboard.writeText(JSON.stringify(result, null, 2));
     toast.success('Result copied');
+    analytics.track.buttonClicked({
+      buttonLabel: 'copy_ip_result',
+      section: 'ip-checker',
+    });
   };
 
   const ToneIcon = tone.Icon;
@@ -235,10 +263,10 @@ export default function IpRiskPage() {
       <section className="bg-muted/30 border-b">
         <div className="container mx-auto grid gap-8 px-4 py-10 lg:grid-cols-[minmax(0,1fr)_420px] lg:py-14">
           <div className="max-w-3xl space-y-5">
-            <div className="bg-background text-muted-foreground inline-flex items-center gap-2 rounded-md border px-3 py-1 text-xs font-medium">
+            <Badge variant="outline" className="w-fit">
               <Globe2 className="h-4 w-4 text-emerald-500" />
               Free IP intelligence — no signup
-            </div>
+            </Badge>
             <div className="space-y-3">
               <h1 className="text-3xl font-semibold md:text-5xl">
                 IP Risk Checker
@@ -267,11 +295,11 @@ export default function IpRiskPage() {
                   <label htmlFor="ip-address" className="text-sm font-medium">
                     IP address
                   </label>
-                  <input
+                  <Input
                     id="ip-address"
                     value={ip}
                     onChange={(event) => setIp(event.target.value)}
-                    className="bg-background ring-offset-background focus-visible:ring-ring w-full rounded-md border px-3 py-2 font-mono text-sm outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+                    className="font-mono"
                     placeholder={
                       detectingIp ? 'Detecting your IP...' : '8.8.8.8'
                     }
@@ -280,12 +308,12 @@ export default function IpRiskPage() {
                 </div>
 
                 {error && (
-                  <div className="border-destructive/30 bg-destructive/10 text-destructive rounded-md border p-3 text-sm">
-                    <div className="flex items-start gap-2">
+                  <Alert variant="destructive">
+                    <AlertDescription className="flex items-start gap-2">
                       <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" />
                       <span>{error}</span>
-                    </div>
-                  </div>
+                    </AlertDescription>
+                  </Alert>
                 )}
 
                 <Button type="submit" className="w-full" disabled={loading}>

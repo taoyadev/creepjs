@@ -89,20 +89,22 @@ export const createTestEnv = ({
   tokens,
   rateLimits,
   ipCache,
+  fpStats,
   bindings,
 }: {
   tokens?: Record<string, string>;
   rateLimits?: Record<string, string>;
   ipCache?: Record<string, string>;
+  fpStats?: Record<string, string>;
   bindings?: Partial<Env['Bindings']>;
 } = {}): Env['Bindings'] => ({
   TOKENS: createMockKV(tokens),
   RATE_LIMIT: createMockKV(rateLimits),
   IP_CACHE: createMockKV(ipCache),
+  FP_STATS: createMockKV(fpStats),
   ENVIRONMENT: 'test',
   CORS_ORIGIN: '*',
   RATE_LIMIT_PER_DAY: '1000',
-  IPINFO_TOKEN: 'test-ipinfo-token',
   IPBOT_API_ORIGIN: 'https://api.ipbot.test',
   IPBOT_API_KEY: 'ipb_test_key',
   ...bindings,

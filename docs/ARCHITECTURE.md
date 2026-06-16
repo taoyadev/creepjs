@@ -18,6 +18,7 @@ This document describes the high-level architecture of the CreepJS monorepo (web
 3. The API:
    - authenticates the token (KV: `TOKENS`)
    - applies per-token rate limiting (KV: `RATE_LIMIT`)
+   - updates anonymized uniqueness bucket counters (KV: `FP_STATS`)
    - returns a normalized JSON response for UI consumption
 
 ## Packages & Responsibilities
@@ -35,6 +36,7 @@ This document describes the high-level architecture of the CreepJS monorepo (web
   - `TOKENS` (token records)
   - `RATE_LIMIT` (rate limit buckets)
   - `IP_CACHE` (optional IP metadata cache)
+  - `FP_STATS` (aggregate, anonymized uniqueness buckets only)
 
 ### `packages/core`
 
@@ -51,4 +53,5 @@ This document describes the high-level architecture of the CreepJS monorepo (web
 
 - Prefer **client-side computation** for educational transparency.
 - Keep the API **stateless for fingerprint payload storage** (KV is used for tokens and rate-limits only).
+- Keep uniqueness data **aggregate only**: no raw fingerprint payloads, only coarse bucket counters with k-anonymity suppression.
 - Keep exports **static** (Cloudflare Pages) where possible to simplify deployment and improve cacheability.

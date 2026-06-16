@@ -307,12 +307,20 @@ export const structuredData = {
   /**
    * Generate WebApplication schema
    */
-  webApplication: () => ({
+  webApplication: ({
+    name = SITE_CONFIG.name,
+    description = SITE_CONFIG.description,
+    path = '',
+  }: {
+    name?: string;
+    description?: string;
+    path?: string;
+  } = {}) => ({
     '@context': 'https://schema.org',
     '@type': 'WebApplication',
-    name: SITE_CONFIG.name,
-    url: SITE_CONFIG.url,
-    description: SITE_CONFIG.description,
+    name,
+    url: `${SITE_CONFIG.url}${path}`,
+    description,
     applicationCategory: 'DeveloperApplication',
     operatingSystem: 'Any',
     offers: {

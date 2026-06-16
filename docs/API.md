@@ -424,6 +424,9 @@ npm install @creepjs/sdk
 <script src="https://cdn.creepjs.org/v1/sdk.js"></script>
 ```
 
+The default browser bundle is intentionally slim. It lazy-loads the full
+collector bundle from `sdk.full.js` unless you override `fullBundleUrl`.
+
 ### Basic Usage
 
 ```javascript
@@ -444,9 +447,12 @@ console.log(fp.cached); // false
 ```html
 <script src="https://cdn.creepjs.org/v1/sdk.js"></script>
 <script>
-  CreepJS.getFingerprint({
+  const client = new CreepJS.CreepJS({
     token: 'cfp_your_token_here',
-  }).then((fp) => {
+    fullBundleUrl: 'https://cdn.creepjs.org/v1/sdk.full.js',
+  });
+
+  client.getFingerprint().then((fp) => {
     console.log(fp.fingerprintId);
   });
 </script>
@@ -459,22 +465,26 @@ import { CreepJS } from '@creepjs/sdk';
 
 const client = new CreepJS({
   token: 'cfp_your_token_here',
-  endpoint: 'https://api.creepjs.org', // Custom endpoint
+  endpoint: 'https://api.creepjs.org/v1/fingerprint', // Custom endpoint
   cache: true, // Enable caching (default)
-  cacheTtl: 3600, // Cache TTL (seconds)
+  cacheTtl: 3600_000, // Cache TTL (milliseconds)
+  timeoutMs: 10000,
 });
 
 const fp = await client.getFingerprint();
+const ip = await client.getIpIntelligence('8.8.8.8');
 ```
 
 ### SDK Configuration Options
 
-| Option     | Type    | Default                   | Description                 |
-| ---------- | ------- | ------------------------- | --------------------------- |
-| `token`    | string  | -                         | API Token (required)        |
-| `endpoint` | string  | `https://api.creepjs.org` | API endpoint                |
-| `cache`    | boolean | `true`                    | Enable LocalStorage caching |
-| `cacheTtl` | number  | `3600`                    | Cache TTL (seconds)         |
+| Option          | Type    | Default                                  | Description                                |
+| --------------- | ------- | ---------------------------------------- | ------------------------------------------ |
+| `token`         | string  | -                                        | API Token (required)                       |
+| `endpoint`      | string  | `https://api.creepjs.org/v1/fingerprint` | Fingerprint API endpoint                   |
+| `cache`         | boolean | `true`                                   | Enable LocalStorage caching                |
+| `cacheTtl`      | number  | `86400000`                               | Cache TTL (milliseconds)                   |
+| `timeoutMs`     | number  | `10000`                                  | Request timeout in milliseconds            |
+| `fullBundleUrl` | string  | sibling `sdk.full.js`                    | Override URL for the full collector bundle |
 
 ---
 

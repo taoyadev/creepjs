@@ -9,6 +9,7 @@ interface FingerprintCollectorCardProps {
   title: string;
   hash?: string;
   timing?: number;
+  insight?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
   defaultExpanded?: boolean;
@@ -18,6 +19,7 @@ export function FingerprintCollectorCard({
   title,
   hash,
   timing,
+  insight,
   children,
   className,
   defaultExpanded = true,
@@ -41,6 +43,11 @@ export function FingerprintCollectorCard({
             </div>
             <div className="min-w-0 flex-1">
               <CardTitle className="text-lg">{title}</CardTitle>
+              {insight && (
+                <div className="text-muted-foreground mt-1 text-xs">
+                  {insight}
+                </div>
+              )}
               {hash && (
                 <code className="text-muted-foreground mt-1 block truncate font-mono text-xs">
                   {hash}

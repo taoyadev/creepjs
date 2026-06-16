@@ -21,14 +21,16 @@ id = "8ec5c58120de4f26b21a85717dd8a84c"
 binding = "IP_CACHE"
 id = "06d882d1a9a946dbaf6204a542d5df58"
 
+[[kv_namespaces]]
+binding = "FP_STATS"
+id = "2f72c3e35fb84a0ca50cc1d7d4b4f1a1"
+
 
 [vars]
 ENVIRONMENT = "production"
 CORS_ORIGIN = "*"
 RATE_LIMIT_PER_DAY = "1000"
-# IPINFO_TOKEN should be set as a secret, not hardcoded here
-# Set via: wrangler secret put IPINFO_TOKEN
-
+FP_STATS_K_ANON = "20"
 # IPbot IP intelligence API. The origin is public config; the key is a secret.
 IPBOT_API_ORIGIN = "https://api.ipbot.com"
 # IPBOT_API_KEY must NEVER be hardcoded. Set it as a secret:

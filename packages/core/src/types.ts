@@ -513,6 +513,17 @@ export interface CollectorCoverage {
   skipped: number;
 }
 
+export type CollectorProgressPhase = 'start' | 'finish';
+
+export interface CollectorProgressEvent {
+  name: string;
+  index: number;
+  total: number;
+  phase: CollectorProgressPhase;
+  status?: CollectorStatus;
+  duration?: number;
+}
+
 /**
  * Timing information for each collector
  */

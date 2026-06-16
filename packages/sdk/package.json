@@ -10,13 +10,18 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./full": {
+      "types": "./dist/full.d.ts",
+      "import": "./dist/full.js"
     }
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsc && rollup -c",
+    "build": "rm -rf dist && tsc && rollup -c",
+    "check:size": "node ../../scripts/check-sdk-size.mjs",
     "dev": "tsc --watch",
     "lint": "eslint src --ext .ts",
     "test": "vitest run",

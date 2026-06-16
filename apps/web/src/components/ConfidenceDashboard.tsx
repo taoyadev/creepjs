@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Card,
   CardContent,
@@ -9,6 +9,11 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import type { CollectorSummary, FingerprintResult } from '@creepjs/core';
+import {
+  type BaselineResponse,
+  fetchBaseline,
+  summarizeBaseline,
+} from '@/lib/uniqueness-baseline';
 
 interface ConfidenceDashboardProps {
   result: FingerprintResult;
@@ -153,6 +158,7 @@ const resolveCollectorStatus = (
 };
 
 export function ConfidenceDashboard({ result }: ConfidenceDashboardProps) {
+  const [baseline, setBaseline] = useState<BaselineResponse | null>(null);
   const { collectors: collectorSummaries, timings, data } = result;
   const collectorEntries = Object.entries(collectorSummaries || {});
   const coverage = React.useMemo(
@@ -221,6 +227,28 @@ export function ConfidenceDashboard({ result }: ConfidenceDashboardProps) {
   const skippedCollectors = collectorEntries.filter(
     ([, component]) => component.status === 'skipped'
   );
+  const baselineSummary = summarizeBaseline(baseline);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadBaseline() {
+      try {
+        const response = await fetchBaseline(result);
+        if (!cancelled) {
+          setBaseline(response);
+        }
+      } catch (_error) {
+        void _error;
+      }
+    }
+
+    void loadBaseline();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [result]);
 
   return (
     <div className="space-y-6">
@@ -314,6 +342,25 @@ export function ConfidenceDashboard({ result }: ConfidenceDashboardProps) {
                 </div>
                 <div className="text-muted-foreground text-sm">
                   Avg per Attempted
+                </div>
+              </div>
+              <div className="bg-muted/50 col-span-2 space-y-1 rounded-lg p-4">
+                <div className="text-primary text-2xl font-bold">
+                  {baselineSummary?.rarityPercent === null
+                    ? 'Suppressed'
+                    : baselineSummary?.rarityPercent
+                      ? `${baselineSummary.rarityPercent}%`
+                      : '—'}
+                </div>
+                <div className="text-muted-foreground text-sm">
+                  Population Rarity
+                </div>
+                <div className="text-muted-foreground text-xs">
+                  {baselineSummary?.rarityPercent === null
+                    ? 'Not enough shared samples to reveal an anonymous rarity estimate yet.'
+                    : baselineSummary
+                      ? `Blended from ${baselineSummary.availableComponents} baseline-backed signals across ${baselineSummary.sampleCount} samples.`
+                      : 'Awaiting baseline response from the API.'}
                 </div>
               </div>
             </div>

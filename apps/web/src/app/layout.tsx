@@ -10,6 +10,7 @@ import { ThemeProvider } from '@/components/ThemeProvider';
 import { PWARegister } from '@/components/PWARegister';
 import { Footer } from '@/components/Footer';
 import { DynamicHeader } from '@/components/DynamicHeader';
+import { ThemeScript } from '@/components/ThemeScript';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -25,8 +26,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" suppressHydrationWarning>
       <head>
+        <ThemeScript />
         {/* JSON-LD Structured Data for SEO */}
         <StructuredData
           data={[
@@ -41,6 +43,8 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="manifest" href="/site.webmanifest" />
+        <link rel="preconnect" href="https://api.creepjs.org" />
+        <link rel="dns-prefetch" href="https://api.creepjs.org" />
         <meta
           name="theme-color"
           content="#ffffff"

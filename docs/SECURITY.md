@@ -75,6 +75,10 @@ if (navigator.doNotTrack === '1') {
 - **Rate Limiting**: 1000 requests/day/token to prevent abuse
 - **IP Blocking**: Automatically block suspicious IPs
 - **HTTPS Only**: Encrypted transmission
+- **Request IDs + Structured Logs**: every API response includes `X-Request-Id`
+  and emits structured request/error logs
+- **Production CORS default**: if `CORS_ORIGIN` is not explicitly set in
+  production, the API falls back to `https://creepjs.org` instead of `*`
 
 ### Data Storage
 
@@ -82,6 +86,80 @@ if (navigator.doNotTrack === '1') {
 - **Hash Only**: Only store hashed fingerprint IDs
 - **Encrypted Transmission**: All data transmitted over HTTPS
 - **Access Control**: Strict access controls on servers
+
+## Web Security Headers
+
+Static Pages headers are defined in `apps/web/public/_headers`.
+
+Current repo-side policy includes:
+
+- `Content-Security-Policy`
+- `Strict-Transport-Security`
+- `X-Content-Type-Options`
+- `Referrer-Policy`
+- `Permissions-Policy`
+
+These headers are shipped with the static export and should be verified in the
+deployed response with `curl -I` during release review.
+
+## Secret Management
+
+### Rotation Runbook
+
+Use [docs/SECRETS.md](/Volumes/SSD/dev/ip-dataset/creepjs/docs/SECRETS.md) as
+the source of truth for secret inventory and rotation ownership.
+
+Cloudflare deploy tokens must be rotated immediately after any exposure. A git
+history rewrite is not remediation by itself because leaked tokens remain valid
+until they are revoked.
+
+### Repository Controls
+
+- **No committed credentials**: store secrets only in GitHub Actions secrets or
+  Worker secrets
+- **Blocking secret scan**: CI runs `scripts/secret-scan.sh` and must fail on
+  suspicious committed token material
+- **Least privilege**: Cloudflare deploy tokens should be scoped only to Pages,
+  Workers, and KV permissions required for this project
+
+## IP Intelligence Data
+
+- `/my-ip` reuses the existing IPbot integration instead of a separate
+  `IPINFO_TOKEN` secret
+- The route returns a minimal transient payload for the caller and falls back to
+  a stable response shape if upstream enrichment is unavailable
+- No additional long-term storage of caller IP metadata is introduced beyond
+  the existing Worker-side KV cache used by the IPbot service
+
+## Uniqueness Baseline Data
+
+- `/v1/stats/uniqueness` uses aggregate counters only
+- The API stores coarse hashed buckets for a small set of high-value signals
+  (`canvas`, `webgl`, `timezone`, `fonts`, `screen`) rather than raw component values
+- Buckets below the configured k-anonymity threshold are suppressed from API responses
+- Write amplification is intentionally bounded to one total counter plus at most
+  five component counters per fingerprint submission
+
+## Data Traceability Matrix
+
+This matrix maps each stored or transmitted project data item to the code path
+that handles it so a reviewer can verify that docs match the implementation.
+
+| Data item                                  | Where it exists                 | Code path                                                                                                   | Retention / guardrail                                                                    |
+| ------------------------------------------ | ------------------------------- | ----------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| API token email, `createdAt`, `usageCount` | Cloudflare KV `TOKENS`          | `apps/api/src/routes/token.ts`, `apps/api/src/middleware/auth.ts`, `apps/api/src/routes/fingerprint.ts`     | Operational token record only; no browser fingerprint payload stored with it             |
+| Per-token and public rate-limit counters   | Cloudflare KV `RATE_LIMIT`      | `apps/api/src/middleware/ratelimit.ts`, `apps/api/src/routes/ip.ts`, `apps/api/src/routes/token.ts`         | Time-window counters only                                                                |
+| IP intelligence cache                      | Cloudflare KV `IP_CACHE`        | `apps/api/src/services/ipbot.ts`, `apps/api/src/routes/myip.ts`                                             | Transient cache; no credential values exposed                                            |
+| Uniqueness baseline buckets                | Cloudflare KV `FP_STATS`        | `apps/api/src/services/uniqueness.ts`, `apps/api/src/routes/fingerprint.ts`, `apps/api/src/routes/stats.ts` | Aggregate hashed coarse buckets only; k-anonymity suppression below threshold            |
+| Analytics event payloads                   | Cloudflare Web Analytics beacon | `apps/web/src/components/Analytics.tsx`, `apps/web/src/lib/analytics.ts`                                    | No email, fingerprint ID, raw fingerprint payload, or IP lookup body sent; DNT respected |
+| Homepage/checker local fingerprint history | Browser `localStorage`          | `apps/web/src/components/UniquenessAnalysis.tsx`, `apps/web/src/components/FingerprintHistory.tsx`          | Browser-local only; never posted back by these components                                |
+| SDK cache                                  | Browser `localStorage`          | `packages/sdk/src/index.ts`                                                                                 | Cached API response only; cleared by TTL or `clearCache()`                               |
+
+Reviewer note:
+
+- If a future change adds a new storage location or third-party sink, update
+  this matrix, `apps/web/src/app/privacy/page.tsx`, and
+  `apps/web/src/app/terms/page.tsx` in the same PR.
 
 ## Privacy Best Practices
 

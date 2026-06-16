@@ -10,6 +10,12 @@ import {
 } from '@/components/ui/card';
 import type { FingerprintResult } from '@creepjs/core';
 import { Shield, Users, TrendingUp, AlertTriangle } from 'lucide-react';
+import {
+  type BaselineEstimate,
+  type BaselineResponse,
+  fetchBaseline,
+  labelForBaselineComponent,
+} from '@/lib/uniqueness-baseline';
 
 interface UniquenessAnalysisProps {
   result: FingerprintResult;
@@ -43,6 +49,11 @@ interface UniquenessMetrics {
   exactMatches: number;
   partialMatches: number;
   uniquenessScore: number;
+  featureScores: Array<{
+    name: string;
+    uniqueness: number;
+    matchRate: number;
+  }>;
   mostUniqueFeatures: Array<{ name: string; uniqueness: number }>;
   commonFeatures: Array<{ name: string; matchRate: number }>;
 }
@@ -50,6 +61,7 @@ interface UniquenessMetrics {
 export function UniquenessAnalysis({ result }: UniquenessAnalysisProps) {
   const [metrics, setMetrics] = useState<UniquenessMetrics | null>(null);
   const [isFirstVisit, setIsFirstVisit] = useState(false);
+  const [baseline, setBaseline] = useState<BaselineResponse | null>(null);
 
   useEffect(() => {
     const analyzeUniqueness = () => {
@@ -164,6 +176,7 @@ export function UniquenessAnalysis({ result }: UniquenessAnalysisProps) {
         exactMatches,
         partialMatches,
         uniquenessScore: avgUniqueness,
+        featureScores: featureUniqueness,
         mostUniqueFeatures,
         commonFeatures,
       });
@@ -172,11 +185,97 @@ export function UniquenessAnalysis({ result }: UniquenessAnalysisProps) {
     analyzeUniqueness();
   }, [result]);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadBaseline() {
+      try {
+        const json = await fetchBaseline(result);
+        if (!cancelled) {
+          setBaseline(json);
+        }
+      } catch (_error) {
+        void _error;
+      }
+    }
+
+    void loadBaseline();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [result]);
+
   if (!metrics) {
     return null;
   }
 
-  const uniquenessPercent = Math.round(metrics.uniquenessScore * 100);
+  const blendedFeatureScores = React.useMemo(() => {
+    const localScores = new Map(
+      metrics.featureScores.map((feature) => [feature.name, feature])
+    );
+
+    const baselineScores = Object.values(baseline?.estimates ?? {})
+      .filter(
+        (
+          estimate
+        ): estimate is BaselineEstimate & {
+          rarity: number;
+          sampleSize: number;
+        } =>
+          Boolean(
+            estimate &&
+              !estimate.suppressed &&
+              typeof estimate.rarity === 'number' &&
+              typeof estimate.sampleSize === 'number'
+          )
+      )
+      .map((estimate) => ({
+        name: labelForBaselineComponent(estimate.component),
+        uniqueness: 1 - estimate.rarity,
+        matchRate: estimate.rarity,
+      }));
+
+    if (baselineScores.length === 0) {
+      return metrics.featureScores;
+    }
+
+    const merged = new Map(
+      metrics.featureScores.map((feature) => [feature.name, feature])
+    );
+
+    for (const baselineFeature of baselineScores) {
+      const local = localScores.get(baselineFeature.name);
+      if (!local) {
+        merged.set(baselineFeature.name, baselineFeature);
+        continue;
+      }
+
+      merged.set(baselineFeature.name, {
+        name: baselineFeature.name,
+        uniqueness: baselineFeature.uniqueness * 0.7 + local.uniqueness * 0.3,
+        matchRate: baselineFeature.matchRate * 0.7 + local.matchRate * 0.3,
+      });
+    }
+
+    return Array.from(merged.values());
+  }, [baseline, metrics.featureScores]);
+
+  const blendedUniquenessScore =
+    blendedFeatureScores.reduce((sum, feature) => sum + feature.uniqueness, 0) /
+    blendedFeatureScores.length;
+
+  const displayedMostUniqueFeatures = [...blendedFeatureScores]
+    .sort((a, b) => b.uniqueness - a.uniqueness)
+    .slice(0, 5)
+    .map(({ name, uniqueness }) => ({ name, uniqueness }));
+
+  const displayedCommonFeatures = [...blendedFeatureScores]
+    .sort((a, b) => b.matchRate - a.matchRate)
+    .slice(0, 5)
+    .map(({ name, matchRate }) => ({ name, matchRate }));
+
+  const uniquenessPercent = Math.round(blendedUniquenessScore * 100);
   const uniquenessLevel =
     uniquenessPercent >= 80
       ? 'high'
@@ -232,6 +331,12 @@ export function UniquenessAnalysis({ result }: UniquenessAnalysisProps) {
                     ? 'Your browser fingerprint is moderately unique. Some tracking protection is in place.'
                     : 'Your browser fingerprint is common. This provides privacy through anonymity but basic tracking is possible.'}
               </p>
+              {baseline && (
+                <p className="text-muted-foreground mx-auto max-w-md text-xs">
+                  This score blends local repeat history with the anonymous API
+                  population baseline when enough samples exist.
+                </p>
+              )}
             </div>
 
             {/* Match Statistics */}
@@ -282,7 +387,7 @@ export function UniquenessAnalysis({ result }: UniquenessAnalysisProps) {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {metrics.mostUniqueFeatures.map((feature, index) => {
+                {displayedMostUniqueFeatures.map((feature, index) => {
                   const uniquenessPercent = Math.round(
                     feature.uniqueness * 100
                   );
@@ -330,7 +435,7 @@ export function UniquenessAnalysis({ result }: UniquenessAnalysisProps) {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {metrics.commonFeatures.map((feature, index) => {
+                {displayedCommonFeatures.map((feature, index) => {
                   const matchPercent = Math.round(feature.matchRate * 100);
                   return (
                     <div key={feature.name} className="space-y-2">
@@ -368,6 +473,67 @@ export function UniquenessAnalysis({ result }: UniquenessAnalysisProps) {
         </div>
       )}
 
+      {baseline && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Population Baseline</CardTitle>
+            <CardDescription>
+              Anonymous aggregate rarity from the API. Buckets below the
+              k-anonymity threshold stay suppressed.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="bg-background space-y-1 rounded-lg border p-4">
+                <div className="text-muted-foreground text-sm">
+                  Total Samples
+                </div>
+                <div className="text-2xl font-bold">
+                  {baseline.totalSamples}
+                </div>
+              </div>
+              <div className="bg-background space-y-1 rounded-lg border p-4">
+                <div className="text-muted-foreground text-sm">
+                  k-Anonymity Threshold
+                </div>
+                <div className="text-2xl font-bold">
+                  {baseline.kAnonThreshold}
+                </div>
+              </div>
+            </div>
+
+            <div className="grid gap-3 md:grid-cols-2">
+              {Object.values(baseline.estimates).map((estimate) => {
+                if (!estimate) return null;
+
+                return (
+                  <div
+                    key={estimate.component}
+                    className="rounded-lg border p-4"
+                  >
+                    <div className="mb-1 flex items-center justify-between">
+                      <span className="font-medium">
+                        {labelForBaselineComponent(estimate.component)}
+                      </span>
+                      <span className="text-muted-foreground text-xs">
+                        {estimate.suppressed
+                          ? 'Suppressed'
+                          : `${Math.round((1 - (estimate.rarity ?? 0)) * 100)}% rare`}
+                      </span>
+                    </div>
+                    <div className="text-muted-foreground text-sm">
+                      {estimate.suppressed
+                        ? `Hidden until at least ${baseline.kAnonThreshold} samples share this bucket.`
+                        : `${estimate.sampleSize} matching samples in ${baseline.totalSamples} total observations.`}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Information Note */}
       <Card className="bg-muted/50">
         <CardContent className="pt-6">
@@ -392,8 +558,8 @@ export function UniquenessAnalysis({ result }: UniquenessAnalysisProps) {
                     fingerprint, harder to track individually
                   </li>
                   <li>
-                    Data is stored locally in your browser and never sent to any
-                    server
+                    Local history remains browser-only, while the API baseline
+                    uses anonymous coarse buckets with k-anonymity suppression
                   </li>
                 </ul>
               </div>

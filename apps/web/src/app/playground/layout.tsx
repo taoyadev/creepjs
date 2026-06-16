@@ -19,7 +19,7 @@ export default function PlaygroundLayout({
     <>
       <StructuredData
         data={[
-          structuredData.webPage({
+          structuredData.webApplication({
             name: 'CreepJS API Playground',
             description:
               'Generate API tokens, test fingerprint requests, and inspect browser fingerprinting API responses.',

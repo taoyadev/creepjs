@@ -1,6 +1,8 @@
 # Roadmap
 
 This roadmap is intentionally lightweight and should evolve with real usage data.
+For execution details, follow [LAUNCH_PLAN](./LAUNCH_PLAN.md), which is the
+single source of truth for delivery sequencing and acceptance.
 
 ## Phase 1 — Production Hardening
 

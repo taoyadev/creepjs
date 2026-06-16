@@ -65,6 +65,8 @@ export interface AnalyticsProperties {
   statusCode?: number;
   responseTime?: number;
   errorMessage?: string;
+  success?: boolean;
+  source?: string;
 
   // User interaction
   buttonLabel?: string;
@@ -83,6 +85,50 @@ export interface AnalyticsProperties {
 const IS_BROWSER = typeof window !== 'undefined';
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 const DEBUG_MODE = process.env.NEXT_PUBLIC_DEBUG_ANALYTICS === 'true';
+const SENSITIVE_KEYS = new Set([
+  'email',
+  'fingerprintId',
+  'searchQuery',
+  'errorStack',
+]);
+
+function normalizeUrl(value: string): string {
+  if (!value) return value;
+
+  try {
+    const base = IS_BROWSER ? window.location.href : 'https://creepjs.org';
+    const parsed = new URL(value, base);
+    return `${parsed.pathname}${parsed.hash}`;
+  } catch {
+    const [pathWithoutQuery] = value.split('?');
+    return pathWithoutQuery || value;
+  }
+}
+
+export function sanitizeAnalyticsProperties(
+  properties?: AnalyticsProperties
+): AnalyticsProperties | undefined {
+  if (!properties) return undefined;
+
+  const sanitized: AnalyticsProperties = {};
+
+  for (const [key, value] of Object.entries(properties)) {
+    if (value == null || SENSITIVE_KEYS.has(key)) continue;
+
+    if (
+      (key === 'page' || key === 'linkUrl') &&
+      typeof value === 'string' &&
+      value.length > 0
+    ) {
+      sanitized[key] = normalizeUrl(value);
+      continue;
+    }
+
+    sanitized[key] = value;
+  }
+
+  return Object.keys(sanitized).length > 0 ? sanitized : undefined;
+}
 
 /**
  * Check if analytics is available
@@ -114,14 +160,15 @@ export function trackEvent(
   eventName: AnalyticsEvent,
   properties?: AnalyticsProperties
 ) {
-  debugLog(eventName, properties);
+  const sanitized = sanitizeAnalyticsProperties(properties);
+  debugLog(eventName, sanitized);
 
   if (!isAnalyticsAvailable()) {
     return;
   }
 
   try {
-    window.__cfBeacon?.('track', eventName, properties);
+    window.__cfBeacon?.('track', eventName, sanitized);
   } catch (error) {
     console.warn('[Analytics] Failed to track event:', eventName, error);
   }
@@ -133,7 +180,9 @@ export function trackEvent(
  * @param url - Optional URL to track (defaults to current URL)
  */
 export function trackPageView(url?: string) {
-  const pageUrl = url || (IS_BROWSER ? window.location.href : '/');
+  const pageUrl = normalizeUrl(
+    url || (IS_BROWSER ? window.location.href : '/')
+  );
 
   debugLog('page_view', { page: pageUrl });
 
@@ -159,11 +208,9 @@ export function trackError(
   context?: AnalyticsProperties
 ) {
   const errorMessage = error instanceof Error ? error.message : error;
-  const errorStack = error instanceof Error ? error.stack : undefined;
 
   trackEvent('error_occurred', {
     errorMessage,
-    errorStack,
     ...context,
   });
 }
@@ -218,7 +265,7 @@ export const analytics = {
     /**
      * Track API token requests
      */
-    apiTokenRequested: (props?: { email?: string }) => {
+    apiTokenRequested: (props?: { source?: string }) => {
       trackEvent('api_token_requested', props);
     },
 
@@ -229,6 +276,7 @@ export const analytics = {
       endpoint: string;
       statusCode?: number;
       responseTime?: number;
+      success?: boolean;
     }) => {
       trackEvent('api_call_made', props);
     },
@@ -240,6 +288,7 @@ export const analytics = {
       endpoint: string;
       statusCode?: number;
       responseTime?: number;
+      success?: boolean;
     }) => {
       trackEvent('api_call', props);
     },

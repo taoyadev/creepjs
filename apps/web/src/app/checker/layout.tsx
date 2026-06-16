@@ -19,7 +19,7 @@ export default function CheckerLayout({
     <>
       <StructuredData
         data={[
-          structuredData.webPage({
+          structuredData.webApplication({
             name: 'Fingerprint Checker',
             description:
               'Run a full browser fingerprint scan with collector coverage and privacy risk analysis.',

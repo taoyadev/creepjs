@@ -1,6 +1,6 @@
 import { mapWithIdleBreaks } from '../utils/async';
 import type { MaybePromise } from '../utils/async';
-import type { CollectorSummary } from '../types';
+import type { CollectorProgressEvent, CollectorSummary } from '../types';
 
 export type Source<T> = () => MaybePromise<T>;
 export type SourceRegistry = Record<string, Source<unknown>>;
@@ -8,6 +8,8 @@ export type SourceRegistry = Record<string, Source<unknown>>;
 export interface RunSourcesOptions {
   idleDelay?: number;
   concurrency?: number;
+  total?: number;
+  onProgress?: (event: CollectorProgressEvent) => void;
 }
 
 const now = () =>
@@ -53,10 +55,31 @@ export async function runSources(
   options: RunSourcesOptions = {}
 ): Promise<Record<string, CollectorSummary>> {
   const entries = Object.entries(registry);
+  const total = options.total ?? entries.length;
 
   const components = await mapWithIdleBreaks(
     entries,
-    async ([name, source]) => ({ name, component: await runSource(source) }),
+    async ([name, source], index) => {
+      options.onProgress?.({
+        name,
+        index,
+        total,
+        phase: 'start',
+      });
+
+      const component = await runSource(source);
+
+      options.onProgress?.({
+        name,
+        index,
+        total,
+        phase: 'finish',
+        status: component.status,
+        duration: component.duration,
+      });
+
+      return { name, component };
+    },
     { idleDelay: options.idleDelay, concurrency: options.concurrency }
   );
 

@@ -58,6 +58,7 @@ export * from './collectors/touchSupport';
 export * from './collectors/vendor';
 export * from './collectors/vendorFlavors';
 export * from './utils/hash';
+export * from './sources/manifest';
 
 export type {
   FingerprintData,
@@ -65,6 +66,7 @@ export type {
   CollectorTimings,
   CollectorSummary,
   CollectorCoverage,
+  CollectorProgressEvent,
   CanvasFingerprint,
   WebGLFingerprint,
   NavigatorFingerprint,
@@ -106,6 +108,7 @@ export type {
   ServiceWorkerFingerprint,
   LiesFingerprint,
   CollectorStatus,
+  CollectorProgressPhase,
 } from './types';
 export { DateTimeLocaleStatus } from './types';
 import type {
@@ -114,6 +117,7 @@ import type {
   CollectorTimings,
   CollectorSummary,
   CollectorCoverage,
+  CollectorProgressEvent,
   LiesFingerprint,
 } from './types';
 import { collectLiesFingerprint } from './collectors/lies';
@@ -133,6 +137,7 @@ const DEFAULT_CONCURRENCY =
 export interface CollectFingerprintOptions {
   idleDelay?: number;
   concurrency?: number;
+  onProgress?: (event: CollectorProgressEvent) => void;
 }
 
 /**
@@ -142,12 +147,20 @@ export async function collectFingerprint(
   options: CollectFingerprintOptions = {}
 ): Promise<FingerprintResult> {
   const overallStart = now();
+  const totalCollectors = Object.keys(defaultSources).length + 1;
   const baseComponents = await runSources(defaultSources, {
     idleDelay: options.idleDelay ?? DEFAULT_IDLE_DELAY,
     concurrency: options.concurrency ?? DEFAULT_CONCURRENCY,
+    total: totalCollectors,
+    onProgress: options.onProgress,
   });
   const dataWithoutLies = buildFingerprintData(baseComponents);
-  const liesComponent = await runLiesComponent(dataWithoutLies);
+  const liesComponent = await runLiesComponent(
+    dataWithoutLies,
+    Object.keys(defaultSources).length,
+    totalCollectors,
+    options.onProgress
+  );
 
   const collectors: Record<string, CollectorSummary> = {
     ...baseComponents,
@@ -251,18 +264,37 @@ function buildFingerprintData(
 }
 
 async function runLiesComponent(
-  data: FingerprintData
+  data: FingerprintData,
+  index: number,
+  total: number,
+  onProgress?: (event: CollectorProgressEvent) => void
 ): Promise<CollectorSummary> {
+  onProgress?.({
+    name: 'lies',
+    index,
+    total,
+    phase: 'start',
+  });
+
   const start = now();
   try {
     const value = await collectLiesFingerprint(data);
-    return {
+    const component: CollectorSummary = {
       status: value ? 'success' : 'skipped',
       value,
       duration: now() - start,
     };
+    onProgress?.({
+      name: 'lies',
+      index,
+      total,
+      phase: 'finish',
+      status: component.status,
+      duration: component.duration,
+    });
+    return component;
   } catch (error) {
-    return {
+    const component: CollectorSummary = {
       status: 'error',
       error:
         error instanceof Error
@@ -270,6 +302,15 @@ async function runLiesComponent(
           : 'Failed to compute lies component',
       duration: now() - start,
     };
+    onProgress?.({
+      name: 'lies',
+      index,
+      total,
+      phase: 'finish',
+      status: component.status,
+      duration: component.duration,
+    });
+    return component;
   }
 }
 

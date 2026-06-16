@@ -9,6 +9,8 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { collectFingerprint } from '@creepjs/core';
 import type { FingerprintResult } from '@creepjs/core';
@@ -29,8 +31,10 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SITE_CONFIG } from '@/lib/metadata';
+import { analytics } from '@/lib/analytics';
 
 const API_URL = SITE_CONFIG.apiUrl;
 
@@ -47,14 +51,24 @@ export default function PlaygroundPage() {
   const [selectedLanguage, setSelectedLanguage] = useState('javascript');
 
   useEffect(() => {
+    analytics.pageView('/playground');
+    analytics.track.playgroundUsed({ endpoint: '/playground' });
+
     // Load fingerprint on mount
     const loadFingerprint = async () => {
       setFingerprintLoading(true);
       try {
         const fp = await collectFingerprint();
         setFingerprint(fp);
+        analytics.track.fingerprintGenerated({
+          confidence: fp.confidence,
+          method: 'playground',
+        });
       } catch (error) {
         console.error('Failed to collect fingerprint:', error);
+        analytics.error(error instanceof Error ? error : String(error), {
+          page: '/playground',
+        });
       } finally {
         setFingerprintLoading(false);
       }
@@ -80,16 +94,29 @@ export default function PlaygroundPage() {
       setResponse(JSON.stringify(data, null, 2));
       if (typeof data.token === 'string') {
         setApiToken(data.token);
+        analytics.track.apiTokenRequested({ source: 'playground' });
+        analytics.track.formSubmitted({
+          formName: 'api_token_request',
+          success: true,
+        });
         toast.success('API token generated', {
           description: `Token has been sent to ${email}`,
         });
       } else if (data.error) {
+        analytics.track.formSubmitted({
+          formName: 'api_token_request',
+          success: false,
+        });
         toast.error('Failed to generate token', {
           description: data.error,
         });
       }
     } catch (error) {
       setResponse(`Error: ${String(error)}`);
+      analytics.track.formSubmitted({
+        formName: 'api_token_request',
+        success: false,
+      });
       toast.error('Request failed', {
         description: 'Unable to connect to the API server.',
       });
@@ -121,10 +148,27 @@ export default function PlaygroundPage() {
       setResponse(JSON.stringify(data, null, 2));
 
       if (res.ok) {
+        analytics.track.playgroundTest({
+          endpoint: '/v1/fingerprint',
+          success: true,
+        });
+        analytics.track.apiCall({
+          endpoint: '/v1/fingerprint',
+          statusCode: res.status,
+          success: true,
+        });
         toast.success('API request successful', {
           description: 'Fingerprint data processed successfully.',
         });
       } else {
+        analytics.track.playgroundTest({
+          endpoint: '/v1/fingerprint',
+          success: false,
+        });
+        analytics.track.apiError({
+          endpoint: '/v1/fingerprint',
+          statusCode: res.status,
+        });
         toast.error('API request failed', {
           description: 'Check the response below for details.',
         });
@@ -144,6 +188,17 @@ export default function PlaygroundPage() {
       await navigator.clipboard.writeText(text);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+      if (text === apiToken) {
+        analytics.track.buttonClicked({
+          buttonLabel: 'copy_api_token',
+          section: 'playground',
+        });
+      } else {
+        analytics.track.buttonClicked({
+          buttonLabel: 'copy_sdk_example',
+          section: selectedLanguage,
+        });
+      }
       toast.success('Copied to clipboard', {
         description: 'Content has been copied successfully.',
       });
@@ -481,16 +536,16 @@ func main() {
                 indicators
               </li>
             </ol>
-            <div className="mt-4 rounded-lg border border-blue-500/20 bg-blue-500/10 p-3">
-              <p className="flex items-start gap-2 text-xs">
+            <Alert variant="info" className="mt-4 p-3">
+              <AlertDescription className="flex items-start gap-2 text-xs">
                 <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-500" />
                 <span>
                   <strong>Pro Tip:</strong> Keep this page open while reading
                   the code examples. The interactive testing helps you
                   understand API behavior before writing production code.
                 </span>
-              </p>
-            </div>
+              </AlertDescription>
+            </Alert>
           </CardContent>
         </Card>
 
@@ -511,11 +566,11 @@ func main() {
                   <label className="mb-2 block text-sm font-medium">
                     Email Address
                   </label>
-                  <input
+                  <Input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="bg-background w-full rounded-md border px-3 py-2"
+                    className="w-full"
                     placeholder="your@email.com"
                   />
                 </div>
@@ -547,11 +602,11 @@ func main() {
                     <Skeleton className="h-10 w-full" />
                   ) : (
                     <div className="flex gap-2">
-                      <input
+                      <Input
                         type="text"
                         value={apiToken}
                         onChange={(e) => setApiToken(e.target.value)}
-                        className="bg-background flex-1 rounded-md border px-3 py-2 font-mono text-sm"
+                        className="flex-1 font-mono"
                         placeholder="cfp_..."
                       />
                       <Button
@@ -570,10 +625,13 @@ func main() {
                   )}
                 </div>
                 {apiToken && !loading && (
-                  <div className="text-muted-foreground bg-muted rounded p-3 text-xs">
+                  <Badge
+                    variant="secondary"
+                    className="justify-start px-3 py-2 text-xs"
+                  >
                     ✓ Token ready. You can now test the API or copy code
                     examples below.
-                  </div>
+                  </Badge>
                 )}
               </CardContent>
             </Card>
@@ -721,14 +779,6 @@ func main() {
                     </div>
                     <div className="text-muted-foreground mt-1 text-xs">
                       Submit fingerprint data for processing and storage
-                    </div>
-                  </div>
-                  <div className="border-l-4 border-purple-500 pl-4">
-                    <div className="font-mono text-sm font-bold">
-                      GET /v1/fingerprint/:id
-                    </div>
-                    <div className="text-muted-foreground mt-1 text-xs">
-                      Retrieve a specific fingerprint by ID
                     </div>
                   </div>
                 </div>

@@ -15,7 +15,7 @@ export default function IpLayout({ children }: { children: React.ReactNode }) {
     <>
       <StructuredData
         data={[
-          structuredData.webPage({
+          structuredData.webApplication({
             name: 'IP Risk Checker',
             description:
               'Check IP risk, ASN, geolocation, proxy, VPN, Tor, datacenter, and routing signals with free public lookups.',

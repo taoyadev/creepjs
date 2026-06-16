@@ -4,6 +4,8 @@ import type { Env, TokenData } from '../types';
 import { authMiddleware } from '../middleware/auth';
 import { rateLimitMiddleware } from '../middleware/ratelimit';
 import { FingerprintRequestSchema } from '../utils/validation';
+import { recordUniquenessStats } from '../services/uniqueness';
+import { logEvent } from '../utils/logging';
 
 const app = new Hono<Env>();
 
@@ -24,6 +26,7 @@ app.post(
     };
 
     await c.env.TOKENS.put(token, JSON.stringify(updatedTokenData));
+    await recordUniquenessStats(data.data, c.env);
 
     // Return fingerprint response
     const coverage = data.coverage ?? {
@@ -32,6 +35,17 @@ app.post(
       failed: 0,
       skipped: 0,
     };
+
+    logEvent({
+      msg: 'fingerprint.accepted',
+      request_id: c.get('requestId'),
+      token_usage_count: updatedTokenData.usageCount,
+      fingerprint_id: data.fingerprintId,
+      coverage_ratio: coverage.ratio,
+      coverage_successful: coverage.successful,
+      coverage_failed: coverage.failed,
+      coverage_skipped: coverage.skipped,
+    });
 
     return c.json({
       fingerprintId: data.fingerprintId,

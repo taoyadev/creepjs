@@ -1,11 +1,19 @@
 import { createMiddleware } from 'hono/factory';
 import type { Env } from '../types';
+import { logError } from '../utils/logging';
 
 export const errorMiddleware = createMiddleware<Env>(async (c, next) => {
   try {
     await next();
   } catch (error) {
-    console.error('API Error:', error);
+    logError({
+      msg: 'api.error',
+      request_id: c.get('requestId') ?? null,
+      path: c.req.path,
+      method: c.req.method,
+      error:
+        error instanceof Error ? error.message : 'Unknown error occurred',
+    });
 
     if (error instanceof Error) {
       return c.json(
