@@ -206,11 +206,10 @@ export function UniquenessAnalysis({ result }: UniquenessAnalysisProps) {
     };
   }, [result]);
 
-  if (!metrics) {
-    return null;
-  }
-
   const blendedFeatureScores = React.useMemo(() => {
+    if (!metrics) {
+      return [];
+    }
     const localScores = new Map(
       metrics.featureScores.map((feature) => [feature.name, feature])
     );
@@ -259,7 +258,11 @@ export function UniquenessAnalysis({ result }: UniquenessAnalysisProps) {
     }
 
     return Array.from(merged.values());
-  }, [baseline, metrics.featureScores]);
+  }, [baseline, metrics]);
+
+  if (!metrics) {
+    return null;
+  }
 
   const blendedUniquenessScore =
     blendedFeatureScores.reduce((sum, feature) => sum + feature.uniqueness, 0) /
