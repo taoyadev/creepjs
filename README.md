@@ -233,17 +233,33 @@ pnpm --filter @creepjs/api test
 
 ### Using the SDK
 
-**Installation:**
+**Installation (script tag — recommended):**
 
-```bash
-npm install @creepjs/sdk
-# or
-pnpm add @creepjs/sdk
-# or
-yarn add @creepjs/sdk
+```html
+<script src="https://creepjs.org/sdk.js"></script>
 ```
 
-**Basic Usage:**
+An npm package (`@creepjs/sdk`) is planned but not yet published.
+
+**Basic Usage (works today via the script tag):**
+
+The bundle exposes a global `CreepJS` namespace:
+
+```html
+<script src="https://creepjs.org/sdk.js"></script>
+<script>
+  const client = new CreepJS.CreepJS({
+    token: 'cfp_your_token',
+    fullBundleUrl: 'https://creepjs.org/sdk.full.js',
+  });
+
+  client.getFingerprint().then((result) => {
+    console.log('Fingerprint ID:', result.fingerprintId);
+  });
+</script>
+```
+
+**ES Modules (after the npm package ships):**
 
 ```javascript
 import { getFingerprint } from '@creepjs/sdk';
@@ -258,22 +274,6 @@ const result = await getFingerprint({
 
 console.log(result);
 // { fingerprintId, confidence, coverage, timestamp, cached, ... }
-```
-
-**CDN (UMD):**
-
-```html
-<script src="https://cdn.creepjs.org/v1/sdk.js"></script>
-<script>
-  const client = new CreepJS.CreepJS({
-    token: 'cfp_your_token',
-    fullBundleUrl: 'https://cdn.creepjs.org/v1/sdk.full.js',
-  });
-
-  client.getFingerprint().then((result) => {
-    console.log('Fingerprint ID:', result.fingerprintId);
-  });
-</script>
 ```
 
 ### Using the API Directly

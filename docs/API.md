@@ -412,25 +412,42 @@ Instead of calling the API directly, we recommend using the official SDK:
 
 ### Installation
 
-**NPM**:
-
-```bash
-npm install @creepjs/sdk
-```
-
-**CDN** (UMD):
+**Script tag** (recommended):
 
 ```html
-<script src="https://cdn.creepjs.org/v1/sdk.js"></script>
+<script src="https://creepjs.org/sdk.js"></script>
 ```
 
 The default browser bundle is intentionally slim. It lazy-loads the full
 collector bundle from `sdk.full.js` unless you override `fullBundleUrl`.
 
+**npm** (coming soon — not yet published):
+
+```bash
+npm install @creepjs/sdk
+```
+
 ### Basic Usage
 
+**Script tag (works today)** — the bundle exposes a global `CreepJS` namespace:
+
+```html
+<script src="https://creepjs.org/sdk.js"></script>
+<script>
+  const client = new CreepJS.CreepJS({
+    token: 'cfp_your_token_here',
+    fullBundleUrl: 'https://creepjs.org/sdk.full.js',
+  });
+
+  client.getFingerprint().then((fp) => {
+    console.log(fp.fingerprintId);
+  });
+</script>
+```
+
+**ES Modules (after npm publish)**:
+
 ```javascript
-// ES Modules
 import { getFingerprint } from '@creepjs/sdk';
 
 const fp = await getFingerprint({
@@ -440,22 +457,6 @@ const fp = await getFingerprint({
 console.log(fp.fingerprintId); // "3mK9vN2Lx8pQ"
 console.log(fp.confidence); // 0.95
 console.log(fp.cached); // false
-```
-
-**UMD (Browser)**:
-
-```html
-<script src="https://cdn.creepjs.org/v1/sdk.js"></script>
-<script>
-  const client = new CreepJS.CreepJS({
-    token: 'cfp_your_token_here',
-    fullBundleUrl: 'https://cdn.creepjs.org/v1/sdk.full.js',
-  });
-
-  client.getFingerprint().then((fp) => {
-    console.log(fp.fingerprintId);
-  });
-</script>
 ```
 
 ### Advanced Configuration

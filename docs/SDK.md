@@ -2,37 +2,46 @@
 
 ## Installation
 
-### NPM
-
-```bash
-npm install @creepjs/sdk
-```
-
-### Yarn
-
-```bash
-yarn add @creepjs/sdk
-```
-
-### pnpm
-
-```bash
-pnpm add @creepjs/sdk
-```
-
-### CDN (UMD)
+### Script tag (recommended)
 
 ```html
-<script src="https://cdn.creepjs.org/v1/sdk.js"></script>
+<script src="https://creepjs.org/sdk.js"></script>
 ```
 
 The default browser bundle is intentionally slim. It lazy-loads the full
 collector bundle on first fingerprint request from the sibling path
 `sdk.full.js` unless you override `fullBundleUrl`.
 
+### npm (coming soon)
+
+The npm package is not published yet. Once it ships, install with:
+
+```bash
+npm install @creepjs/sdk   # or: yarn add @creepjs/sdk / pnpm add @creepjs/sdk
+```
+
 ## Quick Start
 
-### ES Modules
+### UMD (Browser) — works today
+
+```html
+<script src="https://creepjs.org/sdk.js"></script>
+<script>
+  const client = new CreepJS.CreepJS({
+    token: 'cfp_your_token_here',
+    fullBundleUrl: 'https://creepjs.org/sdk.full.js',
+  });
+
+  client.getFingerprint().then((result) => {
+    console.log('Fingerprint:', result.fingerprintId);
+  });
+</script>
+```
+
+The same functions are available directly on the global namespace, e.g.
+`CreepJS.getFingerprint({ token })`.
+
+### ES Modules (after npm publish)
 
 ```javascript
 import { getFingerprint } from '@creepjs/sdk';
@@ -46,7 +55,7 @@ console.log(result.confidence); // 0.95
 console.log(result.cached); // false
 ```
 
-### CommonJS
+### CommonJS (after npm publish)
 
 ```javascript
 const { getFingerprint } = require('@creepjs/sdk');
@@ -56,22 +65,6 @@ getFingerprint({
 }).then((result) => {
   console.log(result.fingerprintId);
 });
-```
-
-### UMD (Browser)
-
-```html
-<script src="https://cdn.creepjs.org/v1/sdk.js"></script>
-<script>
-  const client = new CreepJS.CreepJS({
-    token: 'cfp_your_token_here',
-    fullBundleUrl: 'https://cdn.creepjs.org/v1/sdk.full.js',
-  });
-
-  client.getFingerprint().then((result) => {
-    console.log('Fingerprint:', result.fingerprintId);
-  });
-</script>
 ```
 
 ## API Reference
