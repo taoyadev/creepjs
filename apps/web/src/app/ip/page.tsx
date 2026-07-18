@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import {
   AlertCircle,
   CheckCircle,
   Copy,
   Globe2,
+  Link2,
   Loader2,
   Network,
   ShieldAlert,
@@ -124,71 +125,24 @@ export default function IpRiskPage() {
   const [loading, setLoading] = useState(false);
   const [detectingIp, setDetectingIp] = useState(true);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    analytics.pageView('/ip');
-
-    async function loadCurrentIp() {
-      setDetectingIp(true);
-      try {
-        const res = await fetch(`${API_URL}/my-ip`);
-        const data = (await res.json()) as { ip?: string };
-        if (!cancelled && data.ip) setIp(data.ip);
-      } catch {
-        if (!cancelled) setError('Enter an IP address to run a risk lookup.');
-      } finally {
-        if (!cancelled) setDetectingIp(false);
-      }
-    }
-
-    void loadCurrentIp();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const tone = useMemo(() => {
-    if (!result) {
-      return {
-        Icon: Signal,
-        badge: 'Awaiting lookup',
-        title: 'Ready to check',
-        className: 'border-slate-500/30 bg-slate-500/10 text-slate-200',
-      };
-    }
-
-    if (result.highRisk) {
-      return {
-        Icon: ShieldAlert,
-        badge: 'High risk',
-        title: 'High-risk network signal',
-        className: 'border-red-500/40 bg-red-500/10 text-red-200',
-      };
-    }
-
-    return {
-      Icon: ShieldCheck,
-      badge: 'Low risk',
-      title: 'No elevated network risk',
-      className: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-200',
-    };
-  }, [result]);
-
-  const runLookup = async (event?: FormEvent<HTMLFormElement>) => {
-    event?.preventDefault();
+  // Core lookup, keyed on an explicit target so it can be driven from the form,
+  // a shareable `?q=` link on load, or a retry — without a stale-closure read of
+  // `ip`. On success it writes `?q=<ip>` to the address bar so the result is
+  // linkable. `useCallback([])` keeps it stable for the mount effect's deps.
+  const performLookup = useCallback(async (rawTarget: string) => {
+    const target = rawTarget.trim();
     setError(null);
 
-    if (!ip.trim()) {
+    if (!target) {
       setError('Enter a valid IPv4 or IPv6 address.');
       return;
     }
 
+    setIp(target);
     setLoading(true);
     try {
       const res = await fetch(
-        `${API_URL}/v1/ip/public/${encodeURIComponent(ip.trim())}`,
+        `${API_URL}/v1/ip/public/${encodeURIComponent(target)}`,
         { headers: { Accept: 'application/json' } }
       );
       const data = (await res.json()) as LookupResult | { error?: string };
@@ -201,14 +155,19 @@ export default function IpRiskPage() {
             : `Lookup failed with status ${res.status}`;
         setResult(null);
         setError(
-          retryAfter
-            ? `${message}. Retry after ${retryAfter} seconds.`
-            : message
+          retryAfter ? `${message}. Retry after ${retryAfter} seconds.` : message
         );
         return;
       }
 
       setResult(data as LookupResult);
+      if (typeof window !== 'undefined') {
+        window.history.replaceState(
+          null,
+          '',
+          `?q=${encodeURIComponent(target)}`
+        );
+      }
       toast.success('IP risk lookup complete');
       analytics.track.playgroundUsed({ endpoint: '/v1/ip/public/:ip' });
       analytics.track.buttonClicked({
@@ -238,6 +197,75 @@ export default function IpRiskPage() {
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    analytics.pageView('/ip');
+
+    async function loadCurrentIp() {
+      setDetectingIp(true);
+      try {
+        const res = await fetch(`${API_URL}/my-ip`);
+        const data = (await res.json()) as { ip?: string };
+        if (!cancelled && data.ip) setIp(data.ip);
+      } catch {
+        if (!cancelled) setError('Enter an IP address to run a risk lookup.');
+      } finally {
+        if (!cancelled) setDetectingIp(false);
+      }
+    }
+
+    // A shareable `?q=<ip>` link runs that lookup on load; otherwise detect
+    // the visitor's own IP.
+    const shared =
+      typeof window !== 'undefined'
+        ? new URLSearchParams(window.location.search).get('q')?.trim()
+        : null;
+
+    if (shared) {
+      setDetectingIp(false);
+      void performLookup(shared);
+    } else {
+      void loadCurrentIp();
+    }
+
+    return () => {
+      cancelled = true;
+    };
+  }, [performLookup]);
+
+  const tone = useMemo(() => {
+    if (!result) {
+      return {
+        Icon: Signal,
+        badge: 'Awaiting lookup',
+        title: 'Ready to check',
+        className: 'border-slate-500/30 bg-slate-500/10 text-slate-200',
+      };
+    }
+
+    if (result.highRisk) {
+      return {
+        Icon: ShieldAlert,
+        badge: 'High risk',
+        title: 'High-risk network signal',
+        className: 'border-red-500/40 bg-red-500/10 text-red-200',
+      };
+    }
+
+    return {
+      Icon: ShieldCheck,
+      badge: 'Low risk',
+      title: 'No elevated network risk',
+      className: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-200',
+    };
+  }, [result]);
+
+  const runLookup = (event?: FormEvent<HTMLFormElement>) => {
+    event?.preventDefault();
+    void performLookup(ip);
   };
 
   const copyResult = async () => {
@@ -246,6 +274,17 @@ export default function IpRiskPage() {
     toast.success('Result copied');
     analytics.track.buttonClicked({
       buttonLabel: 'copy_ip_result',
+      section: 'ip-checker',
+    });
+  };
+
+  const copyShareLink = async () => {
+    if (!result || typeof window === 'undefined') return;
+    const shareUrl = `${window.location.origin}/ip?q=${encodeURIComponent(result.data.ip)}`;
+    await navigator.clipboard.writeText(shareUrl);
+    toast.success('Shareable link copied');
+    analytics.track.buttonClicked({
+      buttonLabel: 'copy_ip_share_link',
       section: 'ip-checker',
     });
   };
@@ -347,15 +386,26 @@ export default function IpRiskPage() {
                   : 'Enter an IP address to retrieve risk, routing, and network ownership signals.'}
               </p>
             </div>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => void copyResult()}
-              disabled={!result}
-            >
-              <Copy className="mr-2 h-4 w-4" />
-              Copy JSON
-            </Button>
+            <div className="flex flex-col gap-2 sm:flex-row md:flex-col lg:flex-row">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => void copyShareLink()}
+                disabled={!result}
+              >
+                <Link2 className="mr-2 h-4 w-4" />
+                Copy link
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => void copyResult()}
+                disabled={!result}
+              >
+                <Copy className="mr-2 h-4 w-4" />
+                Copy JSON
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
