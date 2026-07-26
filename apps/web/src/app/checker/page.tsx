@@ -1032,7 +1032,9 @@ function renderGraphicsCollectorCard(
               <img
                 src={fingerprint.data.canvas.dataURL}
                 alt="Canvas fingerprint"
-                className="w-full rounded border"
+                width={200}
+                height={50}
+                className="h-auto w-full rounded border"
               />
             </div>
           )}
@@ -1188,7 +1190,7 @@ export default function DemoPage() {
         page: '/checker',
       });
     } finally {
-      setTimeout(() => setLoading(false), 300); // Small delay for smooth transition
+      setLoading(false);
     }
   };
 
@@ -1519,7 +1521,9 @@ export default function DemoPage() {
                       <img
                         src={fingerprint.data.canvas.dataURL}
                         alt="Canvas fingerprint"
-                        className="w-full rounded border"
+                        width={200}
+                        height={50}
+                        className="h-auto w-full rounded border"
                       />
                     </div>
                   )}

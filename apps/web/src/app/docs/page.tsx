@@ -1012,13 +1012,13 @@ X-API-Token: cfp_your_token_here`}
           <CardContent>
             <div className="grid gap-4 md:grid-cols-3">
               <TrackedLink
-                href="/demo"
+                href="/checker"
                 className="hover:border-primary block rounded-lg border p-4 transition-colors"
-                eventLabel="docs_live_demo_cta"
+                eventLabel="docs_checker_cta"
                 eventSection="docs"
                 eventKind="button"
               >
-                <div className="mb-1 font-semibold">Live Demo</div>
+                <div className="mb-1 font-semibold">Fingerprint Checker</div>
                 <div className="text-muted-foreground text-xs">
                   See your browser's fingerprint in action
                 </div>

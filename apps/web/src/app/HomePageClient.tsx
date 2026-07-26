@@ -168,9 +168,7 @@ export default function HomePageClient() {
         setError('Failed to collect fingerprint data');
       } finally {
         if (!cancelled) {
-          setTimeout(() => {
-            if (!cancelled) setLoading(false);
-          }, 300); // Small delay for smooth transition
+          setLoading(false);
         }
       }
     }
@@ -382,11 +380,11 @@ export default function HomePageClient() {
 
             <div className="mt-4 grid gap-4 md:grid-cols-2">
               <Link
-                href="/demo"
+                href="/checker"
                 className="block"
                 onClick={() =>
                   analytics.track.buttonClicked({
-                    buttonLabel: 'homepage_demo_cta',
+                    buttonLabel: 'homepage_checker_cta',
                     section: 'homepage',
                   })
                 }
@@ -394,12 +392,12 @@ export default function HomePageClient() {
                 <div className="bg-primary/10 hover:bg-primary/20 border-primary/20 rounded-lg border p-4 transition-colors">
                   <div className="mb-1 flex items-center gap-2 font-semibold">
                     <Palette className="h-4 w-4" />
-                    Explore Live Demo
+                    Run the Full Checker
                   </div>
                   <p className="text-muted-foreground text-xs">
-                    See all 24+ fingerprint collectors in action with real-time
-                    data from your browser. Understand exactly what information
-                    is being collected and how it contributes to your unique
+                    See all fingerprint collectors in action with real-time data
+                    from your browser. Understand exactly what information is
+                    being collected and how it contributes to your unique
                     signature.
                   </p>
                 </div>
@@ -687,7 +685,9 @@ export default function HomePageClient() {
                       <img
                         src={fingerprint.data.canvas.dataURL}
                         alt="Canvas fingerprint"
-                        className="w-full rounded border bg-white"
+                        width={200}
+                        height={50}
+                        className="h-auto w-full rounded border bg-white"
                       />
                     </div>
                   )}

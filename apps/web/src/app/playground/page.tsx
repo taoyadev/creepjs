@@ -1124,8 +1124,8 @@ func main() {
                 </li>
                 <li>
                   Review the{' '}
-                  <Link href="/demo" className="text-blue-500 underline">
-                    demo page
+                  <Link href="/checker" className="text-blue-500 underline">
+                    checker page
                   </Link>{' '}
                   to see expected fingerprint structure
                 </li>
@@ -1175,13 +1175,13 @@ func main() {
                 </p>
               </Link>
               <Link
-                href="/demo"
+                href="/checker"
                 className="hover:border-primary block rounded-lg border p-4 transition-colors"
               >
-                <div className="mb-2 font-semibold">2. Explore Live Demo</div>
+                <div className="mb-2 font-semibold">2. Run the Checker</div>
                 <p className="text-muted-foreground text-xs">
-                  See all 24+ fingerprint collectors in action with real-time
-                  data from your browser.
+                  See all fingerprint collectors in action with real-time data
+                  from your browser.
                 </p>
               </Link>
               <a
