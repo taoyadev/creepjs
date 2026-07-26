@@ -76,9 +76,21 @@ if (navigator.doNotTrack === '1') {
 - **IP Blocking**: Automatically block suspicious IPs
 - **HTTPS Only**: Encrypted transmission
 - **Request IDs + Structured Logs**: every API response includes `X-Request-Id`
-  and emits structured request/error logs
-- **Production CORS default**: if `CORS_ORIGIN` is not explicitly set in
-  production, the API falls back to `https://creepjs.org` instead of `*`
+  and emits structured request/error logs; logs identify visitor/queried IPs
+  only by a truncated SHA-256 (`ip_hash`), never the raw address
+  (`apps/api/src/utils/privacy.ts`)
+- **CSPRNG tokens**: `/v1/token` mints ~142-bit random base62 tokens via
+  `crypto.getRandomValues`; revocation = `wrangler kv key delete --binding
+  TOKENS <token>` (no dashboard by design)
+- **Per-route CORS posture**: data endpoints (`/v1/fingerprint`, `/v1/ip/*`,
+  `/v1/stats/*`, `/my-ip`, health) are `*` by design — their security boundary
+  is token auth + rate limits. Browser-facing token minting (`/v1/token`) is
+  locked to `CORS_ORIGIN` (production fallback `https://creepjs.org`)
+- **Metered `/my-ip`**: geolocation comes from `request.cf` at zero upstream
+  cost; the paid risk lookup is capped per visitor (default 10/day, hashed
+  counter key) and by the shared global daily budget, degrading to geo-only
+- **Negative caching**: final upstream 429/5xx failures are cached for 60s so
+  hot IPs cannot trigger upstream retry storms
 
 ### Data Storage
 
@@ -154,6 +166,7 @@ that handles it so a reviewer can verify that docs match the implementation.
 | Analytics event payloads                   | Cloudflare Web Analytics beacon | `apps/web/src/components/Analytics.tsx`, `apps/web/src/lib/analytics.ts`                                    | No email, fingerprint ID, raw fingerprint payload, or IP lookup body sent; DNT respected |
 | Homepage/checker local fingerprint history | Browser `localStorage`          | `apps/web/src/components/UniquenessAnalysis.tsx`, `apps/web/src/components/FingerprintHistory.tsx`          | Browser-local only; never posted back by these components                                |
 | SDK cache                                  | Browser `localStorage`          | `packages/sdk/src/index.ts`                                                                                 | Cached API response only; cleared by TTL or `clearCache()`                               |
+| Structured Worker logs                     | `wrangler tail` / log sinks     | `apps/api/src/utils/privacy.ts`, `apps/api/src/services/ipbot.ts`, `apps/api/src/routes/myip.ts`            | Hashed lookup subjects (`ip_hash`) and counts only; no raw IPs or tokens                 |
 
 Reviewer note:
 

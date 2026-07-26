@@ -59,6 +59,22 @@ describe('isValidIp', () => {
     expect(isValidIp('8.8.8.8/../v1/admin')).toBe(false);
     expect(isValidIp('')).toBe(false);
   });
+
+  it('enforces IPv6 group accounting', () => {
+    // Valid forms
+    expect(isValidIp('::')).toBe(true);
+    expect(isValidIp('::1')).toBe(true);
+    expect(isValidIp('fe80::1%eth0')).toBe(true);
+    expect(isValidIp('2001:0db8:85a3:0000:0000:8a2e:0370:7334')).toBe(true);
+    // Previously accepted garbage
+    expect(isValidIp(':::')).toBe(false);
+    expect(isValidIp('1:2')).toBe(false);
+    expect(isValidIp(':1:2')).toBe(false);
+    expect(isValidIp('1:2:')).toBe(false);
+    // Compression must stand for at least one group
+    expect(isValidIp('1:2:3:4:5:6:7::8')).toBe(false);
+    expect(isValidIp('1:2:3:4:5:6:7:8:9')).toBe(false);
+  });
 });
 
 describe('isHighRisk', () => {
@@ -178,6 +194,25 @@ describe('lookupIP', () => {
 
     await expect(lookupIP('not-an-ip', env)).rejects.toThrow(IpbotError);
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('negative-caches a final upstream failure and short-circuits repeats', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(new Response('server error', { status: 503 }));
+    vi.stubGlobal('fetch', fetchMock);
+    const env = createTestEnv();
+
+    const first = await lookupIP('9.9.9.9', env).catch((e) => e);
+    expect(first).toBeInstanceOf(IpbotError);
+    expect((first as IpbotError).status).toBe(503);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    // Second lookup fails fast from the negative cache: zero upstream calls.
+    const second = await lookupIP('9.9.9.9', env).catch((e) => e);
+    expect(second).toBeInstanceOf(IpbotError);
+    expect((second as IpbotError).status).toBe(503);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it('throws when credentials are missing', async () => {
