@@ -9,7 +9,7 @@ export const dynamic = 'force-static';
 
 export function GET() {
   const corePages = STATIC_SEO_ROUTES.filter(
-    (route) => route.path !== '/privacy'
+    (route) => route.section !== 'legal'
   )
     .map((route) => `- ${route.title}: ${absoluteUrl(route.path)}`)
     .join('\n');

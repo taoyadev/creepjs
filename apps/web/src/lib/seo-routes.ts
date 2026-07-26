@@ -13,9 +13,14 @@ export interface SeoRoute {
   path: string;
   title: string;
   description: string;
-  section: 'core' | 'docs' | 'guide' | 'fingerprint' | 'legal';
+  section: 'core' | 'docs' | 'guide' | 'fingerprint' | 'legal' | 'ip-lookup';
   changeFrequency: ChangeFrequency;
   priority: number;
+  /**
+   * Per-route content date for the sitemap. Only set when the route's visible
+   * content actually changes; unset routes fall back to LAST_SEO_UPDATE.
+   */
+  lastModified?: Date;
 }
 
 export interface FingerprintTechnique {
@@ -99,6 +104,16 @@ export const STATIC_SEO_ROUTES = [
     section: 'legal',
     changeFrequency: 'yearly',
     priority: 0.55,
+  },
+  {
+    path: '/terms',
+    title: 'Terms of Service',
+    description:
+      'Review the CreepJS terms of service covering acceptable use, API tokens, and service limits.',
+    section: 'legal',
+    changeFrequency: 'yearly',
+    priority: 0.5,
+    lastModified: new Date('2026-07-26'),
   },
 ] as const satisfies readonly SeoRoute[];
 

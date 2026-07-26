@@ -3,6 +3,7 @@ import {
   INDEXABLE_ROUTES,
   LAST_SEO_UPDATE,
   absoluteUrl,
+  type SeoRoute,
 } from '../lib/seo-routes';
 
 export const dynamic = 'force-static';
@@ -14,9 +15,9 @@ export const dynamic = 'force-static';
  * hubs, and sitemap output do not drift apart.
  */
 export default function sitemap(): MetadataRoute.Sitemap {
-  return INDEXABLE_ROUTES.map((route) => ({
+  return INDEXABLE_ROUTES.map((route: SeoRoute) => ({
     url: absoluteUrl(route.path),
-    lastModified: LAST_SEO_UPDATE,
+    lastModified: route.lastModified ?? LAST_SEO_UPDATE,
     changeFrequency: route.changeFrequency,
     priority: route.priority,
   }));

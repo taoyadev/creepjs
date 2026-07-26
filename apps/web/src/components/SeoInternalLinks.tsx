@@ -16,7 +16,7 @@ export function SeoInternalLinks({
   description = 'Move between the main privacy tools, API documentation, and fingerprint signal explainers.',
 }: SeoInternalLinksProps) {
   const staticLinks = STATIC_SEO_ROUTES.filter(
-    (route) => route.path !== currentPath && route.path !== '/privacy'
+    (route) => route.path !== currentPath && route.section !== 'legal'
   );
 
   return (
