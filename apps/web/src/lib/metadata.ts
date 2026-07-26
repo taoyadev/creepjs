@@ -58,11 +58,32 @@ export const SITE_CONFIG = {
 } as const;
 
 /**
+ * Search-engine verification tags. Primary verification is DNS TXT
+ * (docs/SEO_OPERATIONS.md); these env-driven meta tags are the fallback so
+ * enabling them is a Pages env-var change, not a code change.
+ */
+const GOOGLE_SITE_VERIFICATION =
+  process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION;
+const BING_SITE_VERIFICATION = process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION;
+
+const siteVerification: Metadata['verification'] =
+  GOOGLE_SITE_VERIFICATION || BING_SITE_VERIFICATION
+    ? {
+        ...(GOOGLE_SITE_VERIFICATION
+          ? { google: GOOGLE_SITE_VERIFICATION }
+          : {}),
+        ...(BING_SITE_VERIFICATION
+          ? { other: { 'msvalidate.01': BING_SITE_VERIFICATION } }
+          : {}),
+      }
+    : undefined;
+
+/**
  * Generate default metadata for a page
  *
  * @param title - Page title (will be appended with site name)
  * @param description - Page description for meta tags
- * @param path - Relative path from site root (e.g., '/demo')
+ * @param path - Relative path from site root (e.g., '/checker')
  * @param ogImage - Custom Open Graph image URL (optional)
  * @param noIndex - Set to true to prevent search engine indexing
  * @returns Metadata object for Next.js
@@ -165,12 +186,8 @@ export function generateMetadata({
     // Manifest
     manifest: '/site.webmanifest',
 
-    // Verification tags (to be filled in by site owner)
-    // verification: {
-    //   google: 'your-google-site-verification-code',
-    //   yandex: 'your-yandex-verification-code',
-    //   bing: 'your-bing-verification-code',
-    // },
+    // Verification tags (env-driven; see siteVerification above)
+    verification: siteVerification,
 
     // Category
     category: 'technology',
@@ -251,12 +268,8 @@ export const defaultMetadata: Metadata = {
 
   manifest: '/site.webmanifest',
 
-  // Verification tags (to be configured by site owner)
-  // verification: {
-  //   google: 'your-google-site-verification-code',
-  //   yandex: 'your-yandex-verification-code',
-  //   bing: 'your-bing-verification-code',
-  // },
+  // Verification tags (env-driven; see siteVerification above)
+  verification: siteVerification,
 
   // Category
   category: 'technology',
@@ -349,8 +362,10 @@ export const structuredData = {
       'TypeScript SDK for integrating CreepJS fingerprinting signals in web applications.',
     applicationCategory: 'DeveloperApplication',
     operatingSystem: 'browser',
-    installUrl: 'https://www.npmjs.com/package/@creepjs/sdk',
-    downloadUrl: 'https://www.npmjs.com/package/@creepjs/sdk',
+    // Script-tag install is the supported channel (npm package not yet
+    // published — see LAUNCH_PLAN D2)
+    installUrl: `${SITE_CONFIG.url}/sdk.js`,
+    downloadUrl: `${SITE_CONFIG.url}/sdk.js`,
     offers: {
       '@type': 'Offer',
       price: '0',
