@@ -71,3 +71,34 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Motion foundation (E1). Direct same-origin document navigations can opt into
+   a cross-fade; unsupported browsers and client-side router transitions ignore it. */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Respect reduced-motion globally: neutralize animations and smooth scroll. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@layer utilities {
+  /* Offset in-page anchors below the sticky header. */
+  .section-anchor {
+    scroll-margin-top: 5rem;
+  }
+}

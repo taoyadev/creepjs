@@ -3,12 +3,12 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { CopyButton } from '@/components/CopyButton';
+import { Progress } from '@/components/ui/progress';
 import { collectFingerprint, getCollectorLabel } from '@creepjs/core';
 import type { CollectorProgressEvent, FingerprintResult } from '@creepjs/core';
 import { SITE_CONFIG } from '@/lib/metadata';
 import {
-  Copy,
-  Check,
   Globe,
   MapPin,
   Wifi,
@@ -82,7 +82,6 @@ export default function HomePageClient() {
   );
   const [ipData, setIpData] = useState<IPData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState<CollectionProgress>({
     current: 0,
@@ -183,13 +182,6 @@ export default function HomePageClient() {
     };
   }, []);
 
-  const copyToClipboard = async (text: string) => {
-    await navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-    analytics.track.fingerprintCopied();
-  };
-
   const baselineSummary = summarizeBaseline(baseline);
 
   if (loading) {
@@ -225,12 +217,12 @@ export default function HomePageClient() {
                     {Math.round(progressPercent)}%)
                   </span>
                 </div>
-                <div className="bg-muted h-3 w-full overflow-hidden rounded-full">
-                  <div
-                    className="from-primary to-primary/80 h-full bg-gradient-to-r transition-all duration-300 ease-out"
-                    style={{ width: `${progressPercent}%` }}
-                  />
-                </div>
+                <Progress
+                  label="Browser fingerprint collection progress"
+                  value={progress.current}
+                  max={progress.total}
+                  className="h-3"
+                />
               </div>
 
               {/* Current Collector */}
@@ -582,17 +574,14 @@ export default function HomePageClient() {
               <code className="font-mono text-xl font-bold md:text-2xl">
                 {fingerprint.fingerprintId}
               </code>
-              <Button
+              <CopyButton
+                value={fingerprint.fingerprintId}
                 variant="outline"
                 size="icon"
-                onClick={() => void copyToClipboard(fingerprint.fingerprintId)}
-              >
-                {copied ? (
-                  <Check className="h-4 w-4" />
-                ) : (
-                  <Copy className="h-4 w-4" />
-                )}
-              </Button>
+                ariaLabel="Copy fingerprint ID"
+                successMessage="Fingerprint ID copied"
+                onCopied={() => analytics.track.fingerprintCopied()}
+              />
             </div>
             <div className="mt-4 flex items-center justify-between text-sm">
               <span className="text-muted-foreground">

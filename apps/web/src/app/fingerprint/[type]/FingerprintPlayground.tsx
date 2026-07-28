@@ -3,7 +3,9 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Copy, Check, RefreshCw, Code, BookOpen } from 'lucide-react';
+import { CopyButton } from '@/components/CopyButton';
+import { Progress } from '@/components/ui/progress';
+import { Check, RefreshCw, Code, BookOpen } from 'lucide-react';
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -607,7 +609,6 @@ export default function FingerprintPlayground({ type }: { type: string }) {
   const [data, setData] = useState<unknown>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
   const [showCode, setShowCode] = useState(false);
   const [markdownContent, setMarkdownContent] = useState<string>('');
   const [scanSteps, setScanSteps] = useState<ScanStep[]>([]);
@@ -821,12 +822,6 @@ export default function FingerprintPlayground({ type }: { type: string }) {
     }
   }, [type]);
 
-  const copyToClipboard = async (text: string) => {
-    await navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
   const codeExample = `// JavaScript
 fetch('${SITE_CONFIG.apiUrl}/v1/fingerprint')
   .then(r => r.json())
@@ -898,12 +893,10 @@ curl ${SITE_CONFIG.apiUrl}/v1/fingerprint`;
                           {Math.round(progress)}%
                         </span>
                       </div>
-                      <div className="bg-secondary h-2 overflow-hidden rounded-full">
-                        <div
-                          className="bg-primary h-full transition-all duration-300 ease-out"
-                          style={{ width: `${progress}%` }}
-                        />
-                      </div>
+                      <Progress
+                        label={`${meta.name} scan progress`}
+                        value={progress}
+                      />
                     </div>
 
                     {/* Scan Steps */}
@@ -1006,18 +999,14 @@ curl ${SITE_CONFIG.apiUrl}/v1/fingerprint`;
                       <pre className="bg-muted rounded p-4 text-xs">
                         {codeExample}
                       </pre>
-                      <Button
+                      <CopyButton
+                        value={codeExample}
                         variant="outline"
                         size="sm"
                         className="absolute right-2 top-2"
-                        onClick={() => void copyToClipboard(codeExample)}
-                      >
-                        {copied ? (
-                          <Check className="h-4 w-4" />
-                        ) : (
-                          <Copy className="h-4 w-4" />
-                        )}
-                      </Button>
+                        ariaLabel="Copy code example"
+                        successMessage="Code example copied"
+                      />
                     </div>
                   )}
                 </div>

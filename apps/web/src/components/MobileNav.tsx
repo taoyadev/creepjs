@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import {
   Menu,
-  X,
   Home,
   FileText,
   Code,
@@ -13,6 +12,13 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
 interface MobileNavProps {
@@ -25,83 +31,92 @@ interface MobileNavProps {
     | 'ip';
 }
 
+const navItems = [
+  { href: '/', label: 'Home', icon: Home, page: 'home' },
+  { href: '/checker', label: 'Checker', icon: Fingerprint, page: 'checker' },
+  { href: '/ip', label: 'IP Risk', icon: Shield, page: 'ip' },
+  {
+    href: '/fingerprint',
+    label: 'Signals',
+    icon: Waypoints,
+    page: 'fingerprint',
+  },
+  { href: '/docs', label: 'Docs', icon: FileText, page: 'docs' },
+  {
+    href: '/playground',
+    label: 'Playground',
+    icon: Code,
+    page: 'playground',
+  },
+] as const;
+
+/**
+ * Mobile navigation built on the Sheet (Radix Dialog) primitive so focus
+ * trapping, Escape handling, aria-expanded, and focus return come from the
+ * a11y primitive instead of a hand-rolled overlay.
+ */
 export function MobileNav({ currentPage }: MobileNavProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [open, setOpen] = useState(false);
 
-  const closeMenu = () => setIsOpen(false);
+  React.useEffect(() => {
+    const desktop = window.matchMedia('(min-width: 768px)');
+    const closeAtDesktop = (event: MediaQueryListEvent) => {
+      if (event.matches) setOpen(false);
+    };
 
-  const navItems = [
-    { href: '/', label: 'Home', icon: Home, page: 'home' },
-    { href: '/checker', label: 'Checker', icon: Fingerprint, page: 'checker' },
-    { href: '/ip', label: 'IP Risk', icon: Shield, page: 'ip' },
-    {
-      href: '/fingerprint',
-      label: 'Signals',
-      icon: Waypoints,
-      page: 'fingerprint',
-    },
-    { href: '/docs', label: 'Docs', icon: FileText, page: 'docs' },
-    {
-      href: '/playground',
-      label: 'Playground',
-      icon: Code,
-      page: 'playground',
-    },
-  ];
+    desktop.addEventListener('change', closeAtDesktop);
+    return () => desktop.removeEventListener('change', closeAtDesktop);
+  }, []);
 
   return (
-    <>
-      {/* Mobile Menu Button */}
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => setIsOpen(!isOpen)}
-        className="md:hidden"
-        aria-label="Toggle menu"
-      >
-        {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-      </Button>
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="md:hidden"
+          aria-label="Open navigation menu"
+        >
+          <Menu className="h-5 w-5" />
+        </Button>
+      </SheetTrigger>
+      <SheetContent side="right" className="w-64">
+        <SheetTitle className="sr-only">Navigation</SheetTitle>
+        <SheetDescription className="sr-only">
+          Navigate between the CreepJS privacy tools and documentation.
+        </SheetDescription>
+        <nav className="mt-6 flex flex-col space-y-2">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = currentPage === item.page;
 
-      {/* Mobile Menu Overlay */}
-      {isOpen && (
-        <>
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm md:hidden"
-            onClick={closeMenu}
-          />
+            return (
+              <Button
+                key={item.href}
+                asChild
+                variant={isActive ? 'default' : 'ghost'}
+                className="w-full justify-start"
+              >
+                <Link
+                  href={item.href}
+                  aria-current={isActive ? 'page' : undefined}
+                  onClick={() => setOpen(false)}
+                >
+                  <Icon aria-hidden="true" className="mr-2 h-4 w-4" />
+                  {item.label}
+                </Link>
+              </Button>
+            );
+          })}
 
-          {/* Menu Panel */}
-          <div className="bg-background fixed right-0 top-16 z-50 h-[calc(100vh-4rem)] w-64 border-l shadow-xl md:hidden">
-            <nav className="flex flex-col space-y-2 p-4">
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = currentPage === item.page;
-
-                return (
-                  <Link key={item.href} href={item.href} onClick={closeMenu}>
-                    <Button
-                      variant={isActive ? 'default' : 'ghost'}
-                      className="w-full justify-start"
-                    >
-                      <Icon className="mr-2 h-4 w-4" />
-                      {item.label}
-                    </Button>
-                  </Link>
-                );
-              })}
-
-              {/* Theme Toggle in Mobile Menu */}
-              <div className="border-t pt-4">
-                <div className="flex items-center justify-between px-3 py-2">
-                  <span className="text-sm font-medium">Theme</span>
-                  <ThemeToggle />
-                </div>
-              </div>
-            </nav>
+          <div className="border-t pt-4">
+            <div className="flex items-center justify-between px-3 py-2">
+              <span className="text-sm font-medium">Theme</span>
+              <ThemeToggle />
+            </div>
           </div>
-        </>
-      )}
-    </>
+        </nav>
+      </SheetContent>
+    </Sheet>
   );
 }

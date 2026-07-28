@@ -39,9 +39,37 @@ Current shared primitives in `components/ui/`:
 - `badge`
 - `button`
 - `card`
+- `dialog`
 - `input`
+- `accordion`
+- `progress`
+- `sheet`
 - `skeleton`
 - `tabs`
+- `tooltip`
+
+`Sheet` composes the Dialog primitive and does not add a separate dependency.
+`Progress` requires an accessible label and normalizes non-finite or out-of-range
+values before exposing them to assistive technology.
+
+## Shared interaction boundaries
+
+- `components/CopyButton.tsx` owns clipboard success/error feedback and keeps
+  copied state local to the activated button.
+- `lib/api-client.ts` owns API URL resolution, JSON parsing, timeout and caller
+  cancellation, and one retry for idempotent GET requests only.
+- Mobile navigation uses the focus-managed Sheet primitive; it supports Escape,
+  focus return, route-current semantics, and closes when the viewport crosses
+  into the desktop layout.
+
+## Motion
+
+- Direct same-origin document navigations may use the CSS
+  `@view-transition` cross-fade as progressive enhancement.
+- In-page anchors use smooth scrolling only when the user has not requested
+  reduced motion.
+- The global `prefers-reduced-motion: reduce` rule effectively disables
+  non-essential animations, transitions, and smooth scrolling.
 
 ## Usage guidance
 

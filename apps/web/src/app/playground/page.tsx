@@ -17,8 +17,6 @@ import type { FingerprintResult } from '@creepjs/core';
 import {
   Code,
   Play,
-  Copy,
-  Check,
   Zap,
   BookOpen,
   Terminal,
@@ -33,6 +31,7 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
+import { CopyButton } from '@/components/CopyButton';
 import { SITE_CONFIG } from '@/lib/metadata';
 import { analytics } from '@/lib/analytics';
 
@@ -47,7 +46,6 @@ export default function PlaygroundPage() {
     null
   );
   const [fingerprintLoading, setFingerprintLoading] = useState(true);
-  const [copied, setCopied] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState('javascript');
 
   useEffect(() => {
@@ -180,33 +178,6 @@ export default function PlaygroundPage() {
       });
     } finally {
       setLoading(false);
-    }
-  };
-
-  const copyToClipboard = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-      if (text === apiToken) {
-        analytics.track.buttonClicked({
-          buttonLabel: 'copy_api_token',
-          section: 'playground',
-        });
-      } else {
-        analytics.track.buttonClicked({
-          buttonLabel: 'copy_sdk_example',
-          section: selectedLanguage,
-        });
-      }
-      toast.success('Copied to clipboard', {
-        description: 'Content has been copied successfully.',
-      });
-    } catch (error) {
-      console.error('Failed to copy:', error);
-      toast.error('Failed to copy', {
-        description: 'Please try again or copy manually.',
-      });
     }
   };
 
@@ -609,18 +580,20 @@ func main() {
                         className="flex-1 font-mono"
                         placeholder="cfp_..."
                       />
-                      <Button
+                      <CopyButton
+                        value={apiToken}
                         variant="outline"
                         size="icon"
-                        onClick={() => void copyToClipboard(apiToken)}
                         disabled={!apiToken}
-                      >
-                        {copied ? (
-                          <Check className="h-4 w-4" />
-                        ) : (
-                          <Copy className="h-4 w-4" />
-                        )}
-                      </Button>
+                        ariaLabel="Copy API token"
+                        successMessage="API token copied"
+                        onCopied={() =>
+                          analytics.track.buttonClicked({
+                            buttonLabel: 'copy_api_token',
+                            section: 'playground',
+                          })
+                        }
+                      />
                     </div>
                   )}
                 </div>
@@ -727,18 +700,20 @@ func main() {
                   {Object.entries(codeExamples).map(([lang, code]) => (
                     <TabsContent key={lang} value={lang} className="space-y-4">
                       <div className="relative">
-                        <Button
+                        <CopyButton
+                          value={code}
                           variant="outline"
                           size="sm"
                           className="absolute right-2 top-2 z-10"
-                          onClick={() => void copyToClipboard(code)}
-                        >
-                          {copied ? (
-                            <Check className="h-3 w-3" />
-                          ) : (
-                            <Copy className="h-3 w-3" />
-                          )}
-                        </Button>
+                          ariaLabel={`Copy ${lang} code example`}
+                          successMessage={`${lang} example copied`}
+                          onCopied={() =>
+                            analytics.track.buttonClicked({
+                              buttonLabel: 'copy_sdk_example',
+                              section: selectedLanguage,
+                            })
+                          }
+                        />
                         <pre className="bg-muted max-h-96 overflow-auto rounded p-4 pt-12 font-mono text-xs">
                           {code}
                         </pre>

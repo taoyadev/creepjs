@@ -4,6 +4,8 @@ import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { CopyButton } from '@/components/CopyButton';
+import { Progress } from '@/components/ui/progress';
 import {
   collectFingerprint,
   collectorTabs,
@@ -11,7 +13,7 @@ import {
   getCollectorLabel,
 } from '@creepjs/core';
 import type { CollectorProgressEvent, FingerprintResult } from '@creepjs/core';
-import { Copy, Check, RefreshCw } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import {
   FingerprintCollectorCard,
   DataRow,
@@ -1136,7 +1138,6 @@ export default function DemoPage() {
     null
   );
   const [loading, setLoading] = useState(true);
-  const [copied, setCopied] = useState(false);
   const [baseline, setBaseline] = useState<BaselineResponse | null>(null);
   const [progress, setProgress] = useState<CollectionProgress>({
     current: 0,
@@ -1202,16 +1203,7 @@ export default function DemoPage() {
     return cancel;
   }, []);
 
-  const copyToClipboard = async (text: string) => {
-    await navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-    analytics.track.fingerprintCopied();
-  };
-
   if (loading) {
-    const progressPercent = (progress.current / progress.total) * 100;
-
     return (
       <div className="from-background to-secondary flex min-h-screen items-center justify-center bg-gradient-to-b p-8">
         <Card className="w-full max-w-2xl">
@@ -1234,12 +1226,12 @@ export default function DemoPage() {
                     {progress.current} / {progress.total}
                   </span>
                 </div>
-                <div className="bg-muted h-3 w-full overflow-hidden rounded-full">
-                  <div
-                    className="from-primary to-primary/80 h-full bg-gradient-to-r transition-all duration-300 ease-out"
-                    style={{ width: `${progressPercent}%` }}
-                  />
-                </div>
+                <Progress
+                  label="Browser fingerprint collection progress"
+                  value={progress.current}
+                  max={progress.total}
+                  className="h-3"
+                />
               </div>
 
               {/* Current Collector */}
@@ -1350,17 +1342,14 @@ export default function DemoPage() {
               <code className="flex-1 break-all font-mono text-lg font-bold">
                 {fingerprint.fingerprintId}
               </code>
-              <Button
+              <CopyButton
+                value={fingerprint.fingerprintId}
                 variant="outline"
                 size="icon"
-                onClick={() => void copyToClipboard(fingerprint.fingerprintId)}
-              >
-                {copied ? (
-                  <Check className="h-4 w-4" />
-                ) : (
-                  <Copy className="h-4 w-4" />
-                )}
-              </Button>
+                ariaLabel="Copy fingerprint ID"
+                successMessage="Fingerprint ID copied"
+                onCopied={() => analytics.track.fingerprintCopied()}
+              />
             </div>
           </CardContent>
         </Card>
