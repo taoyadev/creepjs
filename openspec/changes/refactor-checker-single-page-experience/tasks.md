@@ -7,7 +7,7 @@
 
 ## 2. Mechanical Decomposition
 
-- [ ] 2.1 Pure-move the six category collector renderers into
+- [x] 2.1 Pure-move the six category collector renderers into
   `components/checker/cards/`.
 - [ ] 2.2 Extract scan state into `useFingerprintScan` and compose it through
   `CheckerApp` with an in-slot `ScanProgress`.
