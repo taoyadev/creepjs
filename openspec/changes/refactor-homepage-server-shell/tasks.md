@@ -14,9 +14,9 @@
 
 ## 3. Client Islands
 
-- [ ] 3.1 Extract a fixed-height `LiveFingerprintTeaser` with in-card progress
+- [x] 3.1 Extract a fixed-height `LiveFingerprintTeaser` with in-card progress
   and error states.
-- [ ] 3.2 Extract a fixed-height `LiveIpCard` using the existing `/my-ip`
+- [x] 3.2 Extract a fixed-height `LiveIpCard` using the existing `/my-ip`
   contract and graceful risk-optional degradation.
 - [ ] 3.3 Delete `HomePageClient.tsx` after required behavior is represented by
   the server shell or one of the two islands.
