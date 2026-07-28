@@ -14,10 +14,10 @@
 
 ## 3. Static Single-Page Shell
 
-- [ ] 3.1 Convert `app/checker/page.tsx` to a server component with exactly one
+- [x] 3.1 Convert `app/checker/page.tsx` to a server component with exactly one
   H1, substantial explanatory content, taxonomy, privacy promise, and visible
   FAQ.
-- [ ] 3.2 Keep the client application mounted inside the task region without a
+- [x] 3.2 Keep the client application mounted inside the task region without a
   full-viewport loading swap.
 
 ## 4. Navigation and Share Context
