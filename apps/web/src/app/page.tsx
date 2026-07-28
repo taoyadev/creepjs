@@ -1,3 +1,4 @@
+import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import {
@@ -25,7 +26,7 @@ export const metadata: Metadata = generateMetadata({
   title: 'Browser Fingerprint Checker & IP Risk Analysis',
   description:
     'Run a privacy-first browser fingerprint check, inspect your public IP risk context, and learn which signals websites can observe with CreepJS.',
-  path: '',
+  path: '/',
 });
 
 const AUDIENCES = [
@@ -39,7 +40,7 @@ const AUDIENCES = [
   {
     icon: ShieldCheck,
     title: 'For security teams',
-    body: 'Investigate an IP, review proxy and datacenter context, and use the documented token API or batch workflow when a repeatable operational surface is required.',
+    body: 'Investigate an IP, review proxy and datacenter context, and move into the documented token API when a repeatable operational surface is required.',
     href: '/ip',
     link: 'Open IP tools',
   },
@@ -223,10 +224,10 @@ export default function HomePage() {
                 </h2>
               </div>
               <p className="text-muted-foreground leading-7">
-                Start with a browser or single-IP check, then move to the API,
-                batch workflow, playground, or SDK when the same evidence needs
-                to fit a product or security process. Tokens remain in the
-                client session; CreepJS does not sell fingerprint profiles.
+                Start with a browser or single-IP check, then move to the
+                token API, playground, or SDK when the same evidence needs to
+                fit a product or security process. Tokens remain in the client
+                session; CreepJS does not sell fingerprint profiles.
               </p>
             </div>
             <div className="grid gap-4 lg:grid-cols-3">

@@ -54,6 +54,7 @@ export function LiveFingerprintTeaser() {
       }));
       setResult(next);
       setStatus('ready');
+      analytics.pageView('/');
       analytics.track.fingerprintGenerated({
         confidence: next.confidence,
         method: 'homepage',
@@ -101,7 +102,12 @@ export function LiveFingerprintTeaser() {
       </CardHeader>
       <CardContent className="flex flex-1 flex-col justify-between gap-6 pt-6">
         {status === 'loading' && (
-          <div className="space-y-5" role="status" aria-live="polite">
+          <div
+            className="space-y-5"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+          >
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">
@@ -149,6 +155,7 @@ export function LiveFingerprintTeaser() {
                   value={result.fingerprintId}
                   ariaLabel="Copy homepage fingerprint ID"
                   successMessage="Fingerprint ID copied"
+                  onCopied={() => analytics.track.fingerprintCopied()}
                 />
               </div>
             </div>

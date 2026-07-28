@@ -35,12 +35,13 @@ export const LAST_SEO_UPDATE = new Date('2026-06-13');
 export const STATIC_SEO_ROUTES = [
   {
     path: '/',
-    title: 'Browser Fingerprinting Platform',
+    title: 'Browser Fingerprint Checker & IP Risk Analysis',
     description:
-      'Run a privacy-first browser fingerprint check and learn what websites can infer about your device.',
+      'Run a privacy-first browser fingerprint check, inspect IP risk context, and learn what websites can infer about your device and network.',
     section: 'core',
     changeFrequency: 'weekly',
     priority: 1,
+    lastModified: new Date('2026-07-28'),
   },
   {
     path: '/checker',
