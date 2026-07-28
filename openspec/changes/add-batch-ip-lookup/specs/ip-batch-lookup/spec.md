@@ -76,9 +76,11 @@ failure.
 
 ### Requirement: Privacy-Preserving Batch Observability
 
-The system MUST keep API tokens and submitted address pools out of URLs,
-persistent browser storage, analytics properties, CSV output, and application
-logs while retaining count- and status-level operational telemetry.
+The system MUST keep API tokens out of exports and keep submitted address pools
+out of URLs, persistent browser storage, analytics properties, and application
+logs while retaining count- and status-level operational telemetry. A
+user-initiated CSV MAY contain the IP column required to identify its result
+rows.
 
 #### Scenario: Batch telemetry
 

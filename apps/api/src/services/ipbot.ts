@@ -105,16 +105,35 @@ export interface IpbotLookupResult {
 }
 
 /** Error thrown for invalid input, misconfiguration, or upstream failures. */
+export type IpbotErrorKind =
+  | 'input'
+  | 'configuration'
+  | 'throttle'
+  | 'network'
+  | 'upstream';
+
 export class IpbotError extends Error {
   readonly status?: number;
   readonly retryAfter?: number | null;
+  readonly kind: IpbotErrorKind;
 
-  constructor(message: string, status?: number, retryAfter?: number | null) {
+  constructor(
+    message: string,
+    status?: number,
+    retryAfter?: number | null,
+    kind: IpbotErrorKind = 'upstream'
+  ) {
     super(message);
     this.name = 'IpbotError';
     this.status = status;
     this.retryAfter = retryAfter;
+    this.kind = kind;
   }
+}
+
+export interface IpbotLookupOptions {
+  /** Retry count after the first request. Batch calls use one retry. */
+  maxRetries?: number;
 }
 
 const DAY_SECONDS = 60 * 60 * 24; // 24h — default cache TTL
@@ -258,24 +277,36 @@ async function fetchFromUpstream(
   ip: string,
   ipHash: string,
   origin: string,
-  apiKey: string
+  apiKey: string,
+  maxRetries: number
 ): Promise<{ data: IpbotResponse; rateLimit: IpbotRateLimit }> {
   const url = `${origin.replace(/\/+$/, '')}/v1/ip/${encodeURIComponent(ip)}`;
 
-  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-    const res = await fetch(url, {
-      method: 'GET',
-      headers: { 'X-API-Key': apiKey, Accept: 'application/json' },
-    });
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    let res: Response;
+    try {
+      res = await fetch(url, {
+        method: 'GET',
+        headers: { 'X-API-Key': apiKey, Accept: 'application/json' },
+      });
+    } catch {
+      throw new IpbotError(
+        'IP intelligence network request failed',
+        503,
+        null,
+        'network'
+      );
+    }
     const rateLimit = parseRateLimit(res.headers);
 
     if (res.status === 429) {
       logRateLimit(ipHash, rateLimit, 'throttled');
-      if (attempt === MAX_RETRIES) {
+      if (attempt === maxRetries) {
         throw new IpbotError(
-          'IPbot rate limit exceeded (429)',
+          'IP intelligence provider rate limit exceeded',
           429,
-          rateLimit.retryAfter
+          rateLimit.retryAfter,
+          'throttle'
         );
       }
       await sleep(backoffMs(attempt, rateLimit.retryAfter));
@@ -283,19 +314,43 @@ async function fetchFromUpstream(
     }
 
     if (!res.ok) {
-      const body = await res.text().catch(() => '');
       throw new IpbotError(
-        `IPbot API error ${res.status}${body ? `: ${body.slice(0, 200)}` : ''}`,
-        res.status
+        `IP intelligence provider error ${res.status}`,
+        res.status,
+        null,
+        'upstream'
       );
     }
 
-    const data = await res.json<IpbotResponse>();
+    let data: IpbotResponse;
+    try {
+      data = await res.json<IpbotResponse>();
+    } catch {
+      throw new IpbotError(
+        'IP intelligence provider returned an invalid response',
+        502,
+        null,
+        'upstream'
+      );
+    }
+    if (!data || typeof data !== 'object' || typeof data.ip !== 'string') {
+      throw new IpbotError(
+        'IP intelligence provider returned an invalid response',
+        502,
+        null,
+        'upstream'
+      );
+    }
     return { data, rateLimit };
   }
 
   // Unreachable: the loop either returns or throws.
-  throw new IpbotError('IPbot request failed after retries', 429);
+  throw new IpbotError(
+    'IP intelligence provider rate limit exceeded',
+    429,
+    null,
+    'throttle'
+  );
 }
 
 /**
@@ -307,10 +362,11 @@ async function fetchFromUpstream(
  */
 export async function lookupIP(
   ip: string,
-  env: IpbotBindings
+  env: IpbotBindings,
+  options: IpbotLookupOptions = {}
 ): Promise<IpbotLookupResult> {
   if (!isValidIp(ip)) {
-    throw new IpbotError(`Invalid IP address: ${ip}`, 400);
+    throw new IpbotError(`Invalid IP address: ${ip}`, 400, null, 'input');
   }
 
   const origin = env.IPBOT_API_ORIGIN;
@@ -318,9 +374,15 @@ export async function lookupIP(
   if (!origin || !apiKey) {
     throw new IpbotError(
       'IPBOT_API_ORIGIN or IPBOT_API_KEY is not configured',
-      500
+      503,
+      null,
+      'configuration'
     );
   }
+  const maxRetries = Math.min(
+    MAX_RETRIES,
+    Math.max(0, Math.floor(options.maxRetries ?? MAX_RETRIES))
+  );
 
   const cacheKey = `${CACHE_PREFIX}${ip}`;
   const negativeKey = `${NEGATIVE_CACHE_PREFIX}${ip}`;
@@ -340,12 +402,15 @@ export async function lookupIP(
     const negative = await env.IP_CACHE.get<{
       status?: number;
       retryAfter?: number | null;
+      kind?: IpbotErrorKind;
     }>(negativeKey, 'json');
     if (negative) {
       throw new IpbotError(
         'IPbot temporarily unavailable (recent upstream failure)',
         negative.status,
-        negative.retryAfter ?? null
+        negative.retryAfter ?? null,
+        negative.kind ??
+          (negative.status === 429 ? 'throttle' : 'upstream')
       );
     }
   }
@@ -356,7 +421,13 @@ export async function lookupIP(
   let data: IpbotResponse;
   let rateLimit: IpbotRateLimit;
   try {
-    ({ data, rateLimit } = await fetchFromUpstream(ip, ipHash, origin, apiKey));
+    ({ data, rateLimit } = await fetchFromUpstream(
+      ip,
+      ipHash,
+      origin,
+      apiKey,
+      maxRetries
+    ));
   } catch (error) {
     if (
       error instanceof IpbotError &&
@@ -368,6 +439,7 @@ export async function lookupIP(
         JSON.stringify({
           status: error.status,
           retryAfter: error.retryAfter ?? null,
+          kind: error.kind,
         }),
         { expirationTtl: NEGATIVE_TTL_SECONDS }
       );

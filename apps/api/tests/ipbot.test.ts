@@ -187,6 +187,47 @@ describe('lookupIP', () => {
     expect(fetchMock).toHaveBeenCalledTimes(4); // initial + 3 retries
   });
 
+  it('honors a batch retry cap of one retry', async () => {
+    vi.useFakeTimers();
+    const fetchMock = vi.fn().mockResolvedValue(throttled());
+    vi.stubGlobal('fetch', fetchMock);
+    const env = createTestEnv();
+
+    const settled = lookupIP('1.2.3.4', env, { maxRetries: 1 }).catch(
+      (error) => error
+    );
+    await vi.runAllTimersAsync();
+    const error = await settled;
+
+    expect(error).toBeInstanceOf(IpbotError);
+    expect((error as IpbotError).kind).toBe('throttle');
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('maps network and malformed JSON failures to safe Ipbot errors', async () => {
+    const networkEnv = createTestEnv();
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('socket secret')));
+
+    const networkError = await lookupIP('8.8.8.8', networkEnv).catch(
+      (error) => error
+    );
+    expect(networkError).toBeInstanceOf(IpbotError);
+    expect((networkError as IpbotError).kind).toBe('network');
+    expect((networkError as Error).message).not.toContain('socket secret');
+
+    const malformedEnv = createTestEnv();
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response('{not-json', { status: 200 }))
+    );
+    const malformed = await lookupIP('1.1.1.1', malformedEnv).catch(
+      (error) => error
+    );
+    expect(malformed).toBeInstanceOf(IpbotError);
+    expect((malformed as IpbotError).kind).toBe('upstream');
+    expect((malformed as IpbotError).status).toBe(502);
+  });
+
   it('rejects invalid IPs without calling upstream', async () => {
     const fetchMock = vi.fn();
     vi.stubGlobal('fetch', fetchMock);

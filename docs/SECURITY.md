@@ -72,7 +72,8 @@ if (navigator.doNotTrack === '1') {
 ### API Security
 
 - **Token Authentication**: All requests require valid API tokens
-- **Rate Limiting**: 1000 requests/day/token to prevent abuse
+- **Rate Limiting**: 1000 lookup units/day/token to prevent abuse; batch
+  requests reserve one unit per unique valid IP before any provider call
 - **IP Blocking**: Automatically block suspicious IPs
 - **HTTPS Only**: Encrypted transmission
 - **Request IDs + Structured Logs**: every API response includes `X-Request-Id`
@@ -166,7 +167,7 @@ that handles it so a reviewer can verify that docs match the implementation.
 | Analytics event payloads                   | Cloudflare Web Analytics beacon | `apps/web/src/components/Analytics.tsx`, `apps/web/src/lib/analytics.ts`                                    | No email, fingerprint ID, raw fingerprint payload, or IP lookup body sent; DNT respected |
 | Homepage/checker local fingerprint history | Browser `localStorage`          | `apps/web/src/components/UniquenessAnalysis.tsx`, `apps/web/src/components/FingerprintHistory.tsx`          | Browser-local only; never posted back by these components                                |
 | SDK cache                                  | Browser `localStorage`          | `packages/sdk/src/index.ts`                                                                                 | Cached API response only; cleared by TTL or `clearCache()`                               |
-| Structured Worker logs                     | `wrangler tail` / log sinks     | `apps/api/src/utils/privacy.ts`, `apps/api/src/services/ipbot.ts`, `apps/api/src/routes/myip.ts`            | Hashed lookup subjects (`ip_hash`) and counts only; no raw IPs or tokens                 |
+| Structured Worker logs                     | `wrangler tail` / log sinks     | `apps/api/src/utils/privacy.ts`, `apps/api/src/services/ipbot.ts`, `apps/api/src/routes/ip.ts`, `apps/api/src/routes/myip.ts` | Hashed lookup subjects (`ip_hash`) and batch counts only; no raw IPs or tokens |
 
 Reviewer note:
 

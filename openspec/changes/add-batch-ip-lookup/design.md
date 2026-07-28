@@ -17,8 +17,8 @@ hide the feature and increase cross-flow state complexity.
   - provide a bounded, documented batch contract for up to 50 IP literals
   - prevent a batch from bypassing the token's daily service quota
   - preserve useful partial results without repeatedly hitting a failed upstream
-  - keep API tokens and submitted address pools out of URLs, persistence, CSV,
-    analytics properties, and application logs
+  - keep API tokens out of exports and keep submitted address pools out of
+    URLs, browser persistence, analytics properties, and application logs
   - make partial results exportable and usable on desktop, mobile, and keyboard
 - Non-goals:
   - an exact billing ledger or atomic quota guarantee
@@ -88,7 +88,8 @@ more than 50 values before submission.
 
 CSV uses a fixed flat column set and RFC 4180 escaping. Any text cell beginning
 with `=`, `+`, `-`, or `@` is prefixed before serialization to prevent formula
-execution in spreadsheet programs. The token is never exported.
+execution in spreadsheet programs. A user-initiated export contains the IP
+column needed to associate each result row; it never contains the API token.
 
 ## Risks / Trade-offs
 

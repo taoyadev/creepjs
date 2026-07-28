@@ -7,23 +7,23 @@
 
 ## 2. API Contract and Safety
 
-- [ ] 2.1 Add the bounded batch request schema and an 8 KiB body limit.
-- [ ] 2.2 Correct shared IPv6 literal validation and cover valid/invalid edge
+- [x] 2.1 Add the bounded batch request schema and an 8 KiB body limit.
+- [x] 2.2 Correct shared IPv6 literal validation and cover valid/invalid edge
   cases without adding a dependency.
-- [ ] 2.3 Generalize token rate limiting to reserve weighted lookup units before
+- [x] 2.3 Generalize token rate limiting to reserve weighted lookup units before
   handler execution while preserving one-unit behavior for existing routes.
-- [ ] 2.4 Implement serial unique-address lookup, per-item validation errors,
+- [x] 2.4 Implement serial unique-address lookup, per-item validation errors,
   dependency-failure aborts, safe skipped rows, and summary metadata.
-- [ ] 2.5 Keep raw submitted IPs and tokens out of application logs; keep token
+- [x] 2.5 Keep raw submitted IPs and tokens out of application logs; keep token
   usage explicitly approximate rather than billing-grade.
 
 ## 3. API Tests and Documentation
 
-- [ ] 3.1 Cover auth, envelope bounds, body/item limits, normalization,
+- [x] 3.1 Cover auth, envelope bounds, body/item limits, normalization,
   deduplication, mixed validity, cache hits, and response ordering.
-- [ ] 3.2 Cover weighted quota reservation, insufficient quota with zero fetches,
+- [x] 3.2 Cover weighted quota reservation, insufficient quota with zero fetches,
   provider `429`/auth/`5xx` abort behavior, and `Retry-After` propagation.
-- [ ] 3.3 Document request/response examples, lookup-unit quota, cache TTLs,
+- [x] 3.3 Document request/response examples, lookup-unit quota, cache TTLs,
   partial results, retry behavior, and privacy limitations.
 
 ## 4. Web Workflow
