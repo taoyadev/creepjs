@@ -7,7 +7,7 @@
 
 ## 2. Static Shell
 
-- [ ] 2.1 Add a server-rendered hero, correct primary/secondary routes, answer
+- [x] 2.1 Add a server-rendered hero, correct primary/secondary routes, answer
   block, value sections, audience block, and 350–600 words of static content.
 - [x] 2.2 Add a server-rendered signal grid derived from
   `FINGERPRINT_TECHNIQUES`.
@@ -18,13 +18,13 @@
   and error states.
 - [x] 3.2 Extract a fixed-height `LiveIpCard` using the existing `/my-ip`
   contract and graceful risk-optional degradation.
-- [ ] 3.3 Delete `HomePageClient.tsx` after required behavior is represented by
+- [x] 3.3 Delete `HomePageClient.tsx` after required behavior is represented by
   the server shell or one of the two islands.
 
 ## 4. Validation
 
-- [ ] 4.1 Pass ordered web build, lint, typecheck, and tests on OpenClaw.
-- [ ] 4.2 Assert exported homepage HTML contains exactly one H1, the answer
+- [x] 4.1 Pass ordered web build, lint, typecheck, and tests on OpenClaw.
+- [x] 4.2 Assert exported homepage HTML contains exactly one H1, the answer
   anchor, both live routes, and substantial static content.
 - [ ] 4.3 Complete mobile/desktop, light/dark, keyboard, failure, and
   reduced-motion QA on a Cloudflare Pages preview.
