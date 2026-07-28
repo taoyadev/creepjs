@@ -25,6 +25,9 @@ import { ScanProgress } from '@/components/checker/ScanProgress';
 import { SharedResultBanner } from '@/components/checker/SharedResultBanner';
 import { useFingerprintScan } from '@/components/checker/hooks/useFingerprintScan';
 import { useCheckerUrlState } from '@/components/checker/hooks/useCheckerUrlState';
+import { useOwnIp } from '@/components/checker/hooks/useOwnIp';
+import { NetworkTrustReport } from '@/components/checker/NetworkTrustReport';
+import type { ExportReportProps } from '@/components/ExportReport';
 import { renderAccessibilityCollectorCard } from '@/components/checker/cards/AccessibilityCards';
 import { renderGraphicsCollectorCard } from '@/components/checker/cards/GraphicsCards';
 import { renderMediaCollectorCard } from '@/components/checker/cards/MediaCards';
@@ -103,7 +106,7 @@ const FingerprintHistory = dynamic(
   }
 );
 
-const ExportReport = dynamic(
+const ExportReport = dynamic<ExportReportProps>(
   () => import('@/components/ExportReport').then((mod) => mod.ExportReport),
   {
     ssr: false,
@@ -122,6 +125,7 @@ export function CheckerApp() {
   const { fingerprint, baseline, progress, status, error, scan } =
     useFingerprintScan();
   const { tab, snapshot, setTab, buildSnapshotUrl } = useCheckerUrlState();
+  const ownIp = useOwnIp();
   const loading = status === 'loading';
 
   if (status !== 'ready' || !fingerprint) {
@@ -215,6 +219,12 @@ export function CheckerApp() {
         {/* Coverage Dashboard */}
         <ConfidenceDashboard result={fingerprint} baseline={baseline} />
 
+        <NetworkTrustReport
+          result={fingerprint}
+          ownIp={ownIp}
+          onRetryIp={() => void ownIp.refresh()}
+        />
+
         {/* Uniqueness Analysis */}
         <UniquenessAnalysis baseline={baseline} />
 
@@ -228,7 +238,10 @@ export function CheckerApp() {
         <FingerprintHistory currentResult={fingerprint} />
 
         {/* Export Report */}
-        <ExportReport result={fingerprint} />
+        <ExportReport
+          result={fingerprint}
+          ipSummary={ownIp.status === 'ready' ? ownIp.data : undefined}
+        />
 
         {/* Collectors Tabs */}
         <Tabs

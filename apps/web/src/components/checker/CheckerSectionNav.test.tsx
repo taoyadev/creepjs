@@ -9,6 +9,7 @@ describe('CheckerSectionNav', () => {
 
     expect(html).toContain('aria-label="Checker sections"');
     expect(html).toContain('href="#scan"');
+    expect(html).toContain('href="#trust"');
     expect(html).toContain('href="#privacy"');
     expect(html).toContain('aria-current="location"');
   });

@@ -2,35 +2,22 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Globe2, RefreshCw, ShieldCheck } from 'lucide-react';
+import {
+  ArrowRight,
+  Globe2,
+  RefreshCw,
+  ShieldAlert,
+  ShieldCheck,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CopyButton } from '@/components/CopyButton';
 import { fetchJson } from '@/lib/api-client';
-
-interface MyIpResponse {
-  ip: string;
-  location?: {
-    country_code?: string | null;
-    city?: string | null;
-    region?: string | null;
-  };
-  asn?: {
-    organization?: string;
-    number?: number;
-  };
-  risk?: {
-    score?: number;
-    band?: string;
-    verdict?: string;
-    highRisk: boolean;
-  };
-  error?: string;
-}
+import type { OwnIpSummary } from '@/lib/own-ip';
 
 type IpState =
   | { status: 'loading'; data: null }
-  | { status: 'ready'; data: MyIpResponse }
+  | { status: 'ready'; data: OwnIpSummary }
   | { status: 'error'; data: null };
 
 export function LiveIpCard() {
@@ -42,7 +29,7 @@ export function LiveIpCard() {
   const load = useCallback(async (signal?: AbortSignal) => {
     setState({ status: 'loading', data: null });
     try {
-      const data = await fetchJson<MyIpResponse>('/my-ip', {
+      const data = await fetchJson<OwnIpSummary>('/my-ip', {
         signal,
         timeoutMs: 8000,
       });
@@ -66,6 +53,7 @@ export function LiveIpCard() {
         .filter(Boolean)
         .join(', ')
     : '';
+  const RiskIcon = data?.risk?.highRisk ? ShieldAlert : ShieldCheck;
 
   return (
     <Card className="flex min-h-[22rem] flex-col overflow-hidden">
@@ -152,14 +140,15 @@ export function LiveIpCard() {
               <div className="flex justify-between gap-4">
                 <dt className="text-muted-foreground">Risk context</dt>
                 <dd className="flex items-center gap-1.5 text-right font-medium">
-                  <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+                  <RiskIcon className="h-4 w-4" aria-hidden="true" />
                   {data.risk?.band ?? data.risk?.verdict ?? 'Geo only'}
                 </dd>
               </div>
             </dl>
             <p className="text-muted-foreground text-xs leading-5">
-              IP risk enrichment is optional. “Geo only” means the free
-              Cloudflare location context succeeded without a risk verdict.
+              {data.error
+                ? data.error
+                : 'IP risk enrichment is optional. “Geo only” means the free Cloudflare location context succeeded without a risk verdict.'}
             </p>
           </div>
         )}

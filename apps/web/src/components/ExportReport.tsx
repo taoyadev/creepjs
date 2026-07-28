@@ -12,12 +12,18 @@ import { Button } from '@/components/ui/button';
 import type { FingerprintResult } from '@creepjs/core';
 import { Download, FileJson, FileSpreadsheet, Info } from 'lucide-react';
 import { toast } from 'sonner';
+import type { OwnIpSummary } from '@/lib/own-ip';
+import {
+  buildNetworkCsvRows,
+  buildNetworkExportSummary,
+} from '@/lib/report-network-export';
 
-interface ExportReportProps {
+export interface ExportReportProps {
   result: FingerprintResult;
+  ipSummary?: OwnIpSummary;
 }
 
-export function ExportReport({ result }: ExportReportProps) {
+export function ExportReport({ result, ipSummary }: ExportReportProps) {
   const exportToJSON = () => {
     try {
       // Create comprehensive JSON export
@@ -32,6 +38,9 @@ export function ExportReport({ result }: ExportReportProps) {
           timestamp: result.timestamp,
           confidence: result.confidence,
         },
+        networkTrust: ipSummary
+          ? buildNetworkExportSummary(ipSummary)
+          : undefined,
         collectors: result.data,
         performance: {
           timings: result.timings,
@@ -72,6 +81,10 @@ export function ExportReport({ result }: ExportReportProps) {
         ['Basic Info', 'Coverage', `${(result.confidence * 100).toFixed(2)}%`],
         ['', '', ''],
       ];
+
+      if (ipSummary) {
+        rows.push(...buildNetworkCsvRows(ipSummary));
+      }
 
       // Canvas
       if (result.data.canvas) {

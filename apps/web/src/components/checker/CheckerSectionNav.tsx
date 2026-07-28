@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 
 const SECTIONS = [
   { id: 'scan', label: 'Live scan' },
+  { id: 'trust', label: 'Trust report' },
   { id: 'what-does-the-checker-report', label: 'Report' },
   { id: 'signals', label: 'Signals' },
   { id: 'how-it-works', label: 'Method' },
