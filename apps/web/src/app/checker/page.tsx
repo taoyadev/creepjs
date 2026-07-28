@@ -17,6 +17,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { CheckerApp } from '@/components/checker/CheckerApp';
+import { CheckerSectionNav } from '@/components/checker/CheckerSectionNav';
 
 const CATEGORY_META: ReadonlyArray<{
   key: CollectorManifestEntry['category'];
@@ -147,6 +148,8 @@ export default function CheckerPage() {
           </div>
         </div>
       </section>
+
+      <CheckerSectionNav />
 
       <div className="container mx-auto max-w-7xl space-y-20 px-4 py-10 md:px-8 md:py-16">
         <section id="scan" className="section-anchor space-y-6">

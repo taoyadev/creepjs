@@ -22,8 +22,8 @@
 
 ## 4. Navigation and Share Context
 
-- [ ] 4.1 Add sticky anchor navigation and progressive scroll-spy state.
-- [ ] 4.2 Add tested `?tab=` state and honest `?fp=&cov=&b=` snapshot context.
+- [x] 4.1 Add sticky anchor navigation and progressive scroll-spy state.
+- [x] 4.2 Add tested `?tab=` state and honest `?fp=&cov=&b=` snapshot context.
 
 ## 5. Polish and Honesty
 

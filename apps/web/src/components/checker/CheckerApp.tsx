@@ -4,7 +4,11 @@ import dynamic from 'next/dynamic';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CopyButton } from '@/components/CopyButton';
-import { collectorTabs, getCollectorsForTab } from '@creepjs/core';
+import {
+  collectorTabs,
+  getCollectorsForTab,
+  type CollectorTabKey,
+} from '@creepjs/core';
 import { RefreshCw } from 'lucide-react';
 import {
   FingerprintCollectorCard,
@@ -18,7 +22,9 @@ import {
   getBaselineEstimate,
 } from '@/lib/uniqueness-baseline';
 import { ScanProgress } from '@/components/checker/ScanProgress';
+import { SharedResultBanner } from '@/components/checker/SharedResultBanner';
 import { useFingerprintScan } from '@/components/checker/hooks/useFingerprintScan';
+import { useCheckerUrlState } from '@/components/checker/hooks/useCheckerUrlState';
 import { renderAccessibilityCollectorCard } from '@/components/checker/cards/AccessibilityCards';
 import { renderGraphicsCollectorCard } from '@/components/checker/cards/GraphicsCards';
 import { renderMediaCollectorCard } from '@/components/checker/cards/MediaCards';
@@ -115,21 +121,35 @@ const graphicsTabCollectors = getCollectorsForTab('graphics');
 export function CheckerApp() {
   const { fingerprint, baseline, progress, status, error, scan } =
     useFingerprintScan();
+  const { tab, snapshot, setTab, buildSnapshotUrl } = useCheckerUrlState();
   const loading = status === 'loading';
 
   if (status !== 'ready' || !fingerprint) {
     return (
-      <ScanProgress
-        status={status === 'error' ? 'error' : 'loading'}
-        progress={progress}
-        error={error}
-        onRetry={() => void scan()}
-      />
+      <div className="space-y-4">
+        <SharedResultBanner snapshot={snapshot} />
+        <ScanProgress
+          status={status === 'error' ? 'error' : 'loading'}
+          progress={progress}
+          error={error}
+          onRetry={() => void scan()}
+        />
+      </div>
     );
   }
 
+  const shareUrl = buildSnapshotUrl({
+    fingerprintId: fingerprint.fingerprintId,
+    coverage: fingerprint.confidence * 100,
+    baselineCount: baseline?.totalSamples ?? null,
+  });
+
   return (
     <div className="space-y-6 md:space-y-8">
+        <SharedResultBanner
+          snapshot={snapshot}
+          currentFingerprintId={fingerprint.fingerprintId}
+        />
         {/* Refresh Button */}
         <div className="flex justify-end">
           <Button
@@ -167,18 +187,27 @@ export function CheckerApp() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <code className="flex-1 break-all font-mono text-lg font-bold">
                 {fingerprint.fingerprintId}
               </code>
-              <CopyButton
-                value={fingerprint.fingerprintId}
-                variant="outline"
-                size="icon"
-                ariaLabel="Copy fingerprint ID"
-                successMessage="Fingerprint ID copied"
-                onCopied={() => analytics.track.fingerprintCopied()}
-              />
+              <div className="flex items-center gap-2">
+                <CopyButton
+                  value={fingerprint.fingerprintId}
+                  variant="outline"
+                  size="icon"
+                  ariaLabel="Copy fingerprint ID"
+                  successMessage="Fingerprint ID copied"
+                  onCopied={() => analytics.track.fingerprintCopied()}
+                />
+                <CopyButton
+                  value={shareUrl}
+                  label="Copy share link"
+                  variant="outline"
+                  disabled={!shareUrl}
+                  successMessage="Snapshot link copied"
+                />
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -202,8 +231,12 @@ export function CheckerApp() {
         <ExportReport result={fingerprint} />
 
         {/* Collectors Tabs */}
-        <Tabs defaultValue="all" className="w-full">
-          <TabsList className="grid w-full grid-cols-7">
+        <Tabs
+          value={tab}
+          onValueChange={(value) => setTab(value as CollectorTabKey)}
+          className="w-full"
+        >
+          <TabsList className="flex h-auto w-full justify-start overflow-x-auto">
             {collectorTabs.map((tab) => (
               <TabsTrigger key={tab.key} value={tab.key}>
                 {tab.label}
