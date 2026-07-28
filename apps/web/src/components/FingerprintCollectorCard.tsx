@@ -1,15 +1,23 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useId, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, Info } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { getCollectorTechnique } from '@/lib/fingerprint-technique';
 
 interface FingerprintCollectorCardProps {
   title: string;
   hash?: string;
   timing?: number;
   insight?: React.ReactNode;
+  techniqueKey?: string;
   children: React.ReactNode;
   className?: string;
   defaultExpanded?: boolean;
@@ -20,27 +28,35 @@ export function FingerprintCollectorCard({
   hash,
   timing,
   insight,
+  techniqueKey,
   children,
   className,
   defaultExpanded = true,
 }: FingerprintCollectorCardProps) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+  const contentId = useId();
+  const technique = techniqueKey
+    ? getCollectorTechnique(techniqueKey)
+    : undefined;
 
   return (
     <Card className={cn('relative', className)}>
-      <CardHeader
-        className="hover:bg-muted/50 cursor-pointer pb-3 transition-colors"
-        onClick={() => setIsExpanded(!isExpanded)}
-      >
+      <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-4">
-          <div className="flex min-w-0 flex-1 items-center gap-2">
-            <div className="flex-shrink-0">
+          <button
+            type="button"
+            aria-expanded={isExpanded}
+            aria-controls={contentId}
+            className="hover:bg-muted/50 -m-2 flex min-w-0 flex-1 items-center gap-2 rounded-md p-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            onClick={() => setIsExpanded((expanded) => !expanded)}
+          >
+            <span className="flex-shrink-0" aria-hidden="true">
               {isExpanded ? (
                 <ChevronUp className="text-muted-foreground h-5 w-5" />
               ) : (
                 <ChevronDown className="text-muted-foreground h-5 w-5" />
               )}
-            </div>
+            </span>
             <div className="min-w-0 flex-1">
               <CardTitle className="text-lg">{title}</CardTitle>
               {insight && (
@@ -54,18 +70,40 @@ export function FingerprintCollectorCard({
                 </code>
               )}
             </div>
-          </div>
-          {timing !== undefined && (
-            <div className="flex-shrink-0 text-right">
-              <div className="text-primary text-sm font-semibold">
-                {timing.toFixed(2)}ms
+          </button>
+          <div className="flex shrink-0 items-center gap-2">
+            {technique && (
+              <TooltipProvider delayDuration={250}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      className="text-muted-foreground hover:bg-muted hover:text-foreground rounded-md p-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      aria-label={`About ${title}`}
+                    >
+                      <Info className="h-4 w-4" aria-hidden="true" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    {technique.description}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+            {timing !== undefined && (
+              <div className="text-right">
+                <div className="text-primary text-sm font-semibold">
+                  {timing.toFixed(2)}ms
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </CardHeader>
       {isExpanded && (
-        <CardContent className="space-y-2 text-sm">{children}</CardContent>
+        <CardContent id={contentId} className="space-y-2 text-sm">
+          {children}
+        </CardContent>
       )}
     </Card>
   );

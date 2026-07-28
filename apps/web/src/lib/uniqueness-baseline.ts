@@ -29,6 +29,24 @@ export interface BaselineSummary {
   availableComponents: number;
 }
 
+export interface BaselineProgress {
+  sampleCount: number;
+  threshold: number;
+  warming: boolean;
+}
+
+export function getBaselineProgress(
+  baseline: BaselineResponse | null | undefined
+): BaselineProgress {
+  const threshold = baseline?.kAnonThreshold ?? 20;
+  const sampleCount = baseline?.totalSamples ?? 0;
+  return {
+    sampleCount,
+    threshold,
+    warming: sampleCount < threshold,
+  };
+}
+
 export function buildBaselineQuery(result: FingerprintResult) {
   const params = new URLSearchParams();
 
@@ -88,6 +106,14 @@ export function summarizeBaseline(
   baseline: BaselineResponse | null | undefined
 ): BaselineSummary | null {
   if (!baseline) return null;
+  if (getBaselineProgress(baseline).warming) {
+    return {
+      rarityScore: null,
+      rarityPercent: null,
+      sampleCount: baseline.totalSamples,
+      availableComponents: 0,
+    };
+  }
 
   const estimates = Object.values(baseline.estimates).filter(
     (
@@ -131,11 +157,16 @@ export function getBaselineEstimate(
 
 export function formatBaselineInsight(
   estimate: BaselineEstimate | null | undefined,
-  kAnonThreshold: number | undefined
+  kAnonThreshold: number | undefined,
+  totalSamples?: number
 ) {
   if (!estimate) return null;
+  const threshold = kAnonThreshold ?? 20;
+  if (totalSamples === undefined || totalSamples < threshold) {
+    return `Baseline warming up (${totalSamples ?? 0}/${threshold})`;
+  }
   if (estimate.suppressed) {
-    return `Population rarity hidden until at least ${kAnonThreshold ?? 'k'} matching samples exist`;
+    return `Population rarity hidden until at least ${threshold} matching samples exist`;
   }
 
   const rarityPercent = Math.round((1 - (estimate.rarity ?? 0)) * 100);

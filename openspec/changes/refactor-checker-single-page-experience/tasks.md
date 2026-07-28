@@ -27,15 +27,15 @@
 
 ## 5. Polish and Honesty
 
-- [ ] 5.1 Add manifest-derived tooltips, restrained reveal/indicator motion, and
+- [x] 5.1 Add manifest-derived tooltips, restrained reveal/indicator motion, and
   live scan announcements.
-- [ ] 5.2 Render `baseline warming up (N/20)` while production samples are below
+- [x] 5.2 Render `baseline warming up (N/20)` while production samples are below
   the k-anonymity threshold and never show a fabricated rarity percentage.
 
 ## 6. Validation
 
-- [ ] 6.1 Pass ordered web build, lint, typecheck, and tests on OpenClaw.
-- [ ] 6.2 Assert exported checker HTML contains one H1 and required static
+- [x] 6.1 Pass ordered web build, lint, typecheck, and tests on OpenClaw.
+- [x] 6.2 Assert exported checker HTML contains one H1 and required static
   anchors/content.
 - [ ] 6.3 Complete desktop/mobile, light/dark, keyboard, URL-state, failure,
   sticky-nav, and reduced-motion QA on a Cloudflare Pages preview.

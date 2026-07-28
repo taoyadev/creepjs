@@ -145,7 +145,7 @@ export function CheckerApp() {
   });
 
   return (
-    <div className="space-y-6 md:space-y-8">
+    <div className="animate-fade-in-up space-y-6 md:space-y-8">
         <SharedResultBanner
           snapshot={snapshot}
           currentFingerprintId={fingerprint.fingerprintId}
@@ -213,10 +213,10 @@ export function CheckerApp() {
         </Card>
 
         {/* Coverage Dashboard */}
-        <ConfidenceDashboard result={fingerprint} />
+        <ConfidenceDashboard result={fingerprint} baseline={baseline} />
 
         {/* Uniqueness Analysis */}
-        <UniquenessAnalysis result={fingerprint} />
+        <UniquenessAnalysis baseline={baseline} />
 
         {/* Privacy Leakage Assessment */}
         <PrivacyLeakageAssessment result={fingerprint} />
@@ -255,7 +255,8 @@ export function CheckerApp() {
                   timing={fingerprint.timings.canvas}
                   insight={formatBaselineInsight(
                     getBaselineEstimate(baseline, 'canvas'),
-                    baseline?.kAnonThreshold
+                    baseline?.kAnonThreshold,
+                    baseline?.totalSamples
                   )}
                 >
                   {fingerprint.data.canvas.dataURL && (
@@ -283,7 +284,8 @@ export function CheckerApp() {
                   timing={fingerprint.timings.webgl}
                   insight={formatBaselineInsight(
                     getBaselineEstimate(baseline, 'webgl'),
-                    baseline?.kAnonThreshold
+                    baseline?.kAnonThreshold,
+                    baseline?.totalSamples
                   )}
                 >
                   <DataRow
@@ -423,7 +425,8 @@ export function CheckerApp() {
                   timing={fingerprint.timings.screen}
                   insight={formatBaselineInsight(
                     getBaselineEstimate(baseline, 'screen'),
-                    baseline?.kAnonThreshold
+                    baseline?.kAnonThreshold,
+                    baseline?.totalSamples
                   )}
                 >
                   <DataRow
@@ -457,7 +460,8 @@ export function CheckerApp() {
                   timing={fingerprint.timings.timezone}
                   insight={formatBaselineInsight(
                     getBaselineEstimate(baseline, 'timezone'),
-                    baseline?.kAnonThreshold
+                    baseline?.kAnonThreshold,
+                    baseline?.totalSamples
                   )}
                 >
                   <DataRow
@@ -502,7 +506,8 @@ export function CheckerApp() {
                   className="md:col-span-2"
                   insight={formatBaselineInsight(
                     getBaselineEstimate(baseline, 'fonts'),
-                    baseline?.kAnonThreshold
+                    baseline?.kAnonThreshold,
+                    baseline?.totalSamples
                   )}
                 >
                   <div className="text-muted-foreground mb-2 text-sm">

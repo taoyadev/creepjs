@@ -14,6 +14,7 @@ export function renderNetworkCollectorCard(
       return (
         <FingerprintCollectorCard
           key={key}
+          techniqueKey={key}
           title="WebRTC"
           hash={fingerprint.data.webrtc.hash}
           timing={fingerprint.timings.webrtc}
@@ -96,6 +97,7 @@ export function renderNetworkCollectorCard(
       return (
         <FingerprintCollectorCard
           key={key}
+          techniqueKey={key}
           title="Service Worker"
           hash={fingerprint.data.serviceWorker.hash}
           timing={fingerprint.timings.serviceWorker}
@@ -125,6 +127,7 @@ export function renderNetworkCollectorCard(
       return (
         <FingerprintCollectorCard
           key={key}
+          techniqueKey={key}
           title="MIME Types"
           hash={fingerprint.data.mimeTypes.hash}
           timing={fingerprint.timings.mimeTypes}
@@ -140,6 +143,7 @@ export function renderNetworkCollectorCard(
       return (
         <FingerprintCollectorCard
           key={key}
+          techniqueKey={key}
           title="Content Window"
           hash={fingerprint.data.contentWindow.hash}
           timing={fingerprint.timings.contentWindow}
@@ -163,6 +167,7 @@ export function renderNetworkCollectorCard(
       return (
         <FingerprintCollectorCard
           key={key}
+          techniqueKey={key}
           title="CSS Media Queries"
           hash={fingerprint.data.cssMedia.hash}
           timing={fingerprint.timings.cssMedia}

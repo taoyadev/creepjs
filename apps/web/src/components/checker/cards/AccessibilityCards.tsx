@@ -26,6 +26,7 @@ export function renderAccessibilityCollectorCard(
       return (
         <FingerprintCollectorCard
           key={key}
+          techniqueKey={key}
           title="Accessibility & Preferences"
           className="md:col-span-2"
           timing={
@@ -86,6 +87,7 @@ export function renderAccessibilityCollectorCard(
       return (
         <FingerprintCollectorCard
           key={key}
+          techniqueKey={key}
           title="Privacy / Ad Blockers"
           timing={fingerprint.timings.domBlockers}
         >
@@ -112,6 +114,7 @@ export function renderAccessibilityCollectorCard(
       return (
         <FingerprintCollectorCard
           key={key}
+          techniqueKey={key}
           title="Audio Base Latency"
           timing={fingerprint.timings.audioBaseLatency}
         >
@@ -138,6 +141,7 @@ export function renderAccessibilityCollectorCard(
       return (
         <FingerprintCollectorCard
           key={key}
+          techniqueKey={key}
           title="Apple Pay Capability"
           timing={fingerprint.timings.applePay}
         >

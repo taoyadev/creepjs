@@ -15,6 +15,7 @@ export function renderSystemCollectorCard(
       return (
         <FingerprintCollectorCard
           key={key}
+          techniqueKey={key}
           title="Navigator"
           timing={fingerprint.timings.navigator}
           className="md:col-span-2"
@@ -94,6 +95,7 @@ export function renderSystemCollectorCard(
       return (
         <FingerprintCollectorCard
           key={key}
+          techniqueKey={key}
           title="Screen"
           timing={fingerprint.timings.screen}
         >
@@ -124,6 +126,7 @@ export function renderSystemCollectorCard(
       return (
         <FingerprintCollectorCard
           key={key}
+          techniqueKey={key}
           title="Fonts"
           hash={`${fingerprint.data.fonts.count} detected`}
           timing={fingerprint.timings.fonts}
@@ -146,6 +149,7 @@ export function renderSystemCollectorCard(
       return (
         <FingerprintCollectorCard
           key={key}
+          techniqueKey={key}
           title="Math Precision"
           hash={fingerprint.data.math.hash}
           timing={fingerprint.timings.math}
@@ -168,6 +172,7 @@ export function renderSystemCollectorCard(
       return (
         <FingerprintCollectorCard
           key={key}
+          techniqueKey={key}
           title="HTML Element"
           hash={fingerprint.data.htmlElement.hash}
           timing={fingerprint.timings.htmlElement}

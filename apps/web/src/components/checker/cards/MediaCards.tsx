@@ -14,6 +14,7 @@ export function renderMediaCollectorCard(
       return (
         <FingerprintCollectorCard
           key={key}
+          techniqueKey={key}
           title="Audio"
           hash={fingerprint.data.audio.hash}
           timing={fingerprint.timings.audio}
@@ -38,6 +39,7 @@ export function renderMediaCollectorCard(
       return (
         <FingerprintCollectorCard
           key={key}
+          techniqueKey={key}
           title="Media Devices"
           hash={`${fingerprint.data.media.devices.length} devices`}
           timing={fingerprint.timings.media}
@@ -61,6 +63,7 @@ export function renderMediaCollectorCard(
       return (
         <FingerprintCollectorCard
           key={key}
+          techniqueKey={key}
           title="Speech Voices"
           hash={`${fingerprint.data.voices.count} voices`}
           timing={fingerprint.timings.voices}
@@ -95,6 +98,7 @@ export function renderMediaCollectorCard(
       return (
         <FingerprintCollectorCard
           key={key}
+          techniqueKey={key}
           title="Emoji Rendering"
           hash={fingerprint.data.clientRects.hash}
           timing={fingerprint.timings.clientRects}
@@ -112,6 +116,7 @@ export function renderMediaCollectorCard(
       return (
         <FingerprintCollectorCard
           key={key}
+          techniqueKey={key}
           title="DOM Rectangle"
           hash={fingerprint.data.domRect.hash}
           timing={fingerprint.timings.domRect}

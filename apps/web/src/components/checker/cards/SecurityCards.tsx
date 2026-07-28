@@ -15,6 +15,7 @@ export function renderSecurityCollectorCard(
       return (
         <FingerprintCollectorCard
           key={key}
+          techniqueKey={key}
           title="Lies Detection"
           hash={fingerprint.data.lies.hash}
           timing={fingerprint.timings.lies}
@@ -83,6 +84,7 @@ export function renderSecurityCollectorCard(
       return (
         <FingerprintCollectorCard
           key={key}
+          techniqueKey={key}
           title="Anti-Fingerprinting Detection"
           timing={fingerprint.timings.resistance}
           className="md:col-span-2"
@@ -156,6 +158,7 @@ export function renderSecurityCollectorCard(
       return (
         <FingerprintCollectorCard
           key={key}
+          techniqueKey={key}
           title="Timezone"
           hash={fingerprint.data.timezone.timezone}
           timing={fingerprint.timings.timezone}
@@ -194,6 +197,7 @@ export function renderSecurityCollectorCard(
       return (
         <FingerprintCollectorCard
           key={key}
+          techniqueKey={key}
           title="Console Errors"
           hash={fingerprint.data.consoleErrors.hash}
           timing={fingerprint.timings.consoleErrors}

@@ -14,6 +14,7 @@ export function renderGraphicsCollectorCard(
       return (
         <FingerprintCollectorCard
           key={key}
+          techniqueKey={key}
           title="Canvas 2d"
           hash={fingerprint.data.canvas.hash}
           timing={fingerprint.timings.canvas}
@@ -37,6 +38,7 @@ export function renderGraphicsCollectorCard(
       return (
         <FingerprintCollectorCard
           key={key}
+          techniqueKey={key}
           title="WebGL"
           hash={fingerprint.data.webgl.version}
           timing={fingerprint.timings.webgl}
@@ -62,6 +64,7 @@ export function renderGraphicsCollectorCard(
       return (
         <FingerprintCollectorCard
           key={key}
+          techniqueKey={key}
           title="SVG Rendering"
           hash={fingerprint.data.svg.hash}
           timing={fingerprint.timings.svg}
@@ -77,6 +80,7 @@ export function renderGraphicsCollectorCard(
       return (
         <FingerprintCollectorCard
           key={key}
+          techniqueKey={key}
           title="CSS Styles"
           hash={fingerprint.data.css.hash}
           timing={fingerprint.timings.css}
@@ -106,6 +110,7 @@ export function renderGraphicsCollectorCard(
       return (
         <FingerprintCollectorCard
           key={key}
+          techniqueKey={key}
           title="Text Metrics"
           hash={fingerprint.data.textMetrics.hash}
           timing={fingerprint.timings.textMetrics}
