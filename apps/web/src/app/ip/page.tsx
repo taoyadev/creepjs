@@ -26,76 +26,16 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { SITE_CONFIG } from '@/lib/metadata';
 import { cn } from '@/lib/utils';
 import { analytics } from '@/lib/analytics';
 import { IpBatchWorkspace } from '@/components/ip/IpBatchWorkspace';
-
-type RateLimit = {
-  limit: number | null;
-  remaining: number | null;
-  reset: number | null;
-  tier: string | null;
-};
-
-type IpbotData = {
-  ip: string;
-  stack?: string;
-  location?: {
-    country?: string;
-    country_code?: string;
-    region?: string;
-    city?: string;
-    latitude?: number;
-    longitude?: number;
-    timezone?: string;
-  };
-  network?: {
-    asn?: string;
-    org?: string;
-    category?: string;
-    service_role?: string;
-    owner?: string;
-  };
-  routing?: {
-    origin_asn?: string;
-    prefix?: string;
-    rpki_status?: string;
-  };
-  score?: {
-    ip_score?: number;
-    risk_score?: number;
-    band?: string;
-    verdict?: string;
-    recommended_action?: string;
-  };
-  classification?: {
-    usage_type?: string;
-    is_datacenter?: boolean;
-    is_proxy?: boolean;
-    is_vpn?: boolean;
-    is_tor?: boolean;
-    threat_level?: string;
-  };
-  evidence?: {
-    signals?: Array<{
-      category?: string;
-      label?: string;
-      severity?: string;
-      confidence?: string;
-      description?: string;
-    }>;
-  };
-};
-
-type LookupResult = {
-  data: IpbotData;
-  cached: boolean;
-  highRisk: boolean;
-  rateLimit: RateLimit;
-};
-
-const API_URL = SITE_CONFIG.apiUrl;
+import { ApiError, fetchJson } from '@/lib/api-client';
+import {
+  IpInputError,
+  lookupPublicIp,
+  publicIpLookupErrorMessage,
+  type PublicIpLookupResult,
+} from '@/lib/public-ip-lookup';
 
 function display(value: unknown, fallback = 'Unknown') {
   if (typeof value === 'string' && value.trim()) return value;
@@ -121,7 +61,7 @@ function Metric({ name, value }: { name: string; value: unknown }) {
 
 export default function IpRiskPage() {
   const [ip, setIp] = useState('');
-  const [result, setResult] = useState<LookupResult | null>(null);
+  const [result, setResult] = useState<PublicIpLookupResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [detectingIp, setDetectingIp] = useState(true);
@@ -142,26 +82,8 @@ export default function IpRiskPage() {
     setIp(target);
     setLoading(true);
     try {
-      const res = await fetch(
-        `${API_URL}/v1/ip/public/${encodeURIComponent(target)}`,
-        { headers: { Accept: 'application/json' } }
-      );
-      const data = (await res.json()) as LookupResult | { error?: string };
-
-      if (!res.ok) {
-        const retryAfter = res.headers.get('Retry-After');
-        const message =
-          'error' in data && data.error
-            ? data.error
-            : `Lookup failed with status ${res.status}`;
-        setResult(null);
-        setError(
-          retryAfter ? `${message}. Retry after ${retryAfter} seconds.` : message
-        );
-        return;
-      }
-
-      setResult(data as LookupResult);
+      const data = await lookupPublicIp(target);
+      setResult(data);
       if (typeof window !== 'undefined') {
         const url = new URL(window.location.href);
         url.searchParams.set('q', target);
@@ -179,23 +101,21 @@ export default function IpRiskPage() {
       });
       analytics.track.apiCall({
         endpoint: '/v1/ip/public/:ip',
-        statusCode: res.status,
+        statusCode: 200,
         success: true,
       });
     } catch (lookupError) {
       setResult(null);
-      setError(
-        lookupError instanceof Error
-          ? lookupError.message
-          : 'Unable to reach the CreepJS API.'
-      );
+      setError(publicIpLookupErrorMessage(lookupError));
       analytics.track.apiError({
         endpoint: '/v1/ip/public/:ip',
-        statusCode: 0,
-        errorMessage:
-          lookupError instanceof Error
-            ? lookupError.message
-            : 'Unable to reach the CreepJS API.',
+        statusCode:
+          lookupError instanceof IpInputError
+            ? 400
+            : lookupError instanceof ApiError
+              ? lookupError.status
+              : 0,
+        errorMessage: 'Public IP lookup failed',
       });
     } finally {
       setLoading(false);
@@ -210,8 +130,7 @@ export default function IpRiskPage() {
     async function loadCurrentIp() {
       setDetectingIp(true);
       try {
-        const res = await fetch(`${API_URL}/my-ip`);
-        const data = (await res.json()) as { ip?: string };
+        const data = await fetchJson<{ ip?: string }>('/my-ip');
         if (!cancelled && data.ip) setIp(data.ip);
       } catch {
         if (!cancelled) setError('Enter an IP address to run a risk lookup.');

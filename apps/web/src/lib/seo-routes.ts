@@ -32,6 +32,20 @@ export interface FingerprintTechnique {
 
 export const LAST_SEO_UPDATE = new Date('2026-06-13');
 
+export const IP_PROXY_PILOT_PATH =
+  '/ip-lookup/how-to-tell-if-an-ip-is-a-proxy';
+
+export const IP_PROXY_PILOT_ROUTE = {
+  path: IP_PROXY_PILOT_PATH,
+  title: 'How to Tell If an IP Is a Proxy',
+  description:
+    'Check an IPv4 or IPv6 address for proxy, VPN, Tor, datacenter, network, risk, and evidence signals, then learn how to interpret the result.',
+  section: 'ip-lookup',
+  changeFrequency: 'monthly',
+  priority: 0.78,
+  lastModified: new Date('2026-07-28'),
+} as const satisfies SeoRoute;
+
 export const STATIC_SEO_ROUTES = [
   {
     path: '/',
@@ -70,6 +84,7 @@ export const STATIC_SEO_ROUTES = [
     changeFrequency: 'weekly',
     priority: 0.9,
   },
+  IP_PROXY_PILOT_ROUTE,
   {
     path: '/docs',
     title: 'Documentation',

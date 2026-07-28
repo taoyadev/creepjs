@@ -5,6 +5,9 @@ import {
   FINGERPRINT_SEO_ROUTES,
   FINGERPRINT_TECHNIQUES,
   INDEXABLE_ROUTES,
+  IP_PROXY_PILOT_PATH,
+  IP_PROXY_PILOT_ROUTE,
+  LAST_SEO_UPDATE,
   STATIC_SEO_ROUTES,
 } from './seo-routes';
 import { SITE_CONFIG } from './metadata';
@@ -32,6 +35,27 @@ describe('SEO route registry', () => {
         (technique) => `/fingerprint/${technique.slug}`
       )
     );
+  });
+
+  it('publishes the proxy-intent pilot exactly once with its own content date', () => {
+    const entries = sitemap().filter(
+      (entry) => entry.url === `${SITE_CONFIG.url}${IP_PROXY_PILOT_PATH}`
+    );
+    const checker = sitemap().find(
+      (entry) => entry.url === `${SITE_CONFIG.url}/checker`
+    );
+
+    expect(
+      STATIC_SEO_ROUTES.filter(
+        (route) => route.path === IP_PROXY_PILOT_PATH
+      )
+    ).toHaveLength(1);
+    expect(IP_PROXY_PILOT_ROUTE.section).toBe('ip-lookup');
+    expect(entries).toHaveLength(1);
+    expect(entries[0]?.lastModified).toEqual(
+      IP_PROXY_PILOT_ROUTE.lastModified
+    );
+    expect(checker?.lastModified).toEqual(LAST_SEO_UPDATE);
   });
 
   it('keeps render assets crawlable in robots.txt', () => {
