@@ -44,6 +44,29 @@ describe('api-client', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
+  it('exposes Retry-After on structured API errors', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ error: 'Rate limit exceeded' }), {
+          status: 429,
+          headers: {
+            'content-type': 'application/json',
+            'retry-after': '120',
+          },
+        })
+      )
+    );
+
+    await expect(
+      fetchJson('/v1/ip/batch', { method: 'POST' })
+    ).rejects.toMatchObject({
+      name: 'ApiError',
+      status: 429,
+      retryAfter: 120,
+    });
+  });
+
   it('does not retry after the request timeout expires', async () => {
     vi.useFakeTimers();
     const fetchMock = vi.fn(

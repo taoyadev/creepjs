@@ -11,12 +11,19 @@ export const API_BASE =
 export class ApiError extends Error {
   readonly status: number;
   readonly body: unknown;
+  readonly retryAfter: number | null;
 
-  constructor(message: string, status: number, body?: unknown) {
+  constructor(
+    message: string,
+    status: number,
+    body?: unknown,
+    retryAfter: number | null = null
+  ) {
     super(message);
     this.name = 'ApiError';
     this.status = status;
     this.body = body;
+    this.retryAfter = retryAfter;
   }
 }
 
@@ -68,7 +75,12 @@ async function attempt<T>(
           typeof (body as { error: unknown }).error === 'string' &&
           (body as { error: string }).error) ||
         `Request failed with status ${res.status}`;
-      throw new ApiError(message, res.status, body);
+      const retryAfterHeader = res.headers.get('retry-after');
+      const retryAfter =
+        retryAfterHeader && Number.isFinite(Number(retryAfterHeader))
+          ? Number(retryAfterHeader)
+          : null;
+      throw new ApiError(message, res.status, body, retryAfter);
     }
 
     return body as T;

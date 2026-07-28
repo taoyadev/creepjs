@@ -28,17 +28,17 @@
 
 ## 4. Web Workflow
 
-- [ ] 4.1 Add a shared accessible textarea primitive and tested input/CSV utility.
-- [ ] 4.2 Add a route-local `/ip` batch workspace with in-memory token handling,
+- [x] 4.1 Add a shared accessible textarea primitive and tested input/CSV utility.
+- [x] 4.2 Add a route-local `/ip` batch workspace with in-memory token handling,
   input count/validation, independent loading/error state, and result summary.
-- [ ] 4.3 Render an accessible, mobile-scrollable result table and export partial
+- [x] 4.3 Render an accessible, mobile-scrollable result table and export partial
   or complete results as formula-safe CSV.
-- [ ] 4.4 Add a non-sensitive token-acquisition link without persisting or
+- [x] 4.4 Add a non-sensitive token-acquisition link without persisting or
   tracking the token or raw submitted IPs.
 
 ## 5. Validation and Rollout
 
-- [ ] 5.1 Run targeted API/web tests, typecheck, lint, and production builds on
+- [x] 5.1 Run targeted API/web tests, typecheck, lint, and production builds on
   OpenClaw.
 - [ ] 5.2 Verify desktop/mobile, light/dark, keyboard, success, mixed-error,
   over-limit, invalid-token, upstream-abort, and CSV flows in a managed preview.

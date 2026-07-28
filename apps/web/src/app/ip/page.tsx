@@ -29,6 +29,7 @@ import { Input } from '@/components/ui/input';
 import { SITE_CONFIG } from '@/lib/metadata';
 import { cn } from '@/lib/utils';
 import { analytics } from '@/lib/analytics';
+import { IpBatchWorkspace } from '@/components/ip/IpBatchWorkspace';
 
 type RateLimit = {
   limit: number | null;
@@ -162,10 +163,12 @@ export default function IpRiskPage() {
 
       setResult(data as LookupResult);
       if (typeof window !== 'undefined') {
+        const url = new URL(window.location.href);
+        url.searchParams.set('q', target);
         window.history.replaceState(
           null,
           '',
-          `?q=${encodeURIComponent(target)}`
+          `${url.pathname}${url.search}${url.hash}`
         );
       }
       toast.success('IP risk lookup complete');
@@ -550,6 +553,8 @@ export default function IpRiskPage() {
             </CardContent>
           </Card>
         </div>
+
+        <IpBatchWorkspace />
       </section>
     </div>
   );
