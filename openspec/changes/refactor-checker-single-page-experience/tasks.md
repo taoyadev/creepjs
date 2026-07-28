@@ -9,8 +9,8 @@
 
 - [x] 2.1 Pure-move the six category collector renderers into
   `components/checker/cards/`.
-- [ ] 2.2 Extract scan state into `useFingerprintScan` and compose it through
-  `CheckerApp` with an in-slot `ScanProgress`.
+- [x] 2.2 Extract scan state into `useFingerprintScan` and compose it through
+  the checker runtime with an in-slot `ScanProgress`.
 
 ## 3. Static Single-Page Shell
 

@@ -1,18 +1,10 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CopyButton } from '@/components/CopyButton';
-import { Progress } from '@/components/ui/progress';
-import {
-  collectFingerprint,
-  collectorTabs,
-  getCollectorsForTab,
-  getCollectorLabel,
-} from '@creepjs/core';
-import type { CollectorProgressEvent, FingerprintResult } from '@creepjs/core';
+import { collectorTabs, getCollectorsForTab } from '@creepjs/core';
 import { RefreshCw } from 'lucide-react';
 import {
   FingerprintCollectorCard,
@@ -22,11 +14,11 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { analytics } from '@/lib/analytics';
 import {
-  type BaselineResponse,
-  fetchBaseline,
   formatBaselineInsight,
   getBaselineEstimate,
 } from '@/lib/uniqueness-baseline';
+import { ScanProgress } from '@/components/checker/ScanProgress';
+import { useFingerprintScan } from '@/components/checker/hooks/useFingerprintScan';
 import { renderAccessibilityCollectorCard } from '@/components/checker/cards/AccessibilityCards';
 import { renderGraphicsCollectorCard } from '@/components/checker/cards/GraphicsCards';
 import { renderMediaCollectorCard } from '@/components/checker/cards/MediaCards';
@@ -120,177 +112,33 @@ const accessibilityTabCollectors = getCollectorsForTab('accessibility');
 const systemTabCollectors = getCollectorsForTab('system');
 const graphicsTabCollectors = getCollectorsForTab('graphics');
 
-interface CollectionProgress {
-  current: number;
-  total: number;
-  currentCollector: string;
-}
-
-function scheduleIdle(callback: () => void) {
-  if (
-    typeof window !== 'undefined' &&
-    typeof window.requestIdleCallback === 'function'
-  ) {
-    const idleId = window.requestIdleCallback(() => callback(), {
-      timeout: 1200,
-    });
-    return () => window.cancelIdleCallback(idleId);
-  }
-
-  const timeoutId: ReturnType<typeof globalThis.setTimeout> =
-    globalThis.setTimeout(callback, 180);
-  return () => globalThis.clearTimeout(timeoutId);
-}
-
 export default function DemoPage() {
-  const [fingerprint, setFingerprint] = useState<FingerprintResult | null>(
-    null
-  );
-  const [loading, setLoading] = useState(true);
-  const [baseline, setBaseline] = useState<BaselineResponse | null>(null);
-  const [progress, setProgress] = useState<CollectionProgress>({
-    current: 0,
-    total: 1,
-    currentCollector: '',
-  });
+  const { fingerprint, baseline, progress, status, error, scan } =
+    useFingerprintScan();
+  const loading = status === 'loading';
 
-  const loadFingerprint = async () => {
-    setLoading(true);
-    setProgress({ current: 0, total: 1, currentCollector: 'Initializing...' });
-
-    try {
-      const updateProgress = (event: CollectorProgressEvent) => {
-        setProgress((prev) => ({
-          current:
-            event.phase === 'finish'
-              ? Math.max(prev.current, event.index + 1)
-              : prev.current,
-          total: event.total,
-          currentCollector:
-            event.phase === 'finish'
-              ? `${getCollectorLabel(event.name)} complete`
-              : getCollectorLabel(event.name),
-        }));
-      };
-
-      const fp = await collectFingerprint({ onProgress: updateProgress });
-
-      setProgress((prev) => ({
-        ...prev,
-        current: prev.total,
-        currentCollector: 'Complete!',
-      }));
-
-      setFingerprint(fp);
-      void fetchBaseline(fp).then((response) => {
-        setBaseline(response);
-      });
-      analytics.pageView('/checker');
-      analytics.track.fingerprintGenerated({
-        confidence: fp.confidence,
-        method: 'checker',
-      });
-      analytics.track.buttonClicked({
-        buttonLabel: 'run_checker',
-        section: 'checker',
-      });
-    } catch (error) {
-      console.error('Error collecting fingerprint:', error);
-      analytics.error(error instanceof Error ? error : String(error), {
-        page: '/checker',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    const cancel = scheduleIdle(() => {
-      void loadFingerprint();
-    });
-
-    return cancel;
-  }, []);
-
-  if (loading) {
+  if (status !== 'ready' || !fingerprint) {
     return (
-      <div className="from-background to-secondary flex min-h-screen items-center justify-center bg-gradient-to-b p-8">
-        <Card className="w-full max-w-2xl">
-          <CardContent className="pt-6">
-            <div className="space-y-6">
-              <div className="space-y-2 text-center">
-                <h2 className="text-2xl font-bold">
-                  Collecting Browser Fingerprint
-                </h2>
-                <p className="text-muted-foreground">
-                  Analyzing {progress.total} unique browser characteristics
-                </p>
-              </div>
-
-              {/* Progress Bar */}
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Progress</span>
-                  <span className="font-medium">
-                    {progress.current} / {progress.total}
-                  </span>
-                </div>
-                <Progress
-                  label="Browser fingerprint collection progress"
-                  value={progress.current}
-                  max={progress.total}
-                  className="h-3"
-                />
-              </div>
-
-              {/* Current Collector */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-center gap-2 text-sm">
-                  <div className="bg-primary h-2 w-2 animate-pulse rounded-full" />
-                  <span className="text-muted-foreground">
-                    Currently collecting:
-                  </span>
-                  <span className="text-primary font-medium">
-                    {progress.currentCollector}
-                  </span>
-                </div>
-              </div>
-
-              {/* Collecting Items Grid */}
-              <div className="grid grid-cols-4 gap-2 pt-4">
-                {Array.from({ length: progress.total }).map((_, i) => (
-                  <div
-                    key={i}
-                    className={`h-2 rounded-full transition-all duration-300 ${
-                      i < progress.current
-                        ? 'bg-primary'
-                        : i === progress.current
-                          ? 'bg-primary/50 animate-pulse'
-                          : 'bg-muted'
-                    }`}
-                  />
-                ))}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  if (!fingerprint) {
-    return (
-      <div className="from-background to-secondary flex min-h-screen items-center justify-center bg-gradient-to-b">
-        <Card className="w-full max-w-md">
-          <CardContent className="pt-6">
-            <div className="space-y-4 text-center">
-              <div className="text-destructive text-xl">
-                Failed to collect fingerprint
-              </div>
-              <Button onClick={() => void loadFingerprint()}>Try Again</Button>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="from-background to-secondary bg-gradient-to-b">
+        <div className="container mx-auto max-w-7xl space-y-6 p-4 md:space-y-8 md:p-8">
+          <div className="space-y-2 text-center md:space-y-4">
+            <h1 className="text-2xl font-bold md:text-4xl">
+              Your Browser Fingerprint
+            </h1>
+            <p className="text-muted-foreground mx-auto max-w-4xl text-sm md:text-lg">
+              Inspect the signals your browser exposes without losing access to
+              the rest of the checker while the scan runs.
+            </p>
+          </div>
+          <section id="scan-output" aria-label="Browser fingerprint scan">
+            <ScanProgress
+              status={status === 'error' ? 'error' : 'loading'}
+              progress={progress}
+              error={error}
+              onRetry={() => void scan()}
+            />
+          </section>
+        </div>
       </div>
     );
   }
@@ -303,7 +151,7 @@ export default function DemoPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => void loadFingerprint()}
+            onClick={() => void scan()}
             disabled={loading}
           >
             <RefreshCw
