@@ -9,7 +9,7 @@
 
 - [ ] 2.1 Add a server-rendered hero, correct primary/secondary routes, answer
   block, value sections, audience block, and 350–600 words of static content.
-- [ ] 2.2 Add a server-rendered signal grid derived from
+- [x] 2.2 Add a server-rendered signal grid derived from
   `FINGERPRINT_TECHNIQUES`.
 
 ## 3. Client Islands

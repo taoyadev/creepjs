@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { SITE_CONFIG, generateMetadata, structuredData } from '@/lib/metadata';
 import { StructuredData } from '@/components/StructuredData';
 import { SeoInternalLinks } from '@/components/SeoInternalLinks';
+import { SignalGrid } from '@/components/home/SignalGrid';
 import HomePageClient from './HomePageClient';
 
 export const metadata: Metadata = generateMetadata({
@@ -25,6 +26,9 @@ export default function HomePage() {
         ]}
       />
       <HomePageClient />
+      <div className="container mx-auto max-w-7xl px-4 py-16 md:px-8 md:py-24">
+        <SignalGrid />
+      </div>
       <SeoInternalLinks
         currentPath="/"
         title="CreepJS tools and references"
