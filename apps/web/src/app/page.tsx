@@ -163,10 +163,20 @@ export default function HomePage() {
               </h2>
             </div>
             <p className="text-muted-foreground text-lg leading-8">
-              CreepJS is an open browser-fingerprint and IP-risk diagnostic. It
-              shows the signals a website can observe, explains collector
-              coverage and privacy resistance, and provides honest population
-              context only when anonymous sample thresholds are met.
+              CreepJS is the privacy diagnostic and API at creepjs.org. It
+              reveals browser and IP-risk signals, explains coverage and
+              privacy resistance, and only reports population context after
+              anonymous-sample thresholds are met. It is distinct from{' '}
+              <a
+                href="https://github.com/abrahamjuliot/creepjs"
+                target="_blank"
+                rel="noreferrer"
+                className="text-foreground font-medium underline underline-offset-4"
+              >
+                Abraham Juliot&apos;s separate open-source CreepJS research
+                project
+              </a>
+              .
             </p>
           </section>
 

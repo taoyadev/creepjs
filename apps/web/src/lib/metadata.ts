@@ -1,14 +1,11 @@
 /**
- * Shared metadata configuration for CreepJS 2.0
+ * Shared metadata configuration for CreepJS
  *
  * This file provides consistent metadata across all pages using Next.js
  * Metadata API. It includes SEO, Open Graph, Twitter Cards, and more.
  *
- * SEO Best Practices Applied:
- * - Title tags 50-60 characters
- * - Meta descriptions 150-160 characters
- * - Canonical URLs for all pages
- * - Structured data (JSON-LD) support
+ * It centralizes canonical URLs, social metadata, and supported JSON-LD
+ * entities without treating fixed character counts as a ranking rule.
  */
 
 import type { Metadata } from 'next';
@@ -54,6 +51,7 @@ export const SITE_CONFIG = {
     email: 'hello@creepjs.org',
   },
   github: 'https://github.com/taoyadev/creepjs',
+  sameAs: ['https://github.com/taoyadev/creepjs'],
   license: 'MIT',
 } as const;
 
@@ -303,7 +301,7 @@ export const structuredData = {
     url: SITE_CONFIG.url,
     logo: `${SITE_CONFIG.url}/icon-512.png`,
     description: SITE_CONFIG.description,
-    sameAs: [SITE_CONFIG.github],
+    sameAs: SITE_CONFIG.sameAs,
   }),
 
   /**

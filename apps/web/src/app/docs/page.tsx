@@ -1036,12 +1036,14 @@ X-API-Token: cfp_your_token_here`}
                 </div>
               </TrackedLink>
               <a
-                href="https://github.com/abrahamjuliot/creepjs"
+                href={SITE_CONFIG.github}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:border-primary block rounded-lg border p-4 transition-colors"
               >
-                <div className="mb-1 font-semibold">GitHub Repository</div>
+                <div className="mb-1 font-semibold">
+                  CreepJS GitHub Repository
+                </div>
                 <div className="text-muted-foreground text-xs">
                   View source code and contribute
                 </div>

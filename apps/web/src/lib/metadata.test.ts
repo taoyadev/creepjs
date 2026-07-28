@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { metadata as ipProxyPilotMetadata } from '../app/ip-lookup/how-to-tell-if-an-ip-is-a-proxy/page';
-import { generateMetadata, SITE_CONFIG } from './metadata';
+import { generateMetadata, SITE_CONFIG, structuredData } from './metadata';
 import {
   IP_PROXY_PILOT_PATH,
   IP_PROXY_PILOT_ROUTE,
@@ -32,6 +32,18 @@ describe('generateMetadata', () => {
     );
     expect(ipProxyPilotMetadata.alternates?.canonical).toBe(
       `${SITE_CONFIG.url}${IP_PROXY_PILOT_PATH}`
+    );
+  });
+
+  it('keeps organization sameAs limited to product-owned profiles', () => {
+    const organization = structuredData.organization();
+
+    expect(organization.sameAs).toEqual(SITE_CONFIG.sameAs);
+    expect(organization.sameAs).toEqual([
+      'https://github.com/taoyadev/creepjs',
+    ]);
+    expect(organization.sameAs).not.toContain(
+      'https://github.com/abrahamjuliot/creepjs'
     );
   });
 });

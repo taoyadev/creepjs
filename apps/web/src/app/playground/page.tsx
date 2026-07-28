@@ -1160,12 +1160,14 @@ func main() {
                 </p>
               </Link>
               <a
-                href="https://github.com/abrahamjuliot/creepjs"
+                href={SITE_CONFIG.github}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:border-primary block rounded-lg border p-4 transition-colors"
               >
-                <div className="mb-2 font-semibold">3. Review Source Code</div>
+                <div className="mb-2 font-semibold">
+                  3. Review CreepJS Source
+                </div>
                 <p className="text-muted-foreground text-xs">
                   Examine the open-source implementation on GitHub to understand
                   collector logic and algorithms.

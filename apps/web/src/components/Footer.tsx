@@ -66,7 +66,7 @@ export function Footer() {
                   rel="noopener noreferrer"
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  CreepJS 2.0
+                  CreepJS
                 </a>
               </li>
               <li>

@@ -9,35 +9,35 @@
 
 ## 2. Content Honesty Gate
 
-- [ ] 2.1 Add a deterministic fingerprint Markdown quality validator.
-- [ ] 2.2 Remove unsupported first-hand claims, exact performance/adoption
+- [x] 2.1 Add a deterministic fingerprint Markdown quality validator.
+- [x] 2.2 Remove unsupported first-hand claims, exact performance/adoption
   statistics, market forecasts, match-rate claims, and fabricated citations
   from all 55 signal mirrors.
-- [ ] 2.3 Add tests proving all expected signal files exist, pass the quality
+- [x] 2.3 Add tests proving all expected signal files exist, pass the quality
   gate, and stay aligned with the canonical manifest.
 
 ## 3. Crawler and Machine Navigation
 
-- [ ] 3.1 Add explicit reviewed crawler groups without broadening restricted
+- [x] 3.1 Add explicit reviewed crawler groups without broadening restricted
   paths.
-- [ ] 3.2 Expand `llms.txt` to all vetted tools and 55 signal pages, grouped by
+- [x] 3.2 Expand `llms.txt` to all vetted tools and 55 signal pages, grouped by
   category, with HTML/Markdown links and an interoperability disclaimer.
-- [ ] 3.3 Add static `llms-full.txt` using deterministic build-time filesystem
+- [x] 3.3 Add static `llms-full.txt` using deterministic build-time filesystem
   reads and fail-closed content validation.
 
 ## 4. Answer and Entity Surface
 
-- [ ] 4.1 Verify or add the four concise answer anchors in rendered HTML.
-- [ ] 4.2 Add visible product/entity disambiguation and standardize visible and
+- [x] 4.1 Verify or add the four concise answer anchors in rendered HTML.
+- [x] 4.2 Add visible product/entity disambiguation and standardize visible and
   exported `CreepJS` branding.
-- [ ] 4.3 Keep product `sameAs` references consistent and product-owned.
-- [ ] 4.4 Add tests proving no new FAQPage, HowTo, or Dataset schema is emitted.
+- [x] 4.3 Keep product `sameAs` references consistent and product-owned.
+- [x] 4.4 Add tests proving no new FAQPage, HowTo, or Dataset schema is emitted.
 
 ## 5. Validation and Rollout
 
-- [ ] 5.1 Run repository typecheck, lint, tests, web build, and OpenSpec strict
+- [x] 5.1 Run repository typecheck, lint, tests, web build, and OpenSpec strict
   validation on OpenClaw.
-- [ ] 5.2 Assert static robots, llms, llms-full, answer anchors, signal counts,
+- [x] 5.2 Assert static robots, llms, llms-full, answer anchors, signal counts,
   canonical links, and forbidden-schema absence in `out/`.
 - [ ] 5.3 Verify desktop/mobile/browser-agent behavior and deployed file
   availability in a managed Pages preview.

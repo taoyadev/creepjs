@@ -31,7 +31,7 @@ export function ExportReport({ result, ipSummary }: ExportReportProps) {
         metadata: {
           exportDate: new Date().toISOString(),
           version: '1.0.0',
-          source: 'CreepJS 2.0',
+          source: 'CreepJS',
         },
         fingerprint: {
           id: result.fingerprintId,
@@ -439,7 +439,7 @@ export function ExportReport({ result, ipSummary }: ExportReportProps) {
         metadata: {
           exportDate: new Date().toISOString(),
           version: '1.0.0',
-          source: 'CreepJS 2.0',
+          source: 'CreepJS',
           recordCount: history.length,
         },
         history: history,
@@ -576,7 +576,7 @@ export function ExportReport({ result, ipSummary }: ExportReportProps) {
   "metadata": {
     "exportDate": "ISO timestamp",
     "version": "1.0.0",
-    "source": "CreepJS 2.0"
+    "source": "CreepJS"
   },
   "fingerprint": {
     "id": "unique fingerprint ID",
