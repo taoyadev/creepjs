@@ -195,6 +195,46 @@ jobs:
             echo "$response" | head -n -1
           fi
 
+      - name: Health check - Batch endpoint contract
+        if: steps.health-check-root.outputs.status == 'success'
+        run: |
+          echo "Testing authenticated batch contract without an upstream IP lookup..."
+          response_file="$RUNNER_TEMP/batch-smoke.json"
+          status_code=$(curl -sS --max-time 20 \
+            -o "$response_file" \
+            -w "%{http_code}" \
+            https://api.creepjs.org/v1/ip/batch \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -H "X-API-Token: ${{ secrets.TEST_API_TOKEN }}" \
+            -d '{"ips":["not-an-ip"]}')
+
+          echo "Response code: $status_code"
+          if [ "$status_code" != "200" ]; then
+            echo "::error::Batch endpoint smoke returned $status_code"
+            exit 1
+          fi
+
+          node - "$response_file" <<'NODE'
+          const fs = require('node:fs');
+          const response = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
+          const valid =
+            response.submittedCount === 1 &&
+            response.validCount === 0 &&
+            response.invalidCount === 1 &&
+            response.quotaCost === 1 &&
+            response.results?.length === 1 &&
+            response.results[0]?.outcome === 'invalid' &&
+            response.results[0]?.status === 400;
+
+          if (!valid) {
+            console.error('::error::Batch endpoint response contract mismatch');
+            process.exit(1);
+          }
+
+          console.log('✅ Batch endpoint contract check passed!');
+          NODE
+
       - name: Rollback on failure
         if: failure()
         uses: cloudflare/wrangler-action@v3
@@ -213,4 +253,3 @@ jobs:
         if: success()
         run: |
           echo "::notice::✅ API deployed successfully to https://api.creepjs.org"
-
