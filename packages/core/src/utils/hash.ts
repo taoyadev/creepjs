@@ -88,10 +88,77 @@ export function base62Encode(num: number): string {
 }
 
 /**
- * Generate a fingerprint ID from data
+ * Base62 encoding for arbitrary-width digests (base62Encode only covers values
+ * that fit in a JS number, which caps out well below a 128-bit identifier).
  */
-export function generateFingerprintId(data: unknown): string {
-  const dataString = JSON.stringify(data);
-  const hash = murmurHash3(dataString);
-  return base62Encode(hash);
+export function base62EncodeBytes(bytes: Uint8Array): string {
+  let value = 0n;
+  for (const byte of bytes) {
+    value = (value << 8n) | BigInt(byte);
+  }
+
+  if (value === 0n) return '0';
+
+  let result = '';
+  while (value > 0n) {
+    result = BASE62_CHARS[Number(value % 62n)] + result;
+    value /= 62n;
+  }
+
+  return result;
+}
+
+/**
+ * Deterministic serialization for hashing.
+ *
+ * `JSON.stringify` preserves insertion order, so the same components serialize
+ * differently depending on who built the object. That is fine while only the
+ * collector builds it, but the API has to re-derive the same string from a
+ * decoded request body. Keys are sorted, and `undefined` members are dropped so
+ * a locally-absent collector hashes identically to one that never survived JSON
+ * transport.
+ */
+export function canonicalize(value: unknown): string {
+  if (value === null) return 'null';
+
+  const type = typeof value;
+
+  if (type === 'string' || type === 'boolean') return JSON.stringify(value);
+  if (type === 'number') {
+    return Number.isFinite(value as number) ? JSON.stringify(value) : 'null';
+  }
+  if (type === 'bigint') return JSON.stringify((value as bigint).toString());
+  if (type !== 'object') return 'null';
+
+  if (Array.isArray(value)) {
+    return `[${value.map(canonicalize).join(',')}]`;
+  }
+
+  const record = value as Record<string, unknown>;
+  const keys = Object.keys(record)
+    .filter((key) => record[key] !== undefined)
+    .sort();
+
+  return `{${keys
+    .map((key) => `${JSON.stringify(key)}:${canonicalize(record[key])}`)
+    .join(',')}}`;
+}
+
+/** Bytes of SHA-256 output kept in a fingerprint ID (128 bits). */
+export const FINGERPRINT_ID_BYTES = 16;
+
+/**
+ * Generate a fingerprint ID from data.
+ *
+ * Uses SHA-256 truncated to 128 bits. A 32-bit hash collides for ~50% of
+ * populations near 77k devices, which is inside the range this service targets,
+ * and a non-cryptographic hash also lets a caller construct a collision on
+ * purpose to impersonate another device.
+ */
+export async function generateFingerprintId(data: unknown): Promise<string> {
+  const encoded = new TextEncoder().encode(canonicalize(data));
+  const digest = await crypto.subtle.digest('SHA-256', encoded);
+  return base62EncodeBytes(
+    new Uint8Array(digest).slice(0, FINGERPRINT_ID_BYTES)
+  );
 }

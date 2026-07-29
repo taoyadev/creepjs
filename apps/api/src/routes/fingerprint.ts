@@ -1,5 +1,7 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
+import type { FingerprintData } from '@creepjs/core';
+import { computeFingerprintId } from '@creepjs/core';
 import type { Env, TokenData } from '../types';
 import { authMiddleware } from '../middleware/auth';
 import { rateLimitMiddleware } from '../middleware/ratelimit';
@@ -28,6 +30,14 @@ app.post(
     await c.env.TOKENS.put(token, JSON.stringify(updatedTokenData));
     await recordUniquenessStats(data.data, c.env);
 
+    // Derive the ID from the submitted components instead of trusting the one
+    // in the body: a reported ID is just a caller-supplied string, so echoing
+    // it would let anyone claim any device.
+    const fingerprintId = await computeFingerprintId(
+      data.data as FingerprintData
+    );
+    const reportedIdMatches = data.fingerprintId === fingerprintId;
+
     // Return fingerprint response
     const coverage = data.coverage ?? {
       ratio: data.confidence,
@@ -40,7 +50,8 @@ app.post(
       msg: 'fingerprint.accepted',
       request_id: c.get('requestId'),
       token_usage_count: updatedTokenData.usageCount,
-      fingerprint_id: data.fingerprintId,
+      fingerprint_id: fingerprintId,
+      reported_id_matches: reportedIdMatches,
       coverage_ratio: coverage.ratio,
       coverage_successful: coverage.successful,
       coverage_failed: coverage.failed,
@@ -48,7 +59,7 @@ app.post(
     });
 
     return c.json({
-      fingerprintId: data.fingerprintId,
+      fingerprintId,
       data: data.data,
       timestamp: Date.now(),
       confidence: data.confidence,

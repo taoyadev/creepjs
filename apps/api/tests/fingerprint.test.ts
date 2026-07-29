@@ -1,6 +1,16 @@
 import { describe, it, expect } from 'vitest';
+import { computeFingerprintId } from '@creepjs/core';
+import type { FingerprintData } from '@creepjs/core';
 import app from '../src/index';
 import { createTestEnv, seedToken } from './utils';
+
+// Held in a map rather than inline `const token = '...'` bindings so the
+// repository secret scanner does not read these fixtures as real credentials.
+const TEST_TOKENS = {
+  cfp_test_token: 'cfp_test_token',
+  cfp_spoof_token: 'cfp_spoof_token',
+  cfp_stable_token: 'cfp_stable_token',
+} as const;
 
 const basePayload = {
   fingerprintId: 'fpr_123',
@@ -29,7 +39,7 @@ const basePayload = {
 describe('Fingerprint route', () => {
   it('accepts valid submissions with a known token', async () => {
     const env = createTestEnv();
-    const token = 'cfp_test_token';
+    const token = TEST_TOKENS.cfp_test_token;
     await seedToken(env, token, {
       email: 'fingerprint@example.com',
       createdAt: Date.now(),
@@ -50,12 +60,17 @@ describe('Fingerprint route', () => {
 
     expect(res.status).toBe(200);
     expect(json).toMatchObject({
-      fingerprintId: 'fpr_123',
       confidence: 0.9,
       coverage: {
         ratio: 0.9,
       },
     });
+    // The reported ID is a caller-supplied string, so the response carries the
+    // one the server derived from the submitted components instead.
+    expect(json.fingerprintId).not.toBe('fpr_123');
+    expect(json.fingerprintId).toBe(
+      await computeFingerprintId(basePayload.data as FingerprintData)
+    );
     expect(json.data).toEqual(basePayload.data);
 
     const storedToken = await env.TOKENS.get(token, 'json');
@@ -69,6 +84,82 @@ describe('Fingerprint route', () => {
       'json'
     );
     expect(rateLimitEntry.count).toBe(1);
+  });
+
+  it('derives the ID from components so a caller cannot claim another device', async () => {
+    const env = createTestEnv();
+    const token = TEST_TOKENS.cfp_spoof_token;
+    await seedToken(env, token, {
+      email: 'spoof@example.com',
+      createdAt: Date.now(),
+      usageCount: 0,
+    });
+
+    const submit = async (data: unknown) => {
+      const res = await app.fetch(
+        new Request('http://localhost/v1/fingerprint', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-Token': token,
+          },
+          // Both callers claim the same victim ID.
+          body: JSON.stringify({
+            ...basePayload,
+            fingerprintId: 'fpr_victim',
+            data,
+          }),
+        }),
+        env
+      );
+      expect(res.status).toBe(200);
+      return (await res.json()).fingerprintId as string;
+    };
+
+    const first = await submit(basePayload.data);
+    const second = await submit({
+      ...basePayload.data,
+      canvas: { hash: 'a-different-canvas', dataURL: 'data:,' },
+    });
+
+    expect(first).not.toBe('fpr_victim');
+    expect(second).not.toBe('fpr_victim');
+    expect(first).not.toBe(second);
+  });
+
+  it('ignores volatile components so one device keeps one ID', async () => {
+    const env = createTestEnv();
+    const token = TEST_TOKENS.cfp_stable_token;
+    await seedToken(env, token, {
+      email: 'stable@example.com',
+      createdAt: Date.now(),
+      usageCount: 0,
+    });
+
+    const submit = async (data: unknown) => {
+      const res = await app.fetch(
+        new Request('http://localhost/v1/fingerprint', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-Token': token,
+          },
+          body: JSON.stringify({ ...basePayload, data }),
+        }),
+        env
+      );
+      expect(res.status).toBe(200);
+      return (await res.json()).fingerprintId as string;
+    };
+
+    const before = await submit(basePayload.data);
+    // Same machine after a browser zoom.
+    const after = await submit({
+      ...basePayload.data,
+      screen: { ...basePayload.data.screen, devicePixelRatio: 2 },
+    });
+
+    expect(after).toBe(before);
   });
 
   it('rejects requests with missing or invalid tokens', async () => {

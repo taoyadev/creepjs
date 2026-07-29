@@ -58,6 +58,7 @@ export * from './collectors/touchSupport';
 export * from './collectors/vendor';
 export * from './collectors/vendorFlavors';
 export * from './utils/hash';
+export * from './utils/identity';
 export * from './sources/manifest';
 
 export type {
@@ -121,7 +122,7 @@ import type {
   LiesFingerprint,
 } from './types';
 import { collectLiesFingerprint } from './collectors/lies';
-import { generateFingerprintId } from './utils/hash';
+import { computeFingerprintId } from './utils/identity';
 import { defaultSources } from './sources/registry';
 import { runSources } from './sources/types';
 
@@ -177,7 +178,7 @@ export async function collectFingerprint(
     lies: liesValue,
   };
 
-  const fingerprintId = generateFingerprintId(data);
+  const fingerprintId = await computeFingerprintId(data);
   const coverage = calculateCoverageStats(collectors);
   const confidence = coverage.ratio;
   const timings = buildTimings(collectors);

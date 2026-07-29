@@ -46,7 +46,30 @@ type GlobalWithCore = typeof globalThis & {
   __CREEPJS_CORE__?: CoreModule;
 };
 
-const CACHE_KEY = 'creepjs_fingerprint';
+const CACHE_KEY_PREFIX = 'creepjs_fingerprint';
+
+/**
+ * Tracks `IDENTITY_SCHEMA_VERSION` in @creepjs/core. Duplicated as a literal
+ * rather than imported so the thin bundle keeps no runtime dependency on the
+ * collector package. Bumping it retires every stored ID, which matters because
+ * a cache hit skips the API entirely and would otherwise keep serving IDs from
+ * a retired projection for a full TTL.
+ */
+const CACHE_SCHEMA_VERSION = 2;
+
+/**
+ * Partition label so two tokens on one origin do not read each other's cached
+ * ID. FNV-1a over the token: lossy and one-way enough for a localStorage key,
+ * and it is a partition, not a security boundary.
+ */
+function cachePartition(token: string): string {
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < token.length; i++) {
+    hash ^= token.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193) >>> 0;
+  }
+  return hash.toString(36);
+}
 const DEFAULT_ENDPOINT = 'https://api.creepjs.org/v1/fingerprint';
 const DEFAULT_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
 const DEFAULT_TIMEOUT_MS = 10_000;
@@ -215,6 +238,7 @@ async function loadCoreModule(fullBundleUrl?: string): Promise<CoreModule> {
  */
 export class CreepJS {
   private config: Required<SDKConfig>;
+  private readonly cacheKey: string;
 
   constructor(config: SDKConfig) {
     this.config = {
@@ -225,6 +249,9 @@ export class CreepJS {
       timeoutMs: config.timeoutMs || DEFAULT_TIMEOUT_MS,
       fullBundleUrl: config.fullBundleUrl || '',
     };
+    this.cacheKey = `${CACHE_KEY_PREFIX}:v${CACHE_SCHEMA_VERSION}:${cachePartition(
+      this.config.token
+    )}`;
   }
 
   /**
@@ -236,7 +263,7 @@ export class CreepJS {
     }
 
     try {
-      const cached = localStorage.getItem(CACHE_KEY);
+      const cached = localStorage.getItem(this.cacheKey);
       if (!cached) return null;
 
       const data = JSON.parse(cached) as {
@@ -247,7 +274,7 @@ export class CreepJS {
       };
 
       if (Date.now() > data.expiry || !data.fingerprint.data) {
-        localStorage.removeItem(CACHE_KEY);
+        localStorage.removeItem(this.cacheKey);
         return null;
       }
 
@@ -271,7 +298,7 @@ export class CreepJS {
         fingerprint: this.ensureCoverage(fingerprint),
         expiry: Date.now() + this.config.cacheTtl,
       };
-      localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+      localStorage.setItem(this.cacheKey, JSON.stringify(data));
     } catch (_error) {
       void _error;
     }
@@ -405,7 +432,7 @@ export class CreepJS {
    */
   clearCache(): void {
     if (typeof localStorage !== 'undefined') {
-      localStorage.removeItem(CACHE_KEY);
+      localStorage.removeItem(this.cacheKey);
     }
   }
 

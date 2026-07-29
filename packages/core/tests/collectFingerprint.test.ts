@@ -1,15 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { CollectorSummary } from '../src/types';
 
-const {
-  mockRunSources,
-  mockCollectLiesFingerprint,
-  mockGenerateFingerprintId,
-} = vi.hoisted(() => ({
-  mockRunSources: vi.fn(),
-  mockCollectLiesFingerprint: vi.fn(),
-  mockGenerateFingerprintId: vi.fn(),
-}));
+const { mockRunSources, mockCollectLiesFingerprint, mockComputeFingerprintId } =
+  vi.hoisted(() => ({
+    mockRunSources: vi.fn(),
+    mockCollectLiesFingerprint: vi.fn(),
+    mockComputeFingerprintId: vi.fn(),
+  }));
 
 vi.mock('../src/sources/types', () => ({
   runSources: mockRunSources,
@@ -19,8 +16,8 @@ vi.mock('../src/collectors/lies', () => ({
   collectLiesFingerprint: mockCollectLiesFingerprint,
 }));
 
-vi.mock('../src/utils/hash', () => ({
-  generateFingerprintId: mockGenerateFingerprintId,
+vi.mock('../src/utils/identity', () => ({
+  computeFingerprintId: mockComputeFingerprintId,
 }));
 
 import { collectFingerprint } from '../src/index';
@@ -29,7 +26,7 @@ afterEach(() => {
   vi.restoreAllMocks();
   mockRunSources.mockReset();
   mockCollectLiesFingerprint.mockReset();
-  mockGenerateFingerprintId.mockReset();
+  mockComputeFingerprintId.mockReset();
 });
 
 describe('collectFingerprint', () => {
@@ -66,7 +63,7 @@ describe('collectFingerprint', () => {
       trustScore: 100,
       inconsistencies: [],
     });
-    mockGenerateFingerprintId.mockReturnValue('fp_test_id');
+    mockComputeFingerprintId.mockResolvedValue('fp_test_id');
 
     const result = await collectFingerprint({
       idleDelay: 0,
@@ -112,7 +109,7 @@ describe('collectFingerprint', () => {
       },
     } satisfies Record<string, CollectorSummary>);
     mockCollectLiesFingerprint.mockResolvedValue(undefined);
-    mockGenerateFingerprintId.mockReturnValue('fp_skipped_lies');
+    mockComputeFingerprintId.mockResolvedValue('fp_skipped_lies');
 
     const result = await collectFingerprint({ idleDelay: 0, concurrency: 1 });
 
