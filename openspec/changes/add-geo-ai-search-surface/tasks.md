@@ -39,7 +39,7 @@
       validation on OpenClaw.
 - [x] 5.2 Assert static robots, llms, llms-full, answer anchors, signal counts,
       canonical links, and forbidden-schema absence in `out/`.
-- [ ] 5.3 Verify desktop/mobile/browser-agent behavior and deployed file
+- [x] 5.3 Verify desktop/mobile/browser-agent behavior and deployed file
       availability in a managed Pages preview.
 - [ ] 5.4 Deploy, observe crawler traffic without raw-query logging, and record
       monthly GEO/Search Console evidence without ranking or citation claims.

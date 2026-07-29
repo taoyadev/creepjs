@@ -34,6 +34,6 @@
 - [x] 4.2 Strict-validate the change and run `git diff --check`.
 - [x] 4.3 Record post-change route JavaScript and update J1/E4 notes in the
       existing launch tracker while keeping them `doing`.
-- [ ] 4.4 Validate the affected routes on a real Cloudflare Pages preview,
+- [x] 4.4 Validate the affected routes on a real Cloudflare Pages preview,
       including desktop, mobile, keyboard, failure, network, and Lighthouse checks.
-- [ ] 4.5 Validate production after deployment before archiving the change.
+- [x] 4.5 Validate production after deployment before archiving the change.
