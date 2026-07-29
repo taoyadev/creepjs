@@ -593,7 +593,11 @@ async function run() {
         const button = [...document.querySelectorAll('button')].find(
           (candidate) => candidate.textContent?.includes('Generate token')
         );
-        return Boolean(button && !button.disabled);
+        return Boolean(
+          button &&
+            !button.disabled &&
+            Object.keys(button).some((key) => key.startsWith('__reactProps$'))
+        );
       }
     );
     await email.press('Enter');
