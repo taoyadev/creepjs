@@ -8,6 +8,11 @@ export const authMiddleware = createMiddleware<Env>(async (c, next) => {
     return c.json({ error: 'Missing API token' }, 401);
   }
 
+  // Bound junk input before it becomes a KV read (tokens are ≤ 64 chars).
+  if (token.length > 64) {
+    return c.json({ error: 'Invalid API token' }, 401);
+  }
+
   // Verify token exists in KV
   const tokenData = await c.env.TOKENS.get<TokenData>(token, 'json');
 

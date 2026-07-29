@@ -1,0 +1,3 @@
+# Legacy routes removed from the app; keep old links working
+/demo /checker 301
+/demo/ /checker 301

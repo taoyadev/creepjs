@@ -286,37 +286,34 @@ export default function DocsPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm md:text-base">
-                  Install the CreepJS SDK via npm or use it directly via CDN.
-                  The SDK provides a simple JavaScript API for collecting and
-                  submitting fingerprints.
+                  Load the CreepJS SDK with a single script tag — no build step
+                  required. An npm package is planned; until it ships, use the
+                  hosted browser bundle below.
                 </p>
                 <div>
                   <h4 className="mb-2 text-sm font-semibold">
-                    Option 1: NPM Installation
+                    Option 1: Script tag (recommended)
                   </h4>
                   <pre className="bg-muted overflow-x-auto rounded-lg p-4 text-xs md:text-sm">
-                    {`npm install @creepjs/sdk
-# or
-yarn add @creepjs/sdk
-# or
-pnpm add @creepjs/sdk`}
-                  </pre>
-                </div>
-                <div>
-                  <h4 className="mb-2 text-sm font-semibold">
-                    Option 2: CDN (UMD)
-                  </h4>
-                  <pre className="bg-muted overflow-x-auto rounded-lg p-4 text-xs md:text-sm">
-                    {`<script src="https://cdn.creepjs.org/v1/sdk.js"></script>
+                    {`<script src="https://creepjs.org/sdk.js"></script>
 <script>
   const client = new CreepJS.CreepJS({
     token: 'YOUR_TOKEN',
-    fullBundleUrl: 'https://cdn.creepjs.org/v1/sdk.full.js'
+    fullBundleUrl: 'https://creepjs.org/sdk.full.js'
   });
 
   client.getFingerprint()
     .then(fp => console.log(fp.fingerprintId));
 </script>`}
+                  </pre>
+                </div>
+                <div>
+                  <h4 className="mb-2 text-sm font-semibold">
+                    Option 2: npm (coming soon)
+                  </h4>
+                  <pre className="bg-muted overflow-x-auto rounded-lg p-4 text-xs md:text-sm">
+                    {`# Not yet published — planned
+npm install @creepjs/sdk`}
                   </pre>
                 </div>
               </CardContent>
@@ -331,14 +328,15 @@ pnpm add @creepjs/sdk`}
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm md:text-base">
-                  After installation, you can collect fingerprints with just a
-                  few lines of code:
+                  With the script tag loaded, collect a fingerprint in a few
+                  lines. The bundle exposes a global <code>CreepJS</code>{' '}
+                  namespace. Once the npm package ships, you can instead import{' '}
+                  <code>getFingerprint</code> from the <code>@creepjs/sdk</code>{' '}
+                  module.
                 </p>
                 <pre className="bg-muted overflow-x-auto rounded-lg p-4 text-xs md:text-sm">
-                  {`import { getFingerprint } from '@creepjs/sdk';
-
-// Collect fingerprint and send to API
-const result = await getFingerprint({
+                  {`// Collect fingerprint and send to API
+const result = await CreepJS.getFingerprint({
   token: 'cfp_your_api_token_here',
   endpoint: '${apiUrl}', // optional
   cache: true, // enable localStorage caching
@@ -1014,13 +1012,13 @@ X-API-Token: cfp_your_token_here`}
           <CardContent>
             <div className="grid gap-4 md:grid-cols-3">
               <TrackedLink
-                href="/demo"
+                href="/checker"
                 className="hover:border-primary block rounded-lg border p-4 transition-colors"
-                eventLabel="docs_live_demo_cta"
+                eventLabel="docs_checker_cta"
                 eventSection="docs"
                 eventKind="button"
               >
-                <div className="mb-1 font-semibold">Live Demo</div>
+                <div className="mb-1 font-semibold">Fingerprint Checker</div>
                 <div className="text-muted-foreground text-xs">
                   See your browser's fingerprint in action
                 </div>
@@ -1038,12 +1036,14 @@ X-API-Token: cfp_your_token_here`}
                 </div>
               </TrackedLink>
               <a
-                href="https://github.com/abrahamjuliot/creepjs"
+                href={SITE_CONFIG.github}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:border-primary block rounded-lg border p-4 transition-colors"
               >
-                <div className="mb-1 font-semibold">GitHub Repository</div>
+                <div className="mb-1 font-semibold">
+                  CreepJS GitHub Repository
+                </div>
                 <div className="text-muted-foreground text-xs">
                   View source code and contribute
                 </div>

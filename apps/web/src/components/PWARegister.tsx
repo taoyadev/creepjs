@@ -1,47 +1,51 @@
 'use client';
 
 import { useEffect } from 'react';
+import { toast } from 'sonner';
 
 export function PWARegister() {
   useEffect(() => {
-    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-      // Register service worker
-      navigator.serviceWorker
-        .register('/sw.js')
-        .then((registration) => {
-          console.log(
-            'Service Worker registered successfully:',
-            registration.scope
-          );
+    if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
+      return;
+    }
 
-          // Check for updates
-          registration.addEventListener('updatefound', () => {
-            const newWorker = registration.installing;
-            if (newWorker) {
-              newWorker.addEventListener('statechange', () => {
-                if (
-                  newWorker.state === 'installed' &&
-                  navigator.serviceWorker.controller
-                ) {
-                  // New service worker available, prompt user to refresh
-                  if (confirm('New version available! Click OK to update.')) {
-                    newWorker.postMessage({ type: 'SKIP_WAITING' });
-                    window.location.reload();
-                  }
-                }
+    let reloading = false;
+
+    navigator.serviceWorker
+      .register('/sw.js')
+      .then((registration) => {
+        registration.addEventListener('updatefound', () => {
+          const newWorker = registration.installing;
+          if (!newWorker) return;
+          newWorker.addEventListener('statechange', () => {
+            if (
+              newWorker.state === 'installed' &&
+              navigator.serviceWorker.controller
+            ) {
+              // New service worker available; let the user opt in without
+              // blocking the page (no confirm() dialogs).
+              toast('A new version of CreepJS is available', {
+                action: {
+                  label: 'Refresh',
+                  onClick: () =>
+                    newWorker.postMessage({ type: 'SKIP_WAITING' }),
+                },
+                duration: Infinity,
               });
             }
           });
-        })
-        .catch((error) => {
-          console.error('Service Worker registration failed:', error);
         });
-
-      // Handle controller change (new service worker activated)
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        window.location.reload();
+      })
+      .catch((error) => {
+        console.error('Service Worker registration failed:', error);
       });
-    }
+
+    // Reload once the new service worker takes control
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (reloading) return;
+      reloading = true;
+      window.location.reload();
+    });
   }, []);
 
   return null;

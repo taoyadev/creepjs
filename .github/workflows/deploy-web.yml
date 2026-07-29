@@ -18,6 +18,12 @@ on:
       - 'packages/sdk/**'
   workflow_dispatch:
 
+permissions:
+  contents: read
+  deployments: write
+  issues: write
+  pull-requests: write
+
 # Cancel in-progress deployments for the same PR/branch
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -264,6 +270,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     if: github.event_name == 'pull_request'
+    outputs:
+      preview-url: ${{ steps.deploy-preview.outputs.url }}
 
     steps:
       - name: Checkout code
@@ -273,7 +281,9 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: nextjs-build
-          path: apps/web
+          # Artifact holds the CONTENTS of out/, so restore it INTO apps/web/out
+          # to match `directory: apps/web/out` below.
+          path: apps/web/out
 
       - name: Deploy preview to Cloudflare Pages
         id: deploy-preview
@@ -289,13 +299,24 @@ jobs:
       - name: Wait for preview deployment
         run: sleep 10
 
+      - name: Verify preview URL output
+        env:
+          PREVIEW_URL: ${{ steps.deploy-preview.outputs.url }}
+        run: |
+          case "$PREVIEW_URL" in
+            https://*) echo "Cloudflare preview URL: $PREVIEW_URL" ;;
+            *) echo "::error::Cloudflare deploy did not return an HTTPS preview URL"; exit 1 ;;
+          esac
+
       - name: Comment PR with preview URL
         if: success()
         uses: actions/github-script@v7
+        env:
+          PREVIEW_URL: ${{ steps.deploy-preview.outputs.url }}
         with:
           script: |
             const pr_number = context.payload.pull_request.number;
-            const preview_url = `https://${{ github.head_ref }}.creepjs.pages.dev`;
+            const preview_url = process.env.PREVIEW_URL;
 
             github.rest.issues.createComment({
               issue_number: pr_number,
@@ -316,14 +337,15 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run Lighthouse CI
-        uses: treosh/lighthouse-ci-action@v10
+        uses: treosh/lighthouse-ci-action@v12
         with:
           urls: |
-            https://${{ github.head_ref }}.creepjs.pages.dev
-            https://${{ github.head_ref }}.creepjs.pages.dev/checker
-            https://${{ github.head_ref }}.creepjs.pages.dev/guide/what-is-browser-fingerprinting
-            https://${{ github.head_ref }}.creepjs.pages.dev/fingerprint/canvas
-          configPath: '.github/lighthouserc.json'
+            ${{ needs.deploy-preview.outputs.preview-url }}
+            ${{ needs.deploy-preview.outputs.preview-url }}/checker
+            ${{ needs.deploy-preview.outputs.preview-url }}/guide/what-is-browser-fingerprinting
+            ${{ needs.deploy-preview.outputs.preview-url }}/fingerprint/canvas
+            ${{ needs.deploy-preview.outputs.preview-url }}/playground
+          configPath: '.github/lighthouserc.preview.json'
           uploadArtifacts: true
           temporaryPublicStorage: true
 

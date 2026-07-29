@@ -2,6 +2,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import app from '../src/index';
 import { createTestEnv } from './utils';
 import type { IpbotResponse } from '../src/services/ipbot';
+import { hashIpForLog } from '../src/utils/privacy';
+import type { RateLimitData } from '../src/types';
 
 const GOOGLE_DNS: IpbotResponse = {
   ip: '8.8.8.8',
@@ -88,10 +90,86 @@ describe('/my-ip route', () => {
 
     expect(res.status).toBe(200);
     expect(json).toMatchObject({
-      ip: '127.0.0.1',
+      ip: '0.0.0.0',
       cached: false,
       hostname: null,
     });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('bills the paid risk lookup against per-visitor and global counters', async () => {
+    const env = createTestEnv();
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(ok(GOOGLE_DNS)));
+
+    await app.fetch(
+      new Request('http://localhost/my-ip', {
+        headers: { 'CF-Connecting-IP': '8.8.8.8' },
+      }),
+      env
+    );
+
+    const visitorKey = `myip:ip:${await hashIpForLog('8.8.8.8')}`;
+    const perVisitor = await env.RATE_LIMIT.get<RateLimitData>(
+      visitorKey,
+      'json'
+    );
+    const global = await env.RATE_LIMIT.get<RateLimitData>(
+      'pubip:global',
+      'json'
+    );
+    expect(perVisitor?.count).toBe(1);
+    expect(global?.count).toBe(1);
+  });
+
+  it('degrades to geo-only once the per-visitor risk cap is exhausted', async () => {
+    const visitorKey = `myip:ip:${await hashIpForLog('8.8.8.8')}`;
+    const env = createTestEnv({
+      rateLimits: {
+        [visitorKey]: JSON.stringify({
+          count: 10,
+          resetAt: Date.now() + 60_000,
+        } satisfies RateLimitData),
+      },
+    });
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    const res = await app.fetch(
+      new Request('http://localhost/my-ip', {
+        headers: { 'CF-Connecting-IP': '8.8.8.8' },
+      }),
+      env
+    );
+    const json = await res.json<Record<string, unknown>>();
+
+    expect(res.status).toBe(200);
+    expect(json).toMatchObject({ ip: '8.8.8.8', cached: false });
+    expect(json.risk).toBeUndefined();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('respects the shared global upstream budget', async () => {
+    const env = createTestEnv({
+      rateLimits: {
+        'pubip:global': JSON.stringify({
+          count: 2000,
+          resetAt: Date.now() + 60_000,
+        } satisfies RateLimitData),
+      },
+    });
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    const res = await app.fetch(
+      new Request('http://localhost/my-ip', {
+        headers: { 'CF-Connecting-IP': '8.8.8.8' },
+      }),
+      env
+    );
+    const json = await res.json<Record<string, unknown>>();
+
+    expect(res.status).toBe(200);
+    expect(json.risk).toBeUndefined();
     expect(fetchMock).not.toHaveBeenCalled();
   });
 

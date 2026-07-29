@@ -325,10 +325,18 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Dependency Review
+        # GitHub's dependency review API requires Advanced Security for private
+        # repositories. Socket remains the dependency gate for this private repo.
+        if: github.event.repository.private == false
         uses: actions/dependency-review-action@v3
         with:
           fail-on-severity: moderate
           comment-summary-in-pr: always
+
+      - name: Report private repository coverage
+        if: github.event.repository.private == true
+        run: |
+          echo "::notice::GitHub Dependency Review is unavailable without Advanced Security; Socket dependency checks remain active."
 
   status-check:
     name: All Checks Passed

@@ -59,6 +59,22 @@ describe('isValidIp', () => {
     expect(isValidIp('8.8.8.8/../v1/admin')).toBe(false);
     expect(isValidIp('')).toBe(false);
   });
+
+  it('enforces IPv6 group accounting', () => {
+    // Valid forms
+    expect(isValidIp('::')).toBe(true);
+    expect(isValidIp('::1')).toBe(true);
+    expect(isValidIp('fe80::1%eth0')).toBe(true);
+    expect(isValidIp('2001:0db8:85a3:0000:0000:8a2e:0370:7334')).toBe(true);
+    // Previously accepted garbage
+    expect(isValidIp(':::')).toBe(false);
+    expect(isValidIp('1:2')).toBe(false);
+    expect(isValidIp(':1:2')).toBe(false);
+    expect(isValidIp('1:2:')).toBe(false);
+    // Compression must stand for at least one group
+    expect(isValidIp('1:2:3:4:5:6:7::8')).toBe(false);
+    expect(isValidIp('1:2:3:4:5:6:7:8:9')).toBe(false);
+  });
 });
 
 describe('isHighRisk', () => {
@@ -171,6 +187,50 @@ describe('lookupIP', () => {
     expect(fetchMock).toHaveBeenCalledTimes(4); // initial + 3 retries
   });
 
+  it('honors a batch retry cap of one retry', async () => {
+    vi.useFakeTimers();
+    const fetchMock = vi.fn().mockResolvedValue(throttled());
+    vi.stubGlobal('fetch', fetchMock);
+    const env = createTestEnv();
+
+    const settled = lookupIP('1.2.3.4', env, { maxRetries: 1 }).catch(
+      (error) => error
+    );
+    await vi.runAllTimersAsync();
+    const error = await settled;
+
+    expect(error).toBeInstanceOf(IpbotError);
+    expect((error as IpbotError).kind).toBe('throttle');
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('maps network and malformed JSON failures to safe Ipbot errors', async () => {
+    const networkEnv = createTestEnv();
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockRejectedValue(new Error('socket secret'))
+    );
+
+    const networkError = await lookupIP('8.8.8.8', networkEnv).catch(
+      (error) => error
+    );
+    expect(networkError).toBeInstanceOf(IpbotError);
+    expect((networkError as IpbotError).kind).toBe('network');
+    expect((networkError as Error).message).not.toContain('socket secret');
+
+    const malformedEnv = createTestEnv();
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response('{not-json', { status: 200 }))
+    );
+    const malformed = await lookupIP('1.1.1.1', malformedEnv).catch(
+      (error) => error
+    );
+    expect(malformed).toBeInstanceOf(IpbotError);
+    expect((malformed as IpbotError).kind).toBe('upstream');
+    expect((malformed as IpbotError).status).toBe(502);
+  });
+
   it('rejects invalid IPs without calling upstream', async () => {
     const fetchMock = vi.fn();
     vi.stubGlobal('fetch', fetchMock);
@@ -178,6 +238,25 @@ describe('lookupIP', () => {
 
     await expect(lookupIP('not-an-ip', env)).rejects.toThrow(IpbotError);
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('negative-caches a final upstream failure and short-circuits repeats', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(new Response('server error', { status: 503 }));
+    vi.stubGlobal('fetch', fetchMock);
+    const env = createTestEnv();
+
+    const first = await lookupIP('9.9.9.9', env).catch((e) => e);
+    expect(first).toBeInstanceOf(IpbotError);
+    expect((first as IpbotError).status).toBe(503);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    // Second lookup fails fast from the negative cache: zero upstream calls.
+    const second = await lookupIP('9.9.9.9', env).catch((e) => e);
+    expect(second).toBeInstanceOf(IpbotError);
+    expect((second as IpbotError).status).toBe(503);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it('throws when credentials are missing', async () => {

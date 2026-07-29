@@ -1,5 +1,5 @@
 {
-  "name": "CreepJS 2.0 - Advanced Browser Fingerprinting",
+  "name": "CreepJS - Browser Fingerprint & IP Risk Checker",
   "short_name": "CreepJS",
   "description": "Educational, privacy-first browser fingerprinting platform for developers and privacy research",
   "start_url": "/",
@@ -25,6 +25,32 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Fingerprint Checker",
+      "short_name": "Checker",
+      "description": "Run a full browser fingerprint scan",
+      "url": "/checker",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "IP Risk Checker",
+      "short_name": "IP Check",
+      "description": "Check any IP for proxy, VPN and datacenter signals",
+      "url": "/ip",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     }
   ],
   "categories": ["developer", "utilities", "education"],

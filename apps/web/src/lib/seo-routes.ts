@@ -13,9 +13,14 @@ export interface SeoRoute {
   path: string;
   title: string;
   description: string;
-  section: 'core' | 'docs' | 'guide' | 'fingerprint' | 'legal';
+  section: 'core' | 'docs' | 'guide' | 'fingerprint' | 'legal' | 'ip-lookup';
   changeFrequency: ChangeFrequency;
   priority: number;
+  /**
+   * Per-route content date for the sitemap. Only set when the route's visible
+   * content actually changes; unset routes fall back to LAST_SEO_UPDATE.
+   */
+  lastModified?: Date;
 }
 
 export interface FingerprintTechnique {
@@ -27,15 +32,29 @@ export interface FingerprintTechnique {
 
 export const LAST_SEO_UPDATE = new Date('2026-06-13');
 
+export const IP_PROXY_PILOT_PATH = '/ip-lookup/how-to-tell-if-an-ip-is-a-proxy';
+
+export const IP_PROXY_PILOT_ROUTE = {
+  path: IP_PROXY_PILOT_PATH,
+  title: 'How to Tell If an IP Is a Proxy',
+  description:
+    'Check an IPv4 or IPv6 address for proxy, VPN, Tor, datacenter, network, risk, and evidence signals, then learn how to interpret the result.',
+  section: 'ip-lookup',
+  changeFrequency: 'monthly',
+  priority: 0.78,
+  lastModified: new Date('2026-07-28'),
+} as const satisfies SeoRoute;
+
 export const STATIC_SEO_ROUTES = [
   {
     path: '/',
-    title: 'Browser Fingerprinting Platform',
+    title: 'Browser Fingerprint Checker & IP Risk Analysis',
     description:
-      'Run a privacy-first browser fingerprint check and learn what websites can infer about your device.',
+      'Run a privacy-first browser fingerprint check, inspect IP risk context, and learn what websites can infer about your device and network.',
     section: 'core',
     changeFrequency: 'weekly',
     priority: 1,
+    lastModified: new Date('2026-07-28'),
   },
   {
     path: '/checker',
@@ -64,6 +83,7 @@ export const STATIC_SEO_ROUTES = [
     changeFrequency: 'weekly',
     priority: 0.9,
   },
+  IP_PROXY_PILOT_ROUTE,
   {
     path: '/docs',
     title: 'Documentation',
@@ -99,6 +119,16 @@ export const STATIC_SEO_ROUTES = [
     section: 'legal',
     changeFrequency: 'yearly',
     priority: 0.55,
+  },
+  {
+    path: '/terms',
+    title: 'Terms of Service',
+    description:
+      'Review the CreepJS terms of service covering acceptable use, API tokens, and service limits.',
+    section: 'legal',
+    changeFrequency: 'yearly',
+    priority: 0.5,
+    lastModified: new Date('2026-07-26'),
   },
 ] as const satisfies readonly SeoRoute[];
 

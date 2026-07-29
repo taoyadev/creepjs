@@ -13,3 +13,4 @@ apps/web/.vercel/
 apps/web/out/
 apps/api/dist/
 apps/api/.wrangler/
+openspec/CLAUDE.md

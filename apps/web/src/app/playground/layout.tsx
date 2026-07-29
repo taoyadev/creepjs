@@ -6,7 +6,7 @@ import { SeoInternalLinks } from '@/components/SeoInternalLinks';
 export const metadata: Metadata = generateMetadata({
   title: 'API Playground - Test Fingerprinting in Real-Time',
   description:
-    'Interactive CreepJS API playground. Test browser fingerprinting endpoints, experiment with different collectors, and see live API responses with syntax-highlighted JSON.',
+    'Interactive CreepJS API playground. Generate an in-memory token, test the browser fingerprint endpoint, and inspect formatted API responses.',
   path: '/playground',
 });
 

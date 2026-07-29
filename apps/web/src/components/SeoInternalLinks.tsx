@@ -16,7 +16,7 @@ export function SeoInternalLinks({
   description = 'Move between the main privacy tools, API documentation, and fingerprint signal explainers.',
 }: SeoInternalLinksProps) {
   const staticLinks = STATIC_SEO_ROUTES.filter(
-    (route) => route.path !== currentPath && route.path !== '/privacy'
+    (route) => route.path !== currentPath && route.section !== 'legal'
   );
 
   return (
@@ -32,7 +32,7 @@ export function SeoInternalLinks({
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <div className="space-y-3">
             <h3 className="text-muted-foreground text-sm font-semibold uppercase tracking-normal">
-              Core pages
+              Tools and guides
             </h3>
             <div className="grid gap-3 sm:grid-cols-2">
               {staticLinks.map((route) => (

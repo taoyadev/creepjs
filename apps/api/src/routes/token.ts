@@ -3,13 +3,35 @@ import { zValidator } from '@hono/zod-validator';
 import type { Context } from 'hono';
 import type { Env, RateLimitData, TokenData } from '../types';
 import { TokenRequestSchema } from '../utils/validation';
-import { generateFingerprintId } from '@creepjs/core';
+import { sha256Hex } from '../utils/privacy';
 
 const app = new Hono<Env>();
 
 const TOKEN_RATE_LIMIT_PER_DAY = 10;
 const TOKEN_RATE_LIMIT_WINDOW_MS = 24 * 60 * 60 * 1000;
 const TOKEN_RATE_LIMIT_TTL_SECONDS = 24 * 60 * 60;
+
+const BASE62 =
+  '0123456789' + 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' + 'abcdefghijklmnopqrstuvwxyz';
+const TOKEN_LENGTH = 24; // 24 base62 chars ≈ 142 bits of entropy
+
+/**
+ * CSPRNG token. Tokens are bearer credentials, so they must be unguessable —
+ * unlike the previous deterministic 32-bit content hash. Rejection sampling
+ * keeps the base62 mapping unbiased. Existing tokens keep working: auth is a
+ * literal KV lookup, not a format check.
+ */
+function generateToken(): string {
+  let out = '';
+  while (out.length < TOKEN_LENGTH) {
+    const bytes = crypto.getRandomValues(new Uint8Array(TOKEN_LENGTH * 2));
+    for (const b of bytes) {
+      if (out.length === TOKEN_LENGTH) break;
+      if (b < 248) out += BASE62[b % 62]; // 248 = 62*4 → unbiased
+    }
+  }
+  return `cfp_${out}`;
+}
 
 function getClientIp(c: Context<Env>): string {
   const cfConnectingIp = c.req.header('CF-Connecting-IP');
@@ -28,14 +50,6 @@ function getClientIp(c: Context<Env>): string {
     forwardedIp ||
     'unknown'
   );
-}
-
-async function sha256Hex(input: string): Promise<string> {
-  const data = new TextEncoder().encode(input);
-  const digest = await crypto.subtle.digest('SHA-256', data);
-  return [...new Uint8Array(digest)]
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('');
 }
 
 async function checkTokenRateLimit(
@@ -85,7 +99,7 @@ app.post('/', zValidator('json', TokenRequestSchema), async (c) => {
   }
 
   // Generate token
-  const token = `cfp_${generateFingerprintId({ email, timestamp: Date.now() })}`;
+  const token = generateToken();
 
   // Store token data
   const tokenData: TokenData = {

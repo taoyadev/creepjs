@@ -12,6 +12,7 @@
  */
 
 import type { Env } from '../types';
+import { hashIpForLog } from '../utils/privacy';
 
 /** Subset of Worker bindings required by the IPbot service. */
 export type IpbotBindings = Pick<
@@ -104,21 +105,42 @@ export interface IpbotLookupResult {
 }
 
 /** Error thrown for invalid input, misconfiguration, or upstream failures. */
+export type IpbotErrorKind =
+  | 'input'
+  | 'configuration'
+  | 'throttle'
+  | 'network'
+  | 'upstream';
+
 export class IpbotError extends Error {
   readonly status?: number;
   readonly retryAfter?: number | null;
+  readonly kind: IpbotErrorKind;
 
-  constructor(message: string, status?: number, retryAfter?: number | null) {
+  constructor(
+    message: string,
+    status?: number,
+    retryAfter?: number | null,
+    kind: IpbotErrorKind = 'upstream'
+  ) {
     super(message);
     this.name = 'IpbotError';
     this.status = status;
     this.retryAfter = retryAfter;
+    this.kind = kind;
   }
+}
+
+export interface IpbotLookupOptions {
+  /** Retry count after the first request. Batch calls use one retry. */
+  maxRetries?: number;
 }
 
 const DAY_SECONDS = 60 * 60 * 24; // 24h — default cache TTL
 const HOUR_SECONDS = 60 * 60; // 1h — high-risk cache TTL
 const CACHE_PREFIX = 'ipbot:';
+const NEGATIVE_CACHE_PREFIX = 'ipbot:err:';
+const NEGATIVE_TTL_SECONDS = 60; // KV minimum TTL; kills 429/5xx retry storms
 const MAX_RETRIES = 3; // total upstream attempts = MAX_RETRIES + 1
 const MAX_BACKOFF_MS = 4000; // cap a single backoff (Workers wall-clock budget)
 const HIGH_RISK_SCORE = 50; // risk_score >= this => high risk
@@ -141,18 +163,37 @@ const emptyRateLimit = (): IpbotRateLimit => ({
   retryAfter: null,
 });
 
+const IPV6_GROUP_RE = /^[0-9a-fA-F]{1,4}$/;
+
 /** Validate an IPv4 or IPv6 literal (defends the upstream path against injection). */
 export function isValidIp(ip: string): boolean {
   if (typeof ip !== 'string' || ip.length === 0 || ip.length > 45) return false;
   if (IPV4_RE.test(ip)) return true;
-  // Pragmatic IPv6 check: hex groups + optional `::` compression, optional zone id.
+  // IPv6: hex groups with at most one `::` compression, optional zone id.
   const addr = ip.split('%')[0] ?? ip;
   if (!/^[0-9a-fA-F:]+$/.test(addr)) return false;
   if (!addr.includes(':')) return false;
-  if ((addr.match(/::/g)?.length ?? 0) > 1) return false; // at most one `::`
-  const groups = addr.split(':');
-  if (groups.length > 8) return false;
-  return groups.every((g) => g === '' || /^[0-9a-fA-F]{1,4}$/.test(g));
+  if (addr.includes(':::')) return false;
+
+  const compressions = addr.match(/::/g)?.length ?? 0;
+  if (compressions > 1) return false;
+
+  if (compressions === 0) {
+    // No compression → exactly 8 non-empty groups (rejects `1:2`).
+    const groups = addr.split(':');
+    return groups.length === 8 && groups.every((g) => IPV6_GROUP_RE.test(g));
+  }
+
+  // Exactly one `::` — both sides must be valid groups, and the compression
+  // must stand for at least one group (rejects `:1:2`, `1:2:`, `:::`).
+  const [left = '', right = ''] = addr.split('::');
+  if (left.startsWith(':') || right.endsWith(':')) return false;
+  const leftGroups = left === '' ? [] : left.split(':');
+  const rightGroups = right === '' ? [] : right.split(':');
+  if (![...leftGroups, ...rightGroups].every((g) => IPV6_GROUP_RE.test(g))) {
+    return false;
+  }
+  return leftGroups.length + rightGroups.length <= 7;
 }
 
 /**
@@ -204,13 +245,14 @@ function parseRateLimit(headers: Headers): IpbotRateLimit {
   };
 }
 
-function logRateLimit(ip: string, rl: IpbotRateLimit, event: string): void {
+function logRateLimit(ipHash: string, rl: IpbotRateLimit, event: string): void {
   // Structured single-line log so it is greppable in `wrangler tail`.
+  // Only the hashed subject is logged — never the raw IP (docs/SECURITY.md).
   console.log(
     JSON.stringify({
       msg: 'ipbot.ratelimit',
       event,
-      ip,
+      ip_hash: ipHash,
       limit: rl.limit,
       remaining: rl.remaining,
       reset: rl.reset,
@@ -233,25 +275,38 @@ const sleep = (ms: number): Promise<void> =>
 
 async function fetchFromUpstream(
   ip: string,
+  ipHash: string,
   origin: string,
-  apiKey: string
+  apiKey: string,
+  maxRetries: number
 ): Promise<{ data: IpbotResponse; rateLimit: IpbotRateLimit }> {
   const url = `${origin.replace(/\/+$/, '')}/v1/ip/${encodeURIComponent(ip)}`;
 
-  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-    const res = await fetch(url, {
-      method: 'GET',
-      headers: { 'X-API-Key': apiKey, Accept: 'application/json' },
-    });
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    let res: Response;
+    try {
+      res = await fetch(url, {
+        method: 'GET',
+        headers: { 'X-API-Key': apiKey, Accept: 'application/json' },
+      });
+    } catch {
+      throw new IpbotError(
+        'IP intelligence network request failed',
+        503,
+        null,
+        'network'
+      );
+    }
     const rateLimit = parseRateLimit(res.headers);
 
     if (res.status === 429) {
-      logRateLimit(ip, rateLimit, 'throttled');
-      if (attempt === MAX_RETRIES) {
+      logRateLimit(ipHash, rateLimit, 'throttled');
+      if (attempt === maxRetries) {
         throw new IpbotError(
-          'IPbot rate limit exceeded (429)',
+          'IP intelligence provider rate limit exceeded',
           429,
-          rateLimit.retryAfter
+          rateLimit.retryAfter,
+          'throttle'
         );
       }
       await sleep(backoffMs(attempt, rateLimit.retryAfter));
@@ -259,19 +314,43 @@ async function fetchFromUpstream(
     }
 
     if (!res.ok) {
-      const body = await res.text().catch(() => '');
       throw new IpbotError(
-        `IPbot API error ${res.status}${body ? `: ${body.slice(0, 200)}` : ''}`,
-        res.status
+        `IP intelligence provider error ${res.status}`,
+        res.status,
+        null,
+        'upstream'
       );
     }
 
-    const data = await res.json<IpbotResponse>();
+    let data: IpbotResponse;
+    try {
+      data = await res.json<IpbotResponse>();
+    } catch {
+      throw new IpbotError(
+        'IP intelligence provider returned an invalid response',
+        502,
+        null,
+        'upstream'
+      );
+    }
+    if (!data || typeof data !== 'object' || typeof data.ip !== 'string') {
+      throw new IpbotError(
+        'IP intelligence provider returned an invalid response',
+        502,
+        null,
+        'upstream'
+      );
+    }
     return { data, rateLimit };
   }
 
   // Unreachable: the loop either returns or throws.
-  throw new IpbotError('IPbot request failed after retries', 429);
+  throw new IpbotError(
+    'IP intelligence provider rate limit exceeded',
+    429,
+    null,
+    'throttle'
+  );
 }
 
 /**
@@ -283,10 +362,11 @@ async function fetchFromUpstream(
  */
 export async function lookupIP(
   ip: string,
-  env: IpbotBindings
+  env: IpbotBindings,
+  options: IpbotLookupOptions = {}
 ): Promise<IpbotLookupResult> {
   if (!isValidIp(ip)) {
-    throw new IpbotError(`Invalid IP address: ${ip}`, 400);
+    throw new IpbotError(`Invalid IP address: ${ip}`, 400, null, 'input');
   }
 
   const origin = env.IPBOT_API_ORIGIN;
@@ -294,13 +374,20 @@ export async function lookupIP(
   if (!origin || !apiKey) {
     throw new IpbotError(
       'IPBOT_API_ORIGIN or IPBOT_API_KEY is not configured',
-      500
+      503,
+      null,
+      'configuration'
     );
   }
+  const maxRetries = Math.min(
+    MAX_RETRIES,
+    Math.max(0, Math.floor(options.maxRetries ?? MAX_RETRIES))
+  );
 
   const cacheKey = `${CACHE_PREFIX}${ip}`;
+  const negativeKey = `${NEGATIVE_CACHE_PREFIX}${ip}`;
 
-  // 1. Cache read.
+  // 1. Cache read (positive, then recent-failure negative entry).
   if (env.IP_CACHE) {
     const cached = await env.IP_CACHE.get<CachedEntry>(cacheKey, 'json');
     if (cached?.data) {
@@ -311,13 +398,56 @@ export async function lookupIP(
         rateLimit: cached.rateLimit ?? emptyRateLimit(),
       };
     }
+
+    const negative = await env.IP_CACHE.get<{
+      status?: number;
+      retryAfter?: number | null;
+      kind?: IpbotErrorKind;
+    }>(negativeKey, 'json');
+    if (negative) {
+      throw new IpbotError(
+        'IPbot temporarily unavailable (recent upstream failure)',
+        negative.status,
+        negative.retryAfter ?? null,
+        negative.kind ?? (negative.status === 429 ? 'throttle' : 'upstream')
+      );
+    }
   }
 
-  // 2. Fetch from upstream (with 429 backoff).
-  const { data, rateLimit } = await fetchFromUpstream(ip, origin, apiKey);
+  // 2. Fetch from upstream (with 429 backoff); negative-cache final failures
+  // so hot IPs cannot trigger repeated upstream retry storms.
+  const ipHash = await hashIpForLog(ip);
+  let data: IpbotResponse;
+  let rateLimit: IpbotRateLimit;
+  try {
+    ({ data, rateLimit } = await fetchFromUpstream(
+      ip,
+      ipHash,
+      origin,
+      apiKey,
+      maxRetries
+    ));
+  } catch (error) {
+    if (
+      error instanceof IpbotError &&
+      env.IP_CACHE &&
+      (error.status === 429 || (error.status ?? 0) >= 500)
+    ) {
+      await env.IP_CACHE.put(
+        negativeKey,
+        JSON.stringify({
+          status: error.status,
+          retryAfter: error.retryAfter ?? null,
+          kind: error.kind,
+        }),
+        { expirationTtl: NEGATIVE_TTL_SECONDS }
+      );
+    }
+    throw error;
+  }
 
   // 3. Record rate-limit headers for observability.
-  logRateLimit(ip, rateLimit, 'fetched');
+  logRateLimit(ipHash, rateLimit, 'fetched');
 
   // 4. Cache with risk-aware TTL.
   const highRisk = isHighRisk(data);

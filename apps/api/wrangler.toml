@@ -28,7 +28,9 @@ id = "9bdb6db77d0641d8b35d028f4ab67a11"
 
 [vars]
 ENVIRONMENT = "production"
-CORS_ORIGIN = "*"
+# Applies only to browser-facing token minting (/v1/token); data endpoints
+# stay `*` by design — see src/middleware/cors.ts.
+CORS_ORIGIN = "https://creepjs.org"
 RATE_LIMIT_PER_DAY = "1000"
 FP_STATS_K_ANON = "20"
 # IPbot IP intelligence API. The origin is public config; the key is a secret.

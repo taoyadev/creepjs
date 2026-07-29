@@ -430,7 +430,7 @@ export function PrivacyLeakageAssessment({
       : privacyScore.level === 'poor'
         ? 'text-orange-600 dark:text-orange-400'
         : privacyScore.level === 'good'
-          ? 'text-yellow-600 dark:text-yellow-400'
+          ? 'text-yellow-700 dark:text-yellow-300'
           : 'text-green-600 dark:text-green-400';
 
   const scoreBorder =
@@ -566,10 +566,10 @@ export function PrivacyLeakageAssessment({
                             {leak.sensitivity}
                           </span>
                         </div>
-                        <div className="text-muted-foreground truncate font-mono text-sm">
+                        <div className="truncate font-mono text-sm text-slate-700 dark:text-slate-300">
                           {leak.value}
                         </div>
-                        <div className="text-muted-foreground text-xs">
+                        <div className="text-xs text-slate-700 dark:text-slate-300">
                           {leak.description}
                         </div>
                       </div>

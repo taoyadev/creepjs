@@ -1,9 +1,17 @@
+import React from 'react';
+
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export function ApiResponseSkeleton() {
   return (
-    <Card>
+    <Card
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+      aria-label="Waiting for API response"
+    >
+      <span className="sr-only">Waiting for API response.</span>
       <CardHeader>
         <Skeleton className="h-6 w-32" />
       </CardHeader>

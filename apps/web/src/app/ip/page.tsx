@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import {
   AlertCircle,
   CheckCircle,
   Copy,
   Globe2,
+  Link2,
   Loader2,
   Network,
   ShieldAlert,
@@ -25,75 +26,16 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { SITE_CONFIG } from '@/lib/metadata';
 import { cn } from '@/lib/utils';
 import { analytics } from '@/lib/analytics';
-
-type RateLimit = {
-  limit: number | null;
-  remaining: number | null;
-  reset: number | null;
-  tier: string | null;
-};
-
-type IpbotData = {
-  ip: string;
-  stack?: string;
-  location?: {
-    country?: string;
-    country_code?: string;
-    region?: string;
-    city?: string;
-    latitude?: number;
-    longitude?: number;
-    timezone?: string;
-  };
-  network?: {
-    asn?: string;
-    org?: string;
-    category?: string;
-    service_role?: string;
-    owner?: string;
-  };
-  routing?: {
-    origin_asn?: string;
-    prefix?: string;
-    rpki_status?: string;
-  };
-  score?: {
-    ip_score?: number;
-    risk_score?: number;
-    band?: string;
-    verdict?: string;
-    recommended_action?: string;
-  };
-  classification?: {
-    usage_type?: string;
-    is_datacenter?: boolean;
-    is_proxy?: boolean;
-    is_vpn?: boolean;
-    is_tor?: boolean;
-    threat_level?: string;
-  };
-  evidence?: {
-    signals?: Array<{
-      category?: string;
-      label?: string;
-      severity?: string;
-      confidence?: string;
-      description?: string;
-    }>;
-  };
-};
-
-type LookupResult = {
-  data: IpbotData;
-  cached: boolean;
-  highRisk: boolean;
-  rateLimit: RateLimit;
-};
-
-const API_URL = SITE_CONFIG.apiUrl;
+import { IpBatchWorkspace } from '@/components/ip/IpBatchWorkspace';
+import { ApiError, fetchJson } from '@/lib/api-client';
+import {
+  IpInputError,
+  lookupPublicIp,
+  publicIpLookupErrorMessage,
+  type PublicIpLookupResult,
+} from '@/lib/public-ip-lookup';
 
 function display(value: unknown, fallback = 'Unknown') {
   if (typeof value === 'string' && value.trim()) return value;
@@ -119,10 +61,66 @@ function Metric({ name, value }: { name: string; value: unknown }) {
 
 export default function IpRiskPage() {
   const [ip, setIp] = useState('');
-  const [result, setResult] = useState<LookupResult | null>(null);
+  const [result, setResult] = useState<PublicIpLookupResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [detectingIp, setDetectingIp] = useState(true);
+
+  // Core lookup, keyed on an explicit target so it can be driven from the form,
+  // a shareable `?q=` link on load, or a retry — without a stale-closure read of
+  // `ip`. On success it writes `?q=<ip>` to the address bar so the result is
+  // linkable. `useCallback([])` keeps it stable for the mount effect's deps.
+  const performLookup = useCallback(async (rawTarget: string) => {
+    const target = rawTarget.trim();
+    setError(null);
+
+    if (!target) {
+      setError('Enter a valid IPv4 or IPv6 address.');
+      return;
+    }
+
+    setIp(target);
+    setLoading(true);
+    try {
+      const data = await lookupPublicIp(target);
+      setResult(data);
+      if (typeof window !== 'undefined') {
+        const url = new URL(window.location.href);
+        url.searchParams.set('q', target);
+        window.history.replaceState(
+          null,
+          '',
+          `${url.pathname}${url.search}${url.hash}`
+        );
+      }
+      toast.success('IP risk lookup complete');
+      analytics.track.playgroundUsed({ endpoint: '/v1/ip/public/:ip' });
+      analytics.track.buttonClicked({
+        buttonLabel: 'check_ip_risk',
+        section: 'ip-checker',
+      });
+      analytics.track.apiCall({
+        endpoint: '/v1/ip/public/:ip',
+        statusCode: 200,
+        success: true,
+      });
+    } catch (lookupError) {
+      setResult(null);
+      setError(publicIpLookupErrorMessage(lookupError));
+      analytics.track.apiError({
+        endpoint: '/v1/ip/public/:ip',
+        statusCode:
+          lookupError instanceof IpInputError
+            ? 400
+            : lookupError instanceof ApiError
+              ? lookupError.status
+              : 0,
+        errorMessage: 'Public IP lookup failed',
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -132,8 +130,7 @@ export default function IpRiskPage() {
     async function loadCurrentIp() {
       setDetectingIp(true);
       try {
-        const res = await fetch(`${API_URL}/my-ip`);
-        const data = (await res.json()) as { ip?: string };
+        const data = await fetchJson<{ ip?: string }>('/my-ip');
         if (!cancelled && data.ip) setIp(data.ip);
       } catch {
         if (!cancelled) setError('Enter an IP address to run a risk lookup.');
@@ -142,12 +139,24 @@ export default function IpRiskPage() {
       }
     }
 
-    void loadCurrentIp();
+    // A shareable `?q=<ip>` link runs that lookup on load; otherwise detect
+    // the visitor's own IP.
+    const shared =
+      typeof window !== 'undefined'
+        ? new URLSearchParams(window.location.search).get('q')?.trim()
+        : null;
+
+    if (shared) {
+      setDetectingIp(false);
+      void performLookup(shared);
+    } else {
+      void loadCurrentIp();
+    }
 
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [performLookup]);
 
   const tone = useMemo(() => {
     if (!result) {
@@ -176,68 +185,9 @@ export default function IpRiskPage() {
     };
   }, [result]);
 
-  const runLookup = async (event?: FormEvent<HTMLFormElement>) => {
+  const runLookup = (event?: FormEvent<HTMLFormElement>) => {
     event?.preventDefault();
-    setError(null);
-
-    if (!ip.trim()) {
-      setError('Enter a valid IPv4 or IPv6 address.');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const res = await fetch(
-        `${API_URL}/v1/ip/public/${encodeURIComponent(ip.trim())}`,
-        { headers: { Accept: 'application/json' } }
-      );
-      const data = (await res.json()) as LookupResult | { error?: string };
-
-      if (!res.ok) {
-        const retryAfter = res.headers.get('Retry-After');
-        const message =
-          'error' in data && data.error
-            ? data.error
-            : `Lookup failed with status ${res.status}`;
-        setResult(null);
-        setError(
-          retryAfter
-            ? `${message}. Retry after ${retryAfter} seconds.`
-            : message
-        );
-        return;
-      }
-
-      setResult(data as LookupResult);
-      toast.success('IP risk lookup complete');
-      analytics.track.playgroundUsed({ endpoint: '/v1/ip/public/:ip' });
-      analytics.track.buttonClicked({
-        buttonLabel: 'check_ip_risk',
-        section: 'ip-checker',
-      });
-      analytics.track.apiCall({
-        endpoint: '/v1/ip/public/:ip',
-        statusCode: res.status,
-        success: true,
-      });
-    } catch (lookupError) {
-      setResult(null);
-      setError(
-        lookupError instanceof Error
-          ? lookupError.message
-          : 'Unable to reach the CreepJS API.'
-      );
-      analytics.track.apiError({
-        endpoint: '/v1/ip/public/:ip',
-        statusCode: 0,
-        errorMessage:
-          lookupError instanceof Error
-            ? lookupError.message
-            : 'Unable to reach the CreepJS API.',
-      });
-    } finally {
-      setLoading(false);
-    }
+    void performLookup(ip);
   };
 
   const copyResult = async () => {
@@ -246,6 +196,17 @@ export default function IpRiskPage() {
     toast.success('Result copied');
     analytics.track.buttonClicked({
       buttonLabel: 'copy_ip_result',
+      section: 'ip-checker',
+    });
+  };
+
+  const copyShareLink = async () => {
+    if (!result || typeof window === 'undefined') return;
+    const shareUrl = `${window.location.origin}/ip?q=${encodeURIComponent(result.data.ip)}`;
+    await navigator.clipboard.writeText(shareUrl);
+    toast.success('Shareable link copied');
+    analytics.track.buttonClicked({
+      buttonLabel: 'copy_ip_share_link',
       section: 'ip-checker',
     });
   };
@@ -347,15 +308,26 @@ export default function IpRiskPage() {
                   : 'Enter an IP address to retrieve risk, routing, and network ownership signals.'}
               </p>
             </div>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => void copyResult()}
-              disabled={!result}
-            >
-              <Copy className="mr-2 h-4 w-4" />
-              Copy JSON
-            </Button>
+            <div className="flex flex-col gap-2 sm:flex-row md:flex-col lg:flex-row">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => void copyShareLink()}
+                disabled={!result}
+              >
+                <Link2 className="mr-2 h-4 w-4" />
+                Copy link
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => void copyResult()}
+                disabled={!result}
+              >
+                <Copy className="mr-2 h-4 w-4" />
+                Copy JSON
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
@@ -500,6 +472,8 @@ export default function IpRiskPage() {
             </CardContent>
           </Card>
         </div>
+
+        <IpBatchWorkspace />
       </section>
     </div>
   );

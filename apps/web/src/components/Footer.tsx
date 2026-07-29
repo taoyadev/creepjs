@@ -66,7 +66,7 @@ export function Footer() {
                   rel="noopener noreferrer"
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  CreepJS 2.0
+                  CreepJS
                 </a>
               </li>
               <li>
@@ -99,6 +99,14 @@ export function Footer() {
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/terms"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Terms of Service
                 </Link>
               </li>
             </ul>

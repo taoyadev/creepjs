@@ -1,8 +1,19 @@
 import { Hono, type Context } from 'hono';
 import type { Env } from '../types';
 import { IpbotError, type IpbotResponse, lookupIP } from '../services/ipbot';
+import { bumpCounter, clientIp, intEnv, readCounter } from '../utils/counters';
+import { hashIpForLog } from '../utils/privacy';
 
 const app = new Hono<Env>();
+
+// The paid IPbot lookup is metered: geolocation always comes free from
+// request.cf, so the upstream call only buys the `risk` block. Per-visitor
+// and global daily caps keep an unauthenticated endpoint from draining the
+// paid quota (a visitor's own IP is unique, so KV caching cannot amortize
+// this endpoint the way it does /v1/ip lookups).
+const MYIP_RISK_DAILY_PER_VISITOR_DEFAULT = 10;
+const PUBLIC_GLOBAL_DEFAULT = 2000; // shared budget with /v1/ip/public
+const GLOBAL_KEY = 'pubip:global';
 
 interface MyIpResponse {
   ip: string;
@@ -30,17 +41,9 @@ interface MyIpResponse {
   error?: string;
 }
 
-function clientIp(c: Context<Env>) {
-  return (
-    c.req.header('cf-connecting-ip') ||
-    c.req.header('x-real-ip') ||
-    c.req.header('x-forwarded-for')?.split(',')[0] ||
-    '127.0.0.1'
-  ).trim();
-}
-
 function isPrivateOrLocalIp(ip: string) {
   if (ip === '127.0.0.1' || ip === '::1' || ip === 'localhost') return true;
+  if (ip === '0.0.0.0' || ip === '::') return true; // unspecified / unknown caller
   if (ip.startsWith('10.') || ip.startsWith('192.168.')) return true;
   if (/^172\.(1[6-9]|2\d|3[0-1])\./.test(ip)) return true;
   if (ip.startsWith('fc') || ip.startsWith('fd') || ip.startsWith('fe80:')) {
@@ -53,6 +56,40 @@ function toAsnNumber(asn: string | undefined) {
   if (!asn) return undefined;
   const match = /^AS(\d+)$/i.exec(asn);
   return match?.[1] ? Number.parseInt(match[1], 10) : undefined;
+}
+
+/** Zero-cost geolocation from Cloudflare's own request metadata. */
+function cfGeo(c: Context<Env>): Pick<MyIpResponse, 'location' | 'asn'> {
+  const cf = (c.req.raw as Request & { cf?: IncomingRequestCfProperties }).cf;
+  if (!cf) return {};
+
+  const num = (v: unknown): number | undefined => {
+    if (typeof v === 'number') return v;
+    if (typeof v === 'string' && v !== '') {
+      const n = Number.parseFloat(v);
+      return Number.isFinite(n) ? n : undefined;
+    }
+    return undefined;
+  };
+
+  return {
+    location: {
+      country_code: cf.country ?? null,
+      city: cf.city ?? null,
+      region: cf.region ?? null,
+      postal: cf.postalCode ?? null,
+      latitude: num(cf.latitude),
+      longitude: num(cf.longitude),
+      timezone: cf.timezone ?? null,
+    },
+    asn:
+      typeof cf.asn === 'number' || cf.asOrganization
+        ? {
+            organization: cf.asOrganization,
+            number: typeof cf.asn === 'number' ? cf.asn : undefined,
+          }
+        : undefined,
+  };
 }
 
 function transformIpbotResult(
@@ -104,20 +141,47 @@ app.get('/', async (c) => {
     return c.json(transformIpbotResult(null, ip, false));
   }
 
+  const geoOnly = (error?: string): MyIpResponse => ({
+    ip,
+    ...cfGeo(c),
+    hostname: null,
+    cached: false,
+    ...(error ? { error } : {}),
+  });
+
+  // Meter the paid risk lookup; on cap exhaustion degrade to cf-geo only
+  // (the response shape stays valid — `risk` is optional).
+  const perVisitorLimit = intEnv(
+    c.env.MYIP_RISK_DAILY_PER_IP,
+    MYIP_RISK_DAILY_PER_VISITOR_DEFAULT
+  );
+  const globalLimit = intEnv(
+    c.env.PUBLIC_IP_DAILY_GLOBAL,
+    PUBLIC_GLOBAL_DEFAULT
+  );
+  const visitorKey = `myip:ip:${await hashIpForLog(ip)}`;
+  const perVisitor = await readCounter(c.env, visitorKey);
+  if (perVisitor.count >= perVisitorLimit) {
+    return c.json(geoOnly());
+  }
+  const globalCount = await readCounter(c.env, GLOBAL_KEY);
+  if (globalCount.count >= globalLimit) {
+    return c.json(geoOnly());
+  }
+
   try {
     const result = await lookupIP(ip, c.env);
+    if (!result.cached) {
+      // Only uncached lookups consume the paid upstream budget.
+      await bumpCounter(c.env, visitorKey, perVisitor);
+      await bumpCounter(c.env, GLOBAL_KEY, globalCount);
+    }
     return c.json(transformIpbotResult(result.data, ip, result.cached));
   } catch (error) {
     if (error instanceof IpbotError) {
-      console.warn(`myip.lookup_failed ip=${ip} status=${error.status ?? 500}`);
-      return c.json(
-        transformIpbotResult(
-          null,
-          ip,
-          false,
-          'IP intelligence temporarily unavailable'
-        )
-      );
+      // Never log the raw visitor IP (docs/SECURITY.md).
+      console.warn(`myip.lookup_failed status=${error.status ?? 500}`);
+      return c.json(geoOnly('IP intelligence temporarily unavailable'));
     }
     throw error;
   }

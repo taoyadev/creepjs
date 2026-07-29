@@ -28,6 +28,29 @@ describe('Token route', () => {
     });
   });
 
+  it('mints unguessable tokens: two requests for one email differ', async () => {
+    const env = createTestEnv();
+    const mint = () =>
+      app.fetch(
+        new Request('http://localhost/v1/token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'CF-Connecting-IP': '3.3.3.3',
+          },
+          body: JSON.stringify({ email: 'same@example.com' }),
+        }),
+        env
+      );
+
+    const first = await (await mint()).json<Record<string, unknown>>();
+    const second = await (await mint()).json<Record<string, unknown>>();
+
+    expect(first.token).toMatch(/^cfp_[0-9A-Za-z]{24}$/);
+    expect(second.token).toMatch(/^cfp_[0-9A-Za-z]{24}$/);
+    expect(first.token).not.toBe(second.token);
+  });
+
   it('enforces per-IP rate limit', async () => {
     const env = createTestEnv();
     const makeRequest = () =>

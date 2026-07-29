@@ -13,6 +13,8 @@ export type Env = {
     // Optional public /v1/ip/public limits (defaults applied in the route).
     PUBLIC_IP_DAILY_PER_IP?: string;
     PUBLIC_IP_DAILY_GLOBAL?: string;
+    // Optional /my-ip paid risk-lookup limit per visitor (default 10/day).
+    MYIP_RISK_DAILY_PER_IP?: string;
   };
   Variables: {
     token: string;

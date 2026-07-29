@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { generateMetadata, SITE_CONFIG } from './metadata';
+import { metadata as ipProxyPilotMetadata } from '../app/ip-lookup/how-to-tell-if-an-ip-is-a-proxy/page';
+import { generateMetadata, SITE_CONFIG, structuredData } from './metadata';
+import { IP_PROXY_PILOT_PATH, IP_PROXY_PILOT_ROUTE } from './seo-routes';
 
 describe('generateMetadata', () => {
   it('generates canonical URLs and OpenGraph metadata', () => {
@@ -18,5 +20,27 @@ describe('generateMetadata', () => {
       title: `Docs | ${SITE_CONFIG.name}`,
       images: [{ url: SITE_CONFIG.ogImage }],
     });
+  });
+
+  it('publishes unique metadata for the IP proxy pilot', () => {
+    expect(ipProxyPilotMetadata.title).toBe(IP_PROXY_PILOT_ROUTE.title);
+    expect(ipProxyPilotMetadata.description).toBe(
+      IP_PROXY_PILOT_ROUTE.description
+    );
+    expect(ipProxyPilotMetadata.alternates?.canonical).toBe(
+      `${SITE_CONFIG.url}${IP_PROXY_PILOT_PATH}`
+    );
+  });
+
+  it('keeps organization sameAs limited to product-owned profiles', () => {
+    const organization = structuredData.organization();
+
+    expect(organization.sameAs).toEqual(SITE_CONFIG.sameAs);
+    expect(organization.sameAs).toEqual([
+      'https://github.com/taoyadev/creepjs',
+    ]);
+    expect(organization.sameAs).not.toContain(
+      'https://github.com/abrahamjuliot/creepjs'
+    );
   });
 });

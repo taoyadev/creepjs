@@ -52,8 +52,11 @@ All responses are in JSON format with a standard structure:
 | 200         | Success                                 |
 | 400         | Bad Request (Invalid parameters)        |
 | 401         | Unauthorized (Invalid or missing token) |
+| 413         | Payload Too Large                       |
 | 429         | Too Many Requests (Rate limit exceeded) |
 | 500         | Internal Server Error                   |
+| 502         | IP intelligence provider failure        |
+| 503         | IP intelligence temporarily unavailable |
 
 ## Endpoint Details
 
@@ -344,7 +347,111 @@ console.log(data.token); // "cfp_a1b2c3d4e5f6g7h8"
 
 ---
 
-### 3. Health Check
+### 3. Batch IP Lookup
+
+Resolve up to 50 IP literals in one authenticated, serial request.
+
+**Endpoint**: `POST /v1/ip/batch`
+
+**Authentication**: Required
+
+**Body limit**: 8 KiB
+
+**Quota**: One lookup unit per unique syntactically valid IP, including cache
+hits. An invalid-only accepted batch costs one abuse-prevention unit. The
+complete cost is reserved before any lookup; if it does not fit, the API
+returns `429` and contacts no upstream provider.
+
+#### Request
+
+```http
+POST /v1/ip/batch
+Content-Type: application/json
+X-API-Token: cfp_your_token_here
+```
+
+```json
+{
+  "ips": ["8.8.8.8", "2001:4860:4860::8888", "not-an-ip"]
+}
+```
+
+Each entry is trimmed and must contain 1–45 characters. Duplicate normalized
+values are resolved once, with first-seen order preserved. Bounded malformed
+IP strings return item-level validation rows; malformed envelopes, empty
+entries, oversized entries, more than 50 entries, and bodies over 8 KiB are
+rejected before quota reservation.
+
+#### Complete response
+
+```json
+{
+  "count": 3,
+  "submittedCount": 3,
+  "uniqueCount": 3,
+  "validCount": 2,
+  "successCount": 2,
+  "invalidCount": 1,
+  "failedCount": 1,
+  "skippedCount": 0,
+  "cachedCount": 0,
+  "highRiskCount": 0,
+  "quotaCost": 2,
+  "aborted": false,
+  "results": [
+    {
+      "ip": "8.8.8.8",
+      "ok": true,
+      "outcome": "success",
+      "cached": false,
+      "highRisk": false,
+      "data": {}
+    },
+    {
+      "ip": "2001:4860:4860::8888",
+      "ok": true,
+      "outcome": "success",
+      "cached": false,
+      "highRisk": false,
+      "data": {}
+    },
+    {
+      "ip": "not-an-ip",
+      "ok": false,
+      "outcome": "invalid",
+      "status": 400,
+      "error": "Invalid IP address"
+    }
+  ]
+}
+```
+
+#### Dependency failure behavior
+
+Lookups run serially with at most one retry. Provider throttling,
+configuration/authentication failure, network failure, or provider `5xx`
+aborts later valid lookups.
+
+- If at least one lookup succeeded, the API returns `200` with
+  `aborted: true`, a safe `abortedReason`, optional `retryAfter`, the failed
+  row, and explicit `skipped` rows.
+- If the first attempted lookup fails, the API returns request-level `429`,
+  `502`, or `503` and makes no later provider calls.
+- Provider response bodies are never relayed. `Retry-After` is propagated when
+  available.
+
+`usageCount` is best-effort success telemetry, not a billing ledger. Daily
+quota reservation uses Cloudflare KV read/write protection and can lose
+updates under concurrency; exact paid accounting would require an atomic
+store and is outside the free-tier contract.
+
+Submitted IPs and API tokens are never written to application logs. The `/ip`
+workspace keeps tokens in memory only. A user-initiated CSV may contain result
+IP rows, but never contains the token.
+
+---
+
+### 4. Health Check
 
 Check API service status.
 
@@ -370,10 +477,12 @@ Check API service status.
 
 ### Free Tier
 
-| Endpoint               | Limit         | Window            |
-| ---------------------- | ------------- | ----------------- |
-| `POST /v1/fingerprint` | 1000 requests | 24 hours          |
-| `GET /v1/token`        | 10 requests   | 24 hours (per IP) |
+| Endpoint               | Limit       | Window             |
+| ---------------------- | ----------- | ------------------ |
+| `POST /v1/fingerprint` | 1000 units  | 24 hours           |
+| `GET /v1/ip/:ip`       | 1 unit/call | shared token quota |
+| `POST /v1/ip/batch`    | 1–50 units  | shared token quota |
+| `GET /v1/token`        | 10 requests | 24 hours (per IP)  |
 
 ### Response Headers
 
@@ -382,14 +491,14 @@ All rate-limited endpoints return the following headers:
 ```http
 X-RateLimit-Limit: 1000
 X-RateLimit-Remaining: 857
-X-RateLimit-Reset: 1704902400000
+X-RateLimit-Reset: 1704902400
 ```
 
 | Header                  | Description                    |
 | ----------------------- | ------------------------------ |
 | `X-RateLimit-Limit`     | Total quota                    |
 | `X-RateLimit-Remaining` | Remaining quota                |
-| `X-RateLimit-Reset`     | Reset timestamp (milliseconds) |
+| `X-RateLimit-Reset`     | Reset timestamp (Unix seconds) |
 
 ---
 
@@ -412,25 +521,42 @@ Instead of calling the API directly, we recommend using the official SDK:
 
 ### Installation
 
-**NPM**:
-
-```bash
-npm install @creepjs/sdk
-```
-
-**CDN** (UMD):
+**Script tag** (recommended):
 
 ```html
-<script src="https://cdn.creepjs.org/v1/sdk.js"></script>
+<script src="https://creepjs.org/sdk.js"></script>
 ```
 
 The default browser bundle is intentionally slim. It lazy-loads the full
 collector bundle from `sdk.full.js` unless you override `fullBundleUrl`.
 
+**npm** (coming soon — not yet published):
+
+```bash
+npm install @creepjs/sdk
+```
+
 ### Basic Usage
 
+**Script tag (works today)** — the bundle exposes a global `CreepJS` namespace:
+
+```html
+<script src="https://creepjs.org/sdk.js"></script>
+<script>
+  const client = new CreepJS.CreepJS({
+    token: 'cfp_your_token_here',
+    fullBundleUrl: 'https://creepjs.org/sdk.full.js',
+  });
+
+  client.getFingerprint().then((fp) => {
+    console.log(fp.fingerprintId);
+  });
+</script>
+```
+
+**ES Modules (after npm publish)**:
+
 ```javascript
-// ES Modules
 import { getFingerprint } from '@creepjs/sdk';
 
 const fp = await getFingerprint({
@@ -440,22 +566,6 @@ const fp = await getFingerprint({
 console.log(fp.fingerprintId); // "3mK9vN2Lx8pQ"
 console.log(fp.confidence); // 0.95
 console.log(fp.cached); // false
-```
-
-**UMD (Browser)**:
-
-```html
-<script src="https://cdn.creepjs.org/v1/sdk.js"></script>
-<script>
-  const client = new CreepJS.CreepJS({
-    token: 'cfp_your_token_here',
-    fullBundleUrl: 'https://cdn.creepjs.org/v1/sdk.full.js',
-  });
-
-  client.getFingerprint().then((fp) => {
-    console.log(fp.fingerprintId);
-  });
-</script>
 ```
 
 ### Advanced Configuration

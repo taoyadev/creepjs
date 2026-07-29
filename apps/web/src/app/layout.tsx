@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import localFont from 'next/font/local';
 import { Suspense } from 'react';
 import './globals.css';
 import { defaultMetadata, structuredData } from '@/lib/metadata';
@@ -12,7 +12,14 @@ import { Footer } from '@/components/Footer';
 import { DynamicHeader } from '@/components/DynamicHeader';
 import { ThemeScript } from '@/components/ThemeScript';
 
-const inter = Inter({ subsets: ['latin'] });
+// Self-hosted Inter (variable, latin subset): no build-time or runtime
+// dependency on Google Fonts — privacy-first and deterministic builds.
+const inter = localFont({
+  src: '../fonts/inter-latin-variable.woff2',
+  weight: '100 900',
+  style: 'normal',
+  display: 'swap',
+});
 
 // Use comprehensive metadata configuration
 export const metadata: Metadata = defaultMetadata;
@@ -45,23 +52,13 @@ export default function RootLayout({
         <link rel="manifest" href="/site.webmanifest" />
         <link rel="preconnect" href="https://api.creepjs.org" />
         <link rel="dns-prefetch" href="https://api.creepjs.org" />
-        <meta
-          name="theme-color"
-          content="#ffffff"
-          media="(prefers-color-scheme: light)"
-        />
-        <meta
-          name="theme-color"
-          content="#0f172a"
-          media="(prefers-color-scheme: dark)"
-        />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta
           name="apple-mobile-web-app-status-bar-style"
           content="black-translucent"
         />
-        <meta name="apple-mobile-web-app-title" content="CreepJS 2.0" />
+        <meta name="apple-mobile-web-app-title" content="CreepJS" />
       </head>
       <body className={inter.className}>
         <ThemeProvider>
