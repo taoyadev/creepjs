@@ -6,14 +6,14 @@
 
 ## 2. Fingerprint signal route
 
-- [ ] 2.1 Derive route metadata and static params from the shared registry.
-- [ ] 2.2 Read and validate the matching Markdown during static rendering.
-- [ ] 2.3 Render a unique server H1 and a real reviewed article for all 55 routes.
-- [ ] 2.4 Reduce the client island to live collection and remove duplicate,
+- [x] 2.1 Derive route metadata and static params from the shared registry.
+- [x] 2.2 Read and validate the matching Markdown during static rendering.
+- [x] 2.3 Render a unique server H1 and a real reviewed article for all 55 routes.
+- [x] 2.4 Reduce the client island to live collection and remove duplicate,
   unsupported education copy and runtime Markdown fetches.
-- [ ] 2.5 Add static checks for route coverage, safe article content, invalid
+- [x] 2.5 Add static checks for route coverage, safe article content, invalid
   slugs, schema restraint, runtime fetch absence, and client chunk exclusions.
-- [ ] 2.6 Remove Markdown/highlight dependencies only if they are unused across
+- [x] 2.6 Remove Markdown/highlight dependencies only if they are unused across
   the web app.
 
 ## 3. API playground
