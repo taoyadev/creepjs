@@ -430,7 +430,7 @@ export function ConfidenceDashboard({
                       <span
                         className={`text-xs font-semibold ${
                           collector.status === 'success'
-                            ? 'text-green-500'
+                            ? 'text-green-700 dark:text-green-300'
                             : collector.status === 'error'
                               ? 'text-red-500'
                               : 'text-muted-foreground'

@@ -319,7 +319,10 @@ export function FingerprintHistory({
                   <div className="flex items-start gap-4">
                     {/* Selection Checkbox */}
                     <button
+                      type="button"
                       onClick={() => toggleSelectForCompare(record.id)}
+                      aria-label={`Select fingerprint record ${history.length - index} for comparison`}
+                      aria-pressed={isSelected}
                       className={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded border-2 transition-all ${
                         isSelected
                           ? 'bg-primary border-primary text-primary-foreground'
@@ -354,6 +357,7 @@ export function FingerprintHistory({
                           variant="ghost"
                           size="icon"
                           onClick={() => deleteRecord(record.id)}
+                          aria-label={`Delete fingerprint record ${history.length - index}`}
                           className="text-destructive hover:text-destructive"
                         >
                           <Trash2 className="h-4 w-4" />

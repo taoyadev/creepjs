@@ -337,14 +337,15 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run Lighthouse CI
-        uses: treosh/lighthouse-ci-action@v10
+        uses: treosh/lighthouse-ci-action@v12
         with:
           urls: |
             ${{ needs.deploy-preview.outputs.preview-url }}
             ${{ needs.deploy-preview.outputs.preview-url }}/checker
             ${{ needs.deploy-preview.outputs.preview-url }}/guide/what-is-browser-fingerprinting
             ${{ needs.deploy-preview.outputs.preview-url }}/fingerprint/canvas
-          configPath: '.github/lighthouserc.json'
+            ${{ needs.deploy-preview.outputs.preview-url }}/playground
+          configPath: '.github/lighthouserc.preview.json'
           uploadArtifacts: true
           temporaryPublicStorage: true
 

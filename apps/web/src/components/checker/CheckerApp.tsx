@@ -184,7 +184,7 @@ export function CheckerApp() {
                   }
                   label={`Coverage: ${(fingerprint.confidence * 100).toFixed(1)}%`}
                 />
-                <span className="text-muted-foreground text-sm font-normal">
+                <span className="text-foreground/80 text-sm font-normal">
                   Total Time: {fingerprint.timings.total?.toFixed(2)}ms
                 </span>
               </div>

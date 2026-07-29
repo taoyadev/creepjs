@@ -148,6 +148,7 @@ export default function HomePage() {
             className="section-anchor grid gap-6 lg:grid-cols-2"
             aria-label="Live privacy evidence"
           >
+            <h2 className="sr-only">Live privacy evidence</h2>
             <LiveFingerprintTeaser />
             <LiveIpCard />
           </section>

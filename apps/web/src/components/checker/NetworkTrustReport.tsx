@@ -26,7 +26,7 @@ interface NetworkTrustReportProps {
 }
 
 const TONE_STYLES: Record<TrustTone, string> = {
-  clear: 'border-success/30 bg-success/5 text-success',
+  clear: 'border-success/30 bg-success/5 text-foreground',
   neutral: 'border-border bg-muted/40 text-foreground',
   review: 'border-warning/40 bg-warning/10 text-foreground',
 };
