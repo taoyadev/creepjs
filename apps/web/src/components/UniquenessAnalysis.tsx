@@ -22,17 +22,12 @@ interface UniquenessAnalysisProps {
   baseline: BaselineResponse | null;
 }
 
-export function UniquenessAnalysis({
-  baseline,
-}: UniquenessAnalysisProps) {
+export function UniquenessAnalysis({ baseline }: UniquenessAnalysisProps) {
   const progress = getBaselineProgress(baseline);
 
   if (progress.warming) {
     return (
-      <Card
-        className="border-primary/20 bg-primary/5"
-        aria-live="polite"
-      >
+      <Card className="border-primary/20 bg-primary/5" aria-live="polite">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" aria-hidden="true" />
@@ -150,8 +145,8 @@ export function UniquenessAnalysis({
             />
             <p className="text-muted-foreground text-sm leading-6">
               The overall baseline is ready, but every matching signal bucket
-              remains below its disclosure threshold. No rarity percentages
-              are shown.
+              remains below its disclosure threshold. No rarity percentages are
+              shown.
             </p>
           </CardContent>
         </Card>

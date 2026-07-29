@@ -7,8 +7,7 @@ export const SIGNAL_CONTENT_START = '<!-- llms-safe:start -->';
 export const SIGNAL_CONTENT_END = '<!-- llms-safe:end -->';
 export const SIGNAL_CONTENT_REVIEW_DATE = '2026-07-28';
 
-export type FingerprintTechnique =
-  (typeof FINGERPRINT_TECHNIQUES)[number];
+export type FingerprintTechnique = (typeof FINGERPRINT_TECHNIQUES)[number];
 
 const REQUIRED_HEADINGS = [
   '## What CreepJS reports',
@@ -113,7 +112,9 @@ export function validateVettedSignalMarkdown(
 
   for (const heading of REQUIRED_HEADINGS) {
     if (!content.includes(heading)) {
-      throw new Error(`${technique.slug}: missing required heading "${heading}"`);
+      throw new Error(
+        `${technique.slug}: missing required heading "${heading}"`
+      );
     }
   }
 
@@ -174,9 +175,7 @@ export function readVettedSignalMarkdown(
   return validateVettedSignalMarkdown(raw, technique);
 }
 
-export function buildLlmsFullText(
-  contentRoot = signalContentRoot()
-): string {
+export function buildLlmsFullText(contentRoot = signalContentRoot()): string {
   assertSignalMarkdownRegistryAligned(contentRoot);
 
   const signals = FINGERPRINT_TECHNIQUES.map((technique) => {

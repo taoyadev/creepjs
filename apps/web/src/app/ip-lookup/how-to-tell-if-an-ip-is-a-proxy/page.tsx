@@ -12,17 +12,9 @@ import { CompactIpLookup } from '@/components/CompactIpLookup';
 import { SeoInternalLinks } from '@/components/SeoInternalLinks';
 import { StructuredData } from '@/components/StructuredData';
 import { Badge } from '@/components/ui/badge';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { generateMetadata, SITE_CONFIG, structuredData } from '@/lib/metadata';
-import {
-  IP_PROXY_PILOT_PATH,
-  IP_PROXY_PILOT_ROUTE,
-} from '@/lib/seo-routes';
+import { IP_PROXY_PILOT_PATH, IP_PROXY_PILOT_ROUTE } from '@/lib/seo-routes';
 
 const CANONICAL_URL = `${SITE_CONFIG.url}${IP_PROXY_PILOT_PATH}`;
 
@@ -113,7 +105,6 @@ export default function IpProxyPilotPage() {
                     so conflicting signals remain visible.
                   </p>
                 </div>
-
               </div>
 
               <CompactIpLookup />
@@ -181,8 +172,8 @@ export default function IpProxyPilotPage() {
               </h2>
               <p className="text-muted-foreground mt-3 leading-7">
                 Proxy, VPN, and Tor booleans answer the narrow classification
-                question. Their absence means “not flagged by the current
-                data,” not “known to be a normal household connection.”
+                question. Their absence means “not flagged by the current data,”
+                not “known to be a normal household connection.”
               </p>
             </div>
             <div>
@@ -219,15 +210,14 @@ export default function IpProxyPilotPage() {
                   IP ownership and exit behavior change. Commercial VPNs,
                   residential relays, corporate gateways, and newly reassigned
                   ranges may be missing or classified differently over time.
-                  Treat the result as one input to a proportionate decision,
-                  not as identity proof or a reason to block someone
-                  automatically.
+                  Treat the result as one input to a proportionate decision, not
+                  as identity proof or a reason to block someone automatically.
                 </p>
                 <p className="text-muted-foreground leading-7">
                   CreepJS retrieves the fields from IPbot through its own
-                  privacy-filtered Worker. Standard results may be cached for
-                  up to 24 hours; elevated-risk results use a shorter cache.
-                  Review the{' '}
+                  privacy-filtered Worker. Standard results may be cached for up
+                  to 24 hours; elevated-risk results use a shorter cache. Review
+                  the{' '}
                   <a
                     href="https://ipbot.com/response-schema/"
                     target="_blank"
@@ -252,14 +242,14 @@ export default function IpProxyPilotPage() {
                 <h2 id="next-step-heading" className="text-2xl font-semibold">
                   Need the complete network report?
                 </h2>
-                <p className="mt-2 text-primary-foreground/80">
+                <p className="text-primary-foreground/80 mt-2">
                   Open the full checker for geolocation, ASN, routing, risk,
                   evidence, share links, and batch tools.
                 </p>
               </div>
               <Link
                 href="/ip"
-                className="bg-background text-foreground inline-flex h-11 items-center justify-center rounded-md px-5 text-sm font-medium shadow-sm transition-colors hover:bg-background/90"
+                className="bg-background text-foreground hover:bg-background/90 inline-flex h-11 items-center justify-center rounded-md px-5 text-sm font-medium shadow-sm transition-colors"
               >
                 Open IP Risk Checker
                 <ArrowRight className="ml-2 h-4 w-4" />

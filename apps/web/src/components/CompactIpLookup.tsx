@@ -143,10 +143,7 @@ export function CompactIpLookup() {
                   : 'compact-ip-help'
               }
             />
-            <p
-              id="compact-ip-help"
-              className="text-muted-foreground text-xs"
-            >
+            <p id="compact-ip-help" className="text-muted-foreground text-xs">
               Hostnames, URLs, and IP ranges are not accepted.
             </p>
           </div>
@@ -167,9 +164,7 @@ export function CompactIpLookup() {
           {error && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" aria-hidden="true" />
-              <AlertDescription id="compact-ip-error">
-                {error}
-              </AlertDescription>
+              <AlertDescription id="compact-ip-error">{error}</AlertDescription>
             </Alert>
           )}
 

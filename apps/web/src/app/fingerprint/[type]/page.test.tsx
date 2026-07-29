@@ -19,9 +19,9 @@ describe('fingerprint signal pages', () => {
     );
 
     for (const technique of FINGERPRINT_TECHNIQUES) {
-      expect(
-        getSignalCollector(technique.slug, {} as never)
-      ).toBeTypeOf('function');
+      expect(getSignalCollector(technique.slug, {} as never)).toBeTypeOf(
+        'function'
+      );
     }
   });
 

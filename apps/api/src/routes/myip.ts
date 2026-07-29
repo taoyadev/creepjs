@@ -1,12 +1,7 @@
 import { Hono, type Context } from 'hono';
 import type { Env } from '../types';
 import { IpbotError, type IpbotResponse, lookupIP } from '../services/ipbot';
-import {
-  bumpCounter,
-  clientIp,
-  intEnv,
-  readCounter,
-} from '../utils/counters';
+import { bumpCounter, clientIp, intEnv, readCounter } from '../utils/counters';
 import { hashIpForLog } from '../utils/privacy';
 
 const app = new Hono<Env>();
@@ -64,9 +59,7 @@ function toAsnNumber(asn: string | undefined) {
 }
 
 /** Zero-cost geolocation from Cloudflare's own request metadata. */
-function cfGeo(
-  c: Context<Env>
-): Pick<MyIpResponse, 'location' | 'asn'> {
+function cfGeo(c: Context<Env>): Pick<MyIpResponse, 'location' | 'asn'> {
   const cf = (c.req.raw as Request & { cf?: IncomingRequestCfProperties }).cf;
   if (!cf) return {};
 

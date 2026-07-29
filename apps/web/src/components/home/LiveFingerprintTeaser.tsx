@@ -3,10 +3,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight, Fingerprint, RefreshCw } from 'lucide-react';
-import {
-  collectFingerprint,
-  type FingerprintResult,
-} from '@creepjs/core';
+import { collectFingerprint, type FingerprintResult } from '@creepjs/core';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -148,7 +145,7 @@ export function LiveFingerprintTeaser() {
             <div>
               <p className="text-muted-foreground text-xs">Diagnostic ID</p>
               <div className="mt-2 flex items-center gap-2">
-                <code className="min-w-0 flex-1 truncate rounded-md bg-muted px-3 py-2 font-mono text-sm font-bold">
+                <code className="bg-muted min-w-0 flex-1 truncate rounded-md px-3 py-2 font-mono text-sm font-bold">
                   {result.fingerprintId}
                 </code>
                 <CopyButton

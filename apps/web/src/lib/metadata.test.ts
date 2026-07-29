@@ -2,10 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { metadata as ipProxyPilotMetadata } from '../app/ip-lookup/how-to-tell-if-an-ip-is-a-proxy/page';
 import { generateMetadata, SITE_CONFIG, structuredData } from './metadata';
-import {
-  IP_PROXY_PILOT_PATH,
-  IP_PROXY_PILOT_ROUTE,
-} from './seo-routes';
+import { IP_PROXY_PILOT_PATH, IP_PROXY_PILOT_ROUTE } from './seo-routes';
 
 describe('generateMetadata', () => {
   it('generates canonical URLs and OpenGraph metadata', () => {

@@ -75,8 +75,8 @@ export default function PlaygroundPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="text-muted-foreground text-sm">
-                The request uses the token in the controlled field and shows
-                the formatted response in place without replacing the page.
+                The request uses the token in the controlled field and shows the
+                formatted response in place without replacing the page.
               </CardContent>
             </Card>
           </div>

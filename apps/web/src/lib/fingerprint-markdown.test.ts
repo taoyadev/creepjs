@@ -21,7 +21,9 @@ const contentRoot = path.join(
 
 describe('fingerprint Markdown honesty gate', () => {
   it('keeps all expected files aligned with the canonical manifest', () => {
-    expect(() => assertSignalMarkdownRegistryAligned(contentRoot)).not.toThrow();
+    expect(() =>
+      assertSignalMarkdownRegistryAligned(contentRoot)
+    ).not.toThrow();
     expect(FINGERPRINT_TECHNIQUES).toHaveLength(55);
   });
 
@@ -32,9 +34,7 @@ describe('fingerprint Markdown honesty gate', () => {
         'utf8'
       );
 
-      expect(() =>
-        validateVettedSignalMarkdown(raw, technique)
-      ).not.toThrow();
+      expect(() => validateVettedSignalMarkdown(raw, technique)).not.toThrow();
     }
   });
 

@@ -7,7 +7,7 @@ holes that leak cost, credentials strength, or privacy — independent of the
 batch-lookup work:
 
 1. API tokens were deterministic 32-bit content hashes (`murmur(email,
-   timestamp)`): guessable, and birthday collisions silently overwrite
+timestamp)`): guessable, and birthday collisions silently overwrite
    another user's token record.
 2. `/my-ip` performed an unmetered paid IPbot lookup per unique visitor while
    Cloudflare's free `request.cf` geolocation went unused, and had no rate

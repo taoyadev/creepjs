@@ -409,8 +409,7 @@ export async function lookupIP(
         'IPbot temporarily unavailable (recent upstream failure)',
         negative.status,
         negative.retryAfter ?? null,
-        negative.kind ??
-          (negative.status === 429 ? 'throttle' : 'upstream')
+        negative.kind ?? (negative.status === 429 ? 'throttle' : 'upstream')
       );
     }
   }

@@ -477,12 +477,12 @@ Check API service status.
 
 ### Free Tier
 
-| Endpoint               | Limit         | Window            |
-| ---------------------- | ------------- | ----------------- |
-| `POST /v1/fingerprint` | 1000 units    | 24 hours          |
-| `GET /v1/ip/:ip`       | 1 unit/call   | shared token quota |
-| `POST /v1/ip/batch`    | 1–50 units    | shared token quota |
-| `GET /v1/token`        | 10 requests   | 24 hours (per IP) |
+| Endpoint               | Limit       | Window             |
+| ---------------------- | ----------- | ------------------ |
+| `POST /v1/fingerprint` | 1000 units  | 24 hours           |
+| `GET /v1/ip/:ip`       | 1 unit/call | shared token quota |
+| `POST /v1/ip/batch`    | 1–50 units  | shared token quota |
+| `GET /v1/token`        | 10 requests | 24 hours (per IP)  |
 
 ### Response Headers
 

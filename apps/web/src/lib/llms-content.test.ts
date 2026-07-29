@@ -49,7 +49,9 @@ describe('llms navigation index', () => {
     expect(htmlPositions).toEqual([...htmlPositions].sort((a, b) => a - b));
 
     expect(
-      output.match(/- Markdown: https:\/\/creepjs\.org\/content\/fingerprints\//g)
+      output.match(
+        /- Markdown: https:\/\/creepjs\.org\/content\/fingerprints\//g
+      )
     ).toHaveLength(FINGERPRINT_TECHNIQUES.length);
     expect(output).toContain(`https://creepjs.org${LLMS_FULL_PATH}`);
   });

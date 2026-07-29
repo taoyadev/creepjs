@@ -37,4 +37,3 @@ approved fingerprint content or changing the existing interactive contracts.
   - `apps/web/src/components/playground/*`
   - focused web tests and dependency manifests when a dependency becomes unused
 - Tracker source of truth: `docs/LAUNCH_PLAN.md` section 12
-

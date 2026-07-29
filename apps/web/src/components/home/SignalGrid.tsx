@@ -42,7 +42,10 @@ export function SignalGrid() {
           if (techniques.length === 0) return null;
 
           return (
-            <section key={category} className="overflow-hidden rounded-xl border">
+            <section
+              key={category}
+              className="overflow-hidden rounded-xl border"
+            >
               <div className="bg-muted/50 flex items-center justify-between border-b px-5 py-4">
                 <h3 className="font-semibold">{category}</h3>
                 <span className="text-muted-foreground text-xs">
@@ -54,7 +57,7 @@ export function SignalGrid() {
                   <li key={technique.slug}>
                     <Link
                       href={`/fingerprint/${technique.slug}`}
-                      className="group flex min-h-12 items-center justify-between gap-4 px-5 py-3 text-sm transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+                      className="hover:bg-muted/50 focus-visible:ring-ring group flex min-h-12 items-center justify-between gap-4 px-5 py-3 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset"
                       title={technique.description}
                     >
                       <span>{technique.name}</span>

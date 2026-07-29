@@ -59,9 +59,7 @@ export function CopyButton({
       onClick={copy}
       disabled={disabled}
       aria-label={
-        copied
-          ? successMessage
-          : (ariaLabel ?? label ?? 'Copy to clipboard')
+        copied ? successMessage : (ariaLabel ?? label ?? 'Copy to clipboard')
       }
     >
       <Icon className={label ? 'mr-2 h-4 w-4' : 'h-4 w-4'} />

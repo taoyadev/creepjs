@@ -46,15 +46,11 @@ describe('SEO route registry', () => {
     );
 
     expect(
-      STATIC_SEO_ROUTES.filter(
-        (route) => route.path === IP_PROXY_PILOT_PATH
-      )
+      STATIC_SEO_ROUTES.filter((route) => route.path === IP_PROXY_PILOT_PATH)
     ).toHaveLength(1);
     expect(IP_PROXY_PILOT_ROUTE.section).toBe('ip-lookup');
     expect(entries).toHaveLength(1);
-    expect(entries[0]?.lastModified).toEqual(
-      IP_PROXY_PILOT_ROUTE.lastModified
-    );
+    expect(entries[0]?.lastModified).toEqual(IP_PROXY_PILOT_ROUTE.lastModified);
     expect(checker?.lastModified).toEqual(LAST_SEO_UPDATE);
   });
 

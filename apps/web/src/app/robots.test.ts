@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import robots, {
-  AI_CRAWLER_USER_AGENTS,
-  RESTRICTED_WEB_PATHS,
-} from './robots';
+import robots, { AI_CRAWLER_USER_AGENTS, RESTRICTED_WEB_PATHS } from './robots';
 
 const EXPECTED_AI_CRAWLERS = [
   'OAI-SearchBot',

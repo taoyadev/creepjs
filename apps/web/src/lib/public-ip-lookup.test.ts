@@ -36,9 +36,9 @@ describe('public IP lookup boundary', () => {
         new ApiError('Rate limit exceeded for 8.8.8.8', 429, null, 30)
       )
     ).toBe('Free lookup limit reached. Try again in 30 seconds.');
-    expect(
-      publicIpLookupErrorMessage(new ApiError('provider body', 503))
-    ).toBe('IP intelligence is temporarily unavailable. Try again shortly.');
+    expect(publicIpLookupErrorMessage(new ApiError('provider body', 503))).toBe(
+      'IP intelligence is temporarily unavailable. Try again shortly.'
+    );
   });
 
   it('trims and encodes a valid literal for the public endpoint', async () => {
@@ -56,9 +56,9 @@ describe('public IP lookup boundary', () => {
     );
     vi.stubGlobal('fetch', fetchMock);
 
-    await expect(
-      lookupPublicIp(' 2001:4860:4860::8888 ')
-    ).resolves.toEqual(response);
+    await expect(lookupPublicIp(' 2001:4860:4860::8888 ')).resolves.toEqual(
+      response
+    );
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(fetchMock.mock.calls[0]?.[0]).toBe(
       'https://api.creepjs.org/v1/ip/public/2001%3A4860%3A4860%3A%3A8888'

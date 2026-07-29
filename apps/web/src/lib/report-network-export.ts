@@ -29,16 +29,8 @@ export function buildNetworkCsvRows(ip: OwnIpSummary): string[][] {
   return [
     ['Network Trust', 'Public IP', ip.ip],
     ['Network Trust', 'Location', location || 'N/A'],
-    [
-      'Network Trust',
-      'ASN',
-      ip.asn?.number ? `AS${ip.asn.number}` : 'N/A',
-    ],
-    [
-      'Network Trust',
-      'Organization',
-      ip.asn?.organization ?? 'N/A',
-    ],
+    ['Network Trust', 'ASN', ip.asn?.number ? `AS${ip.asn.number}` : 'N/A'],
+    ['Network Trust', 'Organization', ip.asn?.organization ?? 'N/A'],
     [
       'Network Trust',
       'Risk Band',

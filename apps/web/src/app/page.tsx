@@ -88,8 +88,8 @@ export default function HomePage() {
                   <p className="text-muted-foreground max-w-3xl text-lg leading-8 md:text-xl">
                     Understand what websites can observe about your browser and
                     network. CreepJS turns dozens of weak signals into a
-                    readable report—without pretending coverage is identity or
-                    a fraud probability.
+                    readable report—without pretending coverage is identity or a
+                    fraud probability.
                   </p>
                 </div>
                 <div className="flex flex-col gap-3 sm:flex-row">
@@ -132,7 +132,9 @@ export default function HomePage() {
                       </span>
                       <div>
                         <p className="text-sm font-semibold">{title}</p>
-                        <p className="text-muted-foreground text-xs">{detail}</p>
+                        <p className="text-muted-foreground text-xs">
+                          {detail}
+                        </p>
                       </div>
                     </li>
                   ))}
@@ -165,8 +167,8 @@ export default function HomePage() {
             </div>
             <p className="text-muted-foreground text-lg leading-8">
               CreepJS is the privacy diagnostic and API at creepjs.org. It
-              reveals browser and IP-risk signals, explains coverage and
-              privacy resistance, and only reports population context after
+              reveals browser and IP-risk signals, explains coverage and privacy
+              resistance, and only reports population context after
               anonymous-sample thresholds are met. It is distinct from{' '}
               <a
                 href="https://github.com/abrahamjuliot/creepjs"
@@ -191,13 +193,13 @@ export default function HomePage() {
               </h2>
               <p className="text-muted-foreground leading-7">
                 Browser fingerprinting does not depend on one magical value.
-                Sites combine rendering behavior, device hints, locale,
-                storage support, accessibility preferences, privacy resistance,
-                and network context. CreepJS keeps those dimensions visible so
-                you can inspect why a conclusion exists.
+                Sites combine rendering behavior, device hints, locale, storage
+                support, accessibility preferences, privacy resistance, and
+                network context. CreepJS keeps those dimensions visible so you
+                can inspect why a conclusion exists.
               </p>
             </div>
-            <div className="grid gap-px overflow-hidden rounded-xl border bg-border md:grid-cols-3">
+            <div className="bg-border grid gap-px overflow-hidden rounded-xl border md:grid-cols-3">
               {[
                 {
                   icon: Fingerprint,
@@ -235,9 +237,9 @@ export default function HomePage() {
                 </h2>
               </div>
               <p className="text-muted-foreground leading-7">
-                Start with a browser or single-IP check, then move to the
-                token API, playground, or SDK when the same evidence needs to
-                fit a product or security process. Tokens remain in the client
+                Start with a browser or single-IP check, then move to the token
+                API, playground, or SDK when the same evidence needs to fit a
+                product or security process. Tokens remain in the client
                 session; CreepJS does not sell fingerprint profiles.
               </p>
             </div>
@@ -245,7 +247,7 @@ export default function HomePage() {
               {AUDIENCES.map(({ icon: Icon, title, body, href, link }) => (
                 <article
                   key={title}
-                  className="group flex min-h-64 flex-col rounded-xl border p-6 transition-colors hover:border-primary/40"
+                  className="hover:border-primary/40 group flex min-h-64 flex-col rounded-xl border p-6 transition-colors"
                 >
                   <Icon className="text-primary h-6 w-6" aria-hidden="true" />
                   <h3 className="mt-5 text-lg font-bold">{title}</h3>
@@ -254,7 +256,7 @@ export default function HomePage() {
                   </p>
                   <Link
                     href={href}
-                    className="text-primary mt-5 inline-flex items-center text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="text-primary focus-visible:ring-ring mt-5 inline-flex items-center text-sm font-semibold focus-visible:outline-none focus-visible:ring-2"
                   >
                     {link}
                     <ArrowRight
@@ -267,7 +269,7 @@ export default function HomePage() {
             </div>
           </section>
 
-          <section className="bg-slate-950 grid gap-8 rounded-2xl p-7 text-slate-100 md:p-10 lg:grid-cols-[0.75fr_1.25fr]">
+          <section className="grid gap-8 rounded-2xl bg-slate-950 p-7 text-slate-100 md:p-10 lg:grid-cols-[0.75fr_1.25fr]">
             <div className="space-y-4">
               <Braces className="h-7 w-7 text-blue-300" aria-hidden="true" />
               <h2 className="text-3xl font-bold tracking-tight">

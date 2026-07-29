@@ -113,10 +113,7 @@ export function buildNetworkTrustModel(
       .join(', ');
     dimensions.push({
       label: 'IP risk context',
-      value:
-        ip?.risk?.band ??
-        ip?.risk?.verdict ??
-        'Geo and ASN context only',
+      value: ip?.risk?.band ?? ip?.risk?.verdict ?? 'Geo and ASN context only',
       detail: ip?.risk
         ? `Upstream score ${ip.risk.score ?? 'not supplied'} for ${ip.ip}; this is context, not a probability estimate.`
         : `Risk enrichment was not available for ${ip?.ip ?? 'this address'}.`,
@@ -127,7 +124,8 @@ export function buildNetworkTrustModel(
       value:
         ip?.asn?.organization ??
         (ip?.asn?.number ? `AS${ip.asn.number}` : 'Not available'),
-      detail: location || 'Location was not available in the free request context.',
+      detail:
+        location || 'Location was not available in the free request context.',
       tone: 'neutral',
     });
   }

@@ -20,7 +20,9 @@ describe('checker URL state', () => {
         baselineCount: 19,
       },
     });
-    expect(parseCheckerUrl('?fp=%3Cscript%3E&cov=900&b=-1').snapshot).toBeNull();
+    expect(
+      parseCheckerUrl('?fp=%3Cscript%3E&cov=900&b=-1').snapshot
+    ).toBeNull();
     expect(parseCheckerUrl('?fp=abc&cov=900&b=1.5').snapshot).toEqual({
       fingerprintId: 'abc',
       coverage: null,

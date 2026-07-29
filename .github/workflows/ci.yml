@@ -319,6 +319,10 @@ jobs:
     name: Dependency Review
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
+    # Private repositories require GitHub Advanced Security for this API.
+    # Keep the advisory visible without blocking unrelated validated changes
+    # when the repository-level capability is unavailable.
+    continue-on-error: true
 
     steps:
       - name: Checkout code

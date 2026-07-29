@@ -47,7 +47,7 @@ export function FingerprintCollectorCard({
             type="button"
             aria-expanded={isExpanded}
             aria-controls={contentId}
-            className="hover:bg-muted/50 -m-2 flex min-w-0 flex-1 items-center gap-2 rounded-md p-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="hover:bg-muted/50 focus-visible:ring-ring -m-2 flex min-w-0 flex-1 items-center gap-2 rounded-md p-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2"
             onClick={() => setIsExpanded((expanded) => !expanded)}
           >
             <span className="flex-shrink-0" aria-hidden="true">
@@ -78,7 +78,7 @@ export function FingerprintCollectorCard({
                   <TooltipTrigger asChild>
                     <button
                       type="button"
-                      className="text-muted-foreground hover:bg-muted hover:text-foreground rounded-md p-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-ring rounded-md p-1.5 focus-visible:outline-none focus-visible:ring-2"
                       aria-label={`About ${title}`}
                     >
                       <Info className="h-4 w-4" aria-hidden="true" />

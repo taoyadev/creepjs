@@ -355,9 +355,11 @@ describe('Batch IP intelligence route (POST /v1/ip/batch)', () => {
       invalidCount: 2,
       quotaCost: 1,
     });
-    expect(json.results.every((item: { outcome: string }) => item.outcome === 'invalid')).toBe(
-      true
-    );
+    expect(
+      json.results.every(
+        (item: { outcome: string }) => item.outcome === 'invalid'
+      )
+    ).toBe(true);
     expect((await quota(env))?.count).toBe(1);
     expect(fetchMock).not.toHaveBeenCalled();
     const storedToken = await env.TOKENS.get(TOKEN, 'json');
@@ -395,7 +397,10 @@ describe('Batch IP intelligence route (POST /v1/ip/batch)', () => {
       },
     });
     await seed(env);
-    vi.stubGlobal('fetch', vi.fn().mockImplementation(() => ok(GOOGLE_DNS)));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockImplementation(() => ok(GOOGLE_DNS))
+    );
 
     const res = await batch(env, ['8.8.8.8', '1.1.1.1']);
 
@@ -578,18 +583,21 @@ describe('Batch IP intelligence route (POST /v1/ip/batch)', () => {
     },
     { label: 'trimmed-empty entry', ips: ['   '], status: 400 },
     { label: '46-character entry', ips: ['x'.repeat(46)], status: 400 },
-  ])('rejects $label before quota or upstream work', async ({ ips, status }) => {
-    const env = createTestEnv();
-    await seed(env);
-    const fetchMock = vi.fn();
-    vi.stubGlobal('fetch', fetchMock);
+  ])(
+    'rejects $label before quota or upstream work',
+    async ({ ips, status }) => {
+      const env = createTestEnv();
+      await seed(env);
+      const fetchMock = vi.fn();
+      vi.stubGlobal('fetch', fetchMock);
 
-    const res = await batch(env, ips);
+      const res = await batch(env, ips);
 
-    expect(res.status).toBe(status);
-    expect(await quota(env)).toBeNull();
-    expect(fetchMock).not.toHaveBeenCalled();
-  });
+      expect(res.status).toBe(status);
+      expect(await quota(env)).toBeNull();
+      expect(fetchMock).not.toHaveBeenCalled();
+    }
+  );
 
   it('accepts a bounded 45-character malformed item as a per-row error', async () => {
     const env = createTestEnv();

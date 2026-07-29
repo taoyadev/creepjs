@@ -31,10 +31,7 @@ describe('reduceScanProgress', () => {
       INITIAL_SCAN_PROGRESS,
       event('webgl', 'finish', 5)
     );
-    const second = reduceScanProgress(
-      first,
-      event('canvas', 'finish', 1)
-    );
+    const second = reduceScanProgress(first, event('canvas', 'finish', 1));
 
     expect(first.current).toBe(1);
     expect(second.current).toBe(2);
@@ -45,10 +42,7 @@ describe('reduceScanProgress', () => {
       INITIAL_SCAN_PROGRESS,
       event('canvas', 'finish', 0)
     );
-    const duplicate = reduceScanProgress(
-      first,
-      event('canvas', 'finish', 0)
-    );
+    const duplicate = reduceScanProgress(first, event('canvas', 'finish', 0));
 
     expect(duplicate.current).toBe(1);
     expect(duplicate.current).toBeLessThanOrEqual(duplicate.total);

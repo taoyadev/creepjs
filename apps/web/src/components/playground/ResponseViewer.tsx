@@ -36,7 +36,9 @@ export function ResponseViewer({ response, loading }: ResponseViewerProps) {
     <Card aria-labelledby="playground-response-title">
       <CardHeader>
         <CardTitle id="playground-response-title">API response</CardTitle>
-        <CardDescription>Formatted response from the latest request.</CardDescription>
+        <CardDescription>
+          Formatted response from the latest request.
+        </CardDescription>
       </CardHeader>
       <CardContent className="min-w-0 space-y-3">
         <p

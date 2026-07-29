@@ -74,9 +74,7 @@ export function IpBatchResultsTable({
                 {row.ok ? (
                   <span>
                     {row.data.score?.risk_score ?? '—'}
-                    {row.data.score?.band
-                      ? ` · ${row.data.score.band}`
-                      : ''}
+                    {row.data.score?.band ? ` · ${row.data.score.band}` : ''}
                   </span>
                 ) : (
                   '—'

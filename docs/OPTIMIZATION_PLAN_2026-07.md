@@ -27,17 +27,17 @@ conversion — and G1 analytics already measures it.
 
 ## 1. Verified findings (all independently re-checked 2026-07-17)
 
-| Claim | Evidence | Impact |
-| --- | --- | --- |
-| npm `@creepjs/sdk` unpublished | `registry.npmjs.org/@creepjs%2Fsdk` → `{"error":"Not found"}` | docs' `npm install @creepjs/sdk` fails 100% of the time |
-| `cdn.creepjs.org` dead | DNS → fake-IP `198.18.2.202`, TLS handshake fails | every `<script src="https://cdn.creepjs.org/...">` in docs is dead |
-| **but a working self-hosted SDK exists** | `https://creepjs.org/sdk.js` → **200** | dead-link fix needs no npm publish — just repoint the URL |
-| uniqueness cold-start deadlock | prod `/v1/stats/uniqueness` → `{"totalSamples":13,"kAnonThreshold":20,"estimates":{}}` | "real rarity" differentiator not yet true; needs traffic first |
-| docs↔endpoint drift | `/v1/stats` → 404; real path is `/v1/stats/uniqueness` (`apps/api/src/routes/stats.ts:7`) | another latent "docs lie" |
-| IPbot pipeline is rich & live | `8.8.8.8` returns operator / service_role / RPKI / anycast / evidence signals; tier=pro 600/min | most under-used asset; deeper than ipinfo.io free tier |
+| Claim                                    | Evidence                                                                                        | Impact                                                             |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| npm `@creepjs/sdk` unpublished           | `registry.npmjs.org/@creepjs%2Fsdk` → `{"error":"Not found"}`                                   | docs' `npm install @creepjs/sdk` fails 100% of the time            |
+| `cdn.creepjs.org` dead                   | DNS → fake-IP `198.18.2.202`, TLS handshake fails                                               | every `<script src="https://cdn.creepjs.org/...">` in docs is dead |
+| **but a working self-hosted SDK exists** | `https://creepjs.org/sdk.js` → **200**                                                          | dead-link fix needs no npm publish — just repoint the URL          |
+| uniqueness cold-start deadlock           | prod `/v1/stats/uniqueness` → `{"totalSamples":13,"kAnonThreshold":20,"estimates":{}}`          | "real rarity" differentiator not yet true; needs traffic first     |
+| docs↔endpoint drift                     | `/v1/stats` → 404; real path is `/v1/stats/uniqueness` (`apps/api/src/routes/stats.ts:7`)       | another latent "docs lie"                                          |
+| IPbot pipeline is rich & live            | `8.8.8.8` returns operator / service_role / RPKI / anycast / evidence signals; tier=pro 600/min | most under-used asset; deeper than ipinfo.io free tier             |
 
 **Decisions locked with the operator (2026-07-17):** (a) this round ships the
-*plan only*, no code; (b) SDK is **not** published to npm now — docs promote the
+_plan only_, no code; (b) SDK is **not** published to npm now — docs promote the
 single `<script src="https://creepjs.org/sdk.js">` path, and the npm install
 snippet is demoted to "planned".
 
@@ -72,15 +72,15 @@ dead; `https://creepjs.org/sdk.js` (200) is the working replacement.
 
 **Files & anchors:**
 
-| File | Anchor | Change |
-| --- | --- | --- |
-| `apps/web/src/app/docs/page.tsx` | `:289` copy | "via npm or CDN" → "via a single `<script>` tag (npm package planned)" |
-| ↑ | `:307-320` "Option 2: CDN" block | promote to **Option 1**; `https://cdn.creepjs.org/v1/sdk.js` → `https://creepjs.org/sdk.js`; fix `fullBundleUrl` (see preflight) |
-| ↑ | `:294-303` "Option 1: NPM" block | demote to Option 2; annotate `# npm package coming soon` |
-| ↑ | `:338` `import … from '@creepjs/sdk'` | ESM import needs npm; switch to UMD global `const { getFingerprint } = window.CreepJS`, or mark "available after npm publish" |
-| `docs/SDK.md` | npm `:8/14/20`, cdn `:26/64/68`, imports `:38/52/125/208/223` | script-tag primary; npm/ESM examples marked planned |
-| `docs/API.md` | `:424/448/452` | `cdn.creepjs.org` → `creepjs.org/sdk.js` |
-| `README.md` | `:266/270` | same |
+| File                             | Anchor                                                        | Change                                                                                                                           |
+| -------------------------------- | ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/web/src/app/docs/page.tsx` | `:289` copy                                                   | "via npm or CDN" → "via a single `<script>` tag (npm package planned)"                                                           |
+| ↑                                | `:307-320` "Option 2: CDN" block                              | promote to **Option 1**; `https://cdn.creepjs.org/v1/sdk.js` → `https://creepjs.org/sdk.js`; fix `fullBundleUrl` (see preflight) |
+| ↑                                | `:294-303` "Option 1: NPM" block                              | demote to Option 2; annotate `# npm package coming soon`                                                                         |
+| ↑                                | `:338` `import … from '@creepjs/sdk'`                         | ESM import needs npm; switch to UMD global `const { getFingerprint } = window.CreepJS`, or mark "available after npm publish"    |
+| `docs/SDK.md`                    | npm `:8/14/20`, cdn `:26/64/68`, imports `:38/52/125/208/223` | script-tag primary; npm/ESM examples marked planned                                                                              |
+| `docs/API.md`                    | `:424/448/452`                                                | `cdn.creepjs.org` → `creepjs.org/sdk.js`                                                                                         |
+| `README.md`                      | `:266/270`                                                    | same                                                                                                                             |
 
 **Preflight (put in the task):** `curl -sI https://creepjs.org/sdk.full.js` — if not
 200, either build+copy per CLAUDE.md deploy step (`cp packages/sdk/dist/*.js
@@ -95,11 +95,11 @@ follow-up (D1 claimed "docs landed" but shipped dead links).
 **File:** `apps/web/src/app/ip/page.tsx` only (client component, static-export safe).
 
 1. `:127-150` `useEffect`: read `?q=` first (`new URLSearchParams(location.search)
-   .get('q')`); if present and valid (reuse existing IP validation), `setIp(q)` +
+.get('q')`); if present and valid (reuse existing IP validation), `setIp(q)` +
    trigger `runLookup()`; **else** fall back to the current `loadCurrentIp()`
    (`/my-ip` autodetect).
 2. `:211` after `setResult(data)`: `history.replaceState(null, '', '?q=' +
-   encodeURIComponent(ip.trim()))` — replaceState so the back stack stays clean.
+encodeURIComponent(ip.trim()))` — replaceState so the back stack stays clean.
 3. Add a "Copy shareable link" button (reuse the `copyResult`/toast pattern at
    `:243`).
 
@@ -136,7 +136,7 @@ lookup; a copied link reproduces the same result for another visitor. Folds into
   `datacenter-ip-detection`, `ip-fraud-score-explained`. Each embeds a live
   lookup box (share the `/ip` `runLookup` logic) and CTAs to `/ip`.
 - **Forbidden:** no auto-generated per-IP pages (LAUNCH_PLAN risk #3: thin content
-  + IPbot cost blowout).
+  - IPbot cost blowout).
 - **Acceptance:** landers in sitemap, FAQ JSON-LD, last-click satisfiable.
 
 ### B7 — Batch IP lookup + CSV export (`M`)

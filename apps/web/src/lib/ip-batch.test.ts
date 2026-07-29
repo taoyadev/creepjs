@@ -60,9 +60,7 @@ const response: IpBatchResponse = {
 
 describe('IP batch input', () => {
   it('splits commas and whitespace without splitting IPv6 colons', () => {
-    const parsed = parseIpBatchInput(
-      '8.8.8.8, 2001:db8::1\n::1\t8.8.8.8'
-    );
+    const parsed = parseIpBatchInput('8.8.8.8, 2001:db8::1\n::1\t8.8.8.8');
 
     expect(parsed.entries).toEqual([
       '8.8.8.8',

@@ -431,6 +431,7 @@ async function run() {
     );
     await page
       .getByText('Fingerprint ID', { exact: true })
+      .first()
       .waitFor({ timeout: 90_000 });
     await page.getByRole('tab', { name: 'Security' }).click();
     await page.waitForFunction(

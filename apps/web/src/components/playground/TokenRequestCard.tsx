@@ -72,11 +72,7 @@ export function TokenRequestCard({
             />
           </div>
 
-          <Button
-            type="submit"
-            disabled={busy || !email}
-            className="w-full"
-          >
+          <Button type="submit" disabled={busy || !email} className="w-full">
             <Play className="mr-2 h-4 w-4" aria-hidden="true" />
             {requesting ? 'Generating…' : 'Generate token'}
           </Button>

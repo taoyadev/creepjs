@@ -196,8 +196,8 @@ export function IpBatchWorkspace() {
               />
               <div className="flex flex-wrap justify-between gap-2 text-xs">
                 <p id="batch-input-help" className="text-muted-foreground">
-                  Separate entries with commas, spaces, tabs, or new lines.
-                  IPv6 colons remain intact.
+                  Separate entries with commas, spaces, tabs, or new lines. IPv6
+                  colons remain intact.
                 </p>
                 <p
                   id="batch-input-count"
@@ -274,8 +274,8 @@ export function IpBatchWorkspace() {
               </CardTitle>
               <CardDescription>
                 {response.successCount} succeeded · {response.failedCount}{' '}
-                failed · {response.skippedCount} skipped ·{' '}
-                {response.quotaCost} lookup units reserved
+                failed · {response.skippedCount} skipped · {response.quotaCost}{' '}
+                lookup units reserved
               </CardDescription>
             </div>
             <Button type="button" variant="outline" onClick={downloadCsv}>

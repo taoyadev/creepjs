@@ -53,4 +53,3 @@ stable status and error semantics, and render copyable snippets with native
   either theme, or with reduced motion
 - **THEN** controls remain reachable, focus remains visible, code and response
   output scroll without page overflow, and state meaning is preserved
-

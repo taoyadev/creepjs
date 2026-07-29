@@ -71,7 +71,9 @@ export interface FingerprintScan {
 }
 
 export function useFingerprintScan(): FingerprintScan {
-  const [fingerprint, setFingerprint] = useState<FingerprintResult | null>(null);
+  const [fingerprint, setFingerprint] = useState<FingerprintResult | null>(
+    null
+  );
   const [baseline, setBaseline] = useState<BaselineResponse | null>(null);
   const [progress, setProgress] = useState<ScanProgressState>(
     INITIAL_SCAN_PROGRESS

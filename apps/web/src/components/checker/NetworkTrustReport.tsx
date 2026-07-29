@@ -37,8 +37,7 @@ export function NetworkTrustReport({
   onRetryIp,
 }: NetworkTrustReportProps) {
   const model = buildNetworkTrustModel(result, ownIp);
-  const VerdictIcon =
-    model.tone === 'review' ? AlertTriangle : CheckCircle2;
+  const VerdictIcon = model.tone === 'review' ? AlertTriangle : CheckCircle2;
 
   return (
     <section id="trust" className="section-anchor space-y-5">

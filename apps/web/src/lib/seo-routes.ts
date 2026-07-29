@@ -32,8 +32,7 @@ export interface FingerprintTechnique {
 
 export const LAST_SEO_UPDATE = new Date('2026-06-13');
 
-export const IP_PROXY_PILOT_PATH =
-  '/ip-lookup/how-to-tell-if-an-ip-is-a-proxy';
+export const IP_PROXY_PILOT_PATH = '/ip-lookup/how-to-tell-if-an-ip-is-a-proxy';
 
 export const IP_PROXY_PILOT_ROUTE = {
   path: IP_PROXY_PILOT_PATH,

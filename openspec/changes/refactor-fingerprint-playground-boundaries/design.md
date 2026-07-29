@@ -52,4 +52,3 @@ component containing both static explanation and all interactive state.
 
 - None. The operator approved the Phase 8 direction in the implementation
   handoff.
-

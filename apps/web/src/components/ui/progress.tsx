@@ -28,8 +28,7 @@ const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
   ) => {
     const safeMax = Number.isFinite(max) && max > 0 ? max : 0;
     const safeValue = Number.isFinite(value) ? value : 0;
-    const clamped =
-      safeMax > 0 ? Math.min(Math.max(safeValue, 0), safeMax) : 0;
+    const clamped = safeMax > 0 ? Math.min(Math.max(safeValue, 0), safeMax) : 0;
     const percent = safeMax > 0 ? (clamped / safeMax) * 100 : 0;
 
     return (

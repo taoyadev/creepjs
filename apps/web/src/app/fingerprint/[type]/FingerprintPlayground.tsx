@@ -163,7 +163,12 @@ export default function FingerprintPlayground({
   const [data, setData] = useState<unknown>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [scanSteps, setScanSteps] = useState<ScanStep[]>([]);
+  const [scanSteps, setScanSteps] = useState<ScanStep[]>(() =>
+    (TYPE_SCAN_STEPS[type] ?? COMMON_SCAN_STEPS).map((stepName) => ({
+      name: stepName,
+      status: 'pending',
+    }))
+  );
   const [progress, setProgress] = useState(0);
 
   const loadFingerprint = useCallback(async () => {
@@ -237,7 +242,7 @@ export default function FingerprintPlayground({
           </Button>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="min-h-[20rem]">
         {loading && (
           <div className="space-y-4 py-4" role="status" aria-live="polite">
             <div className="space-y-2">

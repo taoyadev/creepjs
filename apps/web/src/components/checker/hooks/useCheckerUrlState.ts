@@ -1,10 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import {
-  collectorTabs,
-  type CollectorTabKey,
-} from '@creepjs/core';
+import { collectorTabs, type CollectorTabKey } from '@creepjs/core';
 
 export interface SharedCheckerSnapshot {
   fingerprintId: string;
@@ -17,9 +14,7 @@ export interface CheckerUrlState {
   snapshot: SharedCheckerSnapshot | null;
 }
 
-const TAB_KEYS = new Set<CollectorTabKey>(
-  collectorTabs.map((tab) => tab.key)
-);
+const TAB_KEYS = new Set<CollectorTabKey>(collectorTabs.map((tab) => tab.key));
 const FINGERPRINT_ID_PATTERN = /^[0-9A-Za-z_-]{1,128}$/;
 
 function finiteNumber(value: string | null, min: number, max: number) {
@@ -38,8 +33,7 @@ function finiteInteger(value: string | null, min: number, max: number) {
 export function parseCheckerUrl(search: string): CheckerUrlState {
   const params = new URLSearchParams(search);
   const requestedTab = params.get('tab') as CollectorTabKey | null;
-  const tab =
-    requestedTab && TAB_KEYS.has(requestedTab) ? requestedTab : 'all';
+  const tab = requestedTab && TAB_KEYS.has(requestedTab) ? requestedTab : 'all';
   const fingerprintId = params.get('fp')?.trim() ?? '';
 
   return {
@@ -93,7 +87,8 @@ export function useCheckerUrlState() {
   const [state, setState] = useState<CheckerUrlState>(EMPTY_STATE);
 
   useEffect(() => {
-    const readLocation = () => setState(parseCheckerUrl(window.location.search));
+    const readLocation = () =>
+      setState(parseCheckerUrl(window.location.search));
     readLocation();
     window.addEventListener('popstate', readLocation);
     return () => window.removeEventListener('popstate', readLocation);

@@ -10,9 +10,7 @@ describe('api-client', () => {
   it('normalizes relative API paths and preserves absolute URLs', () => {
     expect(apiUrl('v1/health')).toBe('https://api.creepjs.org/v1/health');
     expect(apiUrl('/my-ip')).toBe('https://api.creepjs.org/my-ip');
-    expect(apiUrl('https://example.com/data')).toBe(
-      'https://example.com/data'
-    );
+    expect(apiUrl('https://example.com/data')).toBe('https://example.com/data');
   });
 
   it('retries one failed GET and returns the successful JSON body', async () => {
@@ -33,9 +31,7 @@ describe('api-client', () => {
   });
 
   it('never replays a non-idempotent request even when retry is requested', async () => {
-    const fetchMock = vi
-      .fn()
-      .mockRejectedValue(new TypeError('network down'));
+    const fetchMock = vi.fn().mockRejectedValue(new TypeError('network down'));
     vi.stubGlobal('fetch', fetchMock);
 
     await expect(

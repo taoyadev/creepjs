@@ -9,10 +9,7 @@ import { SITE_CONFIG } from '@/lib/metadata';
 
 import { CodeSnippets } from './CodeSnippets';
 import { EndpointRunner } from './EndpointRunner';
-import {
-  ResponseViewer,
-  type PlaygroundResponse,
-} from './ResponseViewer';
+import { ResponseViewer, type PlaygroundResponse } from './ResponseViewer';
 import { TokenRequestCard } from './TokenRequestCard';
 
 const API_URL = SITE_CONFIG.apiUrl;

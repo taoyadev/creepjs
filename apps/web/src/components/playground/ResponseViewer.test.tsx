@@ -9,10 +9,7 @@ import { ResponseViewer } from './ResponseViewer';
 describe('ResponseViewer', () => {
   it('renders a stable idle response region', () => {
     const html = renderToStaticMarkup(
-      <ResponseViewer
-        loading={false}
-        response={{ body: '', tone: 'idle' }}
-      />
+      <ResponseViewer loading={false} response={{ body: '', tone: 'idle' }} />
     );
 
     expect(html).toContain('role="status"');
@@ -23,10 +20,7 @@ describe('ResponseViewer', () => {
 
   it('uses the shared accessible skeleton while loading', () => {
     const html = renderToStaticMarkup(
-      <ResponseViewer
-        loading
-        response={{ body: '', tone: 'idle' }}
-      />
+      <ResponseViewer loading response={{ body: '', tone: 'idle' }} />
     );
 
     expect(html).toContain('role="status"');

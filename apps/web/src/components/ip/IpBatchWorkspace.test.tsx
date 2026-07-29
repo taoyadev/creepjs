@@ -14,7 +14,9 @@ describe('IpBatchWorkspace', () => {
     expect(html).toContain('autoComplete="off"');
     expect(html).toContain('for="batch-ip-list"');
     expect(html).toContain('id="batch-ip-list"');
-    expect(html).toContain('aria-describedby="batch-input-help batch-input-count"');
+    expect(html).toContain(
+      'aria-describedby="batch-input-help batch-input-count"'
+    );
     expect(html).toContain('href="/playground"');
     expect(html).toContain('Run batch lookup');
     expect(html).toContain('disabled=""');

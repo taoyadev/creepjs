@@ -3,10 +3,7 @@ import { zValidator } from '@hono/zod-validator';
 import { createMiddleware } from 'hono/factory';
 import type { Env, RateLimitData, TokenData } from '../types';
 import { authMiddleware } from '../middleware/auth';
-import {
-  rateLimitMiddleware,
-  reserveRateLimit,
-} from '../middleware/ratelimit';
+import { rateLimitMiddleware, reserveRateLimit } from '../middleware/ratelimit';
 import {
   IpbotError,
   isValidIp,
@@ -234,7 +231,10 @@ const batchBodyTooLarge = (c: Context<Env>) =>
 /** Measure a cloned body so chunked and Content-Length requests share one cap. */
 const batchBodyLimit = createMiddleware<Env>(async (c, next) => {
   const contentLength = Number(c.req.header('content-length'));
-  if (Number.isFinite(contentLength) && contentLength > BATCH_BODY_LIMIT_BYTES) {
+  if (
+    Number.isFinite(contentLength) &&
+    contentLength > BATCH_BODY_LIMIT_BYTES
+  ) {
     return batchBodyTooLarge(c);
   }
 

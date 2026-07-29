@@ -16,8 +16,7 @@ import type { Env } from '../types';
  */
 export const corsMiddleware = createMiddleware<Env>((c, next) => {
   const path = new URL(c.req.url).pathname;
-  const isTokenRoute =
-    path === '/v1/token' || path.startsWith('/v1/token/');
+  const isTokenRoute = path === '/v1/token' || path.startsWith('/v1/token/');
 
   let origin = '*';
   if (isTokenRoute) {

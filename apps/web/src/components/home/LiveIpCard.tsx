@@ -113,7 +113,7 @@ export function LiveIpCard() {
             <div>
               <p className="text-muted-foreground text-xs">Address</p>
               <div className="mt-2 flex items-center gap-2">
-                <code className="min-w-0 flex-1 truncate rounded-md bg-muted px-3 py-2 font-mono text-sm font-bold">
+                <code className="bg-muted min-w-0 flex-1 truncate rounded-md px-3 py-2 font-mono text-sm font-bold">
                   {data.ip}
                 </code>
                 <CopyButton
@@ -134,7 +134,9 @@ export function LiveIpCard() {
                 <dt className="text-muted-foreground">Network</dt>
                 <dd className="text-right font-medium">
                   {data.asn?.organization ??
-                    (data.asn?.number ? `AS${data.asn.number}` : 'Not available')}
+                    (data.asn?.number
+                      ? `AS${data.asn.number}`
+                      : 'Not available')}
                 </dd>
               </div>
               <div className="flex justify-between gap-4">

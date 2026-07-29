@@ -23,9 +23,7 @@ import {
   generateMetadata as buildMetadata,
   structuredData,
 } from '@/lib/metadata';
-import {
-  FINGERPRINT_TECHNIQUES,
-} from '@/lib/seo-routes';
+import { FINGERPRINT_TECHNIQUES } from '@/lib/seo-routes';
 
 import FingerprintPlayground from './FingerprintPlayground';
 
@@ -34,9 +32,7 @@ export const dynamicParams = false;
 function getTechnique(
   type: string
 ): (typeof FINGERPRINT_TECHNIQUES)[number] | undefined {
-  return FINGERPRINT_TECHNIQUES.find(
-    (technique) => technique.slug === type
-  );
+  return FINGERPRINT_TECHNIQUES.find((technique) => technique.slug === type);
 }
 
 export function generateStaticParams() {
@@ -226,7 +222,7 @@ export default async function FingerprintPage({
             </aside>
           </div>
 
-          <article className="prose prose-slate dark:prose-invert mt-8 max-w-none rounded-lg border bg-background p-6 sm:p-8">
+          <article className="prose prose-slate dark:prose-invert bg-background mt-8 max-w-none rounded-lg border p-6 sm:p-8">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>
               {markdown}
             </ReactMarkdown>

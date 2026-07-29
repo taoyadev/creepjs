@@ -91,9 +91,7 @@ export function validateIpBatchInput(
     errors.push('Enter at least one IPv4 or IPv6 address.');
   }
   if (parsed.entries.length > IP_BATCH_MAX_ENTRIES) {
-    errors.push(
-      `Enter at most ${IP_BATCH_MAX_ENTRIES} addresses per batch.`
-    );
+    errors.push(`Enter at most ${IP_BATCH_MAX_ENTRIES} addresses per batch.`);
   }
   if (parsed.oversizedEntries.length > 0) {
     errors.push(
@@ -128,7 +126,9 @@ function neutralizeFormula(value: string): string {
 
 function csvCell(value: CsvValue): string {
   const text =
-    value === null || value === undefined ? '' : neutralizeFormula(String(value));
+    value === null || value === undefined
+      ? ''
+      : neutralizeFormula(String(value));
   return `"${text.replace(/"/gu, '""')}"`;
 }
 

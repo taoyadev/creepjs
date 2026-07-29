@@ -20,11 +20,7 @@ describe('playground rendering boundaries', () => {
   });
 
   it('does not persist or report the token from the client orchestrator', () => {
-    const source = readSource(
-      'components',
-      'playground',
-      'PlaygroundApp.tsx'
-    );
+    const source = readSource('components', 'playground', 'PlaygroundApp.tsx');
 
     for (const forbidden of [
       'localStorage',

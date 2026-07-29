@@ -206,7 +206,10 @@ describe('lookupIP', () => {
 
   it('maps network and malformed JSON failures to safe Ipbot errors', async () => {
     const networkEnv = createTestEnv();
-    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('socket secret')));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockRejectedValue(new Error('socket secret'))
+    );
 
     const networkError = await lookupIP('8.8.8.8', networkEnv).catch(
       (error) => error

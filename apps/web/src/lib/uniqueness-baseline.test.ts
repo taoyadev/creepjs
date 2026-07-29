@@ -33,13 +33,9 @@ describe('uniqueness baseline honesty', () => {
       rarityPercent: null,
       availableComponents: 0,
     });
-    expect(
-      formatBaselineInsight(
-        baseline(19).estimates.canvas,
-        20,
-        19
-      )
-    ).toBe('Baseline warming up (19/20)');
+    expect(formatBaselineInsight(baseline(19).estimates.canvas, 20, 19)).toBe(
+      'Baseline warming up (19/20)'
+    );
   });
 
   it('reveals a baseline-backed estimate only after the threshold', () => {
@@ -47,13 +43,9 @@ describe('uniqueness baseline honesty', () => {
       rarityPercent: 95,
       availableComponents: 1,
     });
-    expect(
-      formatBaselineInsight(
-        baseline(20).estimates.canvas,
-        20,
-        20
-      )
-    ).toBe('95% rare in the anonymous population baseline');
+    expect(formatBaselineInsight(baseline(20).estimates.canvas, 20, 20)).toBe(
+      '95% rare in the anonymous population baseline'
+    );
   });
 
   it('keeps a low-count bucket suppressed after the global baseline is ready', () => {

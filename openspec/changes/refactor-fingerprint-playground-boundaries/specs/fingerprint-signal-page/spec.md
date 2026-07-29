@@ -52,4 +52,3 @@ metadata, breadcrumbs, and the existing restrained schema set.
 - **WHEN** the route renders a canonical signal
 - **THEN** it includes only the approved TechArticle and BreadcrumbList schema
   behavior and does not add HowTo, Dataset, or additional FAQPage schema
-

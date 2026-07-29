@@ -6,10 +6,7 @@ import {
   ScanSearch,
   ShieldCheck,
 } from 'lucide-react';
-import {
-  collectorManifest,
-  type CollectorManifestEntry,
-} from '@creepjs/core';
+import { collectorManifest, type CollectorManifestEntry } from '@creepjs/core';
 import {
   Accordion,
   AccordionContent,
@@ -52,12 +49,14 @@ const CATEGORY_META: ReadonlyArray<{
   {
     key: 'accessibility',
     label: 'Display preferences',
-    description: 'Contrast, reduced motion, forced colors, and related settings.',
+    description:
+      'Contrast, reduced motion, forced colors, and related settings.',
   },
   {
     key: 'privacy',
     label: 'Privacy resistance',
-    description: 'Anti-fingerprinting signals, blockers, and consistency checks.',
+    description:
+      'Anti-fingerprinting signals, blockers, and consistency checks.',
   },
   {
     key: 'network',
@@ -116,7 +115,7 @@ export default function CheckerPage() {
               </div>
               <a
                 href="#scan"
-                className="bg-primary text-primary-foreground inline-flex min-h-11 items-center gap-2 rounded-md px-5 py-3 text-sm font-semibold shadow-sm transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring inline-flex min-h-11 items-center gap-2 rounded-md px-5 py-3 text-sm font-semibold shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
               >
                 View my live scan
                 <ArrowDown className="h-4 w-4" aria-hidden="true" />
@@ -180,11 +179,11 @@ export default function CheckerPage() {
           </div>
           <p className="text-muted-foreground text-base leading-7">
             CreepJS reports which browser APIs respond, the values or hashes
-            they expose, collection timing, consistency warnings, and a
-            coverage score. It groups those observations into readable signal
-            cards so you can distinguish ordinary configuration data from
-            privacy resistance or automation indicators. It does not identify
-            a person or claim a fraud probability.
+            they expose, collection timing, consistency warnings, and a coverage
+            score. It groups those observations into readable signal cards so
+            you can distinguish ordinary configuration data from privacy
+            resistance or automation indicators. It does not identify a person
+            or claim a fraud probability.
           </p>
         </section>
 
@@ -204,7 +203,7 @@ export default function CheckerPage() {
               everything into one unexplained score.
             </p>
           </div>
-          <div className="grid gap-px overflow-hidden rounded-xl border bg-border md:grid-cols-2 lg:grid-cols-4">
+          <div className="bg-border grid gap-px overflow-hidden rounded-xl border md:grid-cols-2 lg:grid-cols-4">
             {CATEGORY_META.map((category) => {
               const entries = collectorManifest.filter(
                 (entry) => entry.category === category.key
@@ -267,7 +266,7 @@ export default function CheckerPage() {
 
         <section
           id="privacy"
-          className="section-anchor bg-slate-950 rounded-2xl p-7 text-slate-100 md:p-10"
+          className="section-anchor rounded-2xl bg-slate-950 p-7 text-slate-100 md:p-10"
         >
           <div className="grid gap-8 lg:grid-cols-[0.7fr_1.3fr]">
             <div className="space-y-4">
@@ -282,17 +281,17 @@ export default function CheckerPage() {
             <div className="space-y-4 text-sm leading-7 text-slate-300">
               <p>
                 The full fingerprint is collected and its diagnostic ID is
-                computed in your browser. CreepJS does not upload the raw
-                canvas image or the complete collector result from this page.
-                Local history stays in this browser.
+                computed in your browser. CreepJS does not upload the raw canvas
+                image or the complete collector result from this page. Local
+                history stays in this browser.
               </p>
               <p>
                 The optional uniqueness baseline sends a bounded comparison
                 subset—Canvas hash, WebGL renderer, timezone, font count, and
                 screen tuple—to the CreepJS API. The service stores coarse,
                 hashed aggregate buckets and suppresses population estimates
-                below the k-anonymity threshold. This boundary is why the
-                report distinguishes live evidence, coverage, and rarity.
+                below the k-anonymity threshold. This boundary is why the report
+                distinguishes live evidence, coverage, and rarity.
               </p>
             </div>
           </div>
@@ -300,7 +299,9 @@ export default function CheckerPage() {
 
         <section id="faq" className="section-anchor grid gap-8 lg:grid-cols-3">
           <div className="space-y-3">
-            <p className="text-primary text-sm font-semibold">Common questions</p>
+            <p className="text-primary text-sm font-semibold">
+              Common questions
+            </p>
             <h2 className="text-3xl font-bold tracking-tight">
               Fingerprinting without the mythology
             </h2>

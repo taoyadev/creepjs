@@ -19,9 +19,9 @@ export function CheckerSectionNav() {
   );
 
   useEffect(() => {
-    const elements = SECTIONS.map(({ id }) => document.getElementById(id)).filter(
-      (element): element is HTMLElement => element !== null
-    );
+    const elements = SECTIONS.map(({ id }) =>
+      document.getElementById(id)
+    ).filter((element): element is HTMLElement => element !== null);
     if (elements.length === 0 || !('IntersectionObserver' in window)) return;
 
     const observer = new IntersectionObserver(
@@ -30,9 +30,7 @@ export function CheckerSectionNav() {
           .filter((entry) => entry.isIntersecting)
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
         if (visible) {
-          setActiveId(
-            visible.target.id as (typeof SECTIONS)[number]['id']
-          );
+          setActiveId(visible.target.id as (typeof SECTIONS)[number]['id']);
         }
       },
       {
@@ -48,7 +46,7 @@ export function CheckerSectionNav() {
   return (
     <nav
       aria-label="Checker sections"
-      className="bg-background/95 sticky top-16 z-30 border-b backdrop-blur supports-[backdrop-filter]:bg-background/80"
+      className="bg-background/95 supports-[backdrop-filter]:bg-background/80 sticky top-16 z-30 border-b backdrop-blur"
     >
       <div className="container mx-auto max-w-7xl overflow-x-auto px-4 md:px-8">
         <div className="flex min-w-max gap-1 py-2">
@@ -61,7 +59,7 @@ export function CheckerSectionNav() {
                 aria-current={active ? 'location' : undefined}
                 onClick={() => setActiveId(section.id)}
                 className={cn(
-                  'rounded-md px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  'focus-visible:ring-ring rounded-md px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2',
                   active
                     ? 'bg-primary/10 text-foreground'
                     : 'text-muted-foreground hover:bg-muted hover:text-foreground'
