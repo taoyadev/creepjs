@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
-import { Suspense } from 'react';
 import './globals.css';
 import { defaultMetadata, structuredData } from '@/lib/metadata';
 import { StructuredData } from '@/components/StructuredData';
@@ -66,22 +65,9 @@ export default function RootLayout({
             {/* Global Header - Loads First */}
             <DynamicHeader />
 
-            {/* Main content - Loads with Suspense */}
-            <main className="flex-1">
-              <Suspense
-                fallback={
-                  <div className="container mx-auto px-4 py-8">
-                    <div className="animate-pulse space-y-4">
-                      <div className="h-8 w-3/4 rounded bg-gray-200 dark:bg-gray-800"></div>
-                      <div className="h-4 w-full rounded bg-gray-200 dark:bg-gray-800"></div>
-                      <div className="h-4 w-5/6 rounded bg-gray-200 dark:bg-gray-800"></div>
-                    </div>
-                  </div>
-                }
-              >
-                {children}
-              </Suspense>
-            </main>
+            {/* App Router preserves route-level loading boundaries. Keep the
+                server-rendered page shell mounted while client islands suspend. */}
+            <main className="flex-1">{children}</main>
 
             {/* Global Footer - Loads First */}
             <Footer />
