@@ -70,6 +70,12 @@ The project MUST securely manage sensitive credentials (Cloudflare API tokens, a
 - **WHEN** the deployment workflow runs
 - **THEN** it accesses `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` from GitHub secrets, uses them for Wrangler authentication, and completes deployment without exposing credentials in logs.
 
+#### Scenario: Production edge policy reconciliation
+
+- **GIVEN** the repository publishes an explicit crawler policy and a static product surface
+- **WHEN** an administrator manually runs the edge-policy workflow in apply mode
+- **THEN** the workflow resolves exactly the `creepjs.org` zone, disables Cloudflare managed `robots.txt` and Bot Fight Mode injection, masks the zone identifier, and verifies that production serves the repository-owned policy without injected challenge JavaScript.
+
 #### Scenario: Local development secrets
 
 - **GIVEN** a developer sets up the project locally

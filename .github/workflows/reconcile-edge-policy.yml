@@ -1,0 +1,135 @@
+name: Reconcile Cloudflare Edge Policy
+
+on:
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: Apply the reviewed bot and robots policy
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  reconcile:
+    name: Audit or reconcile production edge policy
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: production
+
+    steps:
+      - name: Resolve the production zone
+        id: zone
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+
+          response="$(
+            curl --fail-with-body --silent --show-error --get \
+              https://api.cloudflare.com/client/v4/zones \
+              --header "Authorization: Bearer ${CF_API_TOKEN}" \
+              --data-urlencode 'name=creepjs.org' \
+              --data-urlencode "account.id=${CF_ACCOUNT_ID}"
+          )"
+
+          count="$(jq -r '.result | length' <<<"${response}")"
+          if [[ "$(jq -r '.success' <<<"${response}")" != 'true' || "${count}" != '1' ]]; then
+            jq -r '.errors[]? | "::error::Cloudflare: \(.message)"' <<<"${response}"
+            echo "::error::Expected exactly one active creepjs.org zone; found ${count}."
+            exit 1
+          fi
+
+          zone_id="$(jq -r '.result[0].id' <<<"${response}")"
+          echo "::add-mask::${zone_id}"
+          echo "zone_id=${zone_id}" >>"${GITHUB_OUTPUT}"
+
+      - name: Audit current bot and robots policy
+        id: audit
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ZONE_ID: ${{ steps.zone.outputs.zone_id }}
+        run: |
+          set -euo pipefail
+
+          response="$(
+            curl --fail-with-body --silent --show-error \
+              "https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/bot_management" \
+              --header "Authorization: Bearer ${CF_API_TOKEN}"
+          )"
+
+          if [[ "$(jq -r '.success' <<<"${response}")" != 'true' ]]; then
+            jq -r '.errors[]? | "::error::Cloudflare: \(.message)"' <<<"${response}"
+            exit 1
+          fi
+
+          {
+            echo '### Current Cloudflare edge policy'
+            echo
+            echo '| Setting | Value |'
+            echo '| --- | --- |'
+            echo "| Bot Fight Mode | \`$(jq -r '.result.fight_mode // false' <<<"${response}")\` |"
+            echo "| JavaScript detections | \`$(jq -r '.result.enable_js // false' <<<"${response}")\` |"
+            echo "| Managed robots.txt | \`$(jq -r '.result.is_robots_txt_managed // false' <<<"${response}")\` |"
+          } >>"${GITHUB_STEP_SUMMARY}"
+
+      - name: Apply reviewed policy
+        if: inputs.apply
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ZONE_ID: ${{ steps.zone.outputs.zone_id }}
+        run: |
+          set -euo pipefail
+
+          response="$(
+            curl --fail-with-body --silent --show-error \
+              --request PUT \
+              "https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/bot_management" \
+              --header "Authorization: Bearer ${CF_API_TOKEN}" \
+              --header 'Content-Type: application/json' \
+              --data '{"fight_mode":false,"is_robots_txt_managed":false}'
+          )"
+
+          if [[ "$(jq -r '.success' <<<"${response}")" != 'true' ]]; then
+            jq -r '.errors[]? | "::error::Cloudflare: \(.message)"' <<<"${response}"
+            exit 1
+          fi
+
+          if [[ "$(jq -r '.result.fight_mode // false' <<<"${response}")" != 'false' ||
+                "$(jq -r '.result.is_robots_txt_managed // false' <<<"${response}")" != 'false' ]]; then
+            echo '::error::Cloudflare accepted the request but did not persist the reviewed policy.'
+            exit 1
+          fi
+
+      - name: Verify production edge output
+        if: inputs.apply
+        run: |
+          set -euo pipefail
+
+          for attempt in {1..12}; do
+            home="$(curl --fail --silent --show-error https://creepjs.org/)"
+            robots="$(curl --fail --silent --show-error https://creepjs.org/robots.txt)"
+
+            if ! grep -Fq '/cdn-cgi/challenge-platform/' <<<"${home}" &&
+              ! grep -Fq 'BEGIN Cloudflare Managed content' <<<"${robots}" &&
+              ! grep -Fiq 'Content-Signal:' <<<"${robots}"; then
+              {
+                echo
+                echo 'Production verification passed:'
+                echo
+                echo '- no Cloudflare JavaScript Detection injection'
+                echo '- no Cloudflare managed robots.txt preamble'
+                echo '- repository-owned crawler policy is authoritative'
+              } >>"${GITHUB_STEP_SUMMARY}"
+              exit 0
+            fi
+
+            sleep 5
+          done
+
+          echo '::error::Production edge output did not converge within 60 seconds.'
+          exit 1

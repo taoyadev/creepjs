@@ -248,7 +248,8 @@ The script automatically:
 
 ### GitHub Actions Workflows
 
-Three automated workflows are configured:
+Three automated deployment workflows and one manual edge-policy workflow are
+configured:
 
 #### 1. CI - Pre-merge Checks (`.github/workflows/ci.yml`)
 
@@ -297,6 +298,20 @@ Three automated workflows are configured:
 5. **Lighthouse CI** on PR previews
 
 **Deployment URL:** `https://creepjs.org`
+
+#### 4. Reconcile Edge Policy (`.github/workflows/reconcile-edge-policy.yml`)
+
+**Trigger:** Manual `workflow_dispatch` only
+
+Run once with `apply=false` to audit the exact `creepjs.org` zone. After
+reviewing the job summary, run with `apply=true` to make the repository-owned
+`robots.txt` authoritative and remove Bot Fight Mode JavaScript injection from
+the static product surface. The workflow masks the zone ID and verifies the
+live HTML and crawler policy before it reports success.
+
+Turning off Bot Fight Mode does not disable Cloudflare's network DDoS
+protection. API authentication, weighted quotas, and rate limits remain
+application-owned controls.
 
 ### Deployment Process
 

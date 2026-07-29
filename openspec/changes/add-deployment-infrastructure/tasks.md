@@ -19,6 +19,11 @@
   - `CLOUDFLARE_API_TOKEN` for Wrangler deployments
   - `CLOUDFLARE_ACCOUNT_ID` for account targeting
   - Environment-specific secrets (staging vs production)
+- [ ] 1.5 Reconcile the production edge crawler policy
+  - Audit the exact `creepjs.org` zone without printing credentials or zone IDs
+  - Disable Cloudflare managed `robots.txt` so the reviewed repository policy is authoritative
+  - Disable Bot Fight Mode JavaScript injection on the static product surface
+  - Verify the production HTML and `robots.txt` converge before reporting success
 
 ## 2. Environment Management Scripts
 
