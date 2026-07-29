@@ -200,10 +200,12 @@ jobs:
         run: |
           echo "Testing authenticated batch contract without an upstream IP lookup..."
           response_file="$RUNNER_TEMP/batch-smoke.json"
+          # The custom domain may WAF-block GitHub-hosted runners. This origin
+          # targets the exact deployed Worker version without that edge policy.
           status_code=$(curl -sS --max-time 20 \
             -o "$response_file" \
             -w "%{http_code}" \
-            https://api.creepjs.org/v1/ip/batch \
+            https://creepjs-api.difft.workers.dev/v1/ip/batch \
             -X POST \
             -H "Content-Type: application/json" \
             -H "X-API-Token: ${{ secrets.TEST_API_TOKEN }}" \
