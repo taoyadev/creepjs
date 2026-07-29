@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Browser acceptance for an immutable Cloudflare Pages deployment.
+ * Browser acceptance for a Cloudflare Pages preview or the canonical site.
  *
  * Run through the OpenClaw E2E lane, which provides Playwright as shared
  * tooling. This script intentionally adds no project browser dependency.
@@ -12,9 +12,14 @@ const path = require('node:path');
 const { chromium } = require('playwright');
 
 const baseUrl = process.env.QA_BASE_URL;
-if (!baseUrl || !/^https:\/\/[^/]+\.pages\.dev$/u.test(baseUrl)) {
+const isImmutablePreview =
+  typeof baseUrl === 'string' &&
+  /^https:\/\/[^/]+\.pages\.dev$/u.test(baseUrl);
+const isExplicitProduction =
+  process.env.QA_ALLOW_PRODUCTION === '1' && baseUrl === 'https://creepjs.org';
+if (!isImmutablePreview && !isExplicitProduction) {
   throw new Error(
-    'QA_BASE_URL must be an immutable HTTPS Cloudflare Pages URL.'
+    'QA_BASE_URL must be an immutable Pages URL, or the explicit canonical production URL.'
   );
 }
 
