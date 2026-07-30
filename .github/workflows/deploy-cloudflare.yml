@@ -6,6 +6,11 @@ name: Deploy to Cloudflare
 on:
   workflow_dispatch:
 
+# pages-action records a GitHub Deployment; nothing else writes back.
+permissions:
+  contents: read
+  deployments: write
+
 env:
   NODE_VERSION: '20'
   PNPM_VERSION: '9.15.4'
@@ -26,7 +31,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@eae0cfeb286e66ffb5155f1a79b90583a127a68b # v2
         with:
           version: ${{ env.PNPM_VERSION }}
 
@@ -36,7 +41,7 @@ jobs:
           echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
 
       - name: Setup pnpm cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ env.STORE_PATH }}
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -64,7 +69,7 @@ jobs:
           NEXT_PUBLIC_SITE_URL: ${{ secrets.CLOUDFLARE_WEB_URL }}
 
       - name: Deploy to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
+        uses: cloudflare/pages-action@f0a1cd58cd66095dee69bfa18fa5efd1dde93bca # v1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
