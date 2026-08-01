@@ -191,7 +191,9 @@ const result = await getFingerprint({
   cacheTtl: 3600, // cache TTL in seconds
 });
 
-// Returns: { fingerprintId, confidence, uniqueness, timestamp, cached }
+// Returns: { fingerprintId, data, timestamp, confidence, coverage, cached }
+// `confidence` is the collector success ratio, not a uniqueness estimate.
+// Rarity lives behind GET /v1/stats/uniqueness, not on this response.
 ```
 
 **Build Output**:
