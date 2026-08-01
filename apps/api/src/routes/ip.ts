@@ -1,7 +1,7 @@
 import { Hono, type Context } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { createMiddleware } from 'hono/factory';
-import type { Env, RateLimitData, TokenData } from '../types';
+import type { Env, TokenData } from '../types';
 import { authMiddleware } from '../middleware/auth';
 import { rateLimitMiddleware, reserveRateLimit } from '../middleware/ratelimit';
 import {
@@ -13,6 +13,7 @@ import {
 import { IpBatchRequestSchema } from '../utils/validation';
 import { logEvent } from '../utils/logging';
 import { hashIpForLog } from '../utils/privacy';
+import { releaseQuota, reserveQuota, resetInSeconds } from '../utils/quota';
 
 const app = new Hono<Env>();
 
@@ -20,7 +21,6 @@ const app = new Hono<Env>();
 // so the public endpoint is protected server-side instead of exposing the key.
 const PUBLIC_PER_IP_DEFAULT = 30; // lookups per visitor IP per day
 const PUBLIC_GLOBAL_DEFAULT = 2000; // total UNCACHED upstream calls per day
-const DAY_MS = 24 * 60 * 60 * 1000;
 
 function routeStatus(error: IpbotError): 400 | 429 | 502 | 503 {
   if (error.kind === 'input') return 400;
@@ -102,33 +102,6 @@ const clientIp = (c: Context<Env>) =>
   ).trim();
 
 /**
- * Read a rolling-daily counter without incrementing.
- * Returns `{ count, resetAt }` for the active window (count 0 if expired).
- */
-async function readCounter(env: Env['Bindings'], key: string) {
-  const now = Date.now();
-  const data = await env.RATE_LIMIT.get<RateLimitData>(key, 'json');
-  if (data && now < data.resetAt)
-    return { count: data.count, resetAt: data.resetAt };
-  return { count: 0, resetAt: now + DAY_MS };
-}
-
-async function bumpCounter(
-  env: Env['Bindings'],
-  key: string,
-  current: { count: number; resetAt: number }
-) {
-  await env.RATE_LIMIT.put(
-    key,
-    JSON.stringify({
-      count: current.count + 1,
-      resetAt: current.resetAt,
-    } satisfies RateLimitData),
-    { expirationTtl: 86400 }
-  );
-}
-
-/**
  * Public IP intelligence — no token required. Protected by a per-visitor-IP
  * daily limit and a global daily cap on upstream (uncached) calls so the paid
  * IPbot quota cannot be exhausted by abuse. The IPbot key is never exposed.
@@ -153,10 +126,11 @@ app.get('/public/:ip', async (c) => {
   const perIpKey = `pubip:ip:${visitorHash}`;
   const globalKey = 'pubip:global';
 
-  // 1. Per-visitor-IP daily limit.
-  const perIp = await readCounter(c.env, perIpKey);
-  if (perIp.count >= perIpLimit) {
-    const retryIn = Math.max(1, Math.ceil((perIp.resetAt - Date.now()) / 1000));
+  // 1. Per-visitor-IP daily limit. Reserved up front so concurrent requests
+  //    cannot all pass on the same pre-increment count.
+  const perIp = await reserveQuota(c.env, perIpKey, { limit: perIpLimit });
+  if (!perIp.allowed) {
+    const retryIn = resetInSeconds(perIp.resetAt);
     c.header('Retry-After', String(retryIn));
     return c.json(
       {
@@ -170,8 +144,9 @@ app.get('/public/:ip', async (c) => {
   }
 
   // 2. Global daily cap (protects the paid upstream quota).
-  const global = await readCounter(c.env, globalKey);
-  if (global.count >= globalLimit) {
+  const global = await reserveQuota(c.env, globalKey, { limit: globalLimit });
+  if (!global.allowed) {
+    await releaseQuota(c.env, perIpKey);
     return c.json(
       {
         error:
@@ -185,11 +160,10 @@ app.get('/public/:ip', async (c) => {
   try {
     const result = await lookupIP(ip, c.env);
 
-    // Count this visitor's request; count global only for real upstream calls.
-    await bumpCounter(c.env, perIpKey, perIp);
-    if (!result.cached) await bumpCounter(c.env, globalKey, global);
+    // The global cap meters the paid upstream, so a cache hit gives it back.
+    if (result.cached) await releaseQuota(c.env, globalKey);
 
-    const remaining = Math.max(0, perIpLimit - (perIp.count + 1));
+    const remaining = Math.max(0, perIpLimit - perIp.count);
     logEvent({
       msg: 'ip.public_lookup',
       request_id: c.get('requestId'),
@@ -197,7 +171,7 @@ app.get('/public/:ip', async (c) => {
       cached: result.cached,
       high_risk: result.highRisk,
       public_remaining: remaining,
-      global_count: result.cached ? global.count : global.count + 1,
+      global_count: result.cached ? global.count - 1 : global.count,
       ipbot_remaining: result.rateLimit.remaining,
     });
     return c.json({
@@ -213,6 +187,9 @@ app.get('/public/:ip', async (c) => {
       },
     });
   } catch (error) {
+    // The lookup never happened, so neither reservation was spent.
+    await releaseQuota(c.env, perIpKey);
+    await releaseQuota(c.env, globalKey);
     return ipbotErrorResponse(c, error);
   }
 });

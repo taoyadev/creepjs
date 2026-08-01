@@ -1,9 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import app from '../src/index';
-import { createTestEnv } from './utils';
+import { createTestEnv, readQuotaCount, seedQuota } from './utils';
 import type { IpbotResponse } from '../src/services/ipbot';
 import { hashIpForLog } from '../src/utils/privacy';
-import type { RateLimitData } from '../src/types';
 
 const GOOGLE_DNS: IpbotResponse = {
   ip: '8.8.8.8',
@@ -109,28 +108,14 @@ describe('/my-ip route', () => {
     );
 
     const visitorKey = `myip:ip:${await hashIpForLog('8.8.8.8')}`;
-    const perVisitor = await env.RATE_LIMIT.get<RateLimitData>(
-      visitorKey,
-      'json'
-    );
-    const global = await env.RATE_LIMIT.get<RateLimitData>(
-      'pubip:global',
-      'json'
-    );
-    expect(perVisitor?.count).toBe(1);
-    expect(global?.count).toBe(1);
+    expect(await readQuotaCount(env, visitorKey)).toBe(1);
+    expect(await readQuotaCount(env, 'pubip:global')).toBe(1);
   });
 
   it('degrades to geo-only once the per-visitor risk cap is exhausted', async () => {
     const visitorKey = `myip:ip:${await hashIpForLog('8.8.8.8')}`;
-    const env = createTestEnv({
-      rateLimits: {
-        [visitorKey]: JSON.stringify({
-          count: 10,
-          resetAt: Date.now() + 60_000,
-        } satisfies RateLimitData),
-      },
-    });
+    const env = createTestEnv();
+    await seedQuota(env, visitorKey, 10);
     const fetchMock = vi.fn();
     vi.stubGlobal('fetch', fetchMock);
 
@@ -149,14 +134,8 @@ describe('/my-ip route', () => {
   });
 
   it('respects the shared global upstream budget', async () => {
-    const env = createTestEnv({
-      rateLimits: {
-        'pubip:global': JSON.stringify({
-          count: 2000,
-          resetAt: Date.now() + 60_000,
-        } satisfies RateLimitData),
-      },
-    });
+    const env = createTestEnv();
+    await seedQuota(env, 'pubip:global', 2000);
     const fetchMock = vi.fn();
     vi.stubGlobal('fetch', fetchMock);
 

@@ -96,7 +96,7 @@ pnpm --filter @creepjs/sdk build --watch
 
 - **Framework**: Hono.js (lightweight, optimized for Cloudflare Workers)
 - **Runtime**: Cloudflare Workers (V8 Isolates, <50ms response time)
-- **Storage**: Cloudflare KV (tokens + rate limits)
+- **Storage**: Cloudflare KV (tokens, IP cache, fingerprint stats) + a Durable Object for atomic quota counters
 - **Validation**: Zod schemas for all inputs
 
 **Key Endpoints**:
@@ -109,7 +109,9 @@ pnpm --filter @creepjs/sdk build --watch
 1. CORS (`hono/cors`)
 2. Logger (`hono/logger`)
 3. Auth middleware (validates `X-API-Token` header against KV)
-4. Rate limit middleware (1000 requests/day per token, tracked in KV)
+4. Rate limit middleware (1000 requests/day, counted per token-owning email
+   identity in a `QuotaCounter` Durable Object — KV has no compare-and-swap, so
+   it could not enforce a cap against concurrent requests)
 
 **File Structure**:
 
@@ -141,18 +143,27 @@ apps/api/src/
 - `timezone.ts` - Timezone detection
 - Additional collectors: CSS, media devices, text metrics, SVG, math precision, etc.
 
-**Hashing** (`src/utils/hash.ts`):
+**Hashing** (`src/utils/hash.ts`, `src/utils/identity.ts`):
 
-- Algorithm: MurmurHash3
+- Algorithm: SHA-256 truncated to 128 bits (`crypto.subtle`)
 - Encoding: Base62 for compact fingerprint IDs
-- Normalization: Stable JSON serialization (sorted keys)
+- Normalization: `canonicalize()` — sorted keys, `undefined` treated as absent,
+  so the API re-derives the same string from a decoded request body
+- Identity projection: volatile signals (network estimates, devicePixelRatio,
+  timezone offset, AudioContext state, canvas dataURL, derived
+  `lies`/`resistance`) are excluded from the ID and returned as diagnostics
+- `IDENTITY_SCHEMA_VERSION` is mixed into the digest; bumping it retires every
+  issued ID and is mirrored in the SDK cache key
 
 **Main Function**:
 
 ```typescript
-generateFingerprintId(components: Components): string
-// Normalizes components → hashes with MurmurHash3 → Base62 encoding
+computeFingerprintId(data: FingerprintData): Promise<string>
+// projectIdentityData → canonicalize → SHA-256/128 → Base62
 ```
+
+The API recomputes this from the submitted components and ignores any
+`fingerprintId` in the request body.
 
 ### Frontend (apps/web)
 
@@ -322,10 +333,13 @@ cp packages/sdk/dist/creepjs.umd.js apps/web/public/sdk.js
 ## Key Architecture Decisions
 
 1. **Cloudflare Workers for API**: Edge computing ensures <50ms response times globally, zero cold starts
-2. **Stateless Design**: No database required; KV only for tokens and rate limits
+2. **Stateless Design**: No database required; KV for tokens and caches, one Durable Object for quota counters
 3. **Privacy-First**: No fingerprint data stored; only computed hashes returned
 4. **Monorepo**: Shared TypeScript types and utilities across web/api/sdk
-5. **MurmurHash3**: Fast, collision-resistant hashing for fingerprint IDs
+5. **SHA-256/128 for fingerprint IDs**: derived server-side from a stable
+   component projection, so an ID cannot be claimed by the caller and does not
+   drift when volatile signals change. MurmurHash3 remains only for
+   collector-internal value reduction.
 
 ## Common Issues
 

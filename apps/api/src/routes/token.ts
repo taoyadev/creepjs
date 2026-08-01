@@ -1,15 +1,21 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import type { Context } from 'hono';
-import type { Env, RateLimitData, TokenData } from '../types';
+import type { Env, TokenData } from '../types';
 import { TokenRequestSchema } from '../utils/validation';
 import { sha256Hex } from '../utils/privacy';
+import { normalizeEmailIdentity } from '../utils/email';
+import { DAY_MS, releaseQuota, reserveQuota } from '../utils/quota';
 
 const app = new Hono<Env>();
 
 const TOKEN_RATE_LIMIT_PER_DAY = 10;
-const TOKEN_RATE_LIMIT_WINDOW_MS = 24 * 60 * 60 * 1000;
-const TOKEN_RATE_LIMIT_TTL_SECONDS = 24 * 60 * 60;
+/**
+ * Tokens per inbox per day. Lower than the per-IP cap because the daily request
+ * allowance is now shared across an inbox's tokens, so more tokens buy no extra
+ * capacity — this only bounds how much KV one requester can fill.
+ */
+const TOKEN_LIMIT_PER_EMAIL_PER_DAY = 3;
 
 const BASE62 =
   '0123456789' + 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' + 'abcdefghijklmnopqrstuvwxyz';
@@ -52,56 +58,43 @@ function getClientIp(c: Context<Env>): string {
   );
 }
 
-async function checkTokenRateLimit(
-  c: Context<Env>,
-  ip: string
-): Promise<boolean> {
-  const ipKey = await sha256Hex(ip);
-  const rateLimitKey = `token-ratelimit:${ipKey}`;
-
-  const now = Date.now();
-  const stored = await c.env.RATE_LIMIT.get<RateLimitData>(
-    rateLimitKey,
-    'json'
-  );
-
-  const resetAt =
-    stored && now < stored.resetAt
-      ? stored.resetAt
-      : now + TOKEN_RATE_LIMIT_WINDOW_MS;
-  const count = stored && now < stored.resetAt ? stored.count : 0;
-
-  if (count >= TOKEN_RATE_LIMIT_PER_DAY) {
-    return false;
-  }
-
-  await c.env.RATE_LIMIT.put(
-    rateLimitKey,
-    JSON.stringify({ count: count + 1, resetAt } satisfies RateLimitData),
-    { expirationTtl: TOKEN_RATE_LIMIT_TTL_SECONDS }
-  );
-
-  return true;
-}
-
 app.post('/', zValidator('json', TokenRequestSchema), async (c) => {
   const { email } = c.req.valid('json');
   const ip = getClientIp(c);
 
-  // Check rate limit
-  if (!(await checkTokenRateLimit(c, ip))) {
+  const ipKey = `token-mint:ip:${await sha256Hex(ip)}`;
+  const ipReservation = await reserveQuota(c.env, ipKey, {
+    limit: TOKEN_RATE_LIMIT_PER_DAY,
+    windowMs: DAY_MS,
+  });
+  if (!ipReservation.allowed) {
+    return c.json(
+      { error: 'Rate limit exceeded. Try again in 24 hours.' },
+      429
+    );
+  }
+
+  // Minting from many addresses that reach one inbox was the cheap way to farm
+  // allowance, so the inbox is metered too.
+  const identity = normalizeEmailIdentity(email);
+  const emailKey = `token-mint:email:${await sha256Hex(identity)}`;
+  const emailReservation = await reserveQuota(c.env, emailKey, {
+    limit: TOKEN_LIMIT_PER_EMAIL_PER_DAY,
+    windowMs: DAY_MS,
+  });
+  if (!emailReservation.allowed) {
+    // The request never reached issuance, so the IP reservation is refunded.
+    await releaseQuota(c.env, ipKey);
     return c.json(
       {
-        error: 'Rate limit exceeded. Try again in 24 hours.',
+        error: `This address has reached its daily limit of ${TOKEN_LIMIT_PER_EMAIL_PER_DAY} tokens. Existing tokens keep working.`,
       },
       429
     );
   }
 
-  // Generate token
   const token = generateToken();
 
-  // Store token data
   const tokenData: TokenData = {
     email,
     createdAt: Date.now(),

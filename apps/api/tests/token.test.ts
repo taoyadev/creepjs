@@ -53,7 +53,8 @@ describe('Token route', () => {
 
   it('enforces per-IP rate limit', async () => {
     const env = createTestEnv();
-    const makeRequest = () =>
+    // Distinct inboxes, so this exercises the IP cap rather than the per-email one.
+    const makeRequest = (n: number) =>
       app.fetch(
         new Request('http://localhost/v1/token', {
           method: 'POST',
@@ -61,21 +62,78 @@ describe('Token route', () => {
             'Content-Type': 'application/json',
             'CF-Connecting-IP': '2.2.2.2',
           },
-          body: JSON.stringify({ email: 'limit@example.com' }),
+          body: JSON.stringify({ email: `limit${n}@example.com` }),
         }),
         env
       );
 
     for (let i = 0; i < 10; i++) {
-      const res = await makeRequest();
+      const res = await makeRequest(i);
       expect(res.status).toBe(200);
     }
 
-    const blocked = await makeRequest();
+    const blocked = await makeRequest(99);
     expect(blocked.status).toBe(429);
     const error = await blocked.json();
     expect(error).toMatchObject({
       error: 'Rate limit exceeded. Try again in 24 hours.',
     });
+  });
+
+  it('caps tokens per inbox across address variations and IPs', async () => {
+    const env = createTestEnv();
+    // Sub-addressing and gmail dots reach one inbox, and rotating source IPs
+    // was the cheap way to keep minting from it.
+    const variants = [
+      { email: 'farm@gmail.com', ip: '5.0.0.1' },
+      { email: 'f.a.r.m@gmail.com', ip: '5.0.0.2' },
+      { email: 'farm+one@googlemail.com', ip: '5.0.0.3' },
+      { email: 'FARM+two@gmail.com', ip: '5.0.0.4' },
+    ];
+
+    const statuses: number[] = [];
+    for (const { email, ip } of variants) {
+      const res = await app.fetch(
+        new Request('http://localhost/v1/token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'CF-Connecting-IP': ip,
+          },
+          body: JSON.stringify({ email }),
+        }),
+        env
+      );
+      statuses.push(res.status);
+    }
+
+    expect(statuses).toEqual([200, 200, 200, 429]);
+  });
+
+  it('does not spend the IP allowance when the inbox cap rejects', async () => {
+    const env = createTestEnv();
+    const mint = (email: string) =>
+      app.fetch(
+        new Request('http://localhost/v1/token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'CF-Connecting-IP': '6.6.6.6',
+          },
+          body: JSON.stringify({ email }),
+        }),
+        env
+      );
+
+    for (let i = 0; i < 3; i++) {
+      expect((await mint('capped@example.com')).status).toBe(200);
+    }
+    // Four rejections against the inbox cap must not burn the IP's 10/day.
+    for (let i = 0; i < 4; i++) {
+      expect((await mint('capped@example.com')).status).toBe(429);
+    }
+
+    // Seven of the ten remain, so a different inbox still succeeds.
+    expect((await mint('other@example.com')).status).toBe(200);
   });
 });

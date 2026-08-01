@@ -1,4 +1,8 @@
 import type { Env, TokenData } from '../src/types';
+import { QuotaCounter } from '../src/durable/QuotaCounter';
+import { reserveQuota } from '../src/utils/quota';
+
+const NO_LIMIT = Number.MAX_SAFE_INTEGER;
 
 type KVStoredValue = {
   value: string;
@@ -85,6 +89,50 @@ export const createMockKV = (
   } as KVNamespace;
 };
 
+/**
+ * Durable Object namespace backed by the real `QuotaCounter`, so the quota
+ * tests exercise the shipped reservation logic rather than a second
+ * implementation of it. One instance per name, matching `idFromName`.
+ */
+export const createMockQuotaNamespace = (): DurableObjectNamespace => {
+  const instances = new Map<string, QuotaCounter>();
+
+  const stateFor = (): DurableObjectState => {
+    const storage = new Map<string, unknown>();
+    return {
+      storage: {
+        get: async (key: string) => storage.get(key),
+        put: async (key: string, value: unknown) => {
+          storage.set(key, value);
+        },
+        deleteAll: async () => {
+          storage.clear();
+        },
+        setAlarm: async () => {},
+      },
+      // The runtime serializes these; the tests are single-threaded.
+      blockConcurrencyWhile: async <T>(fn: () => Promise<T>) => fn(),
+    } as unknown as DurableObjectState;
+  };
+
+  return {
+    idFromName: (name: string) => ({ name }) as unknown as DurableObjectId,
+    get: (id: DurableObjectId) => {
+      const key = (id as unknown as { name: string }).name;
+      let instance = instances.get(key);
+      if (!instance) {
+        instance = new QuotaCounter(stateFor());
+        instances.set(key, instance);
+      }
+      const target = instance;
+      return {
+        fetch: (input: RequestInfo, init?: RequestInit) =>
+          target.fetch(new Request(input as string, init)),
+      } as unknown as DurableObjectStub;
+    },
+  } as unknown as DurableObjectNamespace;
+};
+
 export const createTestEnv = ({
   tokens,
   rateLimits,
@@ -102,6 +150,7 @@ export const createTestEnv = ({
   RATE_LIMIT: createMockKV(rateLimits),
   IP_CACHE: createMockKV(ipCache),
   FP_STATS: createMockKV(fpStats),
+  QUOTA: createMockQuotaNamespace(),
   ENVIRONMENT: 'test',
   CORS_ORIGIN: '*',
   RATE_LIMIT_PER_DAY: '1000',
@@ -109,6 +158,27 @@ export const createTestEnv = ({
   IPBOT_API_KEY: 'ipb_test_key',
   ...bindings,
 });
+
+/**
+ * Put a counter at `count` used units. Quota lives in a Durable Object, so
+ * seeding the RATE_LIMIT KV no longer sets up an exhausted limit.
+ */
+export const seedQuota = async (
+  env: Env['Bindings'],
+  key: string,
+  count: number
+): Promise<void> => {
+  await reserveQuota(env, key, { cost: count, limit: NO_LIMIT });
+};
+
+/** Current used units for a counter, without consuming any. */
+export const readQuotaCount = async (
+  env: Env['Bindings'],
+  key: string
+): Promise<number> => {
+  const { count } = await reserveQuota(env, key, { cost: 0, limit: NO_LIMIT });
+  return count;
+};
 
 export const seedToken = (
   env: Env['Bindings'],

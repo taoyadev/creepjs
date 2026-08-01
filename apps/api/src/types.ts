@@ -4,6 +4,8 @@ export type Env = {
     RATE_LIMIT: KVNamespace;
     IP_CACHE: KVNamespace;
     FP_STATS: KVNamespace;
+    /** Atomic rolling-window counters; see durable/QuotaCounter.ts. */
+    QUOTA: DurableObjectNamespace;
     ENVIRONMENT: string;
     CORS_ORIGIN: string;
     RATE_LIMIT_PER_DAY: string;

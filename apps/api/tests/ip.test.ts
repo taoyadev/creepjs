@@ -1,9 +1,11 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import app from '../src/index';
-import { createTestEnv, seedToken } from './utils';
+import { createTestEnv, readQuotaCount, seedQuota, seedToken } from './utils';
+import { quotaKeyForEmail } from '../src/middleware/ratelimit';
 import type { IpbotResponse } from '../src/services/ipbot';
 
 const TOKEN = 'cfp_ip_route_test';
+const TOKEN_EMAIL = 'ip-route@example.com';
 
 const GOOGLE_DNS: IpbotResponse = {
   ip: '8.8.8.8',
@@ -43,7 +45,7 @@ const ok = (body: IpbotResponse) =>
 
 async function seed(env: ReturnType<typeof createTestEnv>) {
   await seedToken(env, TOKEN, {
-    email: 'ip-route@example.com',
+    email: TOKEN_EMAIL,
     createdAt: Date.now(),
     usageCount: 0,
   });
@@ -254,17 +256,15 @@ describe('Batch IP intelligence route (POST /v1/ip/batch)', () => {
       env
     );
 
+  /** Used units on this token's inbox counter. */
   const quota = (env: ReturnType<typeof createTestEnv>) =>
-    env.RATE_LIMIT.get(`ratelimit:${TOKEN}`, 'json') as Promise<{
-      count: number;
-      resetAt: number;
-    } | null>;
+    quotaKeyForEmail(TOKEN_EMAIL).then((key) => readQuotaCount(env, key));
 
   it('requires an API token', async () => {
     const env = createTestEnv();
     const res = await batch(env, ['8.8.8.8'], {});
     expect(res.status).toBe(401);
-    expect(await quota(env)).toBeNull();
+    expect(await quota(env)).toBe(0);
   });
 
   it('reserves one lookup unit per unique valid IP before execution', async () => {
@@ -298,7 +298,7 @@ describe('Batch IP intelligence route (POST /v1/ip/batch)', () => {
       outcome: 'success',
     });
     expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect((await quota(env))?.count).toBe(2);
+    expect(await quota(env)).toBe(2);
     expect(res.headers.get('X-RateLimit-Remaining')).toBe('998');
 
     // usageCount is approximate success telemetry, separate from quota cost.
@@ -332,7 +332,7 @@ describe('Batch IP intelligence route (POST /v1/ip/batch)', () => {
       status: 400,
     });
     expect(json.quotaCost).toBe(2);
-    expect((await quota(env))?.count).toBe(2);
+    expect(await quota(env)).toBe(2);
     expect(fetchMock).toHaveBeenCalledTimes(2);
     const storedToken = await env.TOKENS.get(TOKEN, 'json');
     expect(storedToken.usageCount).toBe(2);
@@ -360,19 +360,15 @@ describe('Batch IP intelligence route (POST /v1/ip/batch)', () => {
         (item: { outcome: string }) => item.outcome === 'invalid'
       )
     ).toBe(true);
-    expect((await quota(env))?.count).toBe(1);
+    expect(await quota(env)).toBe(1);
     expect(fetchMock).not.toHaveBeenCalled();
     const storedToken = await env.TOKENS.get(TOKEN, 'json');
     expect(storedToken.usageCount).toBe(0);
   });
 
   it('returns 429 with zero upstream calls when full cost cannot be reserved', async () => {
-    const resetAt = Date.now() + 60_000;
-    const env = createTestEnv({
-      rateLimits: {
-        [`ratelimit:${TOKEN}`]: JSON.stringify({ count: 999, resetAt }),
-      },
-    });
+    const env = createTestEnv();
+    await seedQuota(env, await quotaKeyForEmail(TOKEN_EMAIL), 999);
     await seed(env);
     const fetchMock = vi.fn();
     vi.stubGlobal('fetch', fetchMock);
@@ -383,19 +379,13 @@ describe('Batch IP intelligence route (POST /v1/ip/batch)', () => {
     expect(res.status).toBe(429);
     expect(json).toMatchObject({ status: 429, quotaCost: 2, remaining: 1 });
     expect(res.headers.get('Retry-After')).toBeTruthy();
-    expect((await quota(env))?.count).toBe(999);
+    expect(await quota(env)).toBe(999);
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it('allows a reservation that exactly reaches the daily limit', async () => {
-    const env = createTestEnv({
-      rateLimits: {
-        [`ratelimit:${TOKEN}`]: JSON.stringify({
-          count: 998,
-          resetAt: Date.now() + 60_000,
-        }),
-      },
-    });
+    const env = createTestEnv();
+    await seedQuota(env, await quotaKeyForEmail(TOKEN_EMAIL), 998);
     await seed(env);
     vi.stubGlobal(
       'fetch',
@@ -406,7 +396,7 @@ describe('Batch IP intelligence route (POST /v1/ip/batch)', () => {
 
     expect(res.status).toBe(200);
     expect(res.headers.get('X-RateLimit-Remaining')).toBe('0');
-    expect((await quota(env))?.count).toBe(1000);
+    expect(await quota(env)).toBe(1000);
   });
 
   it('aborts later lookups after a dependency failure and returns partial rows', async () => {
@@ -452,7 +442,7 @@ describe('Batch IP intelligence route (POST /v1/ip/batch)', () => {
       outcome: 'skipped',
     });
     expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect((await quota(env))?.count).toBe(3);
+    expect(await quota(env)).toBe(3);
     const storedToken = await env.TOKENS.get(TOKEN, 'json');
     expect(storedToken.usageCount).toBe(1);
   });
@@ -555,7 +545,7 @@ describe('Batch IP intelligence route (POST /v1/ip/batch)', () => {
       cached: true,
     });
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect((await quota(env))?.count).toBe(2);
+    expect(await quota(env)).toBe(2);
   });
 
   it('logs batch counts without raw IPs or API tokens', async () => {
@@ -594,7 +584,7 @@ describe('Batch IP intelligence route (POST /v1/ip/batch)', () => {
       const res = await batch(env, ips);
 
       expect(res.status).toBe(status);
-      expect(await quota(env)).toBeNull();
+      expect(await quota(env)).toBe(0);
       expect(fetchMock).not.toHaveBeenCalled();
     }
   );
@@ -610,7 +600,7 @@ describe('Batch IP intelligence route (POST /v1/ip/batch)', () => {
       outcome: 'invalid',
       status: 400,
     });
-    expect((await quota(env))?.count).toBe(1);
+    expect(await quota(env)).toBe(1);
   });
 
   it('rejects bodies larger than 8 KiB before auth, quota, or upstream work', async () => {
@@ -632,7 +622,7 @@ describe('Batch IP intelligence route (POST /v1/ip/batch)', () => {
     );
 
     expect(res.status).toBe(413);
-    expect(await quota(env)).toBeNull();
+    expect(await quota(env)).toBe(0);
     expect(fetchMock).not.toHaveBeenCalled();
   });
 });

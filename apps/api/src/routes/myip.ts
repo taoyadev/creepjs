@@ -1,7 +1,8 @@
 import { Hono, type Context } from 'hono';
 import type { Env } from '../types';
 import { IpbotError, type IpbotResponse, lookupIP } from '../services/ipbot';
-import { bumpCounter, clientIp, intEnv, readCounter } from '../utils/counters';
+import { clientIp, intEnv } from '../utils/counters';
+import { releaseQuota, reserveQuota } from '../utils/quota';
 import { hashIpForLog } from '../utils/privacy';
 
 const app = new Hono<Env>();
@@ -160,24 +161,33 @@ app.get('/', async (c) => {
     PUBLIC_GLOBAL_DEFAULT
   );
   const visitorKey = `myip:ip:${await hashIpForLog(ip)}`;
-  const perVisitor = await readCounter(c.env, visitorKey);
-  if (perVisitor.count >= perVisitorLimit) {
+  // Reserved before the lookup so concurrent requests cannot all pass the cap;
+  // both budgets only meter paid upstream calls, so anything that does not
+  // reach one is refunded below.
+  const perVisitor = await reserveQuota(c.env, visitorKey, {
+    limit: perVisitorLimit,
+  });
+  if (!perVisitor.allowed) {
     return c.json(geoOnly());
   }
-  const globalCount = await readCounter(c.env, GLOBAL_KEY);
-  if (globalCount.count >= globalLimit) {
+  const globalCount = await reserveQuota(c.env, GLOBAL_KEY, {
+    limit: globalLimit,
+  });
+  if (!globalCount.allowed) {
+    await releaseQuota(c.env, visitorKey);
     return c.json(geoOnly());
   }
 
   try {
     const result = await lookupIP(ip, c.env);
-    if (!result.cached) {
-      // Only uncached lookups consume the paid upstream budget.
-      await bumpCounter(c.env, visitorKey, perVisitor);
-      await bumpCounter(c.env, GLOBAL_KEY, globalCount);
+    if (result.cached) {
+      await releaseQuota(c.env, visitorKey);
+      await releaseQuota(c.env, GLOBAL_KEY);
     }
     return c.json(transformIpbotResult(result.data, ip, result.cached));
   } catch (error) {
+    await releaseQuota(c.env, visitorKey);
+    await releaseQuota(c.env, GLOBAL_KEY);
     if (error instanceof IpbotError) {
       // Never log the raw visitor IP (docs/SECURITY.md).
       console.warn(`myip.lookup_failed status=${error.status ?? 500}`);

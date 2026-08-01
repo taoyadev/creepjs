@@ -1,13 +1,14 @@
 /**
- * Shared rolling-daily KV counters used for abuse-prevention limits.
+ * Shared helpers for abuse-prevention limits.
  *
- * Read-modify-write on KV is intentionally non-atomic: these are soft
- * limits protecting cost/abuse, not billing (see the batch lookup design
- * doc). Every limiter must stay single-read/single-write per request.
+ * The rolling-daily counters that used to live here were a KV
+ * read-modify-write, which a concurrent burst could pass in full. Counting now
+ * goes through `utils/quota.ts`, which is atomic; what remains here is the
+ * request-shape helpers those limiters need.
  */
 
 import type { Context } from 'hono';
-import type { Env, RateLimitData } from '../types';
+import type { Env } from '../types';
 
 export const DAY_MS = 24 * 60 * 60 * 1000;
 export const DAY_TTL_SECONDS = 24 * 60 * 60;
@@ -24,31 +25,4 @@ export function clientIp(c: Context<Env>): string {
     c.req.header('x-forwarded-for')?.split(',')[0] ||
     '0.0.0.0'
   ).trim();
-}
-
-/**
- * Read a rolling-daily counter without incrementing.
- * Returns `{ count, resetAt }` for the active window (count 0 if expired).
- */
-export async function readCounter(env: Env['Bindings'], key: string) {
-  const now = Date.now();
-  const data = await env.RATE_LIMIT.get<RateLimitData>(key, 'json');
-  if (data && now < data.resetAt)
-    return { count: data.count, resetAt: data.resetAt };
-  return { count: 0, resetAt: now + DAY_MS };
-}
-
-export async function bumpCounter(
-  env: Env['Bindings'],
-  key: string,
-  current: { count: number; resetAt: number }
-) {
-  await env.RATE_LIMIT.put(
-    key,
-    JSON.stringify({
-      count: current.count + 1,
-      resetAt: current.resetAt,
-    } satisfies RateLimitData),
-    { expirationTtl: DAY_TTL_SECONDS }
-  );
 }

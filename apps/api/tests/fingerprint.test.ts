@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { computeFingerprintId } from '@creepjs/core';
 import type { FingerprintData } from '@creepjs/core';
 import app from '../src/index';
-import { createTestEnv, seedToken } from './utils';
+import { createTestEnv, readQuotaCount, seedToken } from './utils';
+import { quotaKeyForEmail } from '../src/middleware/ratelimit';
 
 // Held in a map rather than inline `const token = '...'` bindings so the
 // repository secret scanner does not read these fixtures as real credentials.
@@ -79,11 +80,12 @@ describe('Fingerprint route', () => {
     const totalStats = await env.FP_STATS.get('fpstats:v1:total', 'text');
     expect(totalStats).toBe('1');
 
-    const rateLimitEntry = await env.RATE_LIMIT.get(
-      `ratelimit:${token}`,
-      'json'
-    );
-    expect(rateLimitEntry.count).toBe(1);
+    expect(
+      await readQuotaCount(
+        env,
+        await quotaKeyForEmail('fingerprint@example.com')
+      )
+    ).toBe(1);
   });
 
   it('derives the ID from components so a caller cannot claim another device', async () => {

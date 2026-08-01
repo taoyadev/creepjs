@@ -25,6 +25,16 @@ id = "06d882d1a9a946dbaf6204a542d5df58"
 binding = "FP_STATS"
 id = "9bdb6db77d0641d8b35d028f4ab67a11"
 
+# Atomic rolling-window quota counters. KV has no compare-and-swap, so the
+# daily caps that protect the paid IPbot quota need a Durable Object.
+[[durable_objects.bindings]]
+name = "QUOTA"
+class_name = "QuotaCounter"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["QuotaCounter"]
+
 
 [vars]
 ENVIRONMENT = "production"

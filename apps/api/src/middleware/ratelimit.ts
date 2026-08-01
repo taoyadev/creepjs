@@ -1,8 +1,14 @@
 import { createMiddleware } from 'hono/factory';
 import type { Context } from 'hono';
-import type { Env, RateLimitData } from '../types';
-
-const DAY_MS = 24 * 60 * 60 * 1000;
+import type { Env } from '../types';
+import { normalizeEmailIdentity } from '../utils/email';
+import { sha256Hex } from '../utils/privacy';
+import {
+  DAY_MS,
+  releaseQuota,
+  reserveQuota,
+  resetInSeconds,
+} from '../utils/quota';
 
 export interface RateLimitReservation {
   allowed: boolean;
@@ -12,18 +18,31 @@ export interface RateLimitReservation {
   remaining: number;
   resetAt: number;
   resetIn: number;
+  /** Counter key, so a caller that does not spend the reservation can refund it. */
+  key: string;
 }
 
 /**
- * Best-effort weighted quota reservation backed by one KV read and, when
- * allowed, one KV write. KV has no compare-and-swap, so this protects the free
- * service from ordinary fan-out but is not an exact billing ledger.
+ * Daily allowance is keyed by the inbox that owns the token, not by the token.
+ * `/v1/token` hands out tokens on request, so a per-token bucket multiplied the
+ * allowance by however many tokens one requester chose to mint.
  */
+export async function quotaKeyForEmail(email: string): Promise<string> {
+  // Hashed so the counter name never carries an address.
+  return `quota:email:${await sha256Hex(normalizeEmailIdentity(email))}`;
+}
+
+async function quotaKey(c: Context<Env>): Promise<string> {
+  const email = c.get('tokenData')?.email;
+  if (!email) return `quota:token:${c.get('token')}`;
+  return quotaKeyForEmail(email);
+}
+
+/** Atomically consume `requestedCost` of the daily allowance. */
 export async function reserveRateLimit(
   c: Context<Env>,
   requestedCost = 1
 ): Promise<RateLimitReservation> {
-  const token = c.get('token');
   const configuredLimit = Number.parseInt(
     c.env.RATE_LIMIT_PER_DAY || '1000',
     10
@@ -37,32 +56,13 @@ export async function reserveRateLimit(
       ? requestedCost
       : 1;
 
-  const rateLimitKey = `ratelimit:${token}`;
-  const rateLimitData = await c.env.RATE_LIMIT.get<RateLimitData>(
-    rateLimitKey,
-    'json'
-  );
-
-  const now = Date.now();
-  let count = 0;
-  let resetAt = now + DAY_MS;
-
-  if (rateLimitData && now < rateLimitData.resetAt) {
-    count = rateLimitData.count;
-    resetAt = rateLimitData.resetAt;
-  }
-
-  const resetIn = Math.max(1, Math.ceil((resetAt - now) / 1000));
-  const allowed = count + cost <= limit;
-
-  if (allowed) {
-    count += cost;
-    await c.env.RATE_LIMIT.put(
-      rateLimitKey,
-      JSON.stringify({ count, resetAt } satisfies RateLimitData),
-      { expirationTtl: Math.max(60, resetIn) }
-    );
-  }
+  const key = await quotaKey(c);
+  const { allowed, count, resetAt } = await reserveQuota(c.env, key, {
+    cost,
+    limit,
+    windowMs: DAY_MS,
+  });
+  const resetIn = resetInSeconds(resetAt);
 
   c.header('X-RateLimit-Limit', limit.toString());
   c.header('X-RateLimit-Remaining', Math.max(0, limit - count).toString());
@@ -77,7 +77,16 @@ export async function reserveRateLimit(
     remaining: Math.max(0, limit - count),
     resetAt,
     resetIn,
+    key,
   };
+}
+
+/** Refund a reservation whose work did not run. */
+export async function refundRateLimit(
+  c: Context<Env>,
+  reservation: RateLimitReservation
+): Promise<void> {
+  await releaseQuota(c.env, reservation.key, { cost: reservation.cost });
 }
 
 export const rateLimitMiddleware = createMiddleware<Env>(async (c, next) => {

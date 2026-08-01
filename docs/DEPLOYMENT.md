@@ -41,6 +41,12 @@ pnpm install
 # 4. Configure secrets (optional)
 ./scripts/setup-secrets.sh production
 
+# NOTE: the API also declares a Durable Object (QUOTA / QuotaCounter) that
+# `wrangler deploy` creates from the `[[migrations]]` block in
+# apps/api/wrangler.toml. It needs no manual provisioning, but the first
+# deploy that carries migration tag v1 must succeed before the rate limits
+# work — see "Durable Object quota counters" below.
+
 # 5. Push to main branch - CI/CD handles the rest!
 git push origin main
 ```
@@ -473,6 +479,39 @@ For Search Console, Bing, indexing requests, and IndexNow operations, use
 
 4. View analytics:
    - Dashboard → Web Analytics → View site
+
+---
+
+## Durable Object quota counters
+
+The daily caps that protect the paid IPbot quota — the per-token allowance,
+`/v1/token` minting, `/v1/ip/public`, and `/my-ip` — are counted in a Durable
+Object (`QUOTA` → `QuotaCounter`), not in KV.
+
+**Why:** KV has no compare-and-swap. The previous counters read the current
+value, compared it to the limit, then wrote back `value + 1`. Concurrent
+requests all read the same pre-increment value and all passed the check, so a
+burst went through a daily cap in full.
+
+**What deployment needs:**
+
+- `apps/api/wrangler.toml` declares the binding plus a `[[migrations]]` block
+  with tag `v1` and `new_sqlite_classes = ["QuotaCounter"]`. SQLite-backed
+  Durable Objects are available on the Workers free plan.
+- `wrangler deploy` applies the migration; there is no separate provisioning
+  step and no dashboard action.
+- The class is exported from `apps/api/src/index.ts`. Removing that export
+  breaks the binding.
+- Counters are self-expiring: each object sets an alarm for the end of its
+  window and drops its storage, so per-visitor counters do not accumulate.
+
+**Rollback note:** a Worker version that predates migration tag `v1` has no
+`QUOTA` binding. Rolling back past this deploy therefore also reverts the
+limiters to the KV behaviour; it does not leave a dangling binding.
+
+**First deploy check:** after the migration lands, confirm the limits respond
+by exceeding the public cap and expecting `429` with `Retry-After`, rather than
+assuming the binding resolved.
 
 ---
 

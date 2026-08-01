@@ -49,4 +49,8 @@ app.notFound((c) => {
   return c.json({ error: 'Not found' }, 404);
 });
 
+// Durable Object classes must be exported from the Worker entry point for the
+// runtime to bind them.
+export { QuotaCounter } from './durable/QuotaCounter';
+
 export default app;

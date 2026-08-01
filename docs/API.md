@@ -68,7 +68,8 @@ Generate a unique browser fingerprint ID.
 
 **Authentication**: Required
 
-**Rate Limit**: 1000 requests/day/token
+**Rate Limit**: 1000 requests/day, shared by every token issued to the same
+email address (requesting more tokens does not raise the allowance)
 
 #### Request
 
@@ -273,7 +274,9 @@ Generate a new API Token for authentication.
 
 **Authentication**: Not required
 
-**Rate Limit**: 10 requests/day/IP
+**Rate Limit**: 10 requests/day/IP, and 3 tokens/day per email address.
+Sub-addressing (`you+tag@`) and Gmail dots resolve to the same address, so
+they share that limit.
 
 #### Request
 
