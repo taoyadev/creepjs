@@ -1,7 +1,11 @@
 const themeScript = `
 (() => {
   const storageKey = 'creepjs-theme';
-  const stored = localStorage.getItem(storageKey);
+  // localStorage throws when site data is blocked; fall back to the OS theme.
+  let stored = null;
+  try {
+    stored = localStorage.getItem(storageKey);
+  } catch {}
   const theme =
     stored === 'light' || stored === 'dark'
       ? stored

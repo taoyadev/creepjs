@@ -24,6 +24,26 @@ function getPreferredTheme(): Theme {
   return 'dark';
 }
 
+// localStorage throws SecurityError when site data is blocked — common among
+// the privacy-hardened visitors this site is for. This provider wraps the
+// whole tree, so an unguarded access takes down every route; persistence is a
+// convenience and degrades to the system preference instead.
+function readStoredTheme(): string | null {
+  try {
+    return localStorage.getItem(THEME_STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function writeStoredTheme(theme: Theme): void {
+  try {
+    localStorage.setItem(THEME_STORAGE_KEY, theme);
+  } catch {
+    // Not persisted; the choice still applies for this page view.
+  }
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(getPreferredTheme);
   const [mounted, setMounted] = useState(false);
@@ -35,7 +55,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    const stored = localStorage.getItem(THEME_STORAGE_KEY) as Theme | null;
+    const stored = readStoredTheme();
     if (stored === 'light' || stored === 'dark') {
       setThemeState(stored);
       applyTheme(stored);
@@ -54,7 +74,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
     applyTheme(newTheme);
-    localStorage.setItem(THEME_STORAGE_KEY, newTheme);
+    writeStoredTheme(newTheme);
   };
 
   const toggleTheme = () => {
