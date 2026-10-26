@@ -28,7 +28,10 @@ self.addEventListener('install', (event) => {
       )
     )
   );
-  self.skipWaiting();
+  // No skipWaiting() here: an update waits until the visitor accepts the
+  // "new version" toast (SKIP_WAITING message below), so a deploy never swaps
+  // the worker under a page mid-scan. A first install activates immediately
+  // anyway, since there is no previous worker to wait on.
 });
 
 // Activate event - clean up old caches
