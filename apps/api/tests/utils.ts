@@ -1,5 +1,6 @@
 import type { Env, TokenData } from '../src/types';
 import { QuotaCounter } from '../src/durable/QuotaCounter';
+import { StatsCounter } from '../src/durable/StatsCounter';
 import { reserveQuota } from '../src/utils/quota';
 
 const NO_LIMIT = Number.MAX_SAFE_INTEGER;
@@ -133,6 +134,51 @@ export const createMockQuotaNamespace = (): DurableObjectNamespace => {
   } as unknown as DurableObjectNamespace;
 };
 
+/**
+ * Namespace backed by the real `StatsCounter`, seeding from `fpStats` the way
+ * the deployed object seeds from the FP_STATS KV namespace.
+ */
+export const createMockStatsNamespace = (
+  fpStats: KVNamespace
+): DurableObjectNamespace => {
+  const instances = new Map<string, StatsCounter>();
+
+  const stateFor = (): DurableObjectState => {
+    const storage = new Map<string, unknown>();
+    return {
+      storage: {
+        get: async (keys: string[]) =>
+          new Map(
+            keys.filter((k) => storage.has(k)).map((k) => [k, storage.get(k)])
+          ),
+        put: async (entries: Record<string, unknown>) => {
+          for (const [key, value] of Object.entries(entries)) {
+            storage.set(key, value);
+          }
+        },
+      },
+      blockConcurrencyWhile: async <T>(fn: () => Promise<T>) => fn(),
+    } as unknown as DurableObjectState;
+  };
+
+  return {
+    idFromName: (name: string) => ({ name }) as unknown as DurableObjectId,
+    get: (id: DurableObjectId) => {
+      const key = (id as unknown as { name: string }).name;
+      let instance = instances.get(key);
+      if (!instance) {
+        instance = new StatsCounter(stateFor(), { FP_STATS: fpStats });
+        instances.set(key, instance);
+      }
+      const target = instance;
+      return {
+        fetch: (input: RequestInfo, init?: RequestInit) =>
+          target.fetch(new Request(input as string, init)),
+      } as unknown as DurableObjectStub;
+    },
+  } as unknown as DurableObjectNamespace;
+};
+
 export const createTestEnv = ({
   tokens,
   rateLimits,
@@ -145,19 +191,23 @@ export const createTestEnv = ({
   ipCache?: Record<string, string>;
   fpStats?: Record<string, string>;
   bindings?: Partial<Env['Bindings']>;
-} = {}): Env['Bindings'] => ({
-  TOKENS: createMockKV(tokens),
-  RATE_LIMIT: createMockKV(rateLimits),
-  IP_CACHE: createMockKV(ipCache),
-  FP_STATS: createMockKV(fpStats),
-  QUOTA: createMockQuotaNamespace(),
-  ENVIRONMENT: 'test',
-  CORS_ORIGIN: '*',
-  RATE_LIMIT_PER_DAY: '1000',
-  IPBOT_API_ORIGIN: 'https://api.ipbot.test',
-  IPBOT_API_KEY: 'ipb_test_key',
-  ...bindings,
-});
+} = {}): Env['Bindings'] => {
+  const fpStatsKV = createMockKV(fpStats);
+  return {
+    TOKENS: createMockKV(tokens),
+    RATE_LIMIT: createMockKV(rateLimits),
+    IP_CACHE: createMockKV(ipCache),
+    FP_STATS: fpStatsKV,
+    QUOTA: createMockQuotaNamespace(),
+    STATS: createMockStatsNamespace(fpStatsKV),
+    ENVIRONMENT: 'test',
+    CORS_ORIGIN: '*',
+    RATE_LIMIT_PER_DAY: '1000',
+    IPBOT_API_ORIGIN: 'https://api.ipbot.test',
+    IPBOT_API_KEY: 'ipb_test_key',
+    ...bindings,
+  };
+};
 
 /**
  * Put a counter at `count` used units. Quota lives in a Durable Object, so
@@ -187,4 +237,17 @@ export const seedToken = (
 ) => {
   const tokensKV = env.TOKENS;
   return tokensKV.put(token, jsonEncode(data));
+};
+
+/** Current value of a uniqueness-stats counter, without incrementing it. */
+export const readStatsCount = async (
+  env: Env['Bindings'],
+  key: string
+): Promise<number> => {
+  const stub = env.STATS.get(env.STATS.idFromName('fpstats:v1'));
+  const res = await stub.fetch('https://stats.internal/', {
+    method: 'POST',
+    body: JSON.stringify({ op: 'read', keys: [key] }),
+  });
+  return ((await res.json()) as Record<string, number>)[key] ?? 0;
 };

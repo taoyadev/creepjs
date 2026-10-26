@@ -96,7 +96,7 @@ pnpm --filter @creepjs/sdk build --watch
 
 - **Framework**: Hono.js (lightweight, optimized for Cloudflare Workers)
 - **Runtime**: Cloudflare Workers (V8 Isolates, <50ms response time)
-- **Storage**: Cloudflare KV (tokens, IP cache, fingerprint stats) + a Durable Object for atomic quota counters
+- **Storage**: Cloudflare KV (tokens, IP cache) + Durable Objects for atomic quota counters (`QuotaCounter`) and uniqueness stats (`StatsCounter`)
 - **Validation**: Zod schemas for all inputs
 
 **Key Endpoints**:
@@ -335,7 +335,7 @@ cp packages/sdk/dist/creepjs.umd.js apps/web/public/sdk.js
 ## Key Architecture Decisions
 
 1. **Cloudflare Workers for API**: Edge computing ensures <50ms response times globally, zero cold starts
-2. **Stateless Design**: No database required; KV for tokens and caches, one Durable Object for quota counters
+2. **Stateless Design**: No database required; KV for tokens and caches, Durable Objects for quota counters and uniqueness stats. Keep KV writes off the request path: KV allows ~1 write/sec per key and has no compare-and-swap
 3. **Privacy-First**: No fingerprint data stored; only computed hashes returned
 4. **Monorepo**: Shared TypeScript types and utilities across web/api/sdk
 5. **SHA-256/128 for fingerprint IDs**: derived server-side from a stable

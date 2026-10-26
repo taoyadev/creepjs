@@ -2,8 +2,9 @@ import { describe, expect, it } from 'vitest';
 import {
   extractUniquenessBuckets,
   getUniquenessEstimates,
+  recordUniquenessStats,
 } from '../src/services/uniqueness';
-import { createTestEnv } from './utils';
+import { createTestEnv, readStatsCount } from './utils';
 
 describe('uniqueness service', () => {
   it('extracts at most five coarse buckets from a fingerprint payload', () => {
@@ -46,5 +47,24 @@ describe('uniqueness service', () => {
       kAnonThreshold: 20,
       estimates: {},
     });
+  });
+
+  it('continues legacy KV counts once counting moves to the stats object', async () => {
+    const env = createTestEnv({
+      fpStats: { 'fpstats:v1:total': '41', 'fpstats:v1:timezone:abc': '7' },
+    });
+
+    await recordUniquenessStats(
+      { timezone: { timezone: 'Europe/Berlin' } },
+      env
+    );
+    await recordUniquenessStats(
+      { timezone: { timezone: 'Europe/Berlin' } },
+      env
+    );
+
+    expect(await readStatsCount(env, 'fpstats:v1:total')).toBe(43);
+    // KV is only the seed: it is no longer written.
+    expect(await env.FP_STATS.get('fpstats:v1:total', 'text')).toBe('41');
   });
 });

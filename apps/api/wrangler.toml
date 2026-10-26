@@ -31,9 +31,19 @@ id = "9bdb6db77d0641d8b35d028f4ab67a11"
 name = "QUOTA"
 class_name = "QuotaCounter"
 
+# Uniqueness-stats counters. They were KV read-modify-writes on every
+# fingerprint request, which hit KV's per-key write limit and lost counts.
+[[durable_objects.bindings]]
+name = "STATS"
+class_name = "StatsCounter"
+
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["QuotaCounter"]
+
+[[migrations]]
+tag = "v2"
+new_sqlite_classes = ["StatsCounter"]
 
 
 [vars]

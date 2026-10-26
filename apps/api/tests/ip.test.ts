@@ -99,8 +99,9 @@ describe('IP intelligence route', () => {
       },
     });
 
+    // Usage is the quota counter; the token record is not rewritten per call.
     const storedToken = await env.TOKENS.get(TOKEN, 'json');
-    expect(storedToken.usageCount).toBe(1);
+    expect(storedToken.usageCount).toBe(0);
   });
 
   it('rejects invalid IP path parameters', async () => {
@@ -300,10 +301,6 @@ describe('Batch IP intelligence route (POST /v1/ip/batch)', () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(await quota(env)).toBe(2);
     expect(res.headers.get('X-RateLimit-Remaining')).toBe('998');
-
-    // usageCount is approximate success telemetry, separate from quota cost.
-    const storedToken = await env.TOKENS.get(TOKEN, 'json');
-    expect(storedToken.usageCount).toBe(2);
   });
 
   it('trims, dedupes, and preserves first-seen response order', async () => {
@@ -334,8 +331,6 @@ describe('Batch IP intelligence route (POST /v1/ip/batch)', () => {
     expect(json.quotaCost).toBe(2);
     expect(await quota(env)).toBe(2);
     expect(fetchMock).toHaveBeenCalledTimes(2);
-    const storedToken = await env.TOKENS.get(TOKEN, 'json');
-    expect(storedToken.usageCount).toBe(2);
   });
 
   it('charges one abuse-prevention unit for an invalid-only batch', async () => {
@@ -362,8 +357,6 @@ describe('Batch IP intelligence route (POST /v1/ip/batch)', () => {
     ).toBe(true);
     expect(await quota(env)).toBe(1);
     expect(fetchMock).not.toHaveBeenCalled();
-    const storedToken = await env.TOKENS.get(TOKEN, 'json');
-    expect(storedToken.usageCount).toBe(0);
   });
 
   it('returns 429 with zero upstream calls when full cost cannot be reserved', async () => {
@@ -443,8 +436,6 @@ describe('Batch IP intelligence route (POST /v1/ip/batch)', () => {
     });
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(await quota(env)).toBe(3);
-    const storedToken = await env.TOKENS.get(TOKEN, 'json');
-    expect(storedToken.usageCount).toBe(1);
   });
 
   it('propagates Retry-After and uses at most one retry in a batch', async () => {

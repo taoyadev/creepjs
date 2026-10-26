@@ -1,7 +1,7 @@
 import { Hono, type Context } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { createMiddleware } from 'hono/factory';
-import type { Env, TokenData } from '../types';
+import type { Env } from '../types';
 import { authMiddleware } from '../middleware/auth';
 import { rateLimitMiddleware, reserveRateLimit } from '../middleware/ratelimit';
 import {
@@ -53,21 +53,6 @@ function ipbotErrorResponse(c: Context<Env>, error: unknown) {
     return c.json({ error: safeIpbotMessage(error), status }, status);
   }
   throw error;
-}
-
-async function recordTokenUsage(
-  env: Env['Bindings'],
-  token: string,
-  tokenData: TokenData,
-  increment = 1
-) {
-  await env.TOKENS.put(
-    token,
-    JSON.stringify({
-      ...tokenData,
-      usageCount: tokenData.usageCount + increment,
-    } satisfies TokenData)
-  );
 }
 
 /** One row of a batch lookup, always keyed by the normalized submitted IP. */
@@ -390,25 +375,6 @@ app.post(
       }
     }
 
-    if (successCount > 0) {
-      try {
-        await recordTokenUsage(
-          c.env,
-          c.get('token'),
-          c.get('tokenData'),
-          successCount
-        );
-      } catch {
-        // usageCount is explicitly approximate telemetry; a failed telemetry
-        // write must not discard already-resolved batch results.
-        logEvent({
-          msg: 'ip.batch_usage_write_failed',
-          request_id: c.get('requestId'),
-          success_count: successCount,
-        });
-      }
-    }
-
     const results = unique.map((ip) => resultByIp.get(ip)!);
     const invalidCount = results.filter(
       (item) => !item.ok && item.outcome === 'invalid'
@@ -486,7 +452,6 @@ app.get('/:ip', authMiddleware, rateLimitMiddleware, async (c) => {
   try {
     const ip = c.req.param('ip');
     const result = await lookupIP(ip, c.env);
-    await recordTokenUsage(c.env, c.get('token'), c.get('tokenData'));
     logEvent({
       msg: 'ip.token_lookup',
       request_id: c.get('requestId'),

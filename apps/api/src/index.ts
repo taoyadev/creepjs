@@ -53,5 +53,6 @@ app.notFound((c) => {
 // Durable Object classes must be exported from the Worker entry point for the
 // runtime to bind them.
 export { QuotaCounter } from './durable/QuotaCounter';
+export { StatsCounter } from './durable/StatsCounter';
 
 export default app;

@@ -17,9 +17,11 @@ This document describes the high-level architecture of the CreepJS monorepo (web
    - fingerprint payload (ID + data + telemetry)
 3. The API:
    - authenticates the token (KV: `TOKENS`)
-   - applies per-token rate limiting (KV: `RATE_LIMIT`)
-   - updates anonymized uniqueness bucket counters (KV: `FP_STATS`)
+   - reserves one unit of the token-owning inbox's daily allowance (Durable
+     Object: `QuotaCounter`)
    - returns a normalized JSON response for UI consumption
+   - after responding, bumps anonymized uniqueness bucket counters (Durable
+     Object: `StatsCounter`); a failure there is logged, never surfaced
 
 ## Packages & Responsibilities
 
@@ -34,9 +36,12 @@ This document describes the high-level architecture of the CreepJS monorepo (web
 - Hono router and middlewares (auth, CORS, rate limit, error handling)
 - Cloudflare KV bindings:
   - `TOKENS` (token records)
-  - `RATE_LIMIT` (rate limit buckets)
+  - `RATE_LIMIT` (legacy rate limit buckets; counting moved to `QUOTA`)
   - `IP_CACHE` (optional IP metadata cache)
-  - `FP_STATS` (aggregate, anonymized uniqueness buckets only)
+  - `FP_STATS` (legacy uniqueness buckets, read once to seed `STATS`)
+- Durable Object bindings:
+  - `QUOTA` → `QuotaCounter` (atomic daily caps, one object per counter)
+  - `STATS` → `StatsCounter` (cumulative uniqueness buckets, one object)
 
 ### `packages/core`
 
