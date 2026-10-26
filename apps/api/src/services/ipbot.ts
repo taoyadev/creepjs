@@ -143,6 +143,7 @@ const NEGATIVE_CACHE_PREFIX = 'ipbot:err:';
 const NEGATIVE_TTL_SECONDS = 60; // KV minimum TTL; kills 429/5xx retry storms
 const MAX_RETRIES = 3; // total upstream attempts = MAX_RETRIES + 1
 const MAX_BACKOFF_MS = 4000; // cap a single backoff (Workers wall-clock budget)
+const UPSTREAM_TIMEOUT_MS = 3000; // per attempt; a hung upstream must not hold the request open
 const HIGH_RISK_SCORE = 50; // risk_score >= this => high risk
 
 const IPV4_RE =
@@ -288,10 +289,15 @@ async function fetchFromUpstream(
       res = await fetch(url, {
         method: 'GET',
         headers: { 'X-API-Key': apiKey, Accept: 'application/json' },
+        signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
       });
-    } catch {
+    } catch (error) {
+      const timedOut =
+        error instanceof DOMException && error.name === 'TimeoutError';
       throw new IpbotError(
-        'IP intelligence network request failed',
+        timedOut
+          ? 'IP intelligence request timed out'
+          : 'IP intelligence network request failed',
         503,
         null,
         'network'
@@ -301,7 +307,13 @@ async function fetchFromUpstream(
 
     if (res.status === 429) {
       logRateLimit(ipHash, rateLimit, 'throttled');
-      if (attempt === maxRetries) {
+      // A Retry-After beyond the backoff cap means the retry would land inside
+      // the provider's window and be throttled again; fail now instead of
+      // sleeping on the caller's request.
+      const waitExceedsCap =
+        rateLimit.retryAfter != null &&
+        rateLimit.retryAfter * 1000 > MAX_BACKOFF_MS;
+      if (attempt === maxRetries || waitExceedsCap) {
         throw new IpbotError(
           'IP intelligence provider rate limit exceeded',
           429,

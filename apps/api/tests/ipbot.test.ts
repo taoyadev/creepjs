@@ -204,6 +204,39 @@ describe('lookupIP', () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
+  it('fails fast when Retry-After exceeds the backoff cap', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(throttled({ 'retry-after': '60' }));
+    vi.stubGlobal('fetch', fetchMock);
+    const env = createTestEnv();
+
+    const error = await lookupIP('1.2.3.4', env).catch((e) => e);
+
+    expect(error).toBeInstanceOf(IpbotError);
+    expect((error as IpbotError).kind).toBe('throttle');
+    expect((error as IpbotError).retryAfter).toBe(60);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('bounds each upstream attempt with a timeout signal', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockRejectedValue(new DOMException('timed out', 'TimeoutError'));
+    vi.stubGlobal('fetch', fetchMock);
+    const env = createTestEnv();
+
+    const error = await lookupIP('8.8.8.8', env).catch((e) => e);
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({ signal: expect.any(AbortSignal) })
+    );
+    expect(error).toBeInstanceOf(IpbotError);
+    expect((error as IpbotError).kind).toBe('network');
+    expect((error as Error).message).toBe('IP intelligence request timed out');
+  });
+
   it('maps network and malformed JSON failures to safe Ipbot errors', async () => {
     const networkEnv = createTestEnv();
     vi.stubGlobal(
