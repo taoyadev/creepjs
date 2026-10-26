@@ -13,21 +13,23 @@ import type { Env } from '../types';
  *   site origin (CORS_ORIGIN, falling back to https://creepjs.org in
  *   production) so third-party pages cannot silently mint tokens with a
  *   visitor's browser.
+ * - /v1/events records the site's own product analytics → locked to the same
+ *   site origin, which the route also enforces on the request itself.
  */
+export const siteOrigin = (env: Env['Bindings']): string => {
+  const rawOrigin = env.CORS_ORIGIN?.trim();
+  if (rawOrigin && rawOrigin.length > 0 && rawOrigin !== '*') return rawOrigin;
+  return env.ENVIRONMENT === 'production' ? 'https://creepjs.org' : '*';
+};
+
+const isSiteOnlyRoute = (path: string): boolean =>
+  ['/v1/token', '/v1/events'].some(
+    (route) => path === route || path.startsWith(`${route}/`)
+  );
+
 export const corsMiddleware = createMiddleware<Env>((c, next) => {
   const path = new URL(c.req.url).pathname;
-  const isTokenRoute = path === '/v1/token' || path.startsWith('/v1/token/');
-
-  let origin = '*';
-  if (isTokenRoute) {
-    const rawOrigin = c.env.CORS_ORIGIN?.trim();
-    const isProd = c.env.ENVIRONMENT === 'production';
-    const fallbackOrigin = isProd ? 'https://creepjs.org' : '*';
-    origin =
-      rawOrigin && rawOrigin.length > 0 && rawOrigin !== '*'
-        ? rawOrigin
-        : fallbackOrigin;
-  }
+  const origin = isSiteOnlyRoute(path) ? siteOrigin(c.env) : '*';
 
   const handler = cors({
     origin,

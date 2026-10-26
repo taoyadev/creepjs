@@ -97,6 +97,73 @@ event and inspect:
 - `ipbot_tier`
 - `remaining` on `ipbot.ratelimit`
 
+## Product analytics (Workers Analytics Engine)
+
+The site sends product events to `POST /v1/events` (see `docs/API.md`). Each
+valid event becomes one data point in the `creepjs_events` dataset (`EVENTS`
+binding). Analytics Engine keeps data for three months.
+
+The event names and props are defined once, in
+`packages/core/src/analytics-events.ts`. Columns are fixed across events:
+
+| Column    | Content                                                                    |
+| --------- | -------------------------------------------------------------------------- |
+| `index1`  | event name                                                                 |
+| `blob1`   | event name                                                                 |
+| `blob2`   | page path (no query string or fragment)                                    |
+| `blob3`   | `tool`: `fingerprint_scan`, `ip_lookup`, `api_request`                     |
+| `blob4`   | `surface`: where it happened (`checker`, `home`, `ip`, `playground`, …)    |
+| `blob5`   | `outcome`: `success` or `error`                                            |
+| `blob6`   | `status`: HTTP status of the tool's API call, `0` when no response arrived |
+| `blob7`   | `section`                                                                  |
+| `blob8`   | `label`                                                                    |
+| `double1` | always `1`                                                                 |
+
+An absent prop is stored as `''`. Append new props as new columns; never
+reorder them.
+
+Analytics Engine may sample at high volume, so count with
+`SUM(_sample_interval)`, not `COUNT()`. Events are not sent under Do Not Track
+or Global Privacy Control, so every count is a lower bound.
+
+### Run a query
+
+Use an API token with the **Account Analytics: Read** permission:
+
+```bash
+curl "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/analytics_engine/sql" \
+  --header "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+  --data "SELECT ... FORMAT JSON"
+```
+
+### Tool runs per week (north-star metric)
+
+```sql
+SELECT
+  toStartOfWeek(timestamp) AS week,
+  SUM(_sample_interval) AS tool_runs
+FROM creepjs_events
+WHERE index1 = 'tool_run'
+  AND timestamp > NOW() - INTERVAL '84' DAY
+GROUP BY week
+ORDER BY week
+```
+
+### Tool runs per week, by tool and outcome
+
+```sql
+SELECT
+  toStartOfWeek(timestamp) AS week,
+  blob3 AS tool,
+  blob5 AS outcome,
+  SUM(_sample_interval) AS runs
+FROM creepjs_events
+WHERE index1 = 'tool_run'
+  AND timestamp > NOW() - INTERVAL '84' DAY
+GROUP BY week, tool, outcome
+ORDER BY week, tool, outcome
+```
+
 ## Current limitations
 
 - Logs are structured, but there is no long-term sink configured yet

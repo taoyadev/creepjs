@@ -8,6 +8,12 @@ export type Env = {
     QUOTA: DurableObjectNamespace;
     /** Cumulative uniqueness-stats counters; see durable/StatsCounter.ts. */
     STATS: DurableObjectNamespace;
+    /**
+     * Product analytics events (Workers Analytics Engine, dataset
+     * `creepjs_events`); see routes/events.ts. Absent in local dev and most
+     * tests, where /v1/events accepts and drops events.
+     */
+    EVENTS?: AnalyticsEngineDataset;
     ENVIRONMENT: string;
     CORS_ORIGIN: string;
     RATE_LIMIT_PER_DAY: string;
@@ -21,7 +27,7 @@ export type Env = {
     MYIP_RISK_DAILY_PER_IP?: string;
     // Optional /v1/stats/uniqueness limit per visitor (default 120/day).
     STATS_DAILY_PER_IP?: string;
-    // Optional cap on tokens minted per day across everyone (default 500).
+    // Optional cap on tokens minted per day across everyone (default 100).
     TOKEN_MINT_DAILY_GLOBAL?: string;
   };
   Variables: {
