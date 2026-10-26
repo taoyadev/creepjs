@@ -1,10 +1,10 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
-import type { Context } from 'hono';
 import type { Env, TokenData } from '../types';
 import { TokenRequestSchema } from '../utils/validation';
 import { sha256Hex } from '../utils/privacy';
 import { normalizeEmailIdentity } from '../utils/email';
+import { intEnv, visitorQuotaKey } from '../utils/counters';
 import { DAY_MS, releaseQuota, reserveQuota } from '../utils/quota';
 
 const app = new Hono<Env>();
@@ -16,6 +16,14 @@ const TOKEN_RATE_LIMIT_PER_DAY = 10;
  * capacity — this only bounds how much KV one requester can fill.
  */
 const TOKEN_LIMIT_PER_EMAIL_PER_DAY = 3;
+/**
+ * Tokens minted per day across all requesters. Addresses are not verified, so
+ * the per-IP and per-inbox caps still let anyone with many IPs and made-up
+ * inboxes mint without bound, and every token carries a daily allowance of
+ * paid lookups. This bounds how fast that pool can grow.
+ */
+const TOKEN_MINT_DAILY_GLOBAL_DEFAULT = 500;
+const GLOBAL_MINT_KEY = 'token-mint:global';
 
 const BASE62 =
   '0123456789' + 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' + 'abcdefghijklmnopqrstuvwxyz';
@@ -39,30 +47,10 @@ function generateToken(): string {
   return `cfp_${out}`;
 }
 
-function getClientIp(c: Context<Env>): string {
-  const cfConnectingIp = c.req.header('CF-Connecting-IP');
-  const cfConnectingIpLower = c.req.header('cf-connecting-ip');
-  const xForwardedFor = c.req.header('X-Forwarded-For');
-  const xForwardedForLower = c.req.header('x-forwarded-for');
-  const xRealIp = c.req.header('X-Real-IP');
-  const xRealIpLower = c.req.header('x-real-ip');
-
-  const forwarded = xForwardedFor || xForwardedForLower;
-  const forwardedIp = forwarded?.split(',')[0]?.trim();
-
-  return (
-    (cfConnectingIp || cfConnectingIpLower)?.trim() ||
-    (xRealIp || xRealIpLower)?.trim() ||
-    forwardedIp ||
-    'unknown'
-  );
-}
-
 app.post('/', zValidator('json', TokenRequestSchema), async (c) => {
   const { email } = c.req.valid('json');
-  const ip = getClientIp(c);
 
-  const ipKey = `token-mint:ip:${await sha256Hex(ip)}`;
+  const ipKey = await visitorQuotaKey(c, 'token-mint:ip');
   const ipReservation = await reserveQuota(c.env, ipKey, {
     limit: TOKEN_RATE_LIMIT_PER_DAY,
     windowMs: DAY_MS,
@@ -90,6 +78,25 @@ app.post('/', zValidator('json', TokenRequestSchema), async (c) => {
         error: `This address has reached its daily limit of ${TOKEN_LIMIT_PER_EMAIL_PER_DAY} tokens. Existing tokens keep working.`,
       },
       429
+    );
+  }
+
+  const globalReservation = await reserveQuota(c.env, GLOBAL_MINT_KEY, {
+    limit: intEnv(
+      c.env.TOKEN_MINT_DAILY_GLOBAL,
+      TOKEN_MINT_DAILY_GLOBAL_DEFAULT
+    ),
+    windowMs: DAY_MS,
+  });
+  if (!globalReservation.allowed) {
+    await releaseQuota(c.env, ipKey);
+    await releaseQuota(c.env, emailKey);
+    return c.json(
+      {
+        error:
+          'Token issuance is at capacity for today. Try again tomorrow; existing tokens keep working.',
+      },
+      503
     );
   }
 

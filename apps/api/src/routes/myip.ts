@@ -1,9 +1,13 @@
 import { Hono, type Context } from 'hono';
 import type { Env } from '../types';
-import { IpbotError, type IpbotResponse, lookupIP } from '../services/ipbot';
-import { clientIp, intEnv } from '../utils/counters';
+import {
+  IpbotError,
+  type IpbotResponse,
+  lookupIP,
+  readCachedLookup,
+} from '../services/ipbot';
+import { clientIp, intEnv, visitorQuotaKey } from '../utils/counters';
 import { releaseQuota, reserveQuota } from '../utils/quota';
-import { hashIpForLog } from '../utils/privacy';
 
 const app = new Hono<Env>();
 
@@ -150,6 +154,14 @@ app.get('/', async (c) => {
     ...(error ? { error } : {}),
   });
 
+  // A cache hit costs nothing upstream, so it answers before any quota is
+  // touched. Reserving first meant four serial Durable Object round trips
+  // (two reserves, two refunds) on every repeat visit.
+  const cached = await readCachedLookup(ip, c.env);
+  if (cached) {
+    return c.json(transformIpbotResult(cached.data, ip, true));
+  }
+
   // Meter the paid risk lookup; on cap exhaustion degrade to cf-geo only
   // (the response shape stays valid — `risk` is optional).
   const perVisitorLimit = intEnv(
@@ -160,7 +172,7 @@ app.get('/', async (c) => {
     c.env.PUBLIC_IP_DAILY_GLOBAL,
     PUBLIC_GLOBAL_DEFAULT
   );
-  const visitorKey = `myip:ip:${await hashIpForLog(ip)}`;
+  const visitorKey = await visitorQuotaKey(c, 'myip:ip');
   // Reserved before the lookup so concurrent requests cannot all pass the cap;
   // both budgets only meter paid upstream calls, so anything that does not
   // reach one is refunded below.

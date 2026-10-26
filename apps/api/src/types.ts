@@ -21,6 +21,8 @@ export type Env = {
     MYIP_RISK_DAILY_PER_IP?: string;
     // Optional /v1/stats/uniqueness limit per visitor (default 120/day).
     STATS_DAILY_PER_IP?: string;
+    // Optional cap on tokens minted per day across everyone (default 500).
+    TOKEN_MINT_DAILY_GLOBAL?: string;
   };
   Variables: {
     token: string;

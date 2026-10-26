@@ -225,6 +225,58 @@ describe('Public IP intelligence route (/v1/ip/public/:ip)', () => {
     expect(json.error).toMatch(/limit reached/i);
   });
 
+  it('charges a cache hit to the visitor but not the upstream budget', async () => {
+    const env = createTestEnv({
+      ipCache: {
+        'ipbot:8.8.8.8': JSON.stringify({
+          data: GOOGLE_DNS,
+          cachedAt: Date.now(),
+          highRisk: false,
+        }),
+      },
+    });
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+    const quotaGet = vi.spyOn(env.QUOTA, 'get');
+
+    const res = await app.fetch(
+      new Request('http://localhost/v1/ip/public/8.8.8.8', {
+        headers: visitor,
+      }),
+      env
+    );
+    const json = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(json).toMatchObject({ cached: true, rateLimit: { remaining: 29 } });
+    expect(fetchMock).not.toHaveBeenCalled();
+    // Only the per-visitor reservation; no global reserve-then-refund.
+    expect(quotaGet).toHaveBeenCalledTimes(1);
+    expect(await readQuotaCount(env, 'pubip:global')).toBe(0);
+  });
+
+  it('counts IPv6 visitors per /64, not per address', async () => {
+    const env = createTestEnv({ bindings: { PUBLIC_IP_DAILY_PER_IP: '1' } });
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockImplementation(() => ok(GOOGLE_DNS))
+    );
+
+    const callFrom = (address: string) =>
+      app.fetch(
+        new Request('http://localhost/v1/ip/public/8.8.8.8', {
+          headers: { 'CF-Connecting-IP': address },
+        }),
+        env
+      );
+
+    expect((await callFrom('2001:db8:1:2::1')).status).toBe(200);
+    // Same /64, different host bits: rotating addresses no longer resets it.
+    expect((await callFrom('2001:0db8:0001:0002:ffff::9')).status).toBe(429);
+    // A different /64 is a different visitor.
+    expect((await callFrom('2001:db8:1:3::1')).status).toBe(200);
+  });
+
   it('rejects invalid IPs without calling upstream or counting usage', async () => {
     const env = createTestEnv();
     const fetchMock = vi.fn();
