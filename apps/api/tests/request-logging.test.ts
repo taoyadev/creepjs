@@ -1,8 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Hono } from 'hono';
+import { HTTPException } from 'hono/http-exception';
 import app from '../src/index';
 import { createTestEnv, seedToken } from './utils';
-import { errorMiddleware } from '../src/middleware/error';
+import { errorHandler } from '../src/middleware/error';
 import { requestLoggerMiddleware } from '../src/middleware/request-logger';
 import type { Env } from '../src/types';
 
@@ -106,8 +107,9 @@ describe('request logging middleware', () => {
     const consoleErrorSpy = vi
       .spyOn(console, 'error')
       .mockImplementation(() => {});
+    vi.spyOn(console, 'log').mockImplementation(() => {});
     const miniApp = new Hono<Env>();
-    miniApp.use('*', errorMiddleware);
+    miniApp.onError(errorHandler);
     miniApp.use('*', requestLoggerMiddleware);
     miniApp.get('/boom', () => {
       throw new Error('kaboom');
@@ -118,6 +120,46 @@ describe('request logging middleware', () => {
 
     expect(res.status).toBe(500);
     expect(res.headers.get('X-Request-Id')).toBeTruthy();
-    expect(consoleErrorSpy).toHaveBeenCalled();
+    expect(await res.json()).toEqual({ error: 'Internal server error' });
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('"msg":"api.error"')
+    );
+  });
+
+  it('returns the JSON error shape from the real app when a binding throws', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'log').mockImplementation(() => {});
+    const env = createTestEnv();
+    env.TOKENS.get = (() => {
+      throw new Error('KV unavailable');
+    }) as unknown as KVNamespace['get'];
+
+    const res = await app.fetch(
+      new Request('http://localhost/v1/fingerprint', {
+        method: 'POST',
+        headers: { 'X-API-Token': TOKEN, 'Content-Type': 'application/json' },
+        body: '{}',
+      }),
+      env
+    );
+
+    expect(res.status).toBe(500);
+    expect(await res.json()).toEqual({ error: 'Internal server error' });
+  });
+
+  it('passes HTTPException responses through unchanged', async () => {
+    const miniApp = new Hono<Env>();
+    miniApp.onError(errorHandler);
+    miniApp.get('/teapot', () => {
+      throw new HTTPException(418, { message: 'short and stout' });
+    });
+
+    const res = await miniApp.fetch(
+      new Request('http://localhost/teapot'),
+      createTestEnv()
+    );
+
+    expect(res.status).toBe(418);
+    expect(await res.text()).toBe('short and stout');
   });
 });

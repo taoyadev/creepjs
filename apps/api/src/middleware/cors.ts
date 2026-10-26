@@ -33,6 +33,15 @@ export const corsMiddleware = createMiddleware<Env>((c, next) => {
     origin,
     allowMethods: ['GET', 'POST', 'OPTIONS'],
     allowHeaders: ['Content-Type', 'X-API-Token'],
+    // Without this, cross-origin callers (the site, SDK users) read null for
+    // every quota header and cannot honour Retry-After.
+    exposeHeaders: [
+      'Retry-After',
+      'X-RateLimit-Limit',
+      'X-RateLimit-Remaining',
+      'X-RateLimit-Reset',
+      'X-Request-Id',
+    ],
     maxAge: 86400,
   });
 
