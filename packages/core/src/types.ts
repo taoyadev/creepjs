@@ -232,18 +232,12 @@ export type DateTimeLocaleStatus =
 export type DateTimeLocaleFingerprint = string | DateTimeLocaleStatus;
 
 /**
- * Audio Context fingerprint
+ * OfflineAudioContext rendering fingerprint
  */
 export interface AudioFingerprint {
   hash: string;
-  sampleRate: number;
-  state: string;
-  maxChannelCount: number;
-  numberOfInputs: number;
-  numberOfOutputs: number;
-  channelCount: number;
-  channelCountMode: string;
-  channelInterpretation: string;
+  /** Sum of |sample| over the rendered tail; the value `hash` summarizes. */
+  sum: number;
 }
 
 /**

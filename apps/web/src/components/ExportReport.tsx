@@ -208,8 +208,8 @@ export function ExportReport({ result, ipSummary }: ExportReportProps) {
         rows.push(['Audio', 'Hash', result.data.audio.hash || 'N/A']);
         rows.push([
           'Audio',
-          'Sample Rate',
-          result.data.audio.sampleRate?.toString() || 'N/A',
+          'Rendered Sum',
+          result.data.audio.sum?.toString() || 'N/A',
         ]);
         rows.push(['', '', '']);
       }

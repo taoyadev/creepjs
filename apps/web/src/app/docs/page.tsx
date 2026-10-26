@@ -707,8 +707,9 @@ X-API-Token: cfp_your_token_here`}
                   <div>
                     <h4 className="font-semibold">Audio Context</h4>
                     <p className="text-muted-foreground text-xs">
-                      Analyzes audio processing characteristics including sample
-                      rate and oscillator output.
+                      Renders a compressed oscillator signal offline and
+                      measures the output, which varies with the audio engine
+                      and CPU.
                     </p>
                   </div>
                   <div>

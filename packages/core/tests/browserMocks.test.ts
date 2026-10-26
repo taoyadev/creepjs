@@ -1,6 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { collectWebRTCFingerprint } from '../src/collectors/webrtc';
 import { collectServiceWorkerFingerprint } from '../src/collectors/serviceWorker';
+import { collectVoicesFingerprint } from '../src/collectors/voices';
+import { collectAudioFingerprint } from '../src/collectors/audio';
+import { murmurHash3 } from '../src/utils/hash';
 
 declare global {
   // eslint-disable-next-line vars-on-top, no-var
@@ -127,5 +130,127 @@ describe('browser-mocked collectors', () => {
     expect(result).toBeDefined();
     expect(result?.supported).toBe(true);
     expect(result?.features).toMatchObject({ cacheAPI: false });
+  });
+
+  describe('collectVoicesFingerprint', () => {
+    class FakeSpeechSynthesis extends EventTarget {
+      voices: Array<Partial<SpeechSynthesisVoice>> = [];
+      onvoiceschanged: (() => void) | null = null;
+      getVoices() {
+        return this.voices;
+      }
+    }
+
+    const localVoice = {
+      name: 'Samantha',
+      lang: 'en-US',
+      localService: true,
+      default: true,
+      voiceURI: 'Samantha',
+    };
+
+    function installSynth(): FakeSpeechSynthesis {
+      const synth = new FakeSpeechSynthesis();
+      Object.defineProperty(window, 'speechSynthesis', {
+        configurable: true,
+        value: synth,
+      });
+      return synth;
+    }
+
+    afterEach(() => {
+      vi.useRealTimers();
+      // @ts-expect-error cleanup
+      delete window.speechSynthesis;
+    });
+
+    it('waits for voiceschanged without taking over the page handler', async () => {
+      const synth = installSynth();
+      const pageHandler = () => {};
+      synth.onvoiceschanged = pageHandler;
+
+      const pending = collectVoicesFingerprint();
+      synth.voices = [localVoice];
+      synth.dispatchEvent(new Event('voiceschanged'));
+
+      const result = await pending;
+      expect(result?.count).toBe(1);
+      expect(result?.voices[0]?.name).toBe('Samantha');
+      expect(synth.onvoiceschanged).toBe(pageHandler);
+    });
+
+    it('resolves instead of hanging when voiceschanged never fires', async () => {
+      vi.useFakeTimers();
+      installSynth();
+
+      const pending = collectVoicesFingerprint();
+      await vi.advanceTimersByTimeAsync(1000);
+
+      await expect(pending).resolves.toBeUndefined();
+    });
+  });
+
+  describe('collectAudioFingerprint', () => {
+    function installOfflineAudioContext(samples: Float32Array) {
+      const node = () => ({ connect: vi.fn() });
+      const param = () => ({ value: 0 });
+
+      class FakeOfflineAudioContext {
+        destination = {};
+        oncomplete: ((event: { renderedBuffer: unknown }) => void) | null =
+          null;
+        constructor(
+          public channels: number,
+          public length: number,
+          public sampleRate: number
+        ) {}
+        createOscillator() {
+          return {
+            ...node(),
+            type: 'sine',
+            frequency: param(),
+            start: vi.fn(),
+          };
+        }
+        createDynamicsCompressor() {
+          return {
+            ...node(),
+            threshold: param(),
+            knee: param(),
+            ratio: param(),
+            attack: param(),
+            release: param(),
+          };
+        }
+        startRendering() {
+          return Promise.resolve({ getChannelData: () => samples });
+        }
+      }
+
+      Object.defineProperty(window, 'OfflineAudioContext', {
+        configurable: true,
+        value: FakeOfflineAudioContext,
+      });
+    }
+
+    afterEach(() => {
+      // @ts-expect-error cleanup
+      delete window.OfflineAudioContext;
+    });
+
+    it('sums the rendered tail of an offline render', async () => {
+      // Frames before 4500 are the compressor settling and must not count.
+      const samples = new Float32Array(5000).fill(1);
+      samples.fill(-0.5, 4500);
+      installOfflineAudioContext(samples);
+
+      const result = await collectAudioFingerprint();
+
+      expect(result).toEqual({ hash: String(murmurHash3('250')), sum: 250 });
+    });
+
+    it('skips when the browser has no offline audio context', async () => {
+      await expect(collectAudioFingerprint()).resolves.toBeUndefined();
+    });
   });
 });

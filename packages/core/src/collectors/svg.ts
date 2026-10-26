@@ -11,6 +11,13 @@ export function collectSVGFingerprint(): SVGFingerprint | undefined {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.setAttribute('width', '200');
     svg.setAttribute('height', '200');
+    // The text bbox otherwise inherits the host page's letter-spacing, font
+    // weight and the like, so one browser measured differently per site.
+    // `all` leaves `direction` alone, hence the explicit ltr.
+    svg.style.setProperty('all', 'initial');
+    svg.style.direction = 'ltr';
+    svg.style.width = '200px';
+    svg.style.height = '200px';
     svg.style.position = 'absolute';
     svg.style.left = '-9999px';
 

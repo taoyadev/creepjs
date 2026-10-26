@@ -1,4 +1,4 @@
-import { mapWithIdleBreaks } from '../utils/async';
+import { mapWithIdleBreaks, withTimeout } from '../utils/async';
 import type { MaybePromise } from '../utils/async';
 import type { CollectorProgressEvent, CollectorSummary } from '../types';
 
@@ -9,16 +9,33 @@ export interface RunSourcesOptions {
   idleDelay?: number;
   concurrency?: number;
   total?: number;
+  /** Per-source ceiling; a source still pending after this counts as an error. */
+  sourceTimeout?: number;
   onProgress?: (event: CollectorProgressEvent) => void;
 }
+
+/**
+ * Backstop for a source whose browser API never settles (a `voiceschanged`
+ * event that never fires, an audio render suspended in a background tab).
+ * Sources with their own waits stay well under it: WebRTC's ICE wait is 2s.
+ */
+export const DEFAULT_SOURCE_TIMEOUT_MS = 5000;
 
 const now = () =>
   typeof performance !== 'undefined' ? performance.now() : Date.now();
 
-async function runSource<T>(source: Source<T>): Promise<CollectorSummary<T>> {
+async function runSource<T>(
+  name: string,
+  source: Source<T>,
+  timeoutMs: number
+): Promise<CollectorSummary<T>> {
   const start = now();
   try {
-    const value = await source();
+    const value = await withTimeout(
+      Promise.resolve().then(source),
+      timeoutMs,
+      name
+    );
     const status =
       value === undefined || value === null ? 'skipped' : 'success';
     return {
@@ -67,7 +84,11 @@ export async function runSources(
         phase: 'start',
       });
 
-      const component = await runSource(source);
+      const component = await runSource(
+        name,
+        source,
+        options.sourceTimeout ?? DEFAULT_SOURCE_TIMEOUT_MS
+      );
 
       options.onProgress?.({
         name,

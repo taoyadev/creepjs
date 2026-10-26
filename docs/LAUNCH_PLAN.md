@@ -635,6 +635,13 @@ privacy matches code; metrics answer the two ops questions above.
 >   longer writes KV on the request path; per-visitor quotas meter IPv6 by /64;
 >   `/my-ip` checks its cache before reserving quota; token minting gets a
 >   global daily cap (`TOKEN_MINT_DAILY_GLOBAL`).
+> - 2026-10-26 · PR #4 — identity schema 3 (every previously issued fingerprint
+>   ID resets): WebRTC ICE candidates and zoom/viewport/host-CSS/permission
+>   signals leave the ID; collector waits are bounded (voices) and audio renders
+>   offline; the API schema accepts every field the browser hashes, covered by
+>   a client/server parity test. Transition: returning visitors run the old JS
+>   until they accept the SW update, so `/checker` (which hashes locally) can
+>   show a schema-2 ID until then; API/SDK responses are recomputed as schema 3.
 
 ---
 

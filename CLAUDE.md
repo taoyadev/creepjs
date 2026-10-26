@@ -149,11 +149,17 @@ apps/api/src/
 - Encoding: Base62 for compact fingerprint IDs
 - Normalization: `canonicalize()` — sorted keys, `undefined` treated as absent,
   so the API re-derives the same string from a decoded request body
-- Identity projection: volatile signals (network estimates, devicePixelRatio,
-  timezone offset, AudioContext state, canvas dataURL, derived
-  `lies`/`resistance`) are excluded from the ID and returned as diagnostics
+- Identity projection: volatile signals are excluded from the ID and returned
+  as diagnostics: network estimates, devicePixelRatio, timezone offset, canvas
+  dataURL, WebRTC ICE candidates, viewport/zoom/colour-scheme media queries,
+  host-page layout probes (clientRects, domRect, computed CSS), service-worker
+  and permission state, media-device lists, network-loaded voices, and the
+  derived `lies`/`resistance`
 - `IDENTITY_SCHEMA_VERSION` is mixed into the digest; bumping it retires every
-  issued ID and is mirrored in the SDK cache key
+  issued ID and is mirrored in the SDK cache key (an SDK test enforces this)
+- `apps/api/src/utils/fingerprintDataSchema.ts` must list every
+  `FingerprintData` field: zod strips unknown nested keys, which splits client
+  and server IDs, so a compile-time guard there fails typecheck on any drift
 
 **Main Function**:
 
