@@ -3,7 +3,11 @@
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./src",
-    "composite": true
+    "composite": true,
+    // Inside outDir so `rm -rf dist` clears it too. Left beside the
+    // tsconfig, it survived the wipe and tsc treated the empty dist as
+    // up to date, emitting nothing on every rebuild.
+    "tsBuildInfoFile": "./dist/tsconfig.tsbuildinfo"
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "tests"],
