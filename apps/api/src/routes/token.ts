@@ -22,7 +22,7 @@ const TOKEN_LIMIT_PER_EMAIL_PER_DAY = 3;
  * inboxes mint without bound, and every token carries a daily allowance of
  * paid lookups. This bounds how fast that pool can grow.
  */
-const TOKEN_MINT_DAILY_GLOBAL_DEFAULT = 500;
+const TOKEN_MINT_DAILY_GLOBAL_DEFAULT = 100;
 const GLOBAL_MINT_KEY = 'token-mint:global';
 
 const BASE62 =
