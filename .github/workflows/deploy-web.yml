@@ -8,6 +8,7 @@ on:
       - 'apps/web/**'
       - 'packages/core/**'
       - 'packages/sdk/**'
+      - 'pnpm-lock.yaml'
       - '.github/workflows/deploy-web.yml'
   pull_request:
     branches:
@@ -16,6 +17,7 @@ on:
       - 'apps/web/**'
       - 'packages/core/**'
       - 'packages/sdk/**'
+      - 'pnpm-lock.yaml'
   workflow_dispatch:
 
 # Default for every job. Jobs that publish a deployment or comment on a PR

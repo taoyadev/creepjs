@@ -8,6 +8,7 @@ on:
       - 'apps/api/**'
       - 'packages/core/**'
       - 'packages/sdk/**'
+      - 'pnpm-lock.yaml'
       - '.github/workflows/deploy-api.yml'
   pull_request:
     branches:
@@ -16,6 +17,7 @@ on:
       - 'apps/api/**'
       - 'packages/core/**'
       - 'packages/sdk/**'
+      - 'pnpm-lock.yaml'
   workflow_dispatch:
 
 # Deployment goes to Cloudflare over its own API token; the GitHub token only
@@ -141,6 +143,7 @@ jobs:
           pnpm --filter @creepjs/api build
 
       - name: Deploy to Cloudflare Workers
+        id: deploy
         uses: cloudflare/wrangler-action@9acf94ace14e7dc412b076f2c5c20b8ce93c79cd # v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -242,8 +245,11 @@ jobs:
           console.log('✅ Batch endpoint contract check passed!');
           NODE
 
+      # Only roll back a version this run actually shipped. If install, build
+      # or the deploy itself failed, the live version is still the good one,
+      # and `wrangler rollback` would replace it with the release before it.
       - name: Rollback on failure
-        if: failure()
+        if: failure() && steps.deploy.outcome == 'success'
         uses: cloudflare/wrangler-action@9acf94ace14e7dc412b076f2c5c20b8ce93c79cd # v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
