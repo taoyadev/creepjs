@@ -70,6 +70,21 @@ function cachePartition(token: string): string {
   }
   return hash.toString(36);
 }
+
+/**
+ * `localStorage` is a getter that throws SecurityError when site data is
+ * blocked or inside a sandboxed iframe, and `typeof localStorage` still runs
+ * that getter. Every cache path goes through here so a blocked store degrades
+ * to "no cache" instead of rejecting `getFingerprint()`.
+ */
+function getStorage(): Storage | null {
+  try {
+    return typeof localStorage === 'undefined' ? null : localStorage;
+  } catch (_error) {
+    void _error;
+    return null;
+  }
+}
 const DEFAULT_ENDPOINT = 'https://api.creepjs.org/v1/fingerprint';
 const DEFAULT_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
 const DEFAULT_TIMEOUT_MS = 10_000;
@@ -258,12 +273,13 @@ export class CreepJS {
    * Get fingerprint from cache if available
    */
   private getCachedFingerprint(): SDKResponse | null {
-    if (!this.config.cache || typeof localStorage === 'undefined') {
+    const storage = this.config.cache ? getStorage() : null;
+    if (!storage) {
       return null;
     }
 
     try {
-      const cached = localStorage.getItem(this.cacheKey);
+      const cached = storage.getItem(this.cacheKey);
       if (!cached) return null;
 
       const data = JSON.parse(cached) as {
@@ -274,7 +290,7 @@ export class CreepJS {
       };
 
       if (Date.now() > data.expiry || !data.fingerprint.data) {
-        localStorage.removeItem(this.cacheKey);
+        storage.removeItem(this.cacheKey);
         return null;
       }
 
@@ -289,7 +305,8 @@ export class CreepJS {
    * Cache fingerprint in localStorage
    */
   private cacheFingerprint(fingerprint: SDKResponse): void {
-    if (!this.config.cache || typeof localStorage === 'undefined') {
+    const storage = this.config.cache ? getStorage() : null;
+    if (!storage) {
       return;
     }
 
@@ -298,7 +315,7 @@ export class CreepJS {
         fingerprint: this.ensureCoverage(fingerprint),
         expiry: Date.now() + this.config.cacheTtl,
       };
-      localStorage.setItem(this.cacheKey, JSON.stringify(data));
+      storage.setItem(this.cacheKey, JSON.stringify(data));
     } catch (_error) {
       void _error;
     }
@@ -431,9 +448,7 @@ export class CreepJS {
    * Clear cached fingerprint
    */
   clearCache(): void {
-    if (typeof localStorage !== 'undefined') {
-      localStorage.removeItem(this.cacheKey);
-    }
+    getStorage()?.removeItem(this.cacheKey);
   }
 
   private ensureCoverage(
