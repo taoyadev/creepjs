@@ -623,6 +623,14 @@ privacy matches code; metrics answer the two ops questions above.
 > the `/ip` shareable URL (F3a); E6 owns the `/v1/stats` → `/v1/stats/uniqueness`
 > docs-drift fix.
 
+> **2026-10 audit fixes** (from the 2026-10-25 multi-agent audit; one line per PR):
+>
+> - 2026-10-26 · PR #3 — API 500s return `{ error }` JSON via `app.onError`; CORS
+>   exposes `Retry-After`/`X-RateLimit-*`/`X-Request-Id`; IPbot calls time out at
+>   3s; hono 4.13.14; SDK and web survive blocked storage (`global-error.tsx`);
+>   no SW reload on first visit; secret scan fails closed; API rollback only
+>   after a successful deploy; PR previews deploy via `npx wrangler`.
+
 ---
 
 ## 13. Go-live / launch checklist (the gate before any public push)

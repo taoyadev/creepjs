@@ -104,6 +104,45 @@ describe('CreepJS SDK', () => {
     expect(fetch).toHaveBeenCalledTimes(1);
   });
 
+  it('treats a throwing localStorage getter as no cache', async () => {
+    // Chrome with site data blocked, or a sandboxed iframe: merely reading
+    // the global throws, which `typeof localStorage` does not guard against.
+    Object.defineProperty(globalThis, 'localStorage', {
+      configurable: true,
+      get() {
+        throw new DOMException('Access is denied', 'SecurityError');
+      },
+    });
+    vi.stubGlobal('__CREEPJS_CORE__', {
+      collectFingerprint: vi.fn().mockResolvedValue(mockFingerprint),
+    });
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            fingerprintId: 'fp_123',
+            timestamp: 1700000000000,
+            confidence: 0.9,
+            coverage: mockFingerprint.coverage,
+          }),
+          { status: 200 }
+        )
+      )
+    );
+
+    try {
+      const sdk = new CreepJS({ token: 'cfp_test_token', cache: true });
+      const result = await sdk.getFingerprint();
+
+      expect(result.fingerprintId).toBe('fp_123');
+      expect(result.cached).toBe(false);
+      expect(() => sdk.clearCache()).not.toThrow();
+    } finally {
+      delete (globalThis as { localStorage?: unknown }).localStorage;
+    }
+  });
+
   it('wraps API failures in typed errors', async () => {
     vi.stubGlobal('__CREEPJS_CORE__', {
       collectFingerprint: vi.fn().mockResolvedValue(mockFingerprint),

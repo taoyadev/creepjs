@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import type { Env } from './types';
 import { corsMiddleware } from './middleware/cors';
-import { errorMiddleware } from './middleware/error';
+import { errorHandler } from './middleware/error';
 import { requestLoggerMiddleware } from './middleware/request-logger';
 import fingerprintRoutes from './routes/fingerprint';
 import tokenRoutes from './routes/token';
@@ -12,8 +12,9 @@ import statsRoutes from './routes/stats';
 const app = new Hono<Env>();
 const API_VERSION = '1.0.0';
 
+app.onError(errorHandler);
+
 // Global middleware
-app.use('*', errorMiddleware);
 app.use('*', requestLoggerMiddleware);
 app.use('*', corsMiddleware);
 

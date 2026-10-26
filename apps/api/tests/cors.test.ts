@@ -69,4 +69,27 @@ describe('CORS middleware', () => {
       'https://creepjs.org'
     );
   });
+
+  it('exposes quota headers to cross-origin callers', async () => {
+    const env = createTestEnv();
+
+    const res = await app.fetch(
+      new Request('http://localhost/v1/health', {
+        headers: { Origin: 'https://third-party.example' },
+      }),
+      env
+    );
+
+    const exposed = (res.headers.get('Access-Control-Expose-Headers') ?? '')
+      .split(',')
+      .map((h) => h.trim().toLowerCase());
+    expect(exposed).toEqual(
+      expect.arrayContaining([
+        'retry-after',
+        'x-ratelimit-limit',
+        'x-ratelimit-remaining',
+        'x-ratelimit-reset',
+      ])
+    );
+  });
 });

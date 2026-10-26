@@ -8,6 +8,7 @@ on:
       - 'apps/web/**'
       - 'packages/core/**'
       - 'packages/sdk/**'
+      - 'pnpm-lock.yaml'
       - '.github/workflows/deploy-web.yml'
   pull_request:
     branches:
@@ -16,6 +17,7 @@ on:
       - 'apps/web/**'
       - 'packages/core/**'
       - 'packages/sdk/**'
+      - 'pnpm-lock.yaml'
   workflow_dispatch:
 
 # Default for every job. Jobs that publish a deployment or comment on a PR
@@ -274,7 +276,6 @@ jobs:
     timeout-minutes: 15
     permissions:
       contents: read
-      deployments: write
       issues: write
       pull-requests: write
     if: github.event_name == 'pull_request'
@@ -293,16 +294,21 @@ jobs:
           # to match `directory: apps/web/out` below.
           path: apps/web/out
 
+      # cloudflare/pages-action is deprecated and no longer resolves. Deploy
+      # with wrangler directly, as the production job does (wrangler-action
+      # would try to install through pnpm, which this job does not set up).
+      # The branch name arrives through env so it is never parsed as shell.
       - name: Deploy preview to Cloudflare Pages
         id: deploy-preview
-        uses: cloudflare/pages-action@f0a1cd58cd66095dee69bfa18fa5efd1dde93bca # v1
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: creepjs
-          directory: apps/web/out
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.head_ref }}
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          PREVIEW_BRANCH: ${{ github.head_ref }}
+        run: |
+          npx --yes wrangler@3 pages deploy apps/web/out --project-name=creepjs --branch="$PREVIEW_BRANCH" | tee "$RUNNER_TEMP/wrangler.log"
+          url="$(grep -oE 'https://[A-Za-z0-9.-]+\.pages\.dev' "$RUNNER_TEMP/wrangler.log" | head -n1 || true)"
+          echo "url=$url" >> "$GITHUB_OUTPUT"
 
       - name: Wait for preview deployment
         run: sleep 10
