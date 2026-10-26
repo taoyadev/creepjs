@@ -1,8 +1,17 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
+import {
+  createExecutionContext,
+  waitOnExecutionContext,
+} from 'cloudflare:test';
 import { computeFingerprintId } from '@creepjs/core';
 import type { FingerprintData } from '@creepjs/core';
 import app from '../src/index';
-import { createTestEnv, readQuotaCount, seedToken } from './utils';
+import {
+  createTestEnv,
+  readQuotaCount,
+  readStatsCount,
+  seedToken,
+} from './utils';
 import { quotaKeyForEmail } from '../src/middleware/ratelimit';
 
 // Held in a map rather than inline `const token = '...'` bindings so the
@@ -56,8 +65,11 @@ describe('Fingerprint route', () => {
       body: JSON.stringify(basePayload),
     });
 
-    const res = await app.fetch(req, env);
+    const ctx = createExecutionContext();
+    const res = await app.fetch(req, env, ctx);
     const json = await res.json();
+    // Stats are written after the response; let them finish.
+    await waitOnExecutionContext(ctx);
 
     expect(res.status).toBe(200);
     expect(json).toMatchObject({
@@ -74,11 +86,11 @@ describe('Fingerprint route', () => {
     );
     expect(json.data).toEqual(basePayload.data);
 
+    // No per-request KV write to the token record: usage is the quota count.
     const storedToken = await env.TOKENS.get(token, 'json');
-    expect(storedToken.usageCount).toBe(1);
+    expect(storedToken.usageCount).toBe(0);
 
-    const totalStats = await env.FP_STATS.get('fpstats:v1:total', 'text');
-    expect(totalStats).toBe('1');
+    expect(await readStatsCount(env, 'fpstats:v1:total')).toBe(1);
 
     expect(
       await readQuotaCount(
@@ -86,6 +98,45 @@ describe('Fingerprint route', () => {
         await quotaKeyForEmail('fingerprint@example.com')
       )
     ).toBe(1);
+  });
+
+  it('still answers when the stats write fails', async () => {
+    const env = createTestEnv({
+      bindings: {
+        STATS: {
+          idFromName: () => ({}) as DurableObjectId,
+          get: () =>
+            ({
+              fetch: () => Promise.reject(new Error('stats object offline')),
+            }) as unknown as DurableObjectStub,
+        } as unknown as DurableObjectNamespace,
+      },
+    });
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const token = TEST_TOKENS.cfp_test_token;
+    await seedToken(env, token, {
+      email: 'stats-down@example.com',
+      createdAt: Date.now(),
+      usageCount: 0,
+    });
+
+    const ctx = createExecutionContext();
+    const res = await app.fetch(
+      new Request('http://localhost/v1/fingerprint', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-API-Token': token },
+        body: JSON.stringify(basePayload),
+      }),
+      env,
+      ctx
+    );
+    await waitOnExecutionContext(ctx);
+
+    expect(res.status).toBe(200);
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('"msg":"fingerprint.stats_failed"')
+    );
+    errorSpy.mockRestore();
   });
 
   it('derives the ID from components so a caller cannot claim another device', async () => {

@@ -41,11 +41,12 @@ pnpm install
 # 4. Configure secrets (optional)
 ./scripts/setup-secrets.sh production
 
-# NOTE: the API also declares a Durable Object (QUOTA / QuotaCounter) that
-# `wrangler deploy` creates from the `[[migrations]]` block in
-# apps/api/wrangler.toml. It needs no manual provisioning, but the first
-# deploy that carries migration tag v1 must succeed before the rate limits
-# work — see "Durable Object quota counters" below.
+# NOTE: the API also declares two Durable Objects (QUOTA / QuotaCounter and
+# STATS / StatsCounter) that `wrangler deploy` creates from the
+# `[[migrations]]` blocks in apps/api/wrangler.toml. They need no manual
+# provisioning, but the deploys carrying migration tags v1 and v2 must succeed
+# before the rate limits and uniqueness stats work — see "Durable Object quota
+# counters" below.
 
 # 5. Push to main branch - CI/CD handles the rest!
 git push origin main
@@ -504,6 +505,14 @@ burst went through a daily cap in full.
   breaks the binding.
 - Counters are self-expiring: each object sets an alarm for the end of its
   window and drops its storage, so per-visitor counters do not accumulate.
+
+**Uniqueness stats (migration `v2`):** the `/v1/stats/uniqueness` counters
+live in one `StatsCounter` object (`STATS` binding), incremented after each
+fingerprint response via `waitUntil`. They used to be KV read-modify-writes,
+which lost counts under concurrency and, on the shared total key, exceeded
+KV's per-key write rate and failed requests. The first time the object sees a
+key it seeds it from the old `FP_STATS` KV value, so history carries over; KV
+is not written after that.
 
 **Rollback note:** a Worker version that predates migration tag `v1` has no
 `QUOTA` binding. Rolling back past this deploy therefore also reverts the

@@ -99,8 +99,9 @@ describe('IP intelligence route', () => {
       },
     });
 
+    // Usage is the quota counter; the token record is not rewritten per call.
     const storedToken = await env.TOKENS.get(TOKEN, 'json');
-    expect(storedToken.usageCount).toBe(1);
+    expect(storedToken.usageCount).toBe(0);
   });
 
   it('rejects invalid IP path parameters', async () => {
@@ -224,6 +225,58 @@ describe('Public IP intelligence route (/v1/ip/public/:ip)', () => {
     expect(json.error).toMatch(/limit reached/i);
   });
 
+  it('charges a cache hit to the visitor but not the upstream budget', async () => {
+    const env = createTestEnv({
+      ipCache: {
+        'ipbot:8.8.8.8': JSON.stringify({
+          data: GOOGLE_DNS,
+          cachedAt: Date.now(),
+          highRisk: false,
+        }),
+      },
+    });
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+    const quotaGet = vi.spyOn(env.QUOTA, 'get');
+
+    const res = await app.fetch(
+      new Request('http://localhost/v1/ip/public/8.8.8.8', {
+        headers: visitor,
+      }),
+      env
+    );
+    const json = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(json).toMatchObject({ cached: true, rateLimit: { remaining: 29 } });
+    expect(fetchMock).not.toHaveBeenCalled();
+    // Only the per-visitor reservation; no global reserve-then-refund.
+    expect(quotaGet).toHaveBeenCalledTimes(1);
+    expect(await readQuotaCount(env, 'pubip:global')).toBe(0);
+  });
+
+  it('counts IPv6 visitors per /64, not per address', async () => {
+    const env = createTestEnv({ bindings: { PUBLIC_IP_DAILY_PER_IP: '1' } });
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockImplementation(() => ok(GOOGLE_DNS))
+    );
+
+    const callFrom = (address: string) =>
+      app.fetch(
+        new Request('http://localhost/v1/ip/public/8.8.8.8', {
+          headers: { 'CF-Connecting-IP': address },
+        }),
+        env
+      );
+
+    expect((await callFrom('2001:db8:1:2::1')).status).toBe(200);
+    // Same /64, different host bits: rotating addresses no longer resets it.
+    expect((await callFrom('2001:0db8:0001:0002:ffff::9')).status).toBe(429);
+    // A different /64 is a different visitor.
+    expect((await callFrom('2001:db8:1:3::1')).status).toBe(200);
+  });
+
   it('rejects invalid IPs without calling upstream or counting usage', async () => {
     const env = createTestEnv();
     const fetchMock = vi.fn();
@@ -300,10 +353,6 @@ describe('Batch IP intelligence route (POST /v1/ip/batch)', () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(await quota(env)).toBe(2);
     expect(res.headers.get('X-RateLimit-Remaining')).toBe('998');
-
-    // usageCount is approximate success telemetry, separate from quota cost.
-    const storedToken = await env.TOKENS.get(TOKEN, 'json');
-    expect(storedToken.usageCount).toBe(2);
   });
 
   it('trims, dedupes, and preserves first-seen response order', async () => {
@@ -334,8 +383,6 @@ describe('Batch IP intelligence route (POST /v1/ip/batch)', () => {
     expect(json.quotaCost).toBe(2);
     expect(await quota(env)).toBe(2);
     expect(fetchMock).toHaveBeenCalledTimes(2);
-    const storedToken = await env.TOKENS.get(TOKEN, 'json');
-    expect(storedToken.usageCount).toBe(2);
   });
 
   it('charges one abuse-prevention unit for an invalid-only batch', async () => {
@@ -362,8 +409,6 @@ describe('Batch IP intelligence route (POST /v1/ip/batch)', () => {
     ).toBe(true);
     expect(await quota(env)).toBe(1);
     expect(fetchMock).not.toHaveBeenCalled();
-    const storedToken = await env.TOKENS.get(TOKEN, 'json');
-    expect(storedToken.usageCount).toBe(0);
   });
 
   it('returns 429 with zero upstream calls when full cost cannot be reserved', async () => {
@@ -443,8 +488,6 @@ describe('Batch IP intelligence route (POST /v1/ip/batch)', () => {
     });
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(await quota(env)).toBe(3);
-    const storedToken = await env.TOKENS.get(TOKEN, 'json');
-    expect(storedToken.usageCount).toBe(1);
   });
 
   it('propagates Retry-After and uses at most one retry in a batch', async () => {

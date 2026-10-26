@@ -1,4 +1,5 @@
 import type { Env } from '../types';
+import type { StatsRequest, StatsResult } from '../durable/StatsCounter';
 
 export type UniquenessComponent =
   | 'canvas'
@@ -135,23 +136,32 @@ export function extractUniquenessBuckets(
   return samples.slice(0, MAX_BUCKET_WRITES);
 }
 
-async function incrementCounter(kv: KVNamespace, key: string) {
-  const current = Number.parseInt((await kv.get(key, 'text')) ?? '0', 10);
-  await kv.put(key, String(Number.isFinite(current) ? current + 1 : 1));
+/** All counters live in one StatsCounter instance; see durable/StatsCounter.ts. */
+const STATS_OBJECT_NAME = 'fpstats:v1';
+
+async function statsCall(
+  env: Env['Bindings'],
+  body: StatsRequest
+): Promise<StatsResult> {
+  const stub = env.STATS.get(env.STATS.idFromName(STATS_OBJECT_NAME));
+  const response = await stub.fetch('https://stats.internal/', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+  return response.json<StatsResult>();
 }
 
 export async function recordUniquenessStats(
   data: UniquenessInput,
   env: Env['Bindings']
 ) {
-  const buckets = extractUniquenessBuckets(data);
-
-  await incrementCounter(env.FP_STATS, TOTAL_KEY);
-  await Promise.all(
-    buckets.map((sample) =>
-      incrementCounter(env.FP_STATS, bucketKey(sample.component, sample.bucket))
-    )
-  );
+  const keys = [
+    TOTAL_KEY,
+    ...extractUniquenessBuckets(data).map((sample) =>
+      bucketKey(sample.component, sample.bucket)
+    ),
+  ];
+  await statsCall(env, { op: 'increment', keys });
 }
 
 function parseComponentQuery(query: string) {
@@ -207,38 +217,35 @@ export async function getUniquenessEstimates(
   rawQuery: string,
   env: Env['Bindings']
 ): Promise<UniquenessResponse> {
-  const total = Number.parseInt(
-    (await env.FP_STATS.get(TOTAL_KEY, 'text')) ?? '0',
-    10
-  );
-  const totalSamples = Number.isFinite(total) ? total : 0;
+  const buckets = parseComponentQuery(rawQuery);
+  const counts = await statsCall(env, {
+    op: 'read',
+    keys: [
+      TOTAL_KEY,
+      ...buckets.map(({ component, bucket }) => bucketKey(component, bucket)),
+    ],
+  });
+
+  const totalSamples = counts[TOTAL_KEY] ?? 0;
   const kAnonThreshold = toKAnon(env);
   const estimates: Partial<Record<UniquenessComponent, ComponentEstimate>> = {};
 
-  const buckets = parseComponentQuery(rawQuery);
+  for (const { component, bucket } of buckets) {
+    const sampleSize = counts[bucketKey(component, bucket)] ?? 0;
+    const suppressed =
+      totalSamples < kAnonThreshold || sampleSize < kAnonThreshold;
 
-  await Promise.all(
-    buckets.map(async ({ component, bucket }) => {
-      const rawCount = Number.parseInt(
-        (await env.FP_STATS.get(bucketKey(component, bucket), 'text')) ?? '0',
-        10
-      );
-      const sampleSize = Number.isFinite(rawCount) ? rawCount : 0;
-      const suppressed =
-        totalSamples < kAnonThreshold || sampleSize < kAnonThreshold;
-
-      estimates[component] = {
-        component,
-        bucket,
-        sampleSize: suppressed ? null : sampleSize,
-        rarity:
-          suppressed || totalSamples === 0
-            ? null
-            : Number((sampleSize / totalSamples).toFixed(4)),
-        suppressed,
-      };
-    })
-  );
+    estimates[component] = {
+      component,
+      bucket,
+      sampleSize: suppressed ? null : sampleSize,
+      rarity:
+        suppressed || totalSamples === 0
+          ? null
+          : Number((sampleSize / totalSamples).toFixed(4)),
+      suppressed,
+    };
+  }
 
   return {
     totalSamples,

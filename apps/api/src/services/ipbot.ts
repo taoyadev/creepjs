@@ -366,6 +366,28 @@ async function fetchFromUpstream(
 }
 
 /**
+ * The cached result for `ip`, or null. Never calls upstream, so routes that
+ * meter paid lookups can answer a cache hit before reserving any quota.
+ */
+export async function readCachedLookup(
+  ip: string,
+  env: Pick<IpbotBindings, 'IP_CACHE'>
+): Promise<IpbotLookupResult | null> {
+  if (!env.IP_CACHE || !isValidIp(ip)) return null;
+  const cached = await env.IP_CACHE.get<CachedEntry>(
+    `${CACHE_PREFIX}${ip}`,
+    'json'
+  );
+  if (!cached?.data) return null;
+  return {
+    data: cached.data,
+    cached: true,
+    highRisk: cached.highRisk ?? isHighRisk(cached.data),
+    rateLimit: cached.rateLimit ?? emptyRateLimit(),
+  };
+}
+
+/**
  * Look up IP intelligence for `ip`, with KV caching, 429 backoff, and
  * rate-limit logging. Credentials come from `env` (never hardcoded).
  *
@@ -401,15 +423,8 @@ export async function lookupIP(
 
   // 1. Cache read (positive, then recent-failure negative entry).
   if (env.IP_CACHE) {
-    const cached = await env.IP_CACHE.get<CachedEntry>(cacheKey, 'json');
-    if (cached?.data) {
-      return {
-        data: cached.data,
-        cached: true,
-        highRisk: cached.highRisk ?? isHighRisk(cached.data),
-        rateLimit: cached.rateLimit ?? emptyRateLimit(),
-      };
-    }
+    const cached = await readCachedLookup(ip, env);
+    if (cached) return cached;
 
     const negative = await env.IP_CACHE.get<{
       status?: number;

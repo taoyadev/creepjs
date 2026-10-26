@@ -1,18 +1,21 @@
 import { Hono, type Context } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { createMiddleware } from 'hono/factory';
-import type { Env, TokenData } from '../types';
+import type { Env } from '../types';
 import { authMiddleware } from '../middleware/auth';
 import { rateLimitMiddleware, reserveRateLimit } from '../middleware/ratelimit';
 import {
   IpbotError,
   isValidIp,
   lookupIP,
+  readCachedLookup,
+  type IpbotLookupResult,
   type IpbotResponse,
 } from '../services/ipbot';
 import { IpBatchRequestSchema } from '../utils/validation';
 import { logEvent } from '../utils/logging';
 import { hashIpForLog } from '../utils/privacy';
+import { intEnv, visitorQuotaKey } from '../utils/counters';
 import { releaseQuota, reserveQuota, resetInSeconds } from '../utils/quota';
 
 const app = new Hono<Env>();
@@ -55,21 +58,6 @@ function ipbotErrorResponse(c: Context<Env>, error: unknown) {
   throw error;
 }
 
-async function recordTokenUsage(
-  env: Env['Bindings'],
-  token: string,
-  tokenData: TokenData,
-  increment = 1
-) {
-  await env.TOKENS.put(
-    token,
-    JSON.stringify({
-      ...tokenData,
-      usageCount: tokenData.usageCount + increment,
-    } satisfies TokenData)
-  );
-}
-
 /** One row of a batch lookup, always keyed by the normalized submitted IP. */
 type BatchItem =
   | {
@@ -87,19 +75,6 @@ type BatchItem =
       error: string;
       status?: number;
     };
-
-const intEnv = (value: string | undefined, fallback: number) => {
-  const n = value ? Number.parseInt(value, 10) : NaN;
-  return Number.isFinite(n) && n > 0 ? n : fallback;
-};
-
-const clientIp = (c: Context<Env>) =>
-  (
-    c.req.header('cf-connecting-ip') ||
-    c.req.header('x-real-ip') ||
-    c.req.header('x-forwarded-for')?.split(',')[0] ||
-    '0.0.0.0'
-  ).trim();
 
 /**
  * Public IP intelligence — no token required. Protected by a per-visitor-IP
@@ -120,10 +95,8 @@ app.get('/public/:ip', async (c) => {
     c.env.PUBLIC_IP_DAILY_GLOBAL,
     PUBLIC_GLOBAL_DEFAULT
   );
-  const visitor = clientIp(c);
-  const visitorHash = await hashIpForLog(visitor);
   const targetHash = await hashIpForLog(ip);
-  const perIpKey = `pubip:ip:${visitorHash}`;
+  const perIpKey = await visitorQuotaKey(c, 'pubip:ip');
   const globalKey = 'pubip:global';
 
   // 1. Per-visitor-IP daily limit. Reserved up front so concurrent requests
@@ -143,25 +116,38 @@ app.get('/public/:ip', async (c) => {
     );
   }
 
-  // 2. Global daily cap (protects the paid upstream quota).
-  const global = await reserveQuota(c.env, globalKey, { limit: globalLimit });
-  if (!global.allowed) {
-    await releaseQuota(c.env, perIpKey);
-    return c.json(
-      {
-        error:
-          'Public IP lookups are temporarily at capacity. Try again later.',
-        status: 503,
-      },
-      503
-    );
+  // 2. Global daily cap (protects the paid upstream quota). It meters only
+  //    upstream calls, so a cache hit skips it rather than reserving and
+  //    refunding: two Durable Object round trips saved on every hit.
+  let result: IpbotLookupResult | null = await readCachedLookup(ip, c.env);
+  let globalCount: number | null = null;
+  if (!result) {
+    const global = await reserveQuota(c.env, globalKey, {
+      limit: globalLimit,
+    });
+    if (!global.allowed) {
+      await releaseQuota(c.env, perIpKey);
+      return c.json(
+        {
+          error:
+            'Public IP lookups are temporarily at capacity. Try again later.',
+          status: 503,
+        },
+        503
+      );
+    }
+    globalCount = global.count;
   }
 
   try {
-    const result = await lookupIP(ip, c.env);
-
-    // The global cap meters the paid upstream, so a cache hit gives it back.
-    if (result.cached) await releaseQuota(c.env, globalKey);
+    if (!result) {
+      result = await lookupIP(ip, c.env);
+      // Filled by a concurrent request in the meantime: nothing upstream.
+      if (result.cached && globalCount !== null) {
+        await releaseQuota(c.env, globalKey);
+        globalCount -= 1;
+      }
+    }
 
     const remaining = Math.max(0, perIpLimit - perIp.count);
     logEvent({
@@ -171,7 +157,7 @@ app.get('/public/:ip', async (c) => {
       cached: result.cached,
       high_risk: result.highRisk,
       public_remaining: remaining,
-      global_count: result.cached ? global.count - 1 : global.count,
+      global_count: globalCount,
       ipbot_remaining: result.rateLimit.remaining,
     });
     return c.json({
@@ -189,7 +175,7 @@ app.get('/public/:ip', async (c) => {
   } catch (error) {
     // The lookup never happened, so neither reservation was spent.
     await releaseQuota(c.env, perIpKey);
-    await releaseQuota(c.env, globalKey);
+    if (globalCount !== null) await releaseQuota(c.env, globalKey);
     return ipbotErrorResponse(c, error);
   }
 });
@@ -390,25 +376,6 @@ app.post(
       }
     }
 
-    if (successCount > 0) {
-      try {
-        await recordTokenUsage(
-          c.env,
-          c.get('token'),
-          c.get('tokenData'),
-          successCount
-        );
-      } catch {
-        // usageCount is explicitly approximate telemetry; a failed telemetry
-        // write must not discard already-resolved batch results.
-        logEvent({
-          msg: 'ip.batch_usage_write_failed',
-          request_id: c.get('requestId'),
-          success_count: successCount,
-        });
-      }
-    }
-
     const results = unique.map((ip) => resultByIp.get(ip)!);
     const invalidCount = results.filter(
       (item) => !item.ok && item.outcome === 'invalid'
@@ -486,7 +453,6 @@ app.get('/:ip', authMiddleware, rateLimitMiddleware, async (c) => {
   try {
     const ip = c.req.param('ip');
     const result = await lookupIP(ip, c.env);
-    await recordTokenUsage(c.env, c.get('token'), c.get('tokenData'));
     logEvent({
       msg: 'ip.token_lookup',
       request_id: c.get('requestId'),

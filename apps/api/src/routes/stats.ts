@@ -1,18 +1,17 @@
 import { Hono } from 'hono';
 import type { Env } from '../types';
 import { getUniquenessEstimates } from '../services/uniqueness';
-import { clientIp, intEnv } from '../utils/counters';
-import { hashIpForLog } from '../utils/privacy';
+import { intEnv, visitorQuotaKey } from '../utils/counters';
 import { reserveQuota, resetInSeconds } from '../utils/quota';
 
 const app = new Hono<Env>();
 
-/** Reads per request, so an unmetered caller can amplify KV cost freely. */
+/** Each call reads the stats counters, so an unmetered caller amplifies cost. */
 const STATS_DAILY_PER_IP_DEFAULT = 120;
 
 app.get('/uniqueness', async (c) => {
   const limit = intEnv(c.env.STATS_DAILY_PER_IP, STATS_DAILY_PER_IP_DEFAULT);
-  const key = `stats:ip:${await hashIpForLog(clientIp(c))}`;
+  const key = await visitorQuotaKey(c, 'stats:ip');
   const reservation = await reserveQuota(c.env, key, { limit });
 
   if (!reservation.allowed) {

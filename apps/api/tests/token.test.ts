@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import app from '../src/index';
-import { createTestEnv } from './utils';
+import { createTestEnv, readQuotaCount } from './utils';
+import { hashIpForLog } from '../src/utils/privacy';
 
 describe('Token route', () => {
   it('issues a token and stores metadata', async () => {
@@ -135,5 +136,36 @@ describe('Token route', () => {
 
     // Seven of the ten remain, so a different inbox still succeeds.
     expect((await mint('other@example.com')).status).toBe(200);
+  });
+
+  it('caps minting across all requesters and refunds the rejected caller', async () => {
+    const env = createTestEnv({ bindings: { TOKEN_MINT_DAILY_GLOBAL: '2' } });
+    const mint = (n: number) =>
+      app.fetch(
+        new Request('http://localhost/v1/token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'CF-Connecting-IP': `7.7.7.${n}`,
+          },
+          body: JSON.stringify({ email: `farm${n}@example.com` }),
+        }),
+        env
+      );
+
+    expect((await mint(1)).status).toBe(200);
+    expect((await mint(2)).status).toBe(200);
+    // A fresh IP and a fresh inbox no longer buy another token today.
+    const rejected = await mint(3);
+    expect(rejected.status).toBe(503);
+    expect((await rejected.json<{ error: string }>()).error).toMatch(
+      /capacity/i
+    );
+    expect(
+      await readQuotaCount(
+        env,
+        `token-mint:ip:${await hashIpForLog('7.7.7.3')}`
+      )
+    ).toBe(0);
   });
 });

@@ -112,6 +112,35 @@ describe('/my-ip route', () => {
     expect(await readQuotaCount(env, 'pubip:global')).toBe(1);
   });
 
+  it('answers a cache hit without touching either quota counter', async () => {
+    const env = createTestEnv({
+      ipCache: {
+        'ipbot:8.8.8.8': JSON.stringify({
+          data: GOOGLE_DNS,
+          cachedAt: Date.now(),
+          highRisk: false,
+        }),
+      },
+    });
+    const quotaGet = vi.spyOn(env.QUOTA, 'get');
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    const res = await app.fetch(
+      new Request('http://localhost/my-ip', {
+        headers: { 'CF-Connecting-IP': '8.8.8.8' },
+      }),
+      env
+    );
+    const json = await res.json<Record<string, unknown>>();
+
+    expect(res.status).toBe(200);
+    expect(json).toMatchObject({ ip: '8.8.8.8', cached: true });
+    expect(json.risk).toMatchObject({ score: 30 });
+    expect(quotaGet).not.toHaveBeenCalled();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it('degrades to geo-only once the per-visitor risk cap is exhausted', async () => {
     const visitorKey = `myip:ip:${await hashIpForLog('8.8.8.8')}`;
     const env = createTestEnv();

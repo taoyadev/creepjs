@@ -630,6 +630,11 @@ privacy matches code; metrics answer the two ops questions above.
 >   3s; hono 4.13.14; SDK and web survive blocked storage (`global-error.tsx`);
 >   no SW reload on first visit; secret scan fails closed; API rollback only
 >   after a successful deploy; PR previews deploy via `npx wrangler`.
+> - 2026-10-26 · PR #5 — fingerprint stats move to a `StatsCounter` Durable
+>   Object written after the response (`waitUntil`), so `/v1/fingerprint` no
+>   longer writes KV on the request path; per-visitor quotas meter IPv6 by /64;
+>   `/my-ip` checks its cache before reserving quota; token minting gets a
+>   global daily cap (`TOKEN_MINT_DAILY_GLOBAL`).
 
 ---
 

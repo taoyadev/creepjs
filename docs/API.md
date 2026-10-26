@@ -443,10 +443,10 @@ aborts later valid lookups.
 - Provider response bodies are never relayed. `Retry-After` is propagated when
   available.
 
-`usageCount` is best-effort success telemetry, not a billing ledger. Daily
-quota reservation uses Cloudflare KV read/write protection and can lose
-updates under concurrency; exact paid accounting would require an atomic
-store and is outside the free-tier contract.
+Daily quota is reserved atomically per token-owning inbox (a Durable Object)
+and reported in the `X-RateLimit-*` headers. The `usageCount` field in token
+records is no longer updated: rewriting the token record on every request
+exceeded KV's per-key write rate under load.
 
 Submitted IPs and API tokens are never written to application logs. The `/ip`
 workspace keeps tokens in memory only. A user-initiated CSV may contain result

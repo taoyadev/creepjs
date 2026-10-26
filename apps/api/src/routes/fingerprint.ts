@@ -2,12 +2,12 @@ import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import type { FingerprintData } from '@creepjs/core';
 import { computeFingerprintId } from '@creepjs/core';
-import type { Env, TokenData } from '../types';
+import type { Env } from '../types';
 import { authMiddleware } from '../middleware/auth';
 import { rateLimitMiddleware } from '../middleware/ratelimit';
 import { FingerprintRequestSchema } from '../utils/validation';
 import { recordUniquenessStats } from '../services/uniqueness';
-import { logEvent } from '../utils/logging';
+import { logEvent, runAfterResponse } from '../utils/logging';
 
 const app = new Hono<Env>();
 
@@ -18,17 +18,12 @@ app.post(
   zValidator('json', FingerprintRequestSchema),
   async (c) => {
     const data = c.req.valid('json');
-    const token = c.get('token');
-    const tokenData = c.get('tokenData');
 
-    // Update token usage count
-    const updatedTokenData: TokenData = {
-      ...tokenData,
-      usageCount: tokenData.usageCount + 1,
-    };
-
-    await c.env.TOKENS.put(token, JSON.stringify(updatedTokenData));
-    await recordUniquenessStats(data.data, c.env);
+    // Stats are bookkeeping: off the response path, and a failure there must
+    // not fail a request whose quota is already spent.
+    runAfterResponse(c, 'fingerprint.stats_failed', () =>
+      recordUniquenessStats(data.data, c.env)
+    );
 
     // Derive the ID from the submitted components instead of trusting the one
     // in the body: a reported ID is just a caller-supplied string, so echoing
@@ -49,7 +44,7 @@ app.post(
     logEvent({
       msg: 'fingerprint.accepted',
       request_id: c.get('requestId'),
-      token_usage_count: updatedTokenData.usageCount,
+      quota_used: c.get('quotaUsed'),
       fingerprint_id: fingerprintId,
       reported_id_matches: reportedIdMatches,
       coverage_ratio: coverage.ratio,
