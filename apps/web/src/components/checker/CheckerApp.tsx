@@ -565,25 +565,8 @@ export function CheckerApp() {
                   timing={fingerprint.timings.audio}
                 >
                   <DataRow
-                    label="Sample Rate"
-                    value={`${fingerprint.data.audio.sampleRate}Hz`}
-                  />
-                  <DataRow label="State" value={fingerprint.data.audio.state} />
-                  <DataRow
-                    label="Max Channels"
-                    value={fingerprint.data.audio.maxChannelCount}
-                  />
-                  <DataRow
-                    label="Channel Count"
-                    value={fingerprint.data.audio.channelCount}
-                  />
-                  <DataRow
-                    label="Channel Mode"
-                    value={fingerprint.data.audio.channelCountMode}
-                  />
-                  <DataRow
-                    label="Interpretation"
-                    value={fingerprint.data.audio.channelInterpretation}
+                    label="Rendered Sum"
+                    value={fingerprint.data.audio.sum}
                   />
                 </FingerprintCollectorCard>
               )}

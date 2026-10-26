@@ -138,6 +138,8 @@ const DEFAULT_CONCURRENCY =
 export interface CollectFingerprintOptions {
   idleDelay?: number;
   concurrency?: number;
+  /** Milliseconds before a stalled collector is recorded as an error. */
+  sourceTimeout?: number;
   onProgress?: (event: CollectorProgressEvent) => void;
 }
 
@@ -153,6 +155,7 @@ export async function collectFingerprint(
     idleDelay: options.idleDelay ?? DEFAULT_IDLE_DELAY,
     concurrency: options.concurrency ?? DEFAULT_CONCURRENCY,
     total: totalCollectors,
+    sourceTimeout: options.sourceTimeout,
     onProgress: options.onProgress,
   });
   const dataWithoutLies = buildFingerprintData(baseComponents);

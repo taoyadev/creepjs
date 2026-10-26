@@ -232,10 +232,10 @@ export async function collectLiesFingerprint(
       }
     }
 
-    // Audio consistency
-    if (data.audio) {
-      const { sampleRate } = data.audio;
-
+    // Audio consistency: the realtime context's rate (the offline audio
+    // render runs at a fixed rate, so it carries none).
+    const sampleRate = data.audioBaseLatency?.sampleRate;
+    if (sampleRate !== undefined) {
       // Check for unusual sample rates
       if (
         sampleRate !== 44100 &&

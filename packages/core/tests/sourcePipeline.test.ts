@@ -59,6 +59,23 @@ describe('runSources', () => {
     expect(components.failure.error).toContain('boom');
   });
 
+  it('records a source that never settles as an error and finishes the run', async () => {
+    const registry: SourceRegistry = {
+      // A browser API whose event never fires (e.g. voiceschanged).
+      stalled: () => new Promise(() => {}),
+      healthy: () => 'ok',
+    };
+
+    const components = await runSources(registry, {
+      idleDelay: 0,
+      sourceTimeout: 20,
+    });
+
+    expect(components.stalled.status).toBe('error');
+    expect(components.stalled.error).toBe('stalled timed out after 20ms');
+    expect(components.healthy.status).toBe('success');
+  });
+
   it('emits start and finish progress events for each source', async () => {
     const events: Array<{
       name: string;
