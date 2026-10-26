@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { BookOpen, Code } from 'lucide-react';
 
-import { analytics } from '@/lib/analytics';
+import { trackEvent } from '@/lib/analytics';
 import { SITE_CONFIG } from '@/lib/metadata';
 import { CopyButton } from '@/components/CopyButton';
 import { Button } from '@/components/ui/button';
@@ -162,8 +162,8 @@ export function CodeSnippets({ apiToken }: { apiToken: string }) {
                   ariaLabel={`Copy ${language} code example`}
                   successMessage={`${language} example copied`}
                   onCopied={() =>
-                    analytics.track.buttonClicked({
-                      buttonLabel: 'copy_sdk_example',
+                    trackEvent('button_clicked', {
+                      label: 'copy_sdk_example',
                       section: selectedLanguage,
                     })
                   }

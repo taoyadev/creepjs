@@ -21,7 +21,7 @@ import {
   CardHeader,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { analytics } from '@/lib/analytics';
+import { trackEvent } from '@/lib/analytics';
 import { ApiError } from '@/lib/api-client';
 import {
   IpInputError,
@@ -67,11 +67,11 @@ export function CompactIpLookup() {
     try {
       const nextResult = await lookupPublicIp(ip);
       setResult(nextResult);
-      analytics.track.apiCall({
-        endpoint: '/v1/ip/public/:ip',
-        statusCode: 200,
-        success: true,
-        source: 'proxy-intent-pilot',
+      trackEvent('tool_run', {
+        tool: 'ip_lookup',
+        surface: 'proxy-intent-pilot',
+        outcome: 'success',
+        status: '200',
       });
     } catch (lookupError) {
       setError(publicIpLookupErrorMessage(lookupError));
@@ -79,16 +79,17 @@ export function CompactIpLookup() {
         lookupError instanceof IpInputError ||
           (lookupError instanceof ApiError && lookupError.status === 400)
       );
-      analytics.track.apiCall({
-        endpoint: '/v1/ip/public/:ip',
-        statusCode:
+      trackEvent('tool_run', {
+        tool: 'ip_lookup',
+        surface: 'proxy-intent-pilot',
+        outcome: 'error',
+        status: String(
           lookupError instanceof IpInputError
             ? 400
             : lookupError instanceof ApiError
               ? lookupError.status
-              : 0,
-        success: false,
-        source: 'proxy-intent-pilot',
+              : 0
+        ),
       });
     } finally {
       setLoading(false);
@@ -261,8 +262,8 @@ export function CompactIpLookup() {
                 <Link
                   href={`/ip?q=${encodeURIComponent(result.data.ip)}`}
                   onClick={() =>
-                    analytics.track.buttonClicked({
-                      buttonLabel: 'open_full_ip_report',
+                    trackEvent('button_clicked', {
+                      label: 'open_full_ip_report',
                       section: 'proxy-intent-pilot',
                     })
                   }

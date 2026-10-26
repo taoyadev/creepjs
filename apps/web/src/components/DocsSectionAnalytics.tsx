@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { analytics } from '@/lib/analytics';
+import { trackEvent } from '@/lib/analytics';
 
 interface DocsSectionAnalyticsProps {
   rootId: string;
@@ -16,8 +16,7 @@ export function DocsSectionAnalytics({
     const root = document.getElementById(rootId);
     if (!root) return;
 
-    analytics.pageView('/docs');
-    analytics.track.docsViewed({ section: defaultSection });
+    trackEvent('docs_viewed', { section: defaultSection });
 
     const onClick = (event: Event) => {
       const target = event.target;
@@ -29,7 +28,7 @@ export function DocsSectionAnalytics({
       const section = trigger?.dataset.docsTab;
       if (!section) return;
 
-      analytics.track.docsViewed({ section });
+      trackEvent('docs_viewed', { section });
     };
 
     root.addEventListener('click', onClick);
