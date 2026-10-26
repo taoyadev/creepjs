@@ -1,4 +1,13 @@
 import { z } from 'zod';
+import type { FingerprintData } from '@creepjs/core';
+
+/**
+ * A browser measurement that may come back NaN, or undefined inside an array
+ * (TextMetrics fields an engine lacks). JSON carries both as `null`, and
+ * `canonicalize` already hashes them as `null` on the client, so accepting it
+ * here keeps the two IDs equal instead of rejecting the request.
+ */
+const measurement = z.number().nullable();
 
 const CanvasFingerprintSchema = z.object({
   hash: z.string(),
@@ -19,6 +28,7 @@ const NavigatorFingerprintSchema = z.object({
   userAgent: z.string(),
   appVersion: z.string(),
   appName: z.string(),
+  language: z.string().optional(),
   platform: z.string(),
   product: z.string(),
   productSub: z.string(),
@@ -147,16 +157,11 @@ const TimezoneFingerprintSchema = z.object({
     .optional(),
 });
 
+// `sum` is optional because SDK builds from before identity schema 3 still
+// send the realtime-context shape; its extra keys are stripped, not rejected.
 const AudioFingerprintSchema = z.object({
   hash: z.string(),
-  sampleRate: z.number(),
-  state: z.string(),
-  maxChannelCount: z.number(),
-  numberOfInputs: z.number(),
-  numberOfOutputs: z.number(),
-  channelCount: z.number(),
-  channelCountMode: z.string(),
-  channelInterpretation: z.string(),
+  sum: measurement.optional(),
 });
 
 const MediaDevicesFingerprintSchema = z.object({
@@ -176,7 +181,7 @@ const MediaDevicesFingerprintSchema = z.object({
 
 const ClientRectsFingerprintSchema = z.object({
   hash: z.string(),
-  data: z.array(z.number()),
+  data: z.array(measurement),
 });
 
 const VoicesFingerprintSchema = z.object({
@@ -195,13 +200,13 @@ const VoicesFingerprintSchema = z.object({
 
 const SVGFingerprintSchema = z.object({
   hash: z.string(),
-  data: z.array(z.number()),
+  data: z.array(measurement),
   supported: z.boolean(),
 });
 
 const MathFingerprintSchema = z.object({
   hash: z.string(),
-  data: z.record(z.number()),
+  data: z.record(measurement),
   constants: z.object({
     PI: z.number(),
     E: z.number(),
@@ -222,7 +227,7 @@ const CSSFingerprintSchema = z.object({
 
 const TextMetricsFingerprintSchema = z.object({
   hash: z.string(),
-  data: z.array(z.number()),
+  data: z.array(measurement),
 });
 
 const HTMLElementFingerprintSchema = z.object({
@@ -244,7 +249,7 @@ const ConsoleErrorsFingerprintSchema = z.object({
 
 const DomRectFingerprintSchema = z.object({
   hash: z.string(),
-  measurements: z.array(z.number()),
+  measurements: z.array(measurement),
   domRectSupport: z.boolean(),
   domRectReadOnlySupport: z.boolean(),
   rangeRectSupport: z.boolean(),
@@ -433,3 +438,31 @@ export const FingerprintDataSchema = z
     lies: LiesFingerprintSchema.optional(),
   })
   .strict();
+
+/**
+ * Key skeleton of a type: every object key, recursively, with leaf types
+ * erased, so two types compare equal exactly when they expose the same fields.
+ */
+type KeyShape<T> =
+  T extends ReadonlyArray<infer U>
+    ? Array<KeyShape<U>>
+    : T extends object
+      ? { [K in keyof T]-?: KeyShape<NonNullable<T[K]>> }
+      : true;
+
+type Equals<A, B> =
+  (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2
+    ? true
+    : false;
+
+/**
+ * Compile-time guard: fails `typecheck` when this schema and `FingerprintData`
+ * disagree on any field. zod strips unknown nested keys, so a field missing
+ * here never errors at runtime; it vanishes and the server derives a different
+ * ID from the browser. That is how `navigator.language` went missing.
+ */
+const schemaCoversFingerprintData: Equals<
+  KeyShape<z.infer<typeof FingerprintDataSchema>>,
+  KeyShape<FingerprintData>
+> = true;
+void schemaCoversFingerprintData;
