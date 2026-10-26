@@ -5,6 +5,9 @@ import {
   getFingerprint,
   getIpIntelligence,
 } from '../src/index';
+// Source import: the SDK duplicates this constant rather than importing core,
+// and this test is what keeps the two in step.
+import { IDENTITY_SCHEMA_VERSION } from '../../core/src/utils/identity';
 
 const mockFingerprint = {
   fingerprintId: 'fp_123',
@@ -141,6 +144,37 @@ describe('CreepJS SDK', () => {
     } finally {
       delete (globalThis as { localStorage?: unknown }).localStorage;
     }
+  });
+
+  it('keys the cache by the core identity schema version', async () => {
+    const storage = new Map<string, string>();
+    vi.stubGlobal('localStorage', {
+      getItem: (key: string) => storage.get(key) ?? null,
+      setItem: (key: string, value: string) => storage.set(key, value),
+      removeItem: (key: string) => storage.delete(key),
+    });
+    vi.stubGlobal('__CREEPJS_CORE__', {
+      collectFingerprint: vi.fn().mockResolvedValue(mockFingerprint),
+    });
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValue(
+          new Response(JSON.stringify(mockFingerprint), { status: 200 })
+        )
+    );
+
+    await new CreepJS({
+      token: 'cfp_test_token',
+      cache: true,
+    }).getFingerprint();
+
+    // A stale epoch would keep serving IDs from a retired projection until
+    // the cache TTL ran out, without ever reaching the API.
+    expect([...storage.keys()]).toEqual([
+      expect.stringContaining(`:v${IDENTITY_SCHEMA_VERSION}:`),
+    ]);
   });
 
   it('wraps API failures in typed errors', async () => {

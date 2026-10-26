@@ -55,7 +55,7 @@ const CACHE_KEY_PREFIX = 'creepjs_fingerprint';
  * a cache hit skips the API entirely and would otherwise keep serving IDs from
  * a retired projection for a full TTL.
  */
-const CACHE_SCHEMA_VERSION = 2;
+const CACHE_SCHEMA_VERSION = 3;
 
 /**
  * Partition label so two tokens on one origin do not read each other's cached

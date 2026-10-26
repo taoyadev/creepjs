@@ -9,8 +9,19 @@ import { generateFingerprintId } from './hash';
  *
  * 1 - whole `FingerprintData` blob through 32-bit MurmurHash3
  * 2 - stable-component projection through SHA-256/128
+ * 3 - also drops WebRTC candidates, viewport/zoom/colour-scheme media
+ *     queries, host-page layout probes, page and permission state, and
+ *     network-loaded voices; audio renders offline instead of hashing an
+ *     empty buffer
  */
-export const IDENTITY_SCHEMA_VERSION = 2;
+export const IDENTITY_SCHEMA_VERSION = 3;
+
+/**
+ * cssMedia queries that track the window or the time of day rather than the
+ * device: `display-mode` flips with fullscreen and installed-app launches,
+ * and `prefers-color-scheme` follows an OS that switches theme at sunset.
+ */
+const VOLATILE_MEDIA_QUERY = /^(prefers-color-scheme|display-mode):/;
 
 function omitKeys<T extends object>(
   source: T,
@@ -58,16 +69,78 @@ export function projectIdentityData(
     projected.timezone = omitKeys(data.timezone, ['timezoneOffset']);
   }
 
-  if (data.audio) {
-    // `suspended` vs `running` depends on autoplay policy and on how quickly
-    // the context resumed, not on the device.
-    projected.audio = omitKeys(data.audio, ['state']);
-  }
-
   if (data.canvas) {
     // The rendered PNG is returned for display but must not drive identity:
     // it is the raw artifact the hash already summarizes.
     projected.canvas = omitKeys(data.canvas, ['dataURL']);
+  }
+
+  // Both probes measure a div appended to the host page, so the numbers move
+  // with scroll position, inherited page CSS and browser zoom. textMetrics
+  // measures the same glyphs on a canvas, free of all three.
+  delete projected.clientRects;
+  if (data.domRect) {
+    projected.domRect = omitKeys(data.domRect, ['hash', 'measurements']);
+  }
+
+  if (data.css) {
+    // Computed styles inherit from the host page. The system-font keywords
+    // reset every font property, so they reflect only the OS.
+    projected.css = { systemFonts: data.css.systemFonts };
+  }
+
+  if (data.cssMedia) {
+    // Resolution, orientation and width breakpoints are viewport geometry:
+    // they move with zoom and window size. The hash summarizes them too, so
+    // only the filtered preference and pointer queries remain.
+    projected.cssMedia = {
+      mediaQueryMatches: Object.fromEntries(
+        Object.entries(data.cssMedia.mediaQueryMatches).filter(
+          ([query]) => !VOLATILE_MEDIA_QUERY.test(query)
+        )
+      ),
+    };
+  }
+
+  if (data.webrtc) {
+    // ICE candidates carry random ports, ufrags, mDNS hostnames and the
+    // current network's addresses: new on every load. Connection states and
+    // `stunSupported` depend on how gathering went that time.
+    projected.webrtc = omitKeys(data.webrtc, [
+      'hash',
+      'candidates',
+      'connection',
+      'iceServers',
+    ]);
+  }
+
+  if (data.serviceWorker) {
+    // Controller, registration and permission state describe the host site
+    // and the visitor's grants, not the browser. Feature support is stable.
+    projected.serviceWorker = {
+      supported: data.serviceWorker.supported,
+      features: data.serviceWorker.features,
+    };
+  }
+
+  if (data.media) {
+    // Counts and labels change once camera/mic permission is granted (the
+    // list goes from one entry per kind to every device) and when hardware is
+    // plugged in; `groupId` is a per-origin random value. Which kinds exist
+    // survives all of that.
+    const { audioInput, audioOutput, videoInput } = data.media.deviceCount;
+    projected.media = {
+      audioInput: audioInput > 0,
+      audioOutput: audioOutput > 0,
+      videoInput: videoInput > 0,
+    };
+  }
+
+  if (data.voices) {
+    // Network voices (Edge's online voices, Chrome's Google voices) are
+    // missing whenever their fetch is slow or offline. Local ones are part of
+    // the OS install; count and default are derived from the full list.
+    projected.voices = data.voices.voices.filter((voice) => voice.localService);
   }
 
   return projected;
