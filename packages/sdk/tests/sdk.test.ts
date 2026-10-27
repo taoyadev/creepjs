@@ -107,6 +107,68 @@ describe('CreepJS SDK', () => {
     expect(fetch).toHaveBeenCalledTimes(1);
   });
 
+  it('keeps WebRTC addresses and device labels out of the cache', async () => {
+    const storage = new Map<string, string>();
+    vi.stubGlobal('localStorage', {
+      getItem: (key: string) => storage.get(key) ?? null,
+      setItem: (key: string, value: string) => storage.set(key, value),
+      removeItem: (key: string) => storage.delete(key),
+    });
+    vi.stubGlobal('__CREEPJS_CORE__', {
+      collectFingerprint: vi.fn().mockResolvedValue({
+        ...mockFingerprint,
+        data: {
+          ...mockFingerprint.data,
+          webrtc: {
+            hash: 'webrtc-hash',
+            candidates: {
+              local: ['192.168.1.20'],
+              public: ['203.0.113.7'],
+              ipv4: ['192.168.1.20', '203.0.113.7'],
+              ipv6: ['2001:db8::1'],
+            },
+          },
+          media: {
+            deviceCount: { audioInput: 0, audioOutput: 0, videoInput: 1 },
+            devices: [
+              { kind: 'videoinput', label: 'FaceTime HD', groupId: 'g-1' },
+            ],
+          },
+        },
+      }),
+    });
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            fingerprintId: 'fp_123',
+            timestamp: 1700000000000,
+          }),
+          { status: 200 }
+        )
+      )
+    );
+
+    const fresh = await new CreepJS({
+      token: 'cfp_test_token',
+    }).getFingerprint();
+    const [stored] = [...storage.values()];
+
+    expect(fresh.data.webrtc?.candidates.public).toEqual(['203.0.113.7']);
+    for (const secret of [
+      '192.168.1.20',
+      '203.0.113.7',
+      '2001:db8::1',
+      'FaceTime',
+      'g-1',
+    ]) {
+      expect(stored).not.toContain(secret);
+    }
+    expect(stored).toContain('webrtc-hash');
+    expect(stored).toContain('videoinput');
+  });
+
   describe('cacheTtl', () => {
     const stubCacheAndApi = () => {
       const storage = new Map<string, string>();

@@ -104,6 +104,34 @@ function cacheTtlSeconds(ttl: number | undefined): number {
   if (!Number.isFinite(seconds) || seconds <= 0) return 0;
   return Math.min(seconds, MAX_CACHE_TTL_SECONDS);
 }
+/**
+ * The fingerprint as kept in localStorage: WebRTC addresses (local/public IPs)
+ * and media device labels/group IDs are blanked. Neither feeds the ID, and
+ * both outlive the visit in a store any script on the origin can read.
+ */
+function toStoredFingerprintData(data: FingerprintData): FingerprintData {
+  const { webrtc, media } = data;
+  return {
+    ...data,
+    ...(webrtc && {
+      webrtc: {
+        ...webrtc,
+        candidates: { local: [], public: [], ipv4: [], ipv6: [] },
+      },
+    }),
+    ...(media && {
+      media: {
+        ...media,
+        devices: media.devices.map(({ kind }) => ({
+          kind,
+          label: '',
+          groupId: '',
+        })),
+      },
+    }),
+  };
+}
+
 const DEFAULT_TIMEOUT_MS = 10_000;
 const DEFAULT_FULL_ESM_SPECIFIER = './creepjs.full.esm.js';
 const DEFAULT_FULL_BROWSER_FILENAME = 'sdk.full.js';
@@ -329,8 +357,9 @@ export class CreepJS {
     }
 
     try {
+      const stored = this.ensureCoverage(fingerprint);
       const data = {
-        fingerprint: this.ensureCoverage(fingerprint),
+        fingerprint: { ...stored, data: toStoredFingerprintData(stored.data) },
         expiry: Date.now() + this.config.cacheTtl * 1000,
       };
       storage.setItem(this.cacheKey, JSON.stringify(data));
