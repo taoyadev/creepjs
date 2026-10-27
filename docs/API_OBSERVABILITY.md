@@ -35,8 +35,9 @@ Unhandled API exceptions emit:
 
 - `msg: "fingerprint.accepted"`
 - `request_id`
-- `token_usage_count`
+- `quota_used`
 - `fingerprint_id`
+- `reported_id_matches`
 - `coverage_ratio`
 - `coverage_successful`
 - `coverage_failed`
@@ -46,7 +47,7 @@ Unhandled API exceptions emit:
 
 - `msg: "ip.public_lookup"`
 - `request_id`
-- `ip`
+- `ip_hash` (truncated SHA-256 of the queried IP)
 - `cached`
 - `high_risk`
 - `public_remaining`
@@ -57,14 +58,15 @@ Unhandled API exceptions emit:
 
 - `msg: "ip.token_lookup"`
 - `request_id`
-- `ip`
+- `ip_hash`
 - `cached`
 - `high_risk`
 - `ipbot_remaining`
 - `ipbot_tier`
 
 The existing IPbot service also emits `msg: "ipbot.ratelimit"` lines with
-upstream quota metadata.
+upstream quota metadata. `docs/SECURITY.md` has the full logging matrix,
+including `ip.batch_lookup` and the error lines.
 
 ## Tailing logs
 
