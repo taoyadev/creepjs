@@ -2,8 +2,8 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Fingerprint, RefreshCw } from 'lucide-react';
-import { collectFingerprint, type FingerprintResult } from '@creepjs/core';
+import { ArrowRight, Fingerprint, Play, RefreshCw } from 'lucide-react';
+import type { FingerprintResult } from '@creepjs/core';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -11,22 +11,18 @@ import { CopyButton } from '@/components/CopyButton';
 import {
   INITIAL_SCAN_PROGRESS,
   reduceScanProgress,
-} from '@/components/checker/hooks/useFingerprintScan';
+} from '@/components/checker/scanProgressState';
 import { trackEvent } from '@/lib/analytics';
 
-type TeaserStatus = 'loading' | 'ready' | 'error';
+type TeaserStatus = 'idle' | 'loading' | 'ready' | 'error';
 
-function scheduleIdle(callback: () => void) {
-  if (typeof window.requestIdleCallback === 'function') {
-    const id = window.requestIdleCallback(callback, { timeout: 1200 });
-    return () => window.cancelIdleCallback(id);
-  }
-  const id = window.setTimeout(callback, 180);
-  return () => window.clearTimeout(id);
-}
-
+/**
+ * Homepage scan, run only when the visitor asks for it. The collectors load
+ * on demand, so they stay out of the homepage bundle, and the WebRTC check
+ * (which contacts a public STUN server) never runs on a plain page view.
+ */
 export function LiveFingerprintTeaser() {
-  const [status, setStatus] = useState<TeaserStatus>('loading');
+  const [status, setStatus] = useState<TeaserStatus>('idle');
   const [result, setResult] = useState<FingerprintResult | null>(null);
   const [progress, setProgress] = useState(INITIAL_SCAN_PROGRESS);
   const runId = useRef(0);
@@ -36,6 +32,8 @@ export function LiveFingerprintTeaser() {
     setStatus('loading');
     setProgress(INITIAL_SCAN_PROGRESS);
     try {
+      const { collectFingerprint } = await import('@creepjs/core');
+      if (runId.current !== currentRun) return;
       const next = await collectFingerprint({
         onProgress: (event) => {
           if (runId.current === currentRun) {
@@ -68,13 +66,13 @@ export function LiveFingerprintTeaser() {
     }
   }, []);
 
-  useEffect(() => {
-    const cancel = scheduleIdle(() => void scan());
-    return () => {
-      cancel();
+  useEffect(
+    () => () => {
+      // Drop the result of a scan still running when the card unmounts.
       runId.current += 1;
-    };
-  }, [scan]);
+    },
+    []
+  );
 
   return (
     <Card className="flex min-h-[22rem] flex-col overflow-hidden">
@@ -89,7 +87,7 @@ export function LiveFingerprintTeaser() {
               Live fingerprint
             </CardTitle>
           </div>
-          {status !== 'loading' && (
+          {(status === 'ready' || status === 'error') && (
             <Button
               type="button"
               variant="ghost"
@@ -103,6 +101,21 @@ export function LiveFingerprintTeaser() {
         </div>
       </CardHeader>
       <CardContent className="flex flex-1 flex-col justify-between gap-6 pt-6">
+        {status === 'idle' && (
+          <div className="space-y-4">
+            <p className="text-muted-foreground text-sm leading-6">
+              Run about 60 browser checks locally and see the identifier this
+              browser produces. The results stay on this page. One check,
+              WebRTC, contacts a public STUN server to see which network
+              addresses your browser exposes.
+            </p>
+            <Button type="button" onClick={() => void scan()}>
+              <Play className="mr-2 h-4 w-4" aria-hidden="true" />
+              Run local scan
+            </Button>
+          </div>
+        )}
+
         {status === 'loading' && (
           <div
             className="space-y-5"
