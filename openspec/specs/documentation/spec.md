@@ -2,7 +2,8 @@
 
 ## Purpose
 
-TBD - created by archiving change add-docs-knowledge-base. Update Purpose after archive.
+The developer documentation set: an index, workflow, SDK, security and
+playground guides that describe how to integrate and operate CreepJS.
 
 ## Requirements
 

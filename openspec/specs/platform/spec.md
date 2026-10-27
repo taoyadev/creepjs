@@ -2,7 +2,8 @@
 
 ## Purpose
 
-TBD - created by archiving change bootstrap-monorepo. Update Purpose after archive.
+The monorepo foundation: the pnpm/Turborepo toolchain and the core
+fingerprint library, browser SDK, Workers API and Next.js site packages.
 
 ## Requirements
 
