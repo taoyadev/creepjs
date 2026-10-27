@@ -168,7 +168,7 @@ export function CheckerApp() {
         {/* Fingerprint ID Card */}
         <Card className="bg-primary/5 border-primary/20">
           <CardHeader>
-            <CardTitle className="flex items-center justify-between">
+            <CardTitle className="flex flex-wrap items-center justify-between gap-3">
               <span>Fingerprint ID</span>
               <div className="flex items-center gap-3">
                 <RiskBadge
