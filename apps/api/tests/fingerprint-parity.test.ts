@@ -5,6 +5,7 @@ import type { FingerprintData } from '@creepjs/core';
 import app from '../src/index';
 import { FingerprintDataSchema } from '../src/utils/fingerprintDataSchema';
 import { createTestEnv, seedToken } from './utils';
+import type { JsonBody } from './utils';
 
 // Held in a map so the repository secret scanner does not read the fixture
 // as a real credential.
@@ -356,7 +357,7 @@ describe('client/server fingerprint parity', () => {
     const browserId = await computeFingerprintId(data);
 
     const res = await submit(data);
-    const json = await res.json();
+    const json = await res.json<JsonBody>();
 
     expect(res.status).toBe(200);
     expect(json.fingerprintId).toBe(browserId);

@@ -3,6 +3,7 @@ import app from '../src/index';
 import { createTestEnv, readQuotaCount, seedQuota, seedToken } from './utils';
 import { quotaKeyForEmail } from '../src/middleware/ratelimit';
 import type { IpbotResponse } from '../src/services/ipbot';
+import type { JsonBody } from './utils';
 
 const TOKEN = 'cfp_ip_route_test';
 const TOKEN_EMAIL = 'ip-route@example.com';
@@ -65,7 +66,7 @@ describe('IP intelligence route', () => {
     );
 
     expect(res.status).toBe(401);
-    const json = await res.json();
+    const json = await res.json<JsonBody>();
     expect(json).toMatchObject({ error: 'Missing API token' });
   });
 
@@ -81,7 +82,7 @@ describe('IP intelligence route', () => {
       }),
       env
     );
-    const json = await res.json();
+    const json = await res.json<JsonBody>();
 
     expect(res.status).toBe(200);
     expect(json).toMatchObject({
@@ -100,7 +101,7 @@ describe('IP intelligence route', () => {
     });
 
     // Usage is the quota counter; the token record is not rewritten per call.
-    const storedToken = await env.TOKENS.get(TOKEN, 'json');
+    const storedToken = await env.TOKENS.get<JsonBody>(TOKEN, 'json');
     expect(storedToken.usageCount).toBe(0);
   });
 
@@ -116,7 +117,7 @@ describe('IP intelligence route', () => {
       }),
       env
     );
-    const json = await res.json();
+    const json = await res.json<JsonBody>();
 
     expect(res.status).toBe(400);
     expect(json.error).toMatch(/invalid ip address/i);
@@ -139,7 +140,7 @@ describe('IP intelligence route', () => {
       new Request('http://localhost/v1/ip/8.8.8.8', { headers }),
       env
     );
-    const json = await cached.json();
+    const json = await cached.json<JsonBody>();
 
     expect(cached.status).toBe(200);
     expect(json.cached).toBe(true);
@@ -160,7 +161,7 @@ describe('IP intelligence route', () => {
 
     const capped = await lookup('1.1.1.1');
     expect(capped.status).toBe(503);
-    expect(await capped.json()).toMatchObject({ status: 503 });
+    expect(await capped.json<JsonBody>()).toMatchObject({ status: 503 });
     expect(fetchMock).toHaveBeenCalledTimes(1);
     // The refused lookup does not spend the caller's daily allowance.
     expect(await readQuotaCount(env, await quotaKeyForEmail(TOKEN_EMAIL))).toBe(
@@ -170,7 +171,7 @@ describe('IP intelligence route', () => {
     // A cache hit needs no upstream call, so the cap does not apply.
     const cached = await lookup('8.8.8.8');
     expect(cached.status).toBe(200);
-    expect((await cached.json()).cached).toBe(true);
+    expect((await cached.json<JsonBody>()).cached).toBe(true);
   });
 
   it('maps upstream non-2xx responses to 502', async () => {
@@ -191,7 +192,7 @@ describe('IP intelligence route', () => {
       }),
       env
     );
-    const json = await res.json();
+    const json = await res.json<JsonBody>();
 
     expect(res.status).toBe(502);
     expect(json.error).toBe(
@@ -213,7 +214,7 @@ describe('Public IP intelligence route (/v1/ip/public/:ip)', () => {
       }),
       env
     );
-    const json = await res.json();
+    const json = await res.json<JsonBody>();
 
     expect(res.status).toBe(200);
     expect(json).toMatchObject({
@@ -247,7 +248,7 @@ describe('Public IP intelligence route (/v1/ip/public/:ip)', () => {
     const blocked = await call('9.9.9.9');
     expect(blocked.status).toBe(429);
     expect(blocked.headers.get('Retry-After')).toBeTruthy();
-    const json = await blocked.json();
+    const json = await blocked.json<JsonBody>();
     expect(json.error).toMatch(/limit reached/i);
   });
 
@@ -271,7 +272,7 @@ describe('Public IP intelligence route (/v1/ip/public/:ip)', () => {
       }),
       env
     );
-    const json = await res.json();
+    const json = await res.json<JsonBody>();
 
     expect(res.status).toBe(200);
     expect(json).toMatchObject({ cached: true, rateLimit: { remaining: 29 } });
@@ -353,7 +354,7 @@ describe('Batch IP intelligence route (POST /v1/ip/batch)', () => {
     vi.stubGlobal('fetch', fetchMock);
 
     const res = await batch(env, ['8.8.8.8', '1.1.1.1']);
-    const json = await res.json();
+    const json = await res.json<JsonBody>();
 
     expect(res.status).toBe(200);
     expect(json.count).toBe(2);
@@ -393,7 +394,7 @@ describe('Batch IP intelligence route (POST /v1/ip/batch)', () => {
       ' 8.8.8.8 ',
       '1.1.1.1',
     ]);
-    const json = await res.json();
+    const json = await res.json<JsonBody>();
 
     expect(res.status).toBe(200);
     expect(json.count).toBe(3);
@@ -418,7 +419,7 @@ describe('Batch IP intelligence route (POST /v1/ip/batch)', () => {
     vi.stubGlobal('fetch', fetchMock);
 
     const res = await batch(env, ['not-an-ip', 'also.invalid']);
-    const json = await res.json();
+    const json = await res.json<JsonBody>();
 
     expect(res.status).toBe(200);
     expect(json.count).toBe(2);
@@ -445,7 +446,7 @@ describe('Batch IP intelligence route (POST /v1/ip/batch)', () => {
     vi.stubGlobal('fetch', fetchMock);
 
     const res = await batch(env, ['8.8.8.8', '1.1.1.1']);
-    const json = await res.json();
+    const json = await res.json<JsonBody>();
 
     expect(res.status).toBe(429);
     expect(json).toMatchObject({ status: 429, quotaCost: 2, remaining: 1 });
@@ -487,7 +488,7 @@ describe('Batch IP intelligence route (POST /v1/ip/batch)', () => {
       '9.9.9.9',
       '1.1.1.1',
     ]);
-    const json = await res.json();
+    const json = await res.json<JsonBody>();
 
     expect(res.status).toBe(200);
     expect(json).toMatchObject({
@@ -534,7 +535,7 @@ describe('Batch IP intelligence route (POST /v1/ip/batch)', () => {
     const pending = batch(env, ['8.8.8.8', '9.9.9.9', '1.1.1.1']);
     await vi.runAllTimersAsync();
     const res = await pending;
-    const json = await res.json();
+    const json = await res.json<JsonBody>();
 
     expect(res.status).toBe(200);
     expect(res.headers.get('Retry-After')).toBe('2');
@@ -559,7 +560,7 @@ describe('Batch IP intelligence route (POST /v1/ip/batch)', () => {
     vi.stubGlobal('fetch', fetchMock);
 
     const res = await batch(env, ['9.9.9.9', '1.1.1.1']);
-    const json = await res.json();
+    const json = await res.json<JsonBody>();
 
     expect(res.status).toBe(502);
     expect(json).toMatchObject({
@@ -581,7 +582,7 @@ describe('Batch IP intelligence route (POST /v1/ip/batch)', () => {
 
     const authFailure = await batch(authEnv, ['9.9.9.9', '1.1.1.1']);
     expect(authFailure.status).toBe(502);
-    expect((await authFailure.json()).error).not.toContain(
+    expect((await authFailure.json<JsonBody>()).error).not.toContain(
       'credential details'
     );
     expect(fetchMock).toHaveBeenCalledTimes(1);
@@ -589,7 +590,7 @@ describe('Batch IP intelligence route (POST /v1/ip/batch)', () => {
     const configEnv = createTestEnv({ bindings: { IPBOT_API_KEY: '' } });
     await seed(configEnv);
     const configFailure = await batch(configEnv, ['8.8.8.8', '1.1.1.1']);
-    const configJson = await configFailure.json();
+    const configJson = await configFailure.json<JsonBody>();
     expect(configFailure.status).toBe(503);
     expect(configJson).toMatchObject({
       aborted: true,
@@ -605,7 +606,7 @@ describe('Batch IP intelligence route (POST /v1/ip/batch)', () => {
     vi.stubGlobal('fetch', fetchMock);
 
     const res = await batch(env, ['8.8.8.8', '1.1.1.1', '9.9.9.9']);
-    const json = await res.json();
+    const json = await res.json<JsonBody>();
 
     expect(res.status).toBe(200);
     expect(fetchMock).toHaveBeenCalledTimes(1);
@@ -623,7 +624,9 @@ describe('Batch IP intelligence route (POST /v1/ip/batch)', () => {
     // Nothing left under the cap and no cache: a request-level 503.
     const none = await batch(env, ['1.1.1.1']);
     expect(none.status).toBe(503);
-    expect(await none.json()).toMatchObject({ abortedReason: 'capacity' });
+    expect(await none.json<JsonBody>()).toMatchObject({
+      abortedReason: 'capacity',
+    });
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(await quota(env)).toBe(1);
   });
@@ -636,7 +639,7 @@ describe('Batch IP intelligence route (POST /v1/ip/batch)', () => {
 
     await batch(env, ['8.8.8.8']);
     const second = await batch(env, ['8.8.8.8']);
-    const json = await second.json();
+    const json = await second.json<JsonBody>();
 
     expect(second.status).toBe(200);
     expect(json.results[0]).toMatchObject({
@@ -692,7 +695,7 @@ describe('Batch IP intelligence route (POST /v1/ip/batch)', () => {
     const env = createTestEnv();
     await seed(env);
     const res = await batch(env, ['x'.repeat(45)]);
-    const json = await res.json();
+    const json = await res.json<JsonBody>();
 
     expect(res.status).toBe(200);
     expect(json.results[0]).toMatchObject({

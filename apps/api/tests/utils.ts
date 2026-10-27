@@ -249,5 +249,12 @@ export const readStatsCount = async (
     method: 'POST',
     body: JSON.stringify({ op: 'read', keys: [key] }),
   });
-  return ((await res.json()) as Record<string, number>)[key] ?? 0;
+  return (await res.json<Record<string, number>>())[key] ?? 0;
 };
+
+/**
+ * Parsed body in assertions. Tests check fields against literal expectations;
+ * the route's own schema, not this type, is the contract.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type JsonBody = any;

@@ -6,6 +6,7 @@ import { createTestEnv, seedToken } from './utils';
 import { errorHandler } from '../src/middleware/error';
 import { requestLoggerMiddleware } from '../src/middleware/request-logger';
 import type { Env } from '../src/types';
+import type { JsonBody } from './utils';
 
 const TOKEN = 'cfp_logging_test';
 
@@ -120,7 +121,9 @@ describe('request logging middleware', () => {
 
     expect(res.status).toBe(500);
     expect(res.headers.get('X-Request-Id')).toBeTruthy();
-    expect(await res.json()).toEqual({ error: 'Internal server error' });
+    expect(await res.json<JsonBody>()).toEqual({
+      error: 'Internal server error',
+    });
     expect(consoleErrorSpy).toHaveBeenCalledWith(
       expect.stringContaining('"msg":"api.error"')
     );
@@ -144,7 +147,9 @@ describe('request logging middleware', () => {
     );
 
     expect(res.status).toBe(500);
-    expect(await res.json()).toEqual({ error: 'Internal server error' });
+    expect(await res.json<JsonBody>()).toEqual({
+      error: 'Internal server error',
+    });
   });
 
   it('passes HTTPException responses through unchanged', async () => {

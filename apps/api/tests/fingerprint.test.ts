@@ -13,6 +13,7 @@ import {
   seedToken,
 } from './utils';
 import { quotaKeyForEmail } from '../src/middleware/ratelimit';
+import type { JsonBody } from './utils';
 
 // Held in a map rather than inline `const token = '...'` bindings so the
 // repository secret scanner does not read these fixtures as real credentials.
@@ -67,7 +68,7 @@ describe('Fingerprint route', () => {
 
     const ctx = createExecutionContext();
     const res = await app.fetch(req, env, ctx);
-    const json = await res.json();
+    const json = await res.json<JsonBody>();
     // Stats are written after the response; let them finish.
     await waitOnExecutionContext(ctx);
 
@@ -87,7 +88,7 @@ describe('Fingerprint route', () => {
     expect(json.data).toEqual(basePayload.data);
 
     // No per-request KV write to the token record: usage is the quota count.
-    const storedToken = await env.TOKENS.get(token, 'json');
+    const storedToken = await env.TOKENS.get<JsonBody>(token, 'json');
     expect(storedToken.usageCount).toBe(0);
 
     expect(await readStatsCount(env, 'fpstats:v1:total')).toBe(1);
@@ -166,7 +167,7 @@ describe('Fingerprint route', () => {
         env
       );
       expect(res.status).toBe(200);
-      return (await res.json()).fingerprintId as string;
+      return (await res.json<JsonBody>()).fingerprintId as string;
     };
 
     const first = await submit(basePayload.data);
@@ -202,7 +203,7 @@ describe('Fingerprint route', () => {
         env
       );
       expect(res.status).toBe(200);
-      return (await res.json()).fingerprintId as string;
+      return (await res.json<JsonBody>()).fingerprintId as string;
     };
 
     const before = await submit(basePayload.data);
@@ -227,7 +228,7 @@ describe('Fingerprint route', () => {
 
     const res = await app.fetch(req, env);
     expect(res.status).toBe(401);
-    const json = await res.json();
+    const json = await res.json<JsonBody>();
     expect(json.error).toBe('Missing API token');
   });
   it('refuses bodies over 128 KiB before auth or quota, and takes a large real one', async () => {
@@ -287,7 +288,7 @@ describe('Fingerprint route', () => {
     // No token: a 401 here would mean auth ran before the size check.
     const res = await post(oversized);
     expect(res.status).toBe(413);
-    expect(await res.json()).toEqual({
+    expect(await res.json<JsonBody>()).toEqual({
       error: 'Request body exceeds the 128 KiB limit',
     });
   });

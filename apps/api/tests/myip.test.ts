@@ -3,6 +3,7 @@ import app from '../src/index';
 import { createTestEnv, readQuotaCount, seedQuota } from './utils';
 import type { IpbotResponse } from '../src/services/ipbot';
 import { hashIpForLog } from '../src/utils/privacy';
+import type { JsonBody } from './utils';
 
 const GOOGLE_DNS: IpbotResponse = {
   ip: '8.8.8.8',
@@ -53,7 +54,7 @@ describe('/my-ip route', () => {
       }),
       env
     );
-    const json = await res.json();
+    const json = await res.json<JsonBody>();
 
     expect(res.status).toBe(200);
     expect(json).toMatchObject({
@@ -85,7 +86,7 @@ describe('/my-ip route', () => {
     vi.stubGlobal('fetch', fetchMock);
 
     const res = await app.fetch(new Request('http://localhost/my-ip'), env);
-    const json = await res.json();
+    const json = await res.json<JsonBody>();
 
     expect(res.status).toBe(200);
     expect(json).toMatchObject({
@@ -198,7 +199,7 @@ describe('/my-ip route', () => {
       }),
       env
     );
-    const json = await res.json();
+    const json = await res.json<JsonBody>();
 
     expect(res.status).toBe(200);
     expect(json).toMatchObject({

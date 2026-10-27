@@ -7,6 +7,7 @@ import {
   type IpbotResponse,
 } from '../src/services/ipbot';
 import { createTestEnv } from './utils';
+import type { JsonBody } from './utils';
 
 // Real upstream response for 8.8.8.8 (captured from api.ipbot.com) — low risk.
 const GOOGLE_DNS: IpbotResponse = {
@@ -123,7 +124,7 @@ describe('lookupIP', () => {
 
     // Inspect what was written to the cache.
     const putSpy = vi.spyOn(env.IP_CACHE, 'put');
-    const stored = await env.IP_CACHE.get('ipbot:8.8.8.8', 'json');
+    const stored = await env.IP_CACHE.get<JsonBody>('ipbot:8.8.8.8', 'json');
     expect(stored).toBeTruthy();
 
     const second = await lookupIP('8.8.8.8', env);

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import app from '../src/index';
 import { createTestEnv, readQuotaCount } from './utils';
 import { hashIpForLog } from '../src/utils/privacy';
+import type { JsonBody } from './utils';
 
 describe('Token route', () => {
   it('issues a token and stores metadata', async () => {
@@ -22,7 +23,7 @@ describe('Token route', () => {
     expect(json.token).toMatch(/^cfp_/);
     expect(json.email).toBe('test@example.com');
 
-    const stored = await env.TOKENS.get(json.token as string, 'json');
+    const stored = await env.TOKENS.get<JsonBody>(json.token as string, 'json');
     expect(stored).toMatchObject({
       email: 'test@example.com',
       usageCount: 0,
@@ -75,7 +76,7 @@ describe('Token route', () => {
 
     const blocked = await makeRequest(99);
     expect(blocked.status).toBe(429);
-    const error = await blocked.json();
+    const error = await blocked.json<JsonBody>();
     expect(error).toMatchObject({
       error: 'Rate limit exceeded. Try again in 24 hours.',
     });

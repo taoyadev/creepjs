@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import app from '../src/index';
 import { createTestEnv, seedQuota, seedToken } from './utils';
 import { hashIpForLog } from '../src/utils/privacy';
+import type { JsonBody } from './utils';
 
 const TOKEN = 'cfp_stats_test';
 
@@ -75,7 +76,7 @@ describe('Uniqueness stats route', () => {
       ),
       env
     );
-    const json = await res.json();
+    const json = await res.json<JsonBody>();
 
     expect(res.status).toBe(200);
     expect(json.totalSamples).toBe(1);
@@ -108,7 +109,7 @@ describe('Uniqueness stats route', () => {
       ),
       env
     );
-    const json = await res.json();
+    const json = await res.json<JsonBody>();
 
     expect(res.status).toBe(200);
     expect(json.totalSamples).toBe(2);

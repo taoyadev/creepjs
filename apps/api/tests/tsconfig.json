@@ -1,0 +1,18 @@
+{
+  // Type-checks the tests against the sources; the package tsconfig is the
+  // build config and leaves tests out so they are never emitted.
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "..",
+    "composite": false,
+    "incremental": false,
+    "noEmit": true,
+    "types": [
+      "@cloudflare/workers-types",
+      "@types/node",
+      "@cloudflare/vitest-pool-workers"
+    ]
+  },
+  "include": ["**/*.ts", "../src/**/*.ts"],
+  "exclude": []
+}

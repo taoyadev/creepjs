@@ -85,7 +85,7 @@ describe('collectFingerprint', () => {
       })
     );
     expect(result.fingerprintId).toBe('fp_test_id');
-    expect(result.collectors.lies.status).toBe('success');
+    expect(result.collectors.lies!.status).toBe('success');
     expect(result.coverage).toMatchObject({
       successful: 3,
       failed: 1,
@@ -113,7 +113,7 @@ describe('collectFingerprint', () => {
 
     const result = await collectFingerprint({ idleDelay: 0, concurrency: 1 });
 
-    expect(result.collectors.lies.status).toBe('skipped');
+    expect(result.collectors.lies!.status).toBe('skipped');
     expect(result.data.lies).toBeUndefined();
     expect(result.coverage.successful).toBe(1);
     expect(result.coverage.skipped).toBe(1);
