@@ -296,12 +296,12 @@ export default function IpRiskPage() {
             <div className="bg-background/80 flex h-14 w-14 items-center justify-center rounded-md">
               <ToneIcon className="h-7 w-7" />
             </div>
+            {/* The tone colour, not the muted grey, so the label and summary
+                clear 4.5:1 on the tinted light-mode background. */}
             <div className="space-y-1">
-              <div className="text-muted-foreground text-sm font-medium uppercase">
-                {tone.badge}
-              </div>
+              <div className="text-sm font-medium uppercase">{tone.badge}</div>
               <h2 className="text-2xl font-semibold">{tone.title}</h2>
-              <p className="text-muted-foreground text-sm">
+              <p className="text-sm">
                 {result
                   ? `${result.data.ip} scored ${display(score?.risk_score)} risk with verdict ${display(score?.verdict).toLowerCase()}.`
                   : 'Enter an IP address to retrieve risk, routing, and network ownership signals.'}
