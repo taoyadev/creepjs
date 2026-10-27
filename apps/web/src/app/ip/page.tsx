@@ -160,7 +160,8 @@ export default function IpRiskPage() {
         Icon: Signal,
         badge: 'Awaiting lookup',
         title: 'Ready to check',
-        className: 'border-slate-500/30 bg-slate-500/10 text-slate-200',
+        className:
+          'border-slate-500/30 bg-slate-500/10 text-slate-800 dark:text-slate-200',
       };
     }
 
@@ -169,7 +170,8 @@ export default function IpRiskPage() {
         Icon: ShieldAlert,
         badge: 'High risk',
         title: 'High-risk network signal',
-        className: 'border-red-500/40 bg-red-500/10 text-red-200',
+        className:
+          'border-red-500/40 bg-red-500/10 text-red-800 dark:text-red-200',
       };
     }
 
@@ -177,7 +179,8 @@ export default function IpRiskPage() {
       Icon: ShieldCheck,
       badge: 'Low risk',
       title: 'No elevated network risk',
-      className: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-200',
+      className:
+        'border-emerald-500/40 bg-emerald-500/10 text-emerald-800 dark:text-emerald-200',
     };
   }, [result]);
 
