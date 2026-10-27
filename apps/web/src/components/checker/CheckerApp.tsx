@@ -258,7 +258,7 @@ export function CheckerApp() {
 
           {collectorTabs.map(({ key: tabKey }) => (
             <TabsContent key={tabKey} value={tabKey} className="mt-6">
-              <div className="grid gap-6 md:grid-cols-2">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 {tabCollectors[tabKey].map(({ key, tab }) =>
                   renderCollectorCard[tab](key, fingerprint, baseline)
                 )}
