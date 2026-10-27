@@ -25,6 +25,7 @@ export default function DocsLayout({
               'Developer documentation for the CreepJS API, SDK, browser collectors, and privacy-first integration patterns.',
             path: '/docs',
           }),
+          structuredData.softwareApplication(),
           structuredData.breadcrumb([
             { name: 'Home', url: SITE_CONFIG.url },
             { name: 'Documentation', url: `${SITE_CONFIG.url}/docs` },

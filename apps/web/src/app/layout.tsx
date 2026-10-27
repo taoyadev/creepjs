@@ -35,14 +35,10 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <ThemeScript />
-        {/* JSON-LD Structured Data for SEO */}
+        {/* Site-wide JSON-LD only; pages emit their own WebApplication or
+            WebPage, so repeating one here would describe each page twice. */}
         <StructuredData
-          data={[
-            structuredData.organization(),
-            structuredData.website(),
-            structuredData.webApplication(),
-            structuredData.softwareApplication(),
-          ]}
+          data={[structuredData.organization(), structuredData.website()]}
         />
         {/* Favicons and PWA Manifest */}
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" sizes="any" />
