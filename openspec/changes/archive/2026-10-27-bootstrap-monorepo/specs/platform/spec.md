@@ -32,7 +32,7 @@ The repository MUST use pnpm + Turborepo with shared lint/test/build pipelines, 
 
 ### Requirement: Cloudflare Worker API
 
-`apps/api` MUST deliver a Hono-based Worker exposing `GET /` (health), `POST /v1/fingerprint`, and `GET /v1/token`, with middleware for auth + rate limiting, schema validation, and unit/integration tests using Miniflare or mocked bindings.
+`apps/api` MUST deliver a Hono-based Worker exposing `GET /` (health), `POST /v1/fingerprint`, and `POST /v1/token`, with middleware for auth + rate limiting, schema validation, and unit/integration tests using Miniflare or mocked bindings.
 
 #### Scenario: Fingerprint endpoint flow
 
