@@ -2,8 +2,8 @@
 
 ## 1. Governance
 
-- [ ] 1.1 Validate change with `openspec validate update-api-security-hardening --strict`
-      (openspec CLI not installed on control plane or OpenClaw as of 2026-07-26)
+- [x] 1.1 Validate change with `openspec validate update-api-security-hardening --strict`
+      (passes on OpenClaw via `npx @fission-ai/openspec`, 2026-10-27)
 
 ## 2. API hardening
 
