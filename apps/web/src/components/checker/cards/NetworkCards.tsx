@@ -98,7 +98,7 @@ export function renderNetworkCollectorCard(
         <FingerprintCollectorCard
           key={key}
           techniqueKey={key}
-          title="Service Worker"
+          title="ServiceWorker"
           hash={fingerprint.data.serviceWorker.hash}
           timing={fingerprint.timings.serviceWorker}
         >
@@ -120,6 +120,19 @@ export function renderNetworkCollectorCard(
               value={fingerprint.data.serviceWorker.state}
             />
           )}
+          <div className="mt-2 border-t pt-2">
+            <div className="text-muted-foreground mb-1 text-xs">Features:</div>
+            <div className="grid grid-cols-2 gap-1 text-xs">
+              {Object.entries(fingerprint.data.serviceWorker.features).map(
+                ([key, value]) => (
+                  <div key={key} className="flex justify-between">
+                    <span className="text-muted-foreground">{key}:</span>
+                    <span>{value ? 'Yes' : 'No'}</span>
+                  </div>
+                )
+              )}
+            </div>
+          </div>
         </FingerprintCollectorCard>
       );
     case 'mimeTypes':
@@ -136,6 +149,16 @@ export function renderNetworkCollectorCard(
             label="Total Types"
             value={fingerprint.data.mimeTypes.count}
           />
+          <div className="text-muted-foreground mt-2 text-sm">
+            Supported MIME Types:
+          </div>
+          <div className="max-h-32 space-y-1 overflow-y-auto text-xs">
+            {fingerprint.data.mimeTypes.types.map((type, i) => (
+              <div key={i}>
+                {type.type} - {type.description}
+              </div>
+            ))}
+          </div>
         </FingerprintCollectorCard>
       );
     case 'contentWindow':
@@ -184,6 +207,19 @@ export function renderNetworkCollectorCard(
               fingerprint.data.cssMedia.orientation.landscape ? 'Yes' : 'No'
             }
           />
+          <div className="text-muted-foreground mt-2 text-sm">
+            Media Queries:
+          </div>
+          <div className="grid max-h-32 grid-cols-2 gap-1 overflow-y-auto text-xs">
+            {Object.entries(fingerprint.data.cssMedia.mediaQueryMatches).map(
+              ([key, value]) => (
+                <div key={key} className="flex justify-between">
+                  <span className="text-muted-foreground truncate">{key}:</span>
+                  <span>{value ? 'Yes' : 'No'}</span>
+                </div>
+              )
+            )}
+          </div>
         </FingerprintCollectorCard>
       );
     default:

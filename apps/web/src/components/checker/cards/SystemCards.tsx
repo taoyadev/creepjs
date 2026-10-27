@@ -1,5 +1,10 @@
 import type { FingerprintResult } from '@creepjs/core';
 import {
+  formatBaselineInsight,
+  getBaselineEstimate,
+  type BaselineResponse,
+} from '@/lib/uniqueness-baseline';
+import {
   DataRow,
   FingerprintCollectorCard,
   RiskBadge,
@@ -7,7 +12,8 @@ import {
 
 export function renderSystemCollectorCard(
   key: string,
-  fingerprint: FingerprintResult
+  fingerprint: FingerprintResult,
+  baseline?: BaselineResponse | null
 ) {
   switch (key) {
     case 'navigator':
@@ -33,7 +39,11 @@ export function renderSystemCollectorCard(
               {fingerprint.data.languages && (
                 <DataRow
                   label="Languages"
-                  value={fingerprint.data.languages.flat().join(', ')}
+                  value={
+                    Array.isArray(fingerprint.data.languages)
+                      ? fingerprint.data.languages.flat().join(', ')
+                      : String(fingerprint.data.languages)
+                  }
                 />
               )}
               {fingerprint.data.hardwareConcurrency && (
@@ -88,6 +98,14 @@ export function renderSystemCollectorCard(
               )}
             </div>
           </div>
+          <div className="mt-2 border-t pt-2">
+            <div className="text-muted-foreground mb-1 text-xs">
+              User Agent:
+            </div>
+            <code className="break-all text-xs">
+              {fingerprint.data.navigator.userAgent}
+            </code>
+          </div>
         </FingerprintCollectorCard>
       );
     case 'screen':
@@ -98,6 +116,11 @@ export function renderSystemCollectorCard(
           techniqueKey={key}
           title="Screen"
           timing={fingerprint.timings.screen}
+          insight={formatBaselineInsight(
+            getBaselineEstimate(baseline, 'screen'),
+            baseline?.kAnonThreshold,
+            baseline?.totalSamples
+          )}
         >
           <DataRow
             label="Resolution"
@@ -131,6 +154,11 @@ export function renderSystemCollectorCard(
           hash={`${fingerprint.data.fonts.count} detected`}
           timing={fingerprint.timings.fonts}
           className="md:col-span-2"
+          insight={formatBaselineInsight(
+            getBaselineEstimate(baseline, 'fonts'),
+            baseline?.kAnonThreshold,
+            baseline?.totalSamples
+          )}
         >
           <div className="text-muted-foreground mb-2 text-sm">
             Detected Fonts ({fingerprint.data.fonts.count}):
@@ -157,9 +185,9 @@ export function renderSystemCollectorCard(
           <div className="text-muted-foreground mb-1 text-sm">Constants:</div>
           <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
             {Object.entries(fingerprint.data.math.constants).map(
-              ([name, value]) => (
-                <div key={name} className="flex justify-between">
-                  <span className="text-muted-foreground">{name}:</span>
+              ([key, value]) => (
+                <div key={key} className="flex justify-between">
+                  <span className="text-muted-foreground">{key}:</span>
                   <code>{value.toFixed(10)}</code>
                 </div>
               )
@@ -196,6 +224,10 @@ export function renderSystemCollectorCard(
                 ? 'Supported'
                 : 'Not supported'
             }
+          />
+          <DataRow
+            label="Methods Count"
+            value={fingerprint.data.htmlElement.methods.length}
           />
         </FingerprintCollectorCard>
       );

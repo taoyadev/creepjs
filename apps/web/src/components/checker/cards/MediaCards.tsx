@@ -44,6 +44,16 @@ export function renderMediaCollectorCard(
             label="Video Input"
             value={fingerprint.data.media.deviceCount.videoInput}
           />
+          <div className="mt-2 border-t pt-2">
+            <div className="text-muted-foreground mb-1 text-xs">Devices:</div>
+            <div className="space-y-1">
+              {fingerprint.data.media.devices.map((device, i) => (
+                <div key={i} className="text-xs">
+                  {device.kind}: {device.label || 'No label'}
+                </div>
+              ))}
+            </div>
+          </div>
         </FingerprintCollectorCard>
       );
     case 'voices':
@@ -95,7 +105,8 @@ export function renderMediaCollectorCard(
             Client Rects Data:
           </div>
           <code className="break-all text-xs">
-            {fingerprint.data.clientRects.data.slice(0, 10).join(', ')}...
+            {fingerprint.data.clientRects.data.slice(0, 10).join(', ')}
+            ...
           </code>
         </FingerprintCollectorCard>
       );
@@ -123,6 +134,13 @@ export function renderMediaCollectorCard(
             label="Range Rect"
             value={fingerprint.data.domRect.rangeRectSupport ? 'Yes' : 'No'}
           />
+          <div className="text-muted-foreground mt-2 text-sm">
+            Measurements:
+          </div>
+          <code className="break-all text-xs">
+            {fingerprint.data.domRect.measurements.slice(0, 6).join(', ')}
+            ...
+          </code>
         </FingerprintCollectorCard>
       );
     default:
