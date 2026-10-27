@@ -649,6 +649,25 @@ privacy matches code; metrics answer the two ops questions above.
 >   (`creepjs_events`); one `tool_run` event backs the weekly-tool-runs metric
 >   (SQL in `docs/API_OBSERVABILITY.md`). No IP/UA/token/fingerprint ID stored;
 >   DNT/GPC respected. Replaces the `__cfBeacon` path that never sent.
+> - 2026-10-27 · PR #7 (`fix/batch-5a-sdk-core`) — SDK `cacheTtl` is in
+>   seconds (max 7 days); full SDK bundle minified to 15.3 KB gzip under a
+>   16 KiB CI gate; screenFrame no longer exits fullscreen; the SDK cache
+>   blanks WebRTC addresses and device labels; `@rollup/plugin-terser` 1.0.2
+>   clears the serialize-javascript advisories.
+> - 2026-10-27 · `fix/batch-5b-web` — home and playground load collectors on
+>   demand (First Load JS `/` 149→131 kB, `/playground` 156→138 kB, no STUN
+>   contact until a scan); `/docs` ships all tab panels in static HTML; one
+>   WebApplication schema per page; one `<main>`; `/ip` banner text meets AA in
+>   light mode; checker history drops IPs/device labels and the privacy page
+>   describes it; the checker All tab renders from `cards/*` (CheckerApp
+>   1,462→272 lines).
+> - 2026-10-27 · `fix/batch-5c-api-eng-docs` — `/v1/fingerprint` bodies capped
+>   at 128 KiB; uncached token IP lookups share a daily cap
+>   (`TOKEN_IP_DAILY_GLOBAL`, default 10,000); CI on Node 22; `test` depends on
+>   `^build`; core/SDK/API tests are type-checked and linted; token docs show
+>   the real `POST /v1/token`; two OpenSpec changes archived; `setup-kv.sh`
+>   cannot repoint production KV; the fingerprint deploy check hits workers.dev
+>   and fails the deploy on error.
 
 ---
 
