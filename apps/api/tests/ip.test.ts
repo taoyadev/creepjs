@@ -147,6 +147,32 @@ describe('IP intelligence route', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
+  it('shares one daily cap on uncached lookups across tokens', async () => {
+    const env = createTestEnv({ bindings: { TOKEN_IP_DAILY_GLOBAL: '1' } });
+    await seed(env);
+    const fetchMock = vi.fn().mockImplementation(() => ok(GOOGLE_DNS));
+    vi.stubGlobal('fetch', fetchMock);
+    const headers = { 'X-API-Token': TOKEN };
+    const lookup = (ip: string) =>
+      app.fetch(new Request(`http://localhost/v1/ip/${ip}`, { headers }), env);
+
+    expect((await lookup('8.8.8.8')).status).toBe(200);
+
+    const capped = await lookup('1.1.1.1');
+    expect(capped.status).toBe(503);
+    expect(await capped.json()).toMatchObject({ status: 503 });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    // The refused lookup does not spend the caller's daily allowance.
+    expect(await readQuotaCount(env, await quotaKeyForEmail(TOKEN_EMAIL))).toBe(
+      1
+    );
+
+    // A cache hit needs no upstream call, so the cap does not apply.
+    const cached = await lookup('8.8.8.8');
+    expect(cached.status).toBe(200);
+    expect((await cached.json()).cached).toBe(true);
+  });
+
   it('maps upstream non-2xx responses to 502', async () => {
     const env = createTestEnv();
     await seed(env);
@@ -570,6 +596,36 @@ describe('Batch IP intelligence route (POST /v1/ip/batch)', () => {
       abortedReason: 'provider-configuration',
     });
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('skips rows past the shared cap and refunds their units', async () => {
+    const env = createTestEnv({ bindings: { TOKEN_IP_DAILY_GLOBAL: '1' } });
+    await seed(env);
+    const fetchMock = vi.fn().mockImplementation(() => ok(GOOGLE_DNS));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const res = await batch(env, ['8.8.8.8', '1.1.1.1', '9.9.9.9']);
+    const json = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(json).toMatchObject({
+      successCount: 1,
+      skippedCount: 2,
+      aborted: true,
+      abortedReason: 'capacity',
+    });
+    expect(json.results.map((row: { outcome: string }) => row.outcome)).toEqual(
+      ['success', 'skipped', 'skipped']
+    );
+    expect(await quota(env)).toBe(1);
+
+    // Nothing left under the cap and no cache: a request-level 503.
+    const none = await batch(env, ['1.1.1.1']);
+    expect(none.status).toBe(503);
+    expect(await none.json()).toMatchObject({ abortedReason: 'capacity' });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(await quota(env)).toBe(1);
   });
 
   it('charges cache hits as lookup units while avoiding repeat upstream calls', async () => {

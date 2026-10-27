@@ -90,6 +90,10 @@ TOKENS <token>` (no dashboard by design)
 - **Metered `/my-ip`**: geolocation comes from `request.cf` at zero upstream
   cost; the paid risk lookup is capped per visitor (default 10/day, hashed
   counter key) and by the shared global daily budget, degrading to geo-only
+- **Shared upstream budget for token lookups**: uncached `/v1/ip/:ip` and
+  `/v1/ip/batch` lookups share one daily cap across all tokens
+  (`TOKEN_IP_DAILY_GLOBAL`, default 10,000), so no set of tokens can exhaust
+  the upstream provider quota that the public endpoints also depend on
 - **Negative caching**: final upstream 429/5xx failures are cached for 60s so
   hot IPs cannot trigger upstream retry storms
 

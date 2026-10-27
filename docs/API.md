@@ -80,7 +80,8 @@ Content-Type: application/json
 X-API-Token: cfp_your_token_here
 ```
 
-**Body** (produced by `@creepjs/core.collectFingerprint()`):
+**Body** (produced by `@creepjs/core.collectFingerprint()`; at most 128 KiB,
+larger bodies get `413` before authentication):
 
 ```jsonc
 {
@@ -442,6 +443,18 @@ aborts later valid lookups.
   `502`, or `503` and makes no later provider calls.
 - Provider response bodies are never relayed. `Retry-After` is propagated when
   available.
+
+#### Shared daily capacity
+
+Token-authenticated lookups (`GET /v1/ip/:ip` and this batch endpoint) share
+one daily cap on uncached upstream lookups across all tokens
+(`TOKEN_IP_DAILY_GLOBAL`, default 10,000). Cache hits do not count against it.
+
+- `GET /v1/ip/:ip` returns `503` with `{ "error": ... }` once the cap is
+  reached, and the request does not count toward the caller's daily quota.
+- In a batch, rows after the cap is reached are returned as `skipped` with
+  `abortedReason: "capacity"`, and their lookup units are refunded. If no row
+  was looked up, the response is a request-level `503`.
 
 Daily quota is reserved atomically per token-owning inbox (a Durable Object)
 and reported in the `X-RateLimit-*` headers. The `usageCount` field in token
