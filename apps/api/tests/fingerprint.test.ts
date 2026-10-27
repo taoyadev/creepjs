@@ -13,6 +13,7 @@ import {
   seedToken,
 } from './utils';
 import { quotaKeyForEmail } from '../src/middleware/ratelimit';
+import deploySmokeBody from './fixtures/deploy-smoke-fingerprint.json';
 import type { JsonBody } from './utils';
 
 // Held in a map rather than inline `const token = '...'` bindings so the
@@ -291,5 +292,31 @@ describe('Fingerprint route', () => {
     expect(await res.json<JsonBody>()).toEqual({
       error: 'Request body exceeds the 128 KiB limit',
     });
+  });
+  it('accepts the body the deploy health check posts', async () => {
+    const env = createTestEnv();
+    const token = TEST_TOKENS.cfp_test_token;
+    await seedToken(env, token, {
+      email: 'deploy@example.com',
+      createdAt: Date.now(),
+      usageCount: 0,
+    });
+
+    const ctx = createExecutionContext();
+    const res = await app.fetch(
+      new Request('http://localhost/v1/fingerprint', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-API-Token': token },
+        body: JSON.stringify(deploySmokeBody),
+      }),
+      env,
+      ctx
+    );
+    await waitOnExecutionContext(ctx);
+
+    expect(res.status).toBe(200);
+    const json = await res.json<JsonBody>();
+    expect(json.fingerprintId).toBe(await computeFingerprintId({}));
+    expect(json.fingerprintId).not.toBe(deploySmokeBody.fingerprintId);
   });
 });

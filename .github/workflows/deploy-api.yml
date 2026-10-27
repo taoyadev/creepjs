@@ -186,22 +186,40 @@ jobs:
         if: steps.health-check-root.outputs.status == 'success'
         run: |
           echo "Testing fingerprint endpoint..."
-          response=$(curl -s -w "\n%{http_code}" https://api.creepjs.org/v1/fingerprint \
+          response_file="$RUNNER_TEMP/fingerprint-smoke.json"
+          # workers.dev, as in the batch check below: the custom domain's WAF
+          # answers GitHub-hosted runners with 403. The body is the fixture an
+          # API test posts, so a schema change cannot silently break this.
+          status_code=$(curl -sS --max-time 20 \
+            -o "$response_file" \
+            -w "%{http_code}" \
+            https://creepjs-api.difft.workers.dev/v1/fingerprint \
             -X POST \
             -H "Content-Type: application/json" \
             -H "X-API-Token: ${{ secrets.TEST_API_TOKEN }}" \
-            -d '{"fingerprintId":"healthcheck","data":{},"timestamp":1700000000000,"confidence":1}' || echo -e "\n000")
+            --data-binary @apps/api/tests/fixtures/deploy-smoke-fingerprint.json)
 
-          status_code=$(echo "$response" | tail -n1)
           echo "Response code: $status_code"
-
-          if [ "$status_code" = "200" ] || [ "$status_code" = "201" ]; then
-            echo "✅ Fingerprint endpoint check passed!"
-          else
-            echo "⚠️  Fingerprint endpoint returned: $status_code"
-            echo "Response body:"
-            echo "$response" | head -n -1
+          if [ "$status_code" != "200" ]; then
+            echo "::error::Fingerprint endpoint smoke returned $status_code"
+            cat "$response_file"
+            exit 1
           fi
+
+          node - "$response_file" <<'NODE'
+          const fs = require('node:fs');
+          const response = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
+          // The server derives the ID; it must not echo the submitted one.
+          if (
+            typeof response.fingerprintId !== 'string' ||
+            response.fingerprintId.length === 0 ||
+            response.fingerprintId === 'deploy-smoke'
+          ) {
+            console.error('::error::Fingerprint endpoint response is invalid');
+            process.exit(1);
+          }
+          console.log('✅ Fingerprint endpoint check passed!');
+          NODE
 
       - name: Health check - Batch endpoint contract
         if: steps.health-check-root.outputs.status == 'success'
