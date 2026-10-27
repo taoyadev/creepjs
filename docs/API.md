@@ -271,26 +271,32 @@ print(data['fingerprintId'])  # 3mK9vN2Lx8pQ
 
 Generate a new API Token for authentication.
 
-**Endpoint**: `GET /v1/token`
+**Endpoint**: `POST /v1/token`
 
 **Authentication**: Not required
 
-**Rate Limit**: 10 requests/day/IP, and 3 tokens/day per email address.
-Sub-addressing (`you+tag@`) and Gmail dots resolve to the same address, so
-they share that limit.
+**CORS**: browser requests are accepted only from the site origin
+(`CORS_ORIGIN`); server-side calls are unaffected.
+
+**Limits** (all daily):
+
+- 10 requests per client IP (IPv6 counted per /64).
+- 3 tokens per email address. Sub-addressing (`you+tag@`) and Gmail dots
+  resolve to the same address, so they share that limit.
+- A cap on tokens issued across all requesters (`TOKEN_MINT_DAILY_GLOBAL`,
+  default 100).
+
+Addresses are not verified. Every token of one address shares that address's
+daily request allowance (see [Rate Limiting](#rate-limiting)), so extra tokens
+add no capacity. Tokens do not expire.
 
 #### Request
 
-**Query Parameters**:
-
-| Parameter | Type   | Required | Description         |
-| --------- | ------ | -------- | ------------------- |
-| `email`   | string | Yes      | Valid email address |
-
-**Example**:
-
 ```http
-GET /v1/token?email=hello@creepjs.org
+POST /v1/token
+Content-Type: application/json
+
+{ "email": "hello@creepjs.org" }
 ```
 
 #### Response
@@ -299,54 +305,47 @@ GET /v1/token?email=hello@creepjs.org
 
 ```json
 {
-  "token": "cfp_a1b2c3d4e5f6g7h8",
-  "quota": "1000/day",
-  "expiresAt": null
+  "token": "cfp_3hY8Qm2LxR7bNc4Vt9KpW1sZ",
+  "email": "hello@creepjs.org",
+  "createdAt": 1767225600000
 }
 ```
 
-**Response Field Descriptions**:
+| Field       | Type   | Description                                 |
+| ----------- | ------ | ------------------------------------------- |
+| `token`     | string | API token: `cfp_` plus 24 base62 characters |
+| `email`     | string | The address the token is registered to      |
+| `createdAt` | number | Issue time, in milliseconds since the epoch |
 
-| Field       | Type           | Description                                          |
-| ----------- | -------------- | ---------------------------------------------------- |
-| `token`     | string         | API Token (starts with `cfp_`)                       |
-| `quota`     | string         | Daily quota limit                                    |
-| `expiresAt` | string \| null | Expiration time (ISO 8601), null means never expires |
+**Errors**:
 
-**Error Response Examples**:
+| Status | When                                                            |
+| ------ | --------------------------------------------------------------- |
+| `400`  | `email` is missing or not a valid address                       |
+| `429`  | This IP or this address has reached its daily limit             |
+| `503`  | The daily issuance cap is reached; existing tokens keep working |
 
-```json
-// 400 Bad Request
-{
-  "error": "Valid email required",
-  "code": "INVALID_EMAIL"
-}
-
-// 429 Too Many Requests
-{
-  "error": "Too many token requests from this IP",
-  "code": "RATE_LIMIT_EXCEEDED",
-  "resetAt": "2025-01-10T00:00:00Z"
-}
-```
+`429` and `503` bodies are `{ "error": "<message>" }`.
 
 #### Example Code
 
 **cURL**:
 
 ```bash
-curl -X GET "https://api.creepjs.org/v1/token?email=hello@creepjs.org"
+curl -X POST https://api.creepjs.org/v1/token \
+  -H "Content-Type: application/json" \
+  -d '{"email":"hello@creepjs.org"}'
 ```
 
-**JavaScript**:
+**JavaScript** (server-side; browsers can call it only from the site origin):
 
 ```javascript
-const email = 'hello@creepjs.org';
-const response = await fetch(
-  `https://api.creepjs.org/v1/token?email=${encodeURIComponent(email)}`
-);
-const data = await response.json();
-console.log(data.token); // "cfp_a1b2c3d4e5f6g7h8"
+const response = await fetch('https://api.creepjs.org/v1/token', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ email: 'hello@creepjs.org' }),
+});
+const { token } = await response.json();
 ```
 
 ---
@@ -549,7 +548,7 @@ See `docs/API_OBSERVABILITY.md` for the column layout and queries.
 | `POST /v1/fingerprint` | 1000 units  | 24 hours           |
 | `GET /v1/ip/:ip`       | 1 unit/call | shared token quota |
 | `POST /v1/ip/batch`    | 1–50 units  | shared token quota |
-| `GET /v1/token`        | 10 requests | 24 hours (per IP)  |
+| `POST /v1/token`       | 10 requests | 24 hours (per IP)  |
 
 ### Response Headers
 

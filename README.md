@@ -281,7 +281,9 @@ console.log(result);
 **Get API Token:**
 
 ```bash
-curl "https://api.creepjs.org/v1/token?email=your@email.com"
+curl -X POST https://api.creepjs.org/v1/token \
+  -H "Content-Type: application/json" \
+  -d '{"email":"your@email.com"}'
 ```
 
 **Generate Fingerprint:**
