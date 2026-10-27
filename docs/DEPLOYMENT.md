@@ -481,6 +481,20 @@ For Search Console, Bing, indexing requests, and IndexNow operations, use
 4. View analytics:
    - Dashboard → Web Analytics → View site
 
+Web Analytics counts page views only. Product events (tool runs and a few
+clicks) go to `POST /v1/events` on the API Worker, which writes them to the
+Workers Analytics Engine dataset `creepjs_events` through the `EVENTS` binding
+in `apps/api/wrangler.toml`:
+
+- The `dataset` name is set explicitly. Without it Analytics Engine uses the
+  binding name, and the account already has datasets that belong to other
+  projects.
+- The dataset is created on first write; there is no migration or dashboard
+  step. Analytics Engine must be enabled on the account (it is).
+- A Worker without the binding answers `/v1/events` with `204` and drops the
+  event, so the web can deploy before or after the API.
+- Queries: see "Product analytics" in `docs/API_OBSERVABILITY.md`.
+
 ---
 
 ## Durable Object quota counters

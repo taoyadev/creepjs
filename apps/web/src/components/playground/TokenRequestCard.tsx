@@ -3,7 +3,7 @@
 import type { FormEvent } from 'react';
 import { KeyRound, Play } from 'lucide-react';
 
-import { analytics } from '@/lib/analytics';
+import { trackEvent } from '@/lib/analytics';
 import { CopyButton } from '@/components/CopyButton';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -106,8 +106,8 @@ export function TokenRequestCard({
                   ariaLabel="Copy API token"
                   successMessage="API token copied"
                   onCopied={() =>
-                    analytics.track.buttonClicked({
-                      buttonLabel: 'copy_api_token',
+                    trackEvent('button_clicked', {
+                      label: 'copy_api_token',
                       section: 'playground',
                     })
                   }

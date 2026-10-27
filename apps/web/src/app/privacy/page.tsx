@@ -125,29 +125,41 @@ export default function PrivacyPage() {
               </CardHeader>
               <CardContent className="text-muted-foreground space-y-3 leading-relaxed">
                 <p>
-                  If enabled by the site operator, CreepJS can use Cloudflare
-                  Web Analytics (privacy-first, cookie-less). Analytics can be
-                  disabled by not setting the public analytics token.
+                  Page views are counted by Cloudflare Web Analytics, which is
+                  cookie-less and does not identify visitors.
                 </p>
                 <p>
-                  The current product analytics events are limited to high-level
-                  product usage signals: checker runs, IP risk lookups, API
-                  token requests, playground API tests, docs section views,
-                  code-example copy actions, and major CTA clicks.
+                  Product events are sent to our own API and stored in
+                  Cloudflare Workers Analytics Engine, which keeps them for
+                  three months. They count tool runs (checker scans, IP risk
+                  lookups, playground API requests), API token requests, docs
+                  section views, fingerprint-ID copies, and clicks on a few
+                  tracked buttons and links.
                 </p>
+                <p>Each stored event contains only:</p>
                 <ul className="list-disc space-y-2 pl-6">
-                  <li>No email addresses are sent to analytics.</li>
+                  <li>the event name;</li>
                   <li>
-                    No fingerprint IDs, raw fingerprint payloads, or IP lookup
-                    response bodies are sent to analytics.
+                    the page path, without query string or fragment (so an IP
+                    you looked up via <code>?q=</code> is never stored);
                   </li>
                   <li>
-                    Page and link analytics are normalized to path-level URLs to
-                    avoid leaking query parameters.
+                    a few fixed labels: which tool and page section, success or
+                    error, and the HTTP status code of the tool&apos;s API call.
+                  </li>
+                </ul>
+                <ul className="list-disc space-y-2 pl-6">
+                  <li>
+                    No IP address, user agent, cookie, email address, API token,
+                    fingerprint ID or fingerprint data is stored with an event.
                   </li>
                   <li>
-                    The analytics beacon is skipped when Do Not Track is
-                    enabled.
+                    Events cannot be linked to each other or to a visitor: there
+                    is no visitor or session identifier.
+                  </li>
+                  <li>
+                    Nothing is sent when Do Not Track or Global Privacy Control
+                    is enabled in your browser.
                   </li>
                 </ul>
                 <p>

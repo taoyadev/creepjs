@@ -2,7 +2,7 @@
 
 import Link, { type LinkProps } from 'next/link';
 import type { MouseEvent, ReactNode } from 'react';
-import { analytics } from '@/lib/analytics';
+import { trackEvent } from '@/lib/analytics';
 
 type TrackedLinkProps = LinkProps &
   Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> & {
@@ -11,11 +11,6 @@ type TrackedLinkProps = LinkProps &
     eventSection?: string;
     eventKind?: 'button' | 'link';
   };
-
-function hrefToString(href: LinkProps['href']) {
-  if (typeof href === 'string') return href;
-  return href.pathname ?? '';
-}
 
 export function TrackedLink({
   href,
@@ -27,19 +22,10 @@ export function TrackedLink({
   ...props
 }: TrackedLinkProps) {
   const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
-    const linkUrl = hrefToString(href);
-
-    analytics.track.linkClicked({
-      linkUrl,
+    trackEvent(eventKind === 'button' ? 'button_clicked' : 'link_clicked', {
       label: eventLabel,
+      section: eventSection,
     });
-
-    if (eventKind === 'button') {
-      analytics.track.buttonClicked({
-        buttonLabel: eventLabel,
-        section: eventSection,
-      });
-    }
 
     onClick?.(event);
   };

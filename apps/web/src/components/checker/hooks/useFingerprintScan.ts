@@ -7,7 +7,7 @@ import {
   type CollectorProgressEvent,
   type FingerprintResult,
 } from '@creepjs/core';
-import { analytics } from '@/lib/analytics';
+import { trackEvent } from '@/lib/analytics';
 import {
   fetchBaseline,
   type BaselineResponse,
@@ -115,22 +115,19 @@ export function useFingerprintScan(): FingerprintScan {
           if (runId.current === currentRun) setBaseline(null);
         });
 
-      analytics.pageView('/checker');
-      analytics.track.fingerprintGenerated({
-        confidence: result.confidence,
-        method: 'checker',
-      });
-      analytics.track.buttonClicked({
-        buttonLabel: 'run_checker',
-        section: 'checker',
+      trackEvent('tool_run', {
+        tool: 'fingerprint_scan',
+        surface: 'checker',
+        outcome: 'success',
       });
     } catch (scanError) {
       if (runId.current !== currentRun) return;
       console.error('Error collecting fingerprint:', scanError);
-      analytics.error(
-        scanError instanceof Error ? scanError : String(scanError),
-        { page: '/checker' }
-      );
+      trackEvent('tool_run', {
+        tool: 'fingerprint_scan',
+        surface: 'checker',
+        outcome: 'error',
+      });
       setError(
         'Fingerprint collection failed. Your browser may block a required API.'
       );

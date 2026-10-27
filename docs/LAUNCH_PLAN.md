@@ -642,6 +642,13 @@ privacy matches code; metrics answer the two ops questions above.
 >   a client/server parity test. Transition: returning visitors run the old JS
 >   until they accept the SW update, so `/checker` (which hashes locally) can
 >   show a schema-2 ID until then; API/SDK responses are recomputed as schema 3.
+>   Browser-verified after deploy: stable ID across reload and a fresh profile,
+>   and browser ID = API-derived ID.
+> - 2026-10-26 · PR #6 — first-party product analytics: the site beacons
+>   allowlisted events to `POST /v1/events`, stored in Workers Analytics Engine
+>   (`creepjs_events`); one `tool_run` event backs the weekly-tool-runs metric
+>   (SQL in `docs/API_OBSERVABILITY.md`). No IP/UA/token/fingerprint ID stored;
+>   DNT/GPC respected. Replaces the `__cfBeacon` path that never sent.
 
 ---
 

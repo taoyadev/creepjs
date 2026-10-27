@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
-import { analytics } from '@/lib/analytics';
+import { trackEvent } from '@/lib/analytics';
 import { IpBatchWorkspace } from '@/components/ip/IpBatchWorkspace';
 import { ApiError, fetchJson } from '@/lib/api-client';
 import {
@@ -94,28 +94,26 @@ export default function IpRiskPage() {
         );
       }
       toast.success('IP risk lookup complete');
-      analytics.track.playgroundUsed({ endpoint: '/v1/ip/public/:ip' });
-      analytics.track.buttonClicked({
-        buttonLabel: 'check_ip_risk',
-        section: 'ip-checker',
-      });
-      analytics.track.apiCall({
-        endpoint: '/v1/ip/public/:ip',
-        statusCode: 200,
-        success: true,
+      trackEvent('tool_run', {
+        tool: 'ip_lookup',
+        surface: 'ip',
+        outcome: 'success',
+        status: '200',
       });
     } catch (lookupError) {
       setResult(null);
       setError(publicIpLookupErrorMessage(lookupError));
-      analytics.track.apiError({
-        endpoint: '/v1/ip/public/:ip',
-        statusCode:
+      trackEvent('tool_run', {
+        tool: 'ip_lookup',
+        surface: 'ip',
+        outcome: 'error',
+        status: String(
           lookupError instanceof IpInputError
             ? 400
             : lookupError instanceof ApiError
               ? lookupError.status
-              : 0,
-        errorMessage: 'Public IP lookup failed',
+              : 0
+        ),
       });
     } finally {
       setLoading(false);
@@ -124,8 +122,6 @@ export default function IpRiskPage() {
 
   useEffect(() => {
     let cancelled = false;
-
-    analytics.pageView('/ip');
 
     async function loadCurrentIp() {
       setDetectingIp(true);
@@ -194,8 +190,8 @@ export default function IpRiskPage() {
     if (!result) return;
     await navigator.clipboard.writeText(JSON.stringify(result, null, 2));
     toast.success('Result copied');
-    analytics.track.buttonClicked({
-      buttonLabel: 'copy_ip_result',
+    trackEvent('button_clicked', {
+      label: 'copy_ip_result',
       section: 'ip-checker',
     });
   };
@@ -205,8 +201,8 @@ export default function IpRiskPage() {
     const shareUrl = `${window.location.origin}/ip?q=${encodeURIComponent(result.data.ip)}`;
     await navigator.clipboard.writeText(shareUrl);
     toast.success('Shareable link copied');
-    analytics.track.buttonClicked({
-      buttonLabel: 'copy_ip_share_link',
+    trackEvent('button_clicked', {
+      label: 'copy_ip_share_link',
       section: 'ip-checker',
     });
   };

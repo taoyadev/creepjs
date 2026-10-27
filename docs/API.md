@@ -476,6 +476,57 @@ Check API service status.
 
 ---
 
+### 5. Product Analytics Events
+
+Records one product event from the CreepJS site (tool runs, docs views and a
+few tracked clicks). Used by `creepjs.org` itself; it is not part of the
+public SDK.
+
+**Endpoint**: `POST /v1/events`
+
+**Authentication**: Not required. Only the site origin (`CORS_ORIGIN`,
+`https://creepjs.org` in production) is accepted; any other or missing
+`Origin` gets `403`.
+
+**Body**: at most 1 KiB, sent as `text/plain` (what `navigator.sendBeacon`
+uses, so there is no CORS preflight) or `application/json`:
+
+```json
+{
+  "name": "tool_run",
+  "path": "/ip",
+  "props": {
+    "tool": "ip_lookup",
+    "surface": "ip",
+    "outcome": "success",
+    "status": "200"
+  }
+}
+```
+
+- `name` must be one of the events defined in
+  `packages/core/src/analytics-events.ts`.
+- `path` is reduced to its pathname; query strings and fragments are never
+  stored.
+- `props` outside the event's allowlist are dropped. A known prop with an
+  invalid value rejects the event.
+
+#### Responses
+
+| Status | Meaning                                                   |
+| ------ | --------------------------------------------------------- |
+| 204    | Event accepted (also when the analytics binding is off)   |
+| 400    | Invalid JSON, unknown event, or invalid prop/path         |
+| 403    | `Origin` missing or not the site origin                   |
+| 413    | Body larger than 1 KiB                                    |
+| 415    | `Content-Type` other than `text/plain`/`application/json` |
+
+Accepted events are stored in Workers Analytics Engine (dataset
+`creepjs_events`) without IP address, user agent, token or fingerprint ID.
+See `docs/API_OBSERVABILITY.md` for the column layout and queries.
+
+---
+
 ## Rate Limiting
 
 ### Free Tier

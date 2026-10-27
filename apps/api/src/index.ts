@@ -8,6 +8,7 @@ import tokenRoutes from './routes/token';
 import myipRoutes from './routes/myip';
 import ipRoutes from './routes/ip';
 import statsRoutes from './routes/stats';
+import eventsRoutes from './routes/events';
 
 const app = new Hono<Env>();
 const API_VERSION = '1.0.0';
@@ -43,6 +44,7 @@ app.route('/v1/fingerprint', fingerprintRoutes);
 app.route('/v1/token', tokenRoutes);
 app.route('/v1/ip', ipRoutes);
 app.route('/v1/stats', statsRoutes);
+app.route('/v1/events', eventsRoutes);
 app.route('/my-ip', myipRoutes);
 
 // 404 handler
