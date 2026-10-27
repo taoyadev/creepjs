@@ -665,9 +665,12 @@ privacy matches code; metrics answer the two ops questions above.
 >   at 128 KiB; uncached token IP lookups share a daily cap
 >   (`TOKEN_IP_DAILY_GLOBAL`, default 10,000); CI on Node 22; `test` depends on
 >   `^build`; core/SDK/API tests are type-checked and linted; token docs show
->   the real `POST /v1/token`; two OpenSpec changes archived; `setup-kv.sh`
+>   the real `POST /v1/token`; three OpenSpec changes archived; `setup-kv.sh`
 >   cannot repoint production KV; the fingerprint deploy check hits workers.dev
->   and fails the deploy on error.
+>   and fails the deploy on error; request and error logs no longer carry the
+>   queried IP from `/v1/ip/*` paths; `update-api-security-hardening` is done,
+>   with its last tests and a `docs/SECURITY.md` logging matrix, CORS posture
+>   and token revocation runbook.
 
 ---
 
