@@ -10,7 +10,11 @@ export interface SDKConfig {
   token: string;
   endpoint?: string;
   cache?: boolean;
-  cacheTtl?: number; // milliseconds
+  /**
+   * Cache lifetime in seconds. Default 86400 (24 hours), capped at 7 days;
+   * `0` turns caching off.
+   */
+  cacheTtl?: number;
   timeoutMs?: number;
   fullBundleUrl?: string;
 }
@@ -86,7 +90,20 @@ function getStorage(): Storage | null {
   }
 }
 const DEFAULT_ENDPOINT = 'https://api.creepjs.org/v1/fingerprint';
-const DEFAULT_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+const DEFAULT_CACHE_TTL_SECONDS = 24 * 60 * 60; // 24 hours
+/**
+ * Longest cache lifetime. Earlier docs gave `cacheTtl` in milliseconds, so a
+ * value written for those (3_600_000 for an hour) is capped here instead of
+ * caching for six weeks.
+ */
+const MAX_CACHE_TTL_SECONDS = 7 * 24 * 60 * 60;
+
+/** Normalise `cacheTtl` to whole seconds; anything not positive means off. */
+function cacheTtlSeconds(ttl: number | undefined): number {
+  const seconds = ttl ?? DEFAULT_CACHE_TTL_SECONDS;
+  if (!Number.isFinite(seconds) || seconds <= 0) return 0;
+  return Math.min(seconds, MAX_CACHE_TTL_SECONDS);
+}
 const DEFAULT_TIMEOUT_MS = 10_000;
 const DEFAULT_FULL_ESM_SPECIFIER = './creepjs.full.esm.js';
 const DEFAULT_FULL_BROWSER_FILENAME = 'sdk.full.js';
@@ -256,11 +273,12 @@ export class CreepJS {
   private readonly cacheKey: string;
 
   constructor(config: SDKConfig) {
+    const cacheTtl = cacheTtlSeconds(config.cacheTtl);
     this.config = {
       token: config.token,
       endpoint: config.endpoint || DEFAULT_ENDPOINT,
-      cache: config.cache ?? true,
-      cacheTtl: config.cacheTtl || DEFAULT_CACHE_TTL,
+      cache: (config.cache ?? true) && cacheTtl > 0,
+      cacheTtl,
       timeoutMs: config.timeoutMs || DEFAULT_TIMEOUT_MS,
       fullBundleUrl: config.fullBundleUrl || '',
     };
@@ -313,7 +331,7 @@ export class CreepJS {
     try {
       const data = {
         fingerprint: this.ensureCoverage(fingerprint),
-        expiry: Date.now() + this.config.cacheTtl,
+        expiry: Date.now() + this.config.cacheTtl * 1000,
       };
       storage.setItem(this.cacheKey, JSON.stringify(data));
     } catch (_error) {

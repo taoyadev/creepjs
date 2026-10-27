@@ -194,7 +194,7 @@ const result = await getFingerprint({
   token: 'cfp_your_token',
   endpoint: 'https://api.creepjs.org', // optional
   cache: true, // localStorage caching
-  cacheTtl: 3600, // cache TTL in seconds
+  cacheTtl: 3600, // cache TTL in seconds (default 86400, max 7 days)
 });
 
 // Returns: { fingerprintId, data, timestamp, confidence, coverage, cached }
