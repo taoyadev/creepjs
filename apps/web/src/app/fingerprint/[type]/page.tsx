@@ -122,7 +122,7 @@ export default async function FingerprintPage({
         ]}
       />
 
-      <main className="from-background to-secondary min-h-screen bg-gradient-to-b">
+      <div className="from-background to-secondary min-h-screen bg-gradient-to-b">
         <div className="container mx-auto max-w-6xl px-4 py-8">
           <header className="mb-8 max-w-3xl">
             <p className="text-muted-foreground mb-2 text-sm">
@@ -228,7 +228,7 @@ export default async function FingerprintPage({
             </ReactMarkdown>
           </article>
         </div>
-      </main>
+      </div>
 
       <SeoInternalLinks
         currentPath={`/fingerprint/${technique.slug}`}
