@@ -15,6 +15,10 @@
     "./analytics-events": {
       "types": "./dist/analytics-events.d.ts",
       "import": "./dist/analytics-events.js"
+    },
+    "./manifest": {
+      "types": "./dist/sources/manifest.d.ts",
+      "import": "./dist/sources/manifest.js"
     }
   },
   "files": [

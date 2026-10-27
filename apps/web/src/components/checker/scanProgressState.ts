@@ -1,10 +1,13 @@
-import { getCollectorLabel, type CollectorProgressEvent } from '@creepjs/core';
+import type { CollectorProgressEvent } from '@creepjs/core';
+import { getCollectorLabel } from '@creepjs/core/manifest';
 import type { CollectionProgress } from '@/components/checker/types';
 
 /**
  * Scan progress shared by the checker and the homepage teaser. Kept apart from
  * useFingerprintScan so a page can show progress without statically importing
- * the collectors: the only value it takes from core is the label lookup.
+ * the collectors: the only value it takes from core is the label lookup, read
+ * from the manifest entry point. Importing it from the package root put every
+ * collector in the homepage's initial chunks, "sideEffects": false or not.
  */
 export interface ScanProgressState extends CollectionProgress {
   completedCollectors: readonly string[];

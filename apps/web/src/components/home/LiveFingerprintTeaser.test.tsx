@@ -44,4 +44,13 @@ describe('LiveFingerprintTeaser', () => {
     expect(valueImportsFromCore(code)).toEqual([]);
     expect(code).toContain("import('@creepjs/core')");
   });
+
+  it('keeps the collectors out of the progress reducer the teaser imports', () => {
+    // A value import from the package root pulls every collector into the
+    // homepage's initial chunks even though core is side-effect free.
+    const code = source('../checker/scanProgressState.ts');
+
+    expect(valueImportsFromCore(code)).toEqual([]);
+    expect(code).toContain("from '@creepjs/core/manifest'");
+  });
 });
