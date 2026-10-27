@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import app from '../src/index';
 import { createTestEnv, readQuotaCount } from './utils';
 import { hashIpForLog } from '../src/utils/privacy';
@@ -168,5 +168,29 @@ describe('Token route', () => {
         `token-mint:ip:${await hashIpForLog('7.7.7.3')}`
       )
     ).toBe(0);
+  });
+});
+
+describe('Token auth', () => {
+  const lookupWith = (env: ReturnType<typeof createTestEnv>, token: string) =>
+    app.fetch(
+      new Request('http://localhost/v1/ip/8.8.8.8', {
+        headers: { 'X-API-Token': token },
+      }),
+      env
+    );
+
+  it('rejects a token over 64 characters without reading KV', async () => {
+    const env = createTestEnv();
+    const tokensGet = vi.spyOn(env.TOKENS, 'get');
+
+    const res = await lookupWith(env, `cfp_${'a'.repeat(61)}`);
+
+    expect(res.status).toBe(401);
+    expect(tokensGet).not.toHaveBeenCalled();
+
+    // At the bound itself the token is looked up as usual.
+    expect((await lookupWith(env, `cfp_${'a'.repeat(60)}`)).status).toBe(401);
+    expect(tokensGet).toHaveBeenCalledTimes(1);
   });
 });

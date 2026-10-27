@@ -19,5 +19,5 @@
 
 ## 3. Tests & docs
 
-- [ ] 3.1 Tests: token uniqueness, IPv6 table, negative cache, /my-ip metering, CORS split
+- [x] 3.1 Tests: token uniqueness, IPv6 table, negative cache, /my-ip metering, CORS split
 - [ ] 3.2 Update docs/SECURITY.md (logging matrix, CORS posture, token revocation runbook)
