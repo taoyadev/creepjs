@@ -17,7 +17,7 @@ import {
   RiskBadge,
 } from '@/components/FingerprintCollectorCard';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { analytics } from '@/lib/analytics';
+import { trackEvent } from '@/lib/analytics';
 import {
   formatBaselineInsight,
   getBaselineEstimate,
@@ -220,7 +220,9 @@ export function CheckerApp() {
                   size="icon"
                   ariaLabel="Copy fingerprint ID"
                   successMessage="Fingerprint ID copied"
-                  onCopied={() => analytics.track.fingerprintCopied()}
+                  onCopied={() =>
+                    trackEvent('fingerprint_copied', { surface: 'checker' })
+                  }
                 />
                 <CopyButton
                   value={shareUrl}

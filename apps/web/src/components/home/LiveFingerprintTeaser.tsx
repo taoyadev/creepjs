@@ -12,7 +12,7 @@ import {
   INITIAL_SCAN_PROGRESS,
   reduceScanProgress,
 } from '@/components/checker/hooks/useFingerprintScan';
-import { analytics } from '@/lib/analytics';
+import { trackEvent } from '@/lib/analytics';
 
 type TeaserStatus = 'loading' | 'ready' | 'error';
 
@@ -51,15 +51,20 @@ export function LiveFingerprintTeaser() {
       }));
       setResult(next);
       setStatus('ready');
-      analytics.pageView('/');
-      analytics.track.fingerprintGenerated({
-        confidence: next.confidence,
-        method: 'homepage',
+      trackEvent('tool_run', {
+        tool: 'fingerprint_scan',
+        surface: 'home',
+        outcome: 'success',
       });
     } catch (error) {
       if (runId.current !== currentRun) return;
       console.error('Homepage fingerprint teaser failed:', error);
       setStatus('error');
+      trackEvent('tool_run', {
+        tool: 'fingerprint_scan',
+        surface: 'home',
+        outcome: 'error',
+      });
     }
   }, []);
 
@@ -152,7 +157,9 @@ export function LiveFingerprintTeaser() {
                   value={result.fingerprintId}
                   ariaLabel="Copy homepage fingerprint ID"
                   successMessage="Fingerprint ID copied"
-                  onCopied={() => analytics.track.fingerprintCopied()}
+                  onCopied={() =>
+                    trackEvent('fingerprint_copied', { surface: 'home' })
+                  }
                 />
               </div>
             </div>

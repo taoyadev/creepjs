@@ -37,6 +37,13 @@ class_name = "QuotaCounter"
 name = "STATS"
 class_name = "StatsCounter"
 
+# Product analytics events from the site (POST /v1/events). The dataset name
+# must be explicit: without it Analytics Engine uses the binding name, and the
+# account already has datasets that belong to other projects.
+[[analytics_engine_datasets]]
+binding = "EVENTS"
+dataset = "creepjs_events"
+
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["QuotaCounter"]

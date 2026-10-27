@@ -1,4 +1,11 @@
 import { z } from 'zod';
+import {
+  ANALYTICS_EVENTS,
+  isAnalyticsEventName,
+  isValidAnalyticsPropValue,
+  normalizeAnalyticsPath,
+  type AnalyticsPropName,
+} from '@creepjs/core/analytics-events';
 import { FingerprintDataSchema } from './fingerprintDataSchema';
 
 const CollectorSummarySchema = z.object({
@@ -50,3 +57,65 @@ export const IpBatchRequestSchema = z.object({
 export type FingerprintRequest = z.infer<typeof FingerprintRequestSchema>;
 export type TokenRequest = z.infer<typeof TokenRequestSchema>;
 export type IpBatchRequest = z.infer<typeof IpBatchRequestSchema>;
+
+/**
+ * Product analytics event, built from the allowlist shared with the site
+ * (`@creepjs/core/analytics-events`). Props outside the event's allowlist are
+ * dropped so a newer site build can send a prop before the API knows it; a
+ * known prop with a bad value is rejected as a broken or hostile client.
+ */
+export const AnalyticsEventRequestSchema = z
+  .object({
+    name: z.string(),
+    path: z.string().max(2048).optional(),
+    props: z.record(z.unknown()).optional(),
+  })
+  .transform((event, ctx) => {
+    if (!isAnalyticsEventName(event.name)) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Unknown event',
+        path: ['name'],
+      });
+      return z.NEVER;
+    }
+
+    const path =
+      event.path === undefined ? '' : normalizeAnalyticsPath(event.path);
+    if (path === null) {
+      ctx.addIssue({ code: 'custom', message: 'Invalid path', path: ['path'] });
+      return z.NEVER;
+    }
+
+    const spec = ANALYTICS_EVENTS[event.name];
+    const given = event.props ?? {};
+    const props: Partial<Record<AnalyticsPropName, string>> = {};
+    for (const prop of [...spec.required, ...spec.optional]) {
+      const value = given[prop];
+      if (value === undefined) {
+        if ((spec.required as readonly string[]).includes(prop)) {
+          ctx.addIssue({
+            code: 'custom',
+            message: 'Missing prop',
+            path: ['props', prop],
+          });
+        }
+        continue;
+      }
+      if (!isValidAnalyticsPropValue(prop, value)) {
+        ctx.addIssue({
+          code: 'custom',
+          message: 'Invalid prop value',
+          path: ['props', prop],
+        });
+        continue;
+      }
+      props[prop] = value;
+    }
+
+    return { name: event.name, path, props };
+  });
+
+export type AnalyticsEventRequest = z.output<
+  typeof AnalyticsEventRequestSchema
+>;
