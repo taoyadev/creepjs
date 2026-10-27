@@ -1,6 +1,6 @@
 import type { ErrorHandler } from 'hono';
 import type { Env } from '../types';
-import { logError } from '../utils/logging';
+import { logError, pathForLog } from '../utils/logging';
 
 /**
  * Registered with `app.onError`, not `app.use`: Hono's compose converts a
@@ -18,7 +18,7 @@ export const errorHandler: ErrorHandler<Env> = (error, c) => {
   logError({
     msg: 'api.error',
     request_id: c.get('requestId') ?? null,
-    path: c.req.path,
+    path: pathForLog(c.req.path),
     method: c.req.method,
     error: error.message || 'Unknown error occurred',
   });

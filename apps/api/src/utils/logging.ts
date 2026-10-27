@@ -1,5 +1,6 @@
 import type { Context } from 'hono';
 import type { Env } from '../types';
+import { isValidIp } from '../services/ipbot';
 
 export function logEvent(event: Record<string, unknown>) {
   console.log(JSON.stringify(event));
@@ -7,6 +8,18 @@ export function logEvent(event: Record<string, unknown>) {
 
 export function logError(event: Record<string, unknown>) {
   console.error(JSON.stringify(event));
+}
+
+/**
+ * A request path fit for a log line. The lookup routes carry the queried IP
+ * in the path (/v1/ip/:ip, /v1/ip/public/:ip), and logs name IPs only by
+ * `ip_hash` (docs/SECURITY.md), so any segment that is an IP becomes `:ip`.
+ */
+export function pathForLog(path: string): string {
+  return path
+    .split('/')
+    .map((segment) => (isValidIp(segment) ? ':ip' : segment))
+    .join('/');
 }
 
 /**

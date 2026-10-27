@@ -12,7 +12,8 @@ Every request emits a structured JSON line with:
 - `msg: "api.request"`
 - `request_id`
 - `method`
-- `path`
+- `path`, with any segment that is an IP address logged as `:ip`
+  (`/v1/ip/:ip`, `/v1/ip/public/:ip`)
 - `status`
 - `latency_ms`
 - rate-limit headers when present
@@ -24,7 +25,7 @@ Unhandled API exceptions emit:
 
 - `msg: "api.error"`
 - `request_id`
-- `path`
+- `path` (IP segments logged as `:ip`, as above)
 - `method`
 - `error`
 

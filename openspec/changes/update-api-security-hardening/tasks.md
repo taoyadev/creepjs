@@ -14,6 +14,8 @@
 - [x] 2.5 Negative cache for upstream 429/5xx (60s)
 - [x] 2.6 CORS split: `*` for data endpoints, origin-locked `/v1/token`
 - [x] 2.7 Remove broken CI preview job
+- [x] 2.8 `api.request` / `api.error` log paths with IP segments replaced
+      by `:ip` (`/v1/ip/:ip` and `/v1/ip/public/:ip` carried the raw IP)
 
 ## 3. Tests & docs
 
