@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { z } from 'zod';
+import * as z from 'zod';
 import { computeFingerprintId } from '@creepjs/core';
 import type { FingerprintData } from '@creepjs/core';
 import app from '../src/index';
@@ -295,7 +295,7 @@ function fullFingerprint(): FingerprintData {
 
 /** Schema paths the fixture leaves empty, so a new field cannot go untested. */
 function uncoveredPaths(
-  schema: z.ZodTypeAny,
+  schema: z.core.$ZodType,
   value: unknown,
   path = 'data'
 ): string[] {
@@ -305,8 +305,8 @@ function uncoveredPaths(
   if (value === undefined) return [path];
   if (schema instanceof z.ZodObject) {
     const record = value as Record<string, unknown>;
-    return Object.entries(schema.shape as Record<string, z.ZodTypeAny>).flatMap(
-      ([key, child]) => uncoveredPaths(child, record[key], `${path}.${key}`)
+    return Object.entries(schema.shape).flatMap(([key, child]) =>
+      uncoveredPaths(child, record[key], `${path}.${key}`)
     );
   }
   if (schema instanceof z.ZodArray) {

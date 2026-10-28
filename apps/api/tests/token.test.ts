@@ -30,6 +30,26 @@ describe('Token route', () => {
     });
   });
 
+  it('rejects an invalid email in the API error format', async () => {
+    const env = createTestEnv();
+    const req = new Request('http://localhost/v1/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'CF-Connecting-IP': '1.1.1.1',
+      },
+      body: JSON.stringify({ email: 'not-an-email' }),
+    });
+
+    const res = await app.fetch(req, env);
+
+    expect(res.status).toBe(400);
+    expect(await res.json<JsonBody>()).toEqual({
+      error: 'Invalid request body',
+      details: [{ path: ['email'], message: expect.any(String) }],
+    });
+  });
+
   it('mints unguessable tokens: two requests for one email differ', async () => {
     const env = createTestEnv();
     const mint = () =>

@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import * as z from 'zod';
 import { ANALYTICS_PROP_COLUMNS } from '@creepjs/core/analytics-events';
 import type { Env } from '../types';
 import { siteOrigin } from '../middleware/cors';
@@ -92,7 +93,10 @@ app.post('/', async (c) => {
   const parsed = AnalyticsEventRequestSchema.safeParse(body);
   if (!parsed.success) {
     return c.json(
-      { error: 'Invalid event', details: parsed.error.flatten().fieldErrors },
+      {
+        error: 'Invalid event',
+        details: z.flattenError(parsed.error).fieldErrors,
+      },
       400
     );
   }

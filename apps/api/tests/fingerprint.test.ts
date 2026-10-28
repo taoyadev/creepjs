@@ -217,6 +217,41 @@ describe('Fingerprint route', () => {
     expect(after).toBe(before);
   });
 
+  it('rejects unknown collector keys in the API error format', async () => {
+    const env = createTestEnv();
+    const token = TEST_TOKENS.cfp_test_token;
+    await seedToken(env, token, {
+      email: 'fingerprint@example.com',
+      createdAt: Date.now(),
+      usageCount: 0,
+    });
+
+    const req = new Request('http://localhost/v1/fingerprint', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Token': token,
+      },
+      body: JSON.stringify({
+        ...basePayload,
+        data: { ...basePayload.data, notACollector: true },
+      }),
+    });
+
+    const res = await app.fetch(req, env);
+
+    expect(res.status).toBe(400);
+    expect(await res.json<JsonBody>()).toEqual({
+      error: 'Invalid request body',
+      details: [
+        {
+          path: ['data'],
+          message: expect.stringContaining('notACollector'),
+        },
+      ],
+    });
+  });
+
   it('rejects requests with missing or invalid tokens', async () => {
     const env = createTestEnv();
     const req = new Request('http://localhost/v1/fingerprint', {

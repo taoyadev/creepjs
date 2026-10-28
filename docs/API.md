@@ -174,11 +174,10 @@ larger bodies get `413` before authentication):
 // 400 Bad Request
 {
   "error": "Invalid request body",
-  "code": "INVALID_REQUEST",
   "details": [
     {
-      "path": ["components", "canvas"],
-      "message": "Expected string, received undefined"
+      "path": ["data", "canvas", "hash"],
+      "message": "Invalid input: expected string, received undefined"
     }
   ]
 }
