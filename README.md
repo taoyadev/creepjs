@@ -269,7 +269,7 @@ const result = await getFingerprint({
   token: 'cfp_your_token',
   endpoint: 'https://api.creepjs.org/v1/fingerprint', // optional
   cache: true, // Enable localStorage caching
-  cacheTtl: 3600_000, // Cache TTL in milliseconds
+  cacheTtl: 3600, // Cache TTL in seconds (default 86400, max 7 days)
 });
 
 console.log(result);
@@ -281,7 +281,9 @@ console.log(result);
 **Get API Token:**
 
 ```bash
-curl "https://api.creepjs.org/v1/token?email=your@email.com"
+curl -X POST https://api.creepjs.org/v1/token \
+  -H "Content-Type: application/json" \
+  -d '{"email":"your@email.com"}'
 ```
 
 **Generate Fingerprint:**

@@ -23,6 +23,33 @@ describe('CORS middleware', () => {
     expect(res.headers.get('Access-Control-Allow-Origin')).toBe('*');
   });
 
+  it('lets any origin preflight the fingerprint and public IP endpoints', async () => {
+    const env = createTestEnv({
+      bindings: {
+        ENVIRONMENT: 'production',
+        CORS_ORIGIN: 'https://creepjs.org',
+      },
+    });
+
+    for (const [path, method] of [
+      ['/v1/fingerprint', 'POST'],
+      ['/v1/ip/public/8.8.8.8', 'GET'],
+    ] as const) {
+      const res = await app.fetch(
+        new Request(`http://localhost${path}`, {
+          method: 'OPTIONS',
+          headers: {
+            Origin: 'https://third-party.example',
+            'Access-Control-Request-Method': method,
+          },
+        }),
+        env
+      );
+
+      expect(res.headers.get('Access-Control-Allow-Origin')).toBe('*');
+    }
+  });
+
   it('does not allow foreign origins to mint tokens', async () => {
     const env = createTestEnv({
       bindings: {

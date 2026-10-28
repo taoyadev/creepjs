@@ -13,7 +13,7 @@ import {
 
 export default function PlaygroundPage() {
   return (
-    <main className="from-background to-secondary min-h-screen bg-gradient-to-b">
+    <div className="from-background to-secondary min-h-screen bg-gradient-to-b">
       <div className="container mx-auto max-w-7xl space-y-8 px-4 py-8 md:py-12">
         <header className="max-w-3xl space-y-3">
           <p className="text-primary text-sm font-semibold">Developer tools</p>
@@ -108,6 +108,6 @@ export default function PlaygroundPage() {
           </div>
         </section>
       </div>
-    </main>
+    </div>
   );
 }

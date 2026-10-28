@@ -1,3 +1,5 @@
+import type { RateLimitReservation } from './middleware/ratelimit';
+
 export type Env = {
   Bindings: {
     TOKENS: KVNamespace;
@@ -29,6 +31,9 @@ export type Env = {
     STATS_DAILY_PER_IP?: string;
     // Optional cap on tokens minted per day across everyone (default 100).
     TOKEN_MINT_DAILY_GLOBAL?: string;
+    // Optional cap on uncached token-authenticated IP lookups per day across
+    // every token (default 10000).
+    TOKEN_IP_DAILY_GLOBAL?: string;
   };
   Variables: {
     token: string;
@@ -36,6 +41,8 @@ export type Env = {
     requestId: string;
     /** Units of the inbox's daily allowance used, set by rateLimitMiddleware. */
     quotaUsed: number;
+    /** rateLimitMiddleware's reservation, so a route can refund an unspent unit. */
+    quotaReservation: RateLimitReservation;
   };
 };
 

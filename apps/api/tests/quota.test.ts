@@ -12,9 +12,9 @@ describe('atomic quota counters', () => {
     }
 
     expect(results.map((r) => r.allowed)).toEqual([true, true, true, false]);
-    expect(results[2].count).toBe(3);
+    expect(results[2]!.count).toBe(3);
     // A denied reservation must not consume budget.
-    expect(results[3].count).toBe(3);
+    expect(results[3]!.count).toBe(3);
   });
 
   it('does not let a concurrent burst pass the limit', async () => {

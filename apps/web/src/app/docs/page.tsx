@@ -83,7 +83,11 @@ export default function DocsPage() {
           </TabsList>
 
           {/* Introduction Tab */}
-          <TabsContent value="introduction" className="space-y-6">
+          <TabsContent
+            value="introduction"
+            forceMount
+            className="space-y-6 data-[state=inactive]:hidden"
+          >
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -276,7 +280,11 @@ export default function DocsPage() {
           </TabsContent>
 
           {/* Quick Start Tab */}
-          <TabsContent value="quickstart" className="space-y-6">
+          <TabsContent
+            value="quickstart"
+            forceMount
+            className="space-y-6 data-[state=inactive]:hidden"
+          >
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -345,7 +353,6 @@ const result = await CreepJS.getFingerprint({
 
 console.log('Fingerprint ID:', result.fingerprintId);
 console.log('Coverage:', result.confidence);
-console.log('Uniqueness:', result.uniqueness);
 console.log('Timestamp:', result.timestamp);
 
 // Check if result was cached
@@ -425,12 +432,15 @@ if (result.cached) {
                           <code>cacheTtl</code>
                         </td>
                         <td className="text-muted-foreground p-2">number</td>
-                        <td className="text-muted-foreground p-2">3600</td>
-                        <td className="p-2">Cache time-to-live in seconds</td>
+                        <td className="text-muted-foreground p-2">86400</td>
+                        <td className="p-2">
+                          Cache time-to-live in seconds (max 7 days; 0 turns
+                          caching off)
+                        </td>
                       </tr>
                       <tr className="border-b">
                         <td className="p-2">
-                          <code>timeout</code>
+                          <code>timeoutMs</code>
                         </td>
                         <td className="text-muted-foreground p-2">number</td>
                         <td className="text-muted-foreground p-2">10000</td>
@@ -446,7 +456,11 @@ if (result.cached) {
           </TabsContent>
 
           {/* API Reference Tab */}
-          <TabsContent value="api" className="space-y-6">
+          <TabsContent
+            value="api"
+            forceMount
+            className="space-y-6 data-[state=inactive]:hidden"
+          >
             <Card>
               <CardHeader>
                 <CardTitle>Authentication</CardTitle>
@@ -597,7 +611,11 @@ X-API-Token: cfp_your_token_here`}
           </TabsContent>
 
           {/* Collectors Tab */}
-          <TabsContent value="collectors" className="space-y-6">
+          <TabsContent
+            value="collectors"
+            forceMount
+            className="space-y-6 data-[state=inactive]:hidden"
+          >
             <Card>
               <CardHeader>
                 <CardTitle>Fingerprint Collectors</CardTitle>
@@ -826,7 +844,11 @@ X-API-Token: cfp_your_token_here`}
           </TabsContent>
 
           {/* FAQ Tab */}
-          <TabsContent value="faq" className="space-y-6">
+          <TabsContent
+            value="faq"
+            forceMount
+            className="space-y-6 data-[state=inactive]:hidden"
+          >
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">

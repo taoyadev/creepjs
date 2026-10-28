@@ -6,7 +6,9 @@ import {
   IpbotError,
   type IpbotResponse,
 } from '../src/services/ipbot';
+import { hashIpForLog } from '../src/utils/privacy';
 import { createTestEnv } from './utils';
+import type { JsonBody } from './utils';
 
 // Real upstream response for 8.8.8.8 (captured from api.ipbot.com) — low risk.
 const GOOGLE_DNS: IpbotResponse = {
@@ -47,6 +49,7 @@ const throttled = (headers: Record<string, string> = {}) =>
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.useRealTimers();
+  vi.restoreAllMocks();
 });
 
 describe('isValidIp', () => {
@@ -123,7 +126,7 @@ describe('lookupIP', () => {
 
     // Inspect what was written to the cache.
     const putSpy = vi.spyOn(env.IP_CACHE, 'put');
-    const stored = await env.IP_CACHE.get('ipbot:8.8.8.8', 'json');
+    const stored = await env.IP_CACHE.get<JsonBody>('ipbot:8.8.8.8', 'json');
     expect(stored).toBeTruthy();
 
     const second = await lookupIP('8.8.8.8', env);
@@ -290,6 +293,56 @@ describe('lookupIP', () => {
     expect(second).toBeInstanceOf(IpbotError);
     expect((second as IpbotError).status).toBe(503);
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('negative-caches a final upstream 429 for 60 seconds', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(throttled({ 'retry-after': '60' }));
+    vi.stubGlobal('fetch', fetchMock);
+    const env = createTestEnv();
+    const put = vi.spyOn(env.IP_CACHE, 'put');
+
+    const first = await lookupIP('9.9.9.9', env).catch((e) => e);
+    const second = await lookupIP('9.9.9.9', env).catch((e) => e);
+
+    expect(put).toHaveBeenCalledWith('ipbot:err:9.9.9.9', expect.any(String), {
+      expirationTtl: 60,
+    });
+    for (const error of [first, second]) {
+      expect(error).toBeInstanceOf(IpbotError);
+      expect((error as IpbotError).status).toBe(429);
+      expect((error as IpbotError).kind).toBe('throttle');
+      expect((error as IpbotError).retryAfter).toBe(60);
+    }
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('logs ipbot.ratelimit under ip_hash, never the raw IP', async () => {
+    vi.useFakeTimers();
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValueOnce(throttled({ 'retry-after': '1' }))
+        .mockResolvedValueOnce(ok(GOOGLE_DNS))
+    );
+
+    const promise = lookupIP('8.8.8.8', createTestEnv());
+    await vi.runAllTimersAsync();
+    await promise;
+
+    const lines = logSpy.mock.calls.map(([line]) => String(line));
+    const entries = lines
+      .map((line) => JSON.parse(line) as Record<string, unknown>)
+      .filter((entry) => entry.msg === 'ipbot.ratelimit');
+    const ipHash = await hashIpForLog('8.8.8.8');
+    expect(entries.map((entry) => [entry.event, entry.ip_hash])).toEqual([
+      ['throttled', ipHash],
+      ['fetched', ipHash],
+    ]);
+    expect(lines.join('\n')).not.toContain('8.8.8.8');
   });
 
   it('throws when credentials are missing', async () => {

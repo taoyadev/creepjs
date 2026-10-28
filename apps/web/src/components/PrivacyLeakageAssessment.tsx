@@ -505,8 +505,9 @@ export function PrivacyLeakageAssessment({
         </CardContent>
       </Card>
 
-      {/* Leak Categories */}
-      <div className="grid gap-6">
+      {/* Leak Categories. grid-cols-1 caps the track at the container width;
+          an implicit track grows to the widest unbroken value (a user agent). */}
+      <div className="grid grid-cols-1 gap-6">
         {leaks.map((category) => (
           <Card key={category.category}>
             <CardHeader>
@@ -549,7 +550,7 @@ export function PrivacyLeakageAssessment({
                           <Shield className="h-5 w-5 text-green-600 dark:text-green-400" />
                         )}
                       </div>
-                      <div className="flex-1 space-y-1">
+                      <div className="min-w-0 flex-1 space-y-1">
                         <div className="flex items-center gap-2">
                           <div className="text-sm font-semibold">
                             {leak.name}

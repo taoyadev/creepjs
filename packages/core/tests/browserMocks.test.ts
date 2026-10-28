@@ -5,11 +5,6 @@ import { collectVoicesFingerprint } from '../src/collectors/voices';
 import { collectAudioFingerprint } from '../src/collectors/audio';
 import { murmurHash3 } from '../src/utils/hash';
 
-declare global {
-  // eslint-disable-next-line vars-on-top, no-var
-  var RTCPeerConnection: typeof FakeRTCPeerConnection | undefined;
-}
-
 class FakeRTCPeerConnection {
   public onicecandidate:
     | ((event: { candidate: { candidate: string } | null }) => void)
@@ -50,7 +45,9 @@ class FakeRTCPeerConnection {
 }
 
 describe('browser-mocked collectors', () => {
-  const originalRTCPeerConnection = globalThis.RTCPeerConnection;
+  // jsdom has no RTCPeerConnection; the DOM lib types say it always exists.
+  const rtcGlobal = globalThis as { RTCPeerConnection?: unknown };
+  const originalRTCPeerConnection = rtcGlobal.RTCPeerConnection;
   const originalNavigator = globalThis.navigator;
 
   beforeEach(() => {
@@ -59,10 +56,9 @@ describe('browser-mocked collectors', () => {
 
   afterEach(() => {
     if (originalRTCPeerConnection) {
-      globalThis.RTCPeerConnection = originalRTCPeerConnection;
+      rtcGlobal.RTCPeerConnection = originalRTCPeerConnection;
     } else {
-      // @ts-expect-error cleanup
-      delete globalThis.RTCPeerConnection;
+      delete rtcGlobal.RTCPeerConnection;
     }
 
     Object.defineProperty(globalThis, 'navigator', {
@@ -72,8 +68,7 @@ describe('browser-mocked collectors', () => {
   });
 
   it('collectWebRTCFingerprint succeeds with mocked RTCPeerConnection', async () => {
-    globalThis.RTCPeerConnection =
-      FakeRTCPeerConnection as unknown as typeof globalThis.RTCPeerConnection;
+    rtcGlobal.RTCPeerConnection = FakeRTCPeerConnection;
 
     const mediaDevices = {
       getUserMedia: vi.fn().mockResolvedValue(undefined),
@@ -91,7 +86,7 @@ describe('browser-mocked collectors', () => {
     expect(result?.supported).toBe(true);
     expect(result?.candidates.local.length).toBeGreaterThan(0);
     expect(
-      result?.candidates.public.length + result!.candidates.ipv4.length
+      result!.candidates.public.length + result!.candidates.ipv4.length
     ).toBeGreaterThan(0);
   });
 

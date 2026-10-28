@@ -40,8 +40,8 @@ export function EndpointRunner({
           2. Run POST /v1/fingerprint
         </CardTitle>
         <CardDescription>
-          Submit the fingerprint collected in this browser with the current
-          token.
+          Collect this browser&apos;s fingerprint locally and submit it with the
+          current token.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -53,7 +53,10 @@ export function EndpointRunner({
             <Skeleton className="h-10 w-full" />
           ) : (
             <code className="bg-muted block max-w-full break-all rounded p-3 font-mono text-xs">
-              {fingerprintId ?? 'Unavailable'}
+              {fingerprintId ??
+                (fingerprintFailed
+                  ? 'Unavailable'
+                  : 'Collected when you run the test')}
             </code>
           )}
         </div>
@@ -61,15 +64,15 @@ export function EndpointRunner({
         {fingerprintFailed && (
           <Alert variant="destructive" role="alert">
             <AlertDescription>
-              Fingerprint collection failed in this browser. Reload the page to
-              try again.
+              Fingerprint collection failed in this browser. Run the test again
+              to retry.
             </AlertDescription>
           </Alert>
         )}
 
         <Button
           onClick={() => void onRun()}
-          disabled={busy || !canRun || fingerprintLoading}
+          disabled={busy || !canRun}
           className="w-full"
         >
           <Terminal className="mr-2 h-4 w-4" aria-hidden="true" />

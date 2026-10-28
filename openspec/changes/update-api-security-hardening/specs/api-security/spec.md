@@ -28,6 +28,11 @@ SHA-256 hash (`ip_hash`), never the raw address.
 - **WHEN** an IPbot lookup logs `ipbot.ratelimit`
 - **THEN** the log line contains `ip_hash` and no raw IP field
 
+#### Scenario: Request log for a lookup path is redacted
+
+- **WHEN** `GET /v1/ip/203.0.113.9` is logged as `api.request`
+- **THEN** the logged `path` is `/v1/ip/:ip` and the line contains no raw IP
+
 ### Requirement: `/my-ip` SHALL meter the paid risk lookup
 
 `/my-ip` SHALL always serve geolocation from `request.cf` at zero upstream
