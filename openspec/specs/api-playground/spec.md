@@ -2,7 +2,9 @@
 
 ## Purpose
 
-TBD - created by archiving change refactor-fingerprint-playground-boundaries. Update Purpose after archive.
+The `/playground` page lets developers request a token and exercise the
+fingerprint and IP APIs from the browser, with a server-rendered shell and a
+small interactive workspace that never persists the token.
 
 ## Requirements
 

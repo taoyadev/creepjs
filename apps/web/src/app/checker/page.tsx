@@ -150,7 +150,9 @@ export default function CheckerPage() {
 
       <CheckerSectionNav />
 
-      <div className="container mx-auto max-w-7xl space-y-20 px-4 py-10 md:px-8 md:py-16">
+      {/* Anchors here clear the header and the sticky section nav (117px),
+          not just the header that section-anchor's 5rem allows for. */}
+      <div className="container mx-auto max-w-7xl space-y-20 px-4 py-10 md:px-8 md:py-16 [&_.section-anchor]:scroll-mt-32">
         <section id="scan" className="section-anchor space-y-6">
           <div className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
             <div className="space-y-2">

@@ -33,7 +33,9 @@ timestamp)`): guessable, and birthday collisions silently overwrite
 - **Log privacy**: new `utils/privacy.ts` (`hashIpForLog` = SHA-256/12);
   `ipbot.ratelimit` logs `ip_hash`, `myip.lookup_failed` drops the IP.
   (The two `routes/ip.ts` log sites are converted in the batch-lookup
-  rewrite, which rewrites that file.)
+  rewrite, which rewrites that file.) `api.request` and `api.error` log
+  the request path with any IP segment replaced by `:ip`, since the lookup
+  routes carry the queried IP in the path.
 - **Negative cache**: final upstream 429/≥500 failures cached 60s under
   `ipbot:err:<ip>`; lookups short-circuit with the mapped error.
 - **CORS split**: data endpoints stay `*` by design; `/v1/token` is locked

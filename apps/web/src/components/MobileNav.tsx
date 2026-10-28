@@ -31,7 +31,7 @@ interface MobileNavProps {
     | 'ip';
 }
 
-const navItems = [
+export const navItems = [
   { href: '/', label: 'Home', icon: Home, page: 'home' },
   { href: '/checker', label: 'Checker', icon: Fingerprint, page: 'checker' },
   { href: '/ip', label: 'IP Risk', icon: Shield, page: 'ip' },

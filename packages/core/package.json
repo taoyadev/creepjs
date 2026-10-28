@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Core browser fingerprinting engine",
   "type": "module",
+  "sideEffects": false,
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -14,6 +15,10 @@
     "./analytics-events": {
       "types": "./dist/analytics-events.d.ts",
       "import": "./dist/analytics-events.js"
+    },
+    "./manifest": {
+      "types": "./dist/sources/manifest.d.ts",
+      "import": "./dist/sources/manifest.js"
     }
   },
   "files": [
@@ -22,10 +27,10 @@
   "scripts": {
     "build": "rm -rf dist && tsc",
     "dev": "tsc --watch",
-    "lint": "eslint src --ext .ts",
+    "lint": "eslint src tests --ext .ts",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc -p tests",
     "clean": "rm -rf dist node_modules .turbo"
   },
   "devDependencies": {

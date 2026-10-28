@@ -1,0 +1,13 @@
+{
+  // Type-checks the tests against the sources; the package tsconfig is the
+  // build config and leaves tests out so they are never emitted.
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "../..",
+    "composite": false,
+    "incremental": false,
+    "noEmit": true
+  },
+  "include": ["**/*.ts", "../src/**/*.ts"],
+  "exclude": []
+}

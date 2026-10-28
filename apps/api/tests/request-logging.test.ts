@@ -6,6 +6,7 @@ import { createTestEnv, seedToken } from './utils';
 import { errorHandler } from '../src/middleware/error';
 import { requestLoggerMiddleware } from '../src/middleware/request-logger';
 import type { Env } from '../src/types';
+import type { JsonBody } from './utils';
 
 const TOKEN = 'cfp_logging_test';
 
@@ -103,6 +104,46 @@ describe('request logging middleware', () => {
     );
   });
 
+  it('logs lookup paths with the queried IP replaced by :ip', async () => {
+    const env = createTestEnv();
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    // No token: auth answers 401 before any lookup; the request is still logged.
+    for (const ip of ['203.0.113.9', '2001:db8::9']) {
+      const res = await app.fetch(
+        new Request(`http://localhost/v1/ip/${ip}`),
+        env
+      );
+      expect(res.status).toBe(401);
+    }
+
+    const logs = logSpy.mock.calls.flat().join('\n');
+    expect(logs).toContain('"path":"/v1/ip/:ip"');
+    expect(logs).not.toContain('203.0.113.9');
+    expect(logs).not.toContain('2001:db8::9');
+  });
+
+  it('keeps the queried IP out of api.error paths', async () => {
+    const consoleErrorSpy = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+    vi.spyOn(console, 'log').mockImplementation(() => {});
+    const miniApp = new Hono<Env>();
+    miniApp.onError(errorHandler);
+    miniApp.get('/v1/ip/public/:ip', () => {
+      throw new Error('kaboom');
+    });
+
+    await miniApp.fetch(
+      new Request('http://localhost/v1/ip/public/203.0.113.9'),
+      createTestEnv()
+    );
+
+    const errors = consoleErrorSpy.mock.calls.flat().join('\n');
+    expect(errors).toContain('"path":"/v1/ip/public/:ip"');
+    expect(errors).not.toContain('203.0.113.9');
+  });
+
   it('emits api.error logs for unhandled exceptions', async () => {
     const consoleErrorSpy = vi
       .spyOn(console, 'error')
@@ -120,7 +161,9 @@ describe('request logging middleware', () => {
 
     expect(res.status).toBe(500);
     expect(res.headers.get('X-Request-Id')).toBeTruthy();
-    expect(await res.json()).toEqual({ error: 'Internal server error' });
+    expect(await res.json<JsonBody>()).toEqual({
+      error: 'Internal server error',
+    });
     expect(consoleErrorSpy).toHaveBeenCalledWith(
       expect.stringContaining('"msg":"api.error"')
     );
@@ -144,7 +187,9 @@ describe('request logging middleware', () => {
     );
 
     expect(res.status).toBe(500);
-    expect(await res.json()).toEqual({ error: 'Internal server error' });
+    expect(await res.json<JsonBody>()).toEqual({
+      error: 'Internal server error',
+    });
   });
 
   it('passes HTTPException responses through unchanged', async () => {

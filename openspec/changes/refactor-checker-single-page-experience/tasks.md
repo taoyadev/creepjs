@@ -37,5 +37,6 @@
 - [x] 6.1 Pass ordered web build, lint, typecheck, and tests on OpenClaw.
 - [x] 6.2 Assert exported checker HTML contains one H1 and required static
       anchors/content.
-- [ ] 6.3 Complete desktop/mobile, light/dark, keyboard, URL-state, failure,
+- [x] 6.3 Complete desktop/mobile, light/dark, keyboard, URL-state, failure,
       sticky-nav, and reduced-motion QA on a Cloudflare Pages preview.
+      Verified on Pages preview 39bf0ee8 (2026-10-27); evidence in PR #8.

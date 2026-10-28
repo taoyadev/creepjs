@@ -145,7 +145,12 @@ export const collectorManifest: readonly CollectorManifestEntry[] = [
     category: 'network',
     tabs: ['network'],
   },
-  { key: 'domBlockers', label: 'Privacy / Ad Blockers', category: 'privacy' },
+  {
+    key: 'domBlockers',
+    label: 'Privacy / Ad Blockers',
+    category: 'privacy',
+    tabs: ['security'],
+  },
   {
     key: 'fontPreferences',
     label: 'Font Preferences',

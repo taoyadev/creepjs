@@ -89,7 +89,17 @@ export default function PrivacyPage() {
                 <p>
                   <strong>In the browser:</strong> fingerprint components are
                   computed locally to generate a fingerprint ID and to render
-                  the on-page report.
+                  the on-page report. A scan runs when you start it (the checker
+                  starts one on load); its WebRTC check contacts Google&apos;s
+                  public STUN servers (stun.l.google.com), which see your IP
+                  address the same way any website does.
+                </p>
+                <p>
+                  <strong>Checker history:</strong> the checker keeps your last
+                  50 scans in this browser&apos;s localStorage so you can
+                  compare them. They never leave your device, WebRTC addresses
+                  and media device labels are removed before saving, and
+                  &ldquo;Clear All&rdquo; deletes them.
                 </p>
                 <p>
                   <strong>On the API:</strong> the API is designed to be
@@ -99,17 +109,20 @@ export default function PrivacyPage() {
                 </p>
                 <ul className="list-disc space-y-2 pl-6">
                   <li>
-                    API tokens (email, createdAt, usageCount) are stored in
-                    Cloudflare KV.
+                    API tokens are stored in Cloudflare KV with the email
+                    address they were requested for and their creation time.
                   </li>
                   <li>
-                    Rate limit counters are stored in Cloudflare KV with a
-                    time-based reset window.
+                    Daily usage counters (per token owner, per visitor, and for
+                    token requests) are kept in a Cloudflare Durable Object
+                    under SHA-256 hashes of the email address or visitor IP
+                    address, never the raw value, and reset after 24 hours.
                   </li>
                   <li>
-                    The optional “My IP” feature uses the same server-side IPbot
-                    integration as the public IP checker and caches the response
-                    in KV for a short TTL.
+                    IP lookups (the public IP checker, the token API, and the
+                    optional “My IP” risk check) cache the provider&apos;s
+                    response in KV under the looked-up IP address for up to 24
+                    hours (1 hour for high-risk results).
                   </li>
                 </ul>
                 <p>

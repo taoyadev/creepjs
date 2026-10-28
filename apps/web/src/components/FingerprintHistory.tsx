@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { FingerprintComparison } from '@/components/FingerprintComparison';
 import { toast } from 'sonner';
+import { toStoredHistoryResult } from '@/lib/fingerprint-history';
 
 interface FingerprintHistoryProps {
   currentResult: FingerprintResult;
@@ -86,12 +87,14 @@ export function FingerprintHistory({
       if (stored) {
         const parsed: unknown = JSON.parse(stored);
         const items = isUnknownArray(parsed) ? parsed : [];
-        historyArray = items.filter(isHistoryRecord);
+        // Re-scrub records saved before WebRTC addresses and device labels
+        // were dropped, so the next write leaves none behind.
+        historyArray = items.filter(isHistoryRecord).map(toStoredHistoryResult);
       }
 
       // Add current result with unique ID
       const record: HistoryRecord = {
-        ...currentResult,
+        ...toStoredHistoryResult(currentResult),
         id: `${currentResult.fingerprintId}-${currentResult.timestamp}`,
       };
 

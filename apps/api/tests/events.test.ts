@@ -8,6 +8,7 @@ import {
 import app from '../src/index';
 import type { Env } from '../src/types';
 import { createTestEnv } from './utils';
+import type { JsonBody } from './utils';
 
 const SITE = 'https://creepjs.org';
 const CLIENT_IP = '203.0.113.77';
@@ -110,7 +111,7 @@ describe('POST /v1/events', () => {
     });
 
     expect(res.status).toBe(204);
-    expect(points[0].blobs).toEqual([
+    expect(points[0]!.blobs).toEqual([
       'tool_run',
       '/ip',
       'ip_lookup',
@@ -152,7 +153,7 @@ describe('POST /v1/events', () => {
       });
 
       expect(res.status, name).toBe(204);
-      expect(points[0].indexes, name).toEqual([name]);
+      expect(points[0]!.indexes, name).toEqual([name]);
     }
   });
 
@@ -176,14 +177,16 @@ describe('POST /v1/events', () => {
     const res = await postEvent(productionEnv({ EVENTS: dataset }), body);
 
     expect(res.status).toBe(400);
-    expect(await res.json()).toMatchObject({ error: 'Invalid event' });
+    expect(await res.json<JsonBody>()).toMatchObject({
+      error: 'Invalid event',
+    });
     expect(points).toHaveLength(0);
   });
 
   it('rejects malformed JSON with 400', async () => {
     const res = await postEvent(productionEnv(), '{"name":');
     expect(res.status).toBe(400);
-    expect(await res.json()).toEqual({ error: 'Invalid JSON' });
+    expect(await res.json<JsonBody>()).toEqual({ error: 'Invalid JSON' });
   });
 
   it.each([
@@ -196,7 +199,7 @@ describe('POST /v1/events', () => {
     });
 
     expect(res.status).toBe(403);
-    expect(await res.json()).toEqual({ error: 'Origin not allowed' });
+    expect(await res.json<JsonBody>()).toEqual({ error: 'Origin not allowed' });
     expect(points).toHaveLength(0);
   });
 
@@ -215,7 +218,7 @@ describe('POST /v1/events', () => {
     });
 
     expect(res.status).toBe(413);
-    expect(await res.json()).toEqual({ error: 'Event too large' });
+    expect(await res.json<JsonBody>()).toEqual({ error: 'Event too large' });
     expect(points).toHaveLength(0);
   });
 

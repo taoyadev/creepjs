@@ -26,5 +26,6 @@
 - [x] 4.1 Pass ordered web build, lint, typecheck, and tests on OpenClaw.
 - [x] 4.2 Assert exported homepage HTML contains exactly one H1, the answer
       anchor, both live routes, and substantial static content.
-- [ ] 4.3 Complete mobile/desktop, light/dark, keyboard, failure, and
+- [x] 4.3 Complete mobile/desktop, light/dark, keyboard, failure, and
       reduced-motion QA on a Cloudflare Pages preview.
+      Verified on Pages preview 39bf0ee8 (2026-10-27); evidence in PR #8.

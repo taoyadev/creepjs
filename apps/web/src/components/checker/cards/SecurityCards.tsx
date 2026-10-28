@@ -1,5 +1,10 @@
 import type { FingerprintResult } from '@creepjs/core';
 import {
+  formatBaselineInsight,
+  getBaselineEstimate,
+  type BaselineResponse,
+} from '@/lib/uniqueness-baseline';
+import {
   DataRow,
   FingerprintCollectorCard,
   RiskBadge,
@@ -7,7 +12,8 @@ import {
 
 export function renderSecurityCollectorCard(
   key: string,
-  fingerprint: FingerprintResult
+  fingerprint: FingerprintResult,
+  baseline?: BaselineResponse | null
 ) {
   switch (key) {
     case 'lies':
@@ -151,6 +157,29 @@ export function renderSecurityCollectorCard(
               </div>
             </div>
           </div>
+          <div className="mt-2 border-t pt-2">
+            <div className="text-muted-foreground mb-1 text-sm">
+              All Detections:
+            </div>
+            <div className="grid max-h-48 grid-cols-2 gap-1 overflow-y-auto text-xs">
+              {Object.entries(fingerprint.data.resistance.detections).map(
+                ([key, value]) => (
+                  <div key={key} className="flex justify-between">
+                    <span className="text-muted-foreground">{key}:</span>
+                    <span
+                      className={
+                        value
+                          ? 'text-yellow-600 dark:text-yellow-400'
+                          : 'text-green-600 dark:text-green-400'
+                      }
+                    >
+                      {value ? 'Detected' : 'Clear'}
+                    </span>
+                  </div>
+                )
+              )}
+            </div>
+          </div>
         </FingerprintCollectorCard>
       );
     case 'timezone':
@@ -162,6 +191,11 @@ export function renderSecurityCollectorCard(
           title="Timezone"
           hash={fingerprint.data.timezone.timezone}
           timing={fingerprint.timings.timezone}
+          insight={formatBaselineInsight(
+            getBaselineEstimate(baseline, 'timezone'),
+            baseline?.kAnonThreshold,
+            baseline?.totalSamples
+          )}
         >
           <DataRow
             label="Timezone"
@@ -189,6 +223,34 @@ export function renderSecurityCollectorCard(
               label="Currency"
               value={fingerprint.data.timezone.currency}
             />
+          )}
+        </FingerprintCollectorCard>
+      );
+    case 'domBlockers':
+      if (!fingerprint.data.domBlockers) return null;
+      return (
+        <FingerprintCollectorCard
+          key={key}
+          techniqueKey={key}
+          title="Privacy / Ad Blockers"
+          timing={fingerprint.timings.domBlockers}
+          className="md:col-span-2"
+        >
+          {fingerprint.data.domBlockers.detected.length === 0 ? (
+            <div className="text-muted-foreground text-sm">
+              No DOM blocker signatures detected.
+            </div>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {fingerprint.data.domBlockers.detected.map((blocker) => (
+                <span
+                  key={blocker}
+                  className="bg-muted rounded-full px-3 py-1 text-xs font-medium"
+                >
+                  {blocker}
+                </span>
+              ))}
+            </div>
           )}
         </FingerprintCollectorCard>
       );
