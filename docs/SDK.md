@@ -80,7 +80,7 @@ Generate browser fingerprint.
 | `token`         | string  | Yes      | -                         | API Token                                  |
 | `endpoint`      | string  | No       | `https://api.creepjs.org` | API endpoint                               |
 | `cache`         | boolean | No       | `true`                    | Enable caching                             |
-| `cacheTtl`      | number  | No       | `86400000`                | Cache TTL (milliseconds)                   |
+| `cacheTtl`      | number  | No       | `86400`                   | Cache TTL in seconds (max 7 days; 0 = off) |
 | `timeoutMs`     | number  | No       | `10000`                   | Request timeout in milliseconds            |
 | `fullBundleUrl` | string  | No       | sibling `sdk.full.js`     | Override URL for the full collector bundle |
 
