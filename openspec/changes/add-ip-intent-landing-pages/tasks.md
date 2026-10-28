@@ -26,8 +26,9 @@
 ## 4. Validation and Rollout
 
 - [x] 4.1 Run web tests, typecheck, lint, and production build on OpenClaw.
-- [ ] 4.2 Verify rendered HTML plus desktop/mobile, light/dark, keyboard,
+- [x] 4.2 Verify rendered HTML plus desktop/mobile, light/dark, keyboard,
       success, validation, rate-limit, and network-error flows in a managed preview.
+      Verified on Pages preview 39bf0ee8 (2026-10-27); evidence in PR #8.
 - [ ] 4.3 Deploy after the batch/API dependency and web quality gates pass, then
       capture availability, indexing eligibility, and task-completion baselines.
 - [x] 4.4 Keep additional IP-intent pages out of scope until a separately

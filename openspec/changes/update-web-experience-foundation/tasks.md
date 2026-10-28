@@ -18,5 +18,6 @@
 ## 3. Validation
 
 - [x] 3.1 Pass web build, lint, typecheck, and unit tests on OpenClaw.
-- [ ] 3.2 Verify mobile keyboard navigation, focus return, Escape, resize,
+- [x] 3.2 Verify mobile keyboard navigation, focus return, Escape, resize,
       reduced motion, and light/dark presentation on a Cloudflare Pages preview.
+      Verified on Pages preview 39bf0ee8 (2026-10-27); evidence in PR #8.
