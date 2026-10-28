@@ -10,7 +10,7 @@
     "types": [
       "@cloudflare/workers-types",
       "@types/node",
-      "@cloudflare/vitest-pool-workers"
+      "@cloudflare/vitest-plugin/types"
     ]
   },
   "include": ["**/*.ts", "../src/**/*.ts"],

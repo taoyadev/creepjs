@@ -112,7 +112,7 @@ create_namespace() {
   echo -e "${YELLOW}Creating namespace: ${namespace_name}${NC}"
 
   local output
-  if ! output=$(wrangler kv:namespace create "$namespace_name" 2>&1); then
+  if ! output=$(wrangler kv namespace create "$namespace_name" 2>&1); then
     echo -e "${RED}❌ Failed to create namespace: ${namespace_name}${NC}"
     echo "$output"
     return 1

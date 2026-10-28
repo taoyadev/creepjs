@@ -73,8 +73,8 @@ wrangler dev
 wrangler deploy
 
 # Manage KV storage
-wrangler kv:key put --namespace-id=<ID> "token:cfp_xxx" '{"email":"test@example.com"}'
-wrangler kv:key get --namespace-id=<ID> "token:cfp_xxx"
+wrangler kv key put --namespace-id=<ID> "token:cfp_xxx" '{"email":"test@example.com"}'
+wrangler kv key get --namespace-id=<ID> "token:cfp_xxx"
 
 # View production logs
 wrangler tail
@@ -254,7 +254,7 @@ pnpm --filter @creepjs/core test
 pnpm --filter @creepjs/api test         # Uses Cloudflare Workers test environment
 ```
 
-**API Testing**: Uses `@cloudflare/vitest-pool-workers` with in-memory KV simulator. Test utilities in `apps/api/tests/utils.ts` provide helpers for auth tokens, rate limits, and request mocking.
+**API Testing**: Uses `@cloudflare/vitest-plugin` (the `cloudflareTest()` Vite plugin in `apps/api/vitest.config.ts`) with in-memory KV and Durable Object mocks. Test utilities in `apps/api/tests/utils.ts` provide helpers for auth tokens, rate limits, and request mocking.
 
 ### Environment Variables
 
@@ -354,7 +354,7 @@ cp packages/sdk/dist/creepjs.umd.js apps/web/public/sdk.js
 ### "KV namespace not bound"
 
 - Check `wrangler.toml` has correct KV binding
-- Ensure KV namespace exists: `wrangler kv:namespace list`
+- Ensure KV namespace exists: `wrangler kv namespace list`
 - For local dev: `wrangler dev` auto-creates local KV
 
 ### Next.js "ReferenceError: navigator is not defined"
@@ -370,8 +370,8 @@ cp packages/sdk/dist/creepjs.umd.js apps/web/public/sdk.js
 
 ### Rate limit not working in tests
 
-- Ensure test uses Workers test environment: `pool: '@cloudflare/vitest-pool-workers'`
-- Mock KV operations in `vitest.config.ts`
+- Ensure `apps/api/vitest.config.ts` registers the `cloudflareTest()` plugin from `@cloudflare/vitest-plugin`
+- KV and Durable Object mocks live in `apps/api/tests/utils.ts`
 
 ## Documentation
 

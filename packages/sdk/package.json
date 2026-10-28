@@ -44,7 +44,7 @@
     "jsdom": "^27.1.0",
     "rollup": "^4.59.0",
     "typescript": "^5.7.2",
-    "vitest": "^2.1.8"
+    "vitest": "^4.1.12"
   },
   "keywords": [
     "fingerprint",
