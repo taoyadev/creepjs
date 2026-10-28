@@ -60,6 +60,7 @@ export function IpBatchWorkspace() {
   const [error, setError] = useState<string | null>(null);
   const [response, setResponse] = useState<IpBatchResponse | null>(null);
   const resultsHeadingRef = useRef<HTMLHeadingElement>(null);
+  const errorAlertRef = useRef<HTMLDivElement>(null);
 
   const parsed = useMemo(() => parseIpBatchInput(input), [input]);
   const validationErrors = useMemo(
@@ -70,6 +71,10 @@ export function IpBatchWorkspace() {
   useEffect(() => {
     if (response) resultsHeadingRef.current?.focus();
   }, [response]);
+
+  useEffect(() => {
+    if (error) errorAlertRef.current?.focus();
+  }, [error]);
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -226,7 +231,12 @@ export function IpBatchWorkspace() {
               )}
 
             {error && (
-              <Alert variant="destructive">
+              <Alert
+                ref={errorAlertRef}
+                variant="destructive"
+                tabIndex={-1}
+                className="outline-none"
+              >
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>Batch request failed</AlertTitle>
                 <AlertDescription>{error}</AlertDescription>
