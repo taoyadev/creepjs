@@ -102,7 +102,7 @@ pnpm --filter @creepjs/sdk build --watch
 **Key Endpoints**:
 
 - `POST /v1/fingerprint` - Generate fingerprint ID from browser components
-- `GET /v1/token?email=<email>` - Request API token
+- `POST /v1/token` (JSON body `{ "email": "..." }`) - Request API token
 
 **Middleware Stack**:
 
@@ -120,7 +120,7 @@ apps/api/src/
 ├── index.ts                    # Main Hono app + route registration
 ├── routes/
 │   ├── fingerprint.ts          # POST /v1/fingerprint
-│   └── token.ts                # GET /v1/token
+│   └── token.ts                # POST /v1/token
 ├── middleware/
 │   ├── auth.ts                 # Token validation
 │   ├── ratelimit.ts            # Request quota enforcement

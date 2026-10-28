@@ -3,7 +3,11 @@ import { zValidator } from '@hono/zod-validator';
 import { createMiddleware } from 'hono/factory';
 import type { Env } from '../types';
 import { authMiddleware } from '../middleware/auth';
-import { rateLimitMiddleware, reserveRateLimit } from '../middleware/ratelimit';
+import {
+  rateLimitMiddleware,
+  refundRateLimit,
+  reserveRateLimit,
+} from '../middleware/ratelimit';
 import {
   IpbotError,
   isValidIp,
@@ -24,6 +28,20 @@ const app = new Hono<Env>();
 // so the public endpoint is protected server-side instead of exposing the key.
 const PUBLIC_PER_IP_DEFAULT = 30; // lookups per visitor IP per day
 const PUBLIC_GLOBAL_DEFAULT = 2000; // total UNCACHED upstream calls per day
+const TOKEN_GLOBAL_DEFAULT = 10000; // UNCACHED token-path upstream calls per day
+const TOKEN_GLOBAL_KEY = 'tokenip:global';
+
+const tokenGlobalLimit = (c: Context<Env>) =>
+  intEnv(c.env.TOKEN_IP_DAILY_GLOBAL, TOKEN_GLOBAL_DEFAULT);
+
+const tokenLookupsAtCapacity = (c: Context<Env>) =>
+  c.json(
+    {
+      error: 'IP lookups are temporarily at capacity. Try again later.',
+      status: 503,
+    },
+    503
+  );
 
 function routeStatus(error: IpbotError): 400 | 429 | 502 | 503 {
   if (error.kind === 'input') return 400;
@@ -322,14 +340,35 @@ app.post(
           abortedReason: string;
           error: string;
           retryAfter?: number;
-          failedIp: string;
-          failedIndex: number;
+          /** First valid row that was not looked up. */
+          skipFrom: number;
+          skipReason: string;
         }
       | undefined;
+    const globalLimit = tokenGlobalLimit(c);
 
     for (const [index, ip] of valid.entries()) {
+      let globalReserved = false;
       try {
-        const result = await lookupIP(ip, c.env, { maxRetries: 1 });
+        let result = await readCachedLookup(ip, c.env);
+        if (!result) {
+          const global = await reserveQuota(c.env, TOKEN_GLOBAL_KEY, {
+            limit: globalLimit,
+          });
+          if (!global.allowed) {
+            aborted = {
+              status: 503,
+              abortedReason: 'capacity',
+              error: 'IP lookups are temporarily at capacity. Try again later.',
+              skipFrom: index,
+              skipReason: 'Skipped: daily lookup capacity reached',
+            };
+            break;
+          }
+          globalReserved = true;
+          result = await lookupIP(ip, c.env, { maxRetries: 1 });
+          if (result.cached) await releaseQuota(c.env, TOKEN_GLOBAL_KEY);
+        }
         successCount += 1;
         if (result.cached) cachedCount += 1;
         if (result.highRisk) highRiskCount += 1;
@@ -345,6 +384,7 @@ app.post(
           highRisk: result.highRisk,
         });
       } catch (error) {
+        if (globalReserved) await releaseQuota(c.env, TOKEN_GLOBAL_KEY);
         if (error instanceof IpbotError) {
           const failure = batchFailure(error);
           resultByIp.set(ip, {
@@ -356,8 +396,8 @@ app.post(
           });
           aborted = {
             ...failure,
-            failedIp: ip,
-            failedIndex: index,
+            skipFrom: index + 1,
+            skipReason: 'Skipped after a dependency failure',
           };
           break;
         }
@@ -366,13 +406,18 @@ app.post(
     }
 
     if (aborted) {
-      for (const ip of valid.slice(aborted.failedIndex + 1)) {
+      const skipped = valid.slice(aborted.skipFrom);
+      for (const ip of skipped) {
         resultByIp.set(ip, {
           ip,
           ok: false,
           outcome: 'skipped',
-          error: 'Skipped after a dependency failure',
+          error: aborted.skipReason,
         });
+      }
+      // Rows never looked up because of the shared cap cost the caller nothing.
+      if (aborted.abortedReason === 'capacity' && skipped.length > 0) {
+        await refundRateLimit(c, { ...reservation, cost: skipped.length });
       }
     }
 
@@ -450,9 +495,29 @@ app.post(
  * Token-gated lookup — for developers / programmatic use (higher quota).
  */
 app.get('/:ip', authMiddleware, rateLimitMiddleware, async (c) => {
+  const ip = c.req.param('ip');
+  // Like the public path, every token shares one daily cap on upstream calls,
+  // reserved only on a cache miss.
+  let result: IpbotLookupResult | null = await readCachedLookup(ip, c.env);
+  let globalReserved = false;
+  if (!result && isValidIp(ip)) {
+    const global = await reserveQuota(c.env, TOKEN_GLOBAL_KEY, {
+      limit: tokenGlobalLimit(c),
+    });
+    if (!global.allowed) {
+      await refundRateLimit(c, c.get('quotaReservation'));
+      return tokenLookupsAtCapacity(c);
+    }
+    globalReserved = true;
+  }
+
   try {
-    const ip = c.req.param('ip');
-    const result = await lookupIP(ip, c.env);
+    if (!result) {
+      result = await lookupIP(ip, c.env);
+      if (result.cached && globalReserved) {
+        await releaseQuota(c.env, TOKEN_GLOBAL_KEY);
+      }
+    }
     logEvent({
       msg: 'ip.token_lookup',
       request_id: c.get('requestId'),
@@ -464,6 +529,7 @@ app.get('/:ip', authMiddleware, rateLimitMiddleware, async (c) => {
     });
     return c.json(result);
   } catch (error) {
+    if (globalReserved) await releaseQuota(c.env, TOKEN_GLOBAL_KEY);
     return ipbotErrorResponse(c, error);
   }
 });

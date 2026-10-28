@@ -93,6 +93,21 @@ export default tseslint.config(
     },
   },
   {
+    // Test doubles stub browser and Workers APIs with empty or synchronous
+    // async methods and read untyped JSON bodies; these rules flag exactly
+    // that. Everything else, floating promises included, still applies.
+    files: ['packages/*/tests/**/*.ts', 'apps/api/tests/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-empty-function': 'off',
+      '@typescript-eslint/require-await': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
+    },
+  },
+  {
     files: ['apps/web/**/*.{ts,tsx,js,jsx}'],
     rules: {
       ...nextPlugin.configs['core-web-vitals'].rules,

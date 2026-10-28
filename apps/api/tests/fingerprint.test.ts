@@ -13,6 +13,8 @@ import {
   seedToken,
 } from './utils';
 import { quotaKeyForEmail } from '../src/middleware/ratelimit';
+import deploySmokeBody from './fixtures/deploy-smoke-fingerprint.json';
+import type { JsonBody } from './utils';
 
 // Held in a map rather than inline `const token = '...'` bindings so the
 // repository secret scanner does not read these fixtures as real credentials.
@@ -67,7 +69,7 @@ describe('Fingerprint route', () => {
 
     const ctx = createExecutionContext();
     const res = await app.fetch(req, env, ctx);
-    const json = await res.json();
+    const json = await res.json<JsonBody>();
     // Stats are written after the response; let them finish.
     await waitOnExecutionContext(ctx);
 
@@ -87,7 +89,7 @@ describe('Fingerprint route', () => {
     expect(json.data).toEqual(basePayload.data);
 
     // No per-request KV write to the token record: usage is the quota count.
-    const storedToken = await env.TOKENS.get(token, 'json');
+    const storedToken = await env.TOKENS.get<JsonBody>(token, 'json');
     expect(storedToken.usageCount).toBe(0);
 
     expect(await readStatsCount(env, 'fpstats:v1:total')).toBe(1);
@@ -166,7 +168,7 @@ describe('Fingerprint route', () => {
         env
       );
       expect(res.status).toBe(200);
-      return (await res.json()).fingerprintId as string;
+      return (await res.json<JsonBody>()).fingerprintId as string;
     };
 
     const first = await submit(basePayload.data);
@@ -202,7 +204,7 @@ describe('Fingerprint route', () => {
         env
       );
       expect(res.status).toBe(200);
-      return (await res.json()).fingerprintId as string;
+      return (await res.json<JsonBody>()).fingerprintId as string;
     };
 
     const before = await submit(basePayload.data);
@@ -227,7 +229,94 @@ describe('Fingerprint route', () => {
 
     const res = await app.fetch(req, env);
     expect(res.status).toBe(401);
-    const json = await res.json();
+    const json = await res.json<JsonBody>();
     expect(json.error).toBe('Missing API token');
+  });
+  it('refuses bodies over 128 KiB before auth or quota, and takes a large real one', async () => {
+    const env = createTestEnv();
+    const token = TEST_TOKENS.cfp_test_token;
+    await seedToken(env, token, {
+      email: 'limit@example.com',
+      createdAt: Date.now(),
+      usageCount: 0,
+    });
+    const post = async (body: string, headers: Record<string, string> = {}) => {
+      const ctx = createExecutionContext();
+      const res = await app.fetch(
+        new Request('http://localhost/v1/fingerprint', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...headers },
+          body,
+        }),
+        env,
+        ctx
+      );
+      await waitOnExecutionContext(ctx);
+      return res;
+    };
+
+    // ~41 KB: a large canvas data URL plus a macOS-sized voice list.
+    const large = JSON.stringify({
+      ...basePayload,
+      data: {
+        ...basePayload.data,
+        canvas: {
+          hash: 'hash',
+          dataURL: `data:image/png;base64,${'A'.repeat(14_000)}`,
+        },
+        voices: {
+          count: 200,
+          voices: Array.from({ length: 200 }, (_, i) => ({
+            name: `Voice ${i} (Enhanced)`,
+            lang: 'en-US',
+            localService: true,
+            default: i === 0,
+            voiceURI: `com.apple.voice.enhanced.en-US.Voice${i}`,
+          })),
+        },
+      },
+    });
+    expect(large.length).toBeGreaterThan(30_000);
+    expect((await post(large, { 'X-API-Token': token })).status).toBe(200);
+
+    const oversized = JSON.stringify({
+      ...basePayload,
+      data: {
+        ...basePayload.data,
+        canvas: { hash: 'hash', dataURL: 'A'.repeat(130 * 1024) },
+      },
+    });
+    // No token: a 401 here would mean auth ran before the size check.
+    const res = await post(oversized);
+    expect(res.status).toBe(413);
+    expect(await res.json<JsonBody>()).toEqual({
+      error: 'Request body exceeds the 128 KiB limit',
+    });
+  });
+  it('accepts the body the deploy health check posts', async () => {
+    const env = createTestEnv();
+    const token = TEST_TOKENS.cfp_test_token;
+    await seedToken(env, token, {
+      email: 'deploy@example.com',
+      createdAt: Date.now(),
+      usageCount: 0,
+    });
+
+    const ctx = createExecutionContext();
+    const res = await app.fetch(
+      new Request('http://localhost/v1/fingerprint', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-API-Token': token },
+        body: JSON.stringify(deploySmokeBody),
+      }),
+      env,
+      ctx
+    );
+    await waitOnExecutionContext(ctx);
+
+    expect(res.status).toBe(200);
+    const json = await res.json<JsonBody>();
+    expect(json.fingerprintId).toBe(await computeFingerprintId({}));
+    expect(json.fingerprintId).not.toBe(deploySmokeBody.fingerprintId);
   });
 });

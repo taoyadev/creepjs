@@ -1,7 +1,8 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import app from '../src/index';
 import { createTestEnv, readQuotaCount } from './utils';
 import { hashIpForLog } from '../src/utils/privacy';
+import type { JsonBody } from './utils';
 
 describe('Token route', () => {
   it('issues a token and stores metadata', async () => {
@@ -22,7 +23,7 @@ describe('Token route', () => {
     expect(json.token).toMatch(/^cfp_/);
     expect(json.email).toBe('test@example.com');
 
-    const stored = await env.TOKENS.get(json.token as string, 'json');
+    const stored = await env.TOKENS.get<JsonBody>(json.token as string, 'json');
     expect(stored).toMatchObject({
       email: 'test@example.com',
       usageCount: 0,
@@ -75,7 +76,7 @@ describe('Token route', () => {
 
     const blocked = await makeRequest(99);
     expect(blocked.status).toBe(429);
-    const error = await blocked.json();
+    const error = await blocked.json<JsonBody>();
     expect(error).toMatchObject({
       error: 'Rate limit exceeded. Try again in 24 hours.',
     });
@@ -167,5 +168,29 @@ describe('Token route', () => {
         `token-mint:ip:${await hashIpForLog('7.7.7.3')}`
       )
     ).toBe(0);
+  });
+});
+
+describe('Token auth', () => {
+  const lookupWith = (env: ReturnType<typeof createTestEnv>, token: string) =>
+    app.fetch(
+      new Request('http://localhost/v1/ip/8.8.8.8', {
+        headers: { 'X-API-Token': token },
+      }),
+      env
+    );
+
+  it('rejects a token over 64 characters without reading KV', async () => {
+    const env = createTestEnv();
+    const tokensGet = vi.spyOn(env.TOKENS, 'get');
+
+    const res = await lookupWith(env, `cfp_${'a'.repeat(61)}`);
+
+    expect(res.status).toBe(401);
+    expect(tokensGet).not.toHaveBeenCalled();
+
+    // At the bound itself the token is looked up as usual.
+    expect((await lookupWith(env, `cfp_${'a'.repeat(60)}`)).status).toBe(401);
+    expect(tokensGet).toHaveBeenCalledTimes(1);
   });
 });

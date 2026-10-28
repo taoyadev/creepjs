@@ -1,10 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import {
-  CreepJS,
-  CreepJSSDKError,
-  getFingerprint,
-  getIpIntelligence,
-} from '../src/index';
+import { CreepJS, getFingerprint, getIpIntelligence } from '../src/index';
 // Source import: the SDK duplicates this constant rather than importing core,
 // and this test is what keeps the two in step.
 import { IDENTITY_SCHEMA_VERSION } from '../../core/src/utils/identity';
@@ -325,7 +320,7 @@ describe('CreepJS SDK', () => {
 
     const sdk = new CreepJS({ token: 'cfp_test_token', cache: false });
 
-    await expect(sdk.getFingerprint()).rejects.toMatchObject<CreepJSSDKError>({
+    await expect(sdk.getFingerprint()).rejects.toMatchObject({
       name: 'CreepJSSDKError',
       code: 'api_error',
       status: 502,
