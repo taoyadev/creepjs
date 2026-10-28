@@ -1,6 +1,6 @@
 import { createMiddleware } from 'hono/factory';
 import type { Env } from '../types';
-import { logEvent } from '../utils/logging';
+import { logEvent, pathForLog } from '../utils/logging';
 
 const now = () =>
   typeof performance !== 'undefined' ? performance.now() : Date.now();
@@ -25,7 +25,7 @@ export const requestLoggerMiddleware = createMiddleware<Env>(
       msg: 'api.request',
       request_id: requestId,
       method: c.req.method,
-      path: c.req.path,
+      path: pathForLog(c.req.path),
       status: c.res.status,
       latency_ms: Number(latencyMs.toFixed(2)),
       rate_limit_limit: rateLimitLimit ? Number(rateLimitLimit) : null,

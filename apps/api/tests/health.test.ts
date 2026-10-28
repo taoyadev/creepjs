@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import app from '../src/index';
 import { createTestEnv } from './utils';
+import type { JsonBody } from './utils';
 
 describe('API Health Check', () => {
   it('should return health status', async () => {
@@ -11,7 +12,7 @@ describe('API Health Check', () => {
     const env = createTestEnv();
 
     const res = await app.fetch(req, env);
-    const json = await res.json();
+    const json = await res.json<JsonBody>();
 
     expect(res.status).toBe(200);
     expect(res.headers.get('X-Request-Id')).toBeTruthy();
@@ -29,7 +30,7 @@ describe('API Health Check', () => {
     const env = createTestEnv();
 
     const res = await app.fetch(req, env);
-    const json = await res.json();
+    const json = await res.json<JsonBody>();
 
     expect(res.status).toBe(200);
     expect(res.headers.get('X-Request-Id')).toBeTruthy();
@@ -50,7 +51,7 @@ describe('API Health Check', () => {
     const env = createTestEnv();
 
     const res = await app.fetch(req, env);
-    const json = await res.json();
+    const json = await res.json<JsonBody>();
 
     expect(res.status).toBe(404);
     expect(res.headers.get('X-Request-Id')).toBeTruthy();

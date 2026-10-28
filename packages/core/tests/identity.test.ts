@@ -151,18 +151,18 @@ describe('identity projection', () => {
 
     expect(projected.lies).toBeUndefined();
     expect(projected.resistance).toBeUndefined();
-    expect(projected.navigator.connection).toBeUndefined();
-    expect(projected.navigator.onLine).toBeUndefined();
-    expect(projected.screen.devicePixelRatio).toBeUndefined();
-    expect(projected.timezone.timezoneOffset).toBeUndefined();
-    expect(projected.canvas.dataURL).toBeUndefined();
+    expect(projected.navigator!.connection).toBeUndefined();
+    expect(projected.navigator!.onLine).toBeUndefined();
+    expect(projected.screen!.devicePixelRatio).toBeUndefined();
+    expect(projected.timezone!.timezoneOffset).toBeUndefined();
+    expect(projected.canvas!.dataURL).toBeUndefined();
     expect(projected.clientRects).toBeUndefined();
-    expect(projected.domRect.measurements).toBeUndefined();
+    expect(projected.domRect!.measurements).toBeUndefined();
     expect(projected.css).toEqual({
       systemFonts: { caption: '13px system-ui' },
     });
-    expect(projected.webrtc.candidates).toBeUndefined();
-    expect(projected.serviceWorker.permissions).toBeUndefined();
+    expect(projected.webrtc!.candidates).toBeUndefined();
+    expect(projected.serviceWorker!.permissions).toBeUndefined();
   });
 
   it('keeps the components that actually identify the device', () => {
@@ -171,12 +171,12 @@ describe('identity projection', () => {
       Record<string, unknown>
     >;
 
-    expect(projected.navigator.userAgent).toBe('UA');
-    expect(projected.screen.width).toBe(2560);
-    expect(projected.timezone.timezone).toBe('Europe/Berlin');
-    expect(projected.canvas.hash).toBe('canvas-hash');
-    expect(projected.audio.sum).toBe(124.04347527516074);
-    expect(projected.webrtc.capabilities).toEqual({
+    expect(projected.navigator!.userAgent).toBe('UA');
+    expect(projected.screen!.width).toBe(2560);
+    expect(projected.timezone!.timezone).toBe('Europe/Berlin');
+    expect(projected.canvas!.hash).toBe('canvas-hash');
+    expect(projected.audio!.sum).toBe(124.04347527516074);
+    expect(projected.webrtc!.capabilities).toEqual({
       audio: ['audio/opus'],
       video: ['video/VP8'],
     });

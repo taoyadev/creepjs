@@ -18,6 +18,10 @@
 # Notes:
 #   - This script updates the KV bindings:
 #       TOKENS, RATE_LIMIT, IP_CACHE
+#   - production rewrites only the top-level [[kv_namespaces]] blocks. Any
+#     other environment needs its own [[env.<name>.kv_namespaces]] blocks in
+#     wrangler.toml and rewrites only those; without them the script stops
+#     before creating anything, so it can never repoint production.
 ##############################################################################
 
 set -euo pipefail
@@ -57,6 +61,23 @@ echo ""
 echo -e "${GREEN}🌍 Environment: ${ENVIRONMENT} (namespace suffix: ${ENV_SLUG})${NC}"
 echo ""
 
+WRANGLER_CONFIG="apps/api/wrangler.toml"
+BACKUP_CONFIG="${WRANGLER_CONFIG}.backup"
+
+# wrangler.toml section whose kv_namespaces blocks this run may rewrite.
+if [ "${ENV_SLUG}" = "prod" ]; then
+  KV_SECTION="kv_namespaces"
+else
+  KV_SECTION="env.${ENVIRONMENT}.kv_namespaces"
+  if [ ! -f "$WRANGLER_CONFIG" ] ||
+    ! grep -Eq "^[[:space:]]*\[\[env\.${ENVIRONMENT}\.kv_namespaces\]\]" "$WRANGLER_CONFIG"; then
+    echo -e "${RED}❌ Error: ${WRANGLER_CONFIG} has no [[${KV_SECTION}]] blocks${NC}"
+    echo -e "${YELLOW}   Add an [env.${ENVIRONMENT}] section with TOKENS, RATE_LIMIT and IP_CACHE${NC}"
+    echo -e "${YELLOW}   bindings first. Refusing: the top-level IDs are production's.${NC}"
+    exit 1
+  fi
+fi
+
 if ! command -v wrangler &>/dev/null; then
   echo -e "${RED}❌ Error: wrangler CLI is not installed${NC}"
   echo -e "${YELLOW}   Install it with: npm install -g wrangler${NC}"
@@ -79,9 +100,6 @@ echo ""
 TOKENS_NAMESPACE="creepjs_tokens_${ENV_SLUG}"
 RATELIMIT_NAMESPACE="creepjs_ratelimit_${ENV_SLUG}"
 IP_CACHE_NAMESPACE="creepjs_ip_cache_${ENV_SLUG}"
-
-WRANGLER_CONFIG="apps/api/wrangler.toml"
-BACKUP_CONFIG="${WRANGLER_CONFIG}.backup"
 
 TOKENS_ID=""
 RATELIMIT_ID=""
@@ -140,11 +158,20 @@ if [ -f "$WRANGLER_CONFIG" ]; then
     -v tokens_id="$TOKENS_ID" \
     -v ratelimit_id="$RATELIMIT_ID" \
     -v ip_cache_id="$IP_CACHE_ID" \
+    -v kv_section="$KV_SECTION" \
     '
-    BEGIN { binding = "" }
-    /^[[:space:]]*binding[[:space:]]*=[[:space:]]*"TOKENS"[[:space:]]*$/ { binding = "TOKENS" }
-    /^[[:space:]]*binding[[:space:]]*=[[:space:]]*"RATE_LIMIT"[[:space:]]*$/ { binding = "RATE_LIMIT" }
-    /^[[:space:]]*binding[[:space:]]*=[[:space:]]*"IP_CACHE"[[:space:]]*$/ { binding = "IP_CACHE" }
+    BEGIN { binding = ""; section = "" }
+    # Track the current [table] or [[array]] header so only the
+    # target kv_namespaces blocks are touched.
+    /^[[:space:]]*\[/ {
+      header = $0
+      gsub(/^[[:space:]]*\[+|\]+[[:space:]]*$/, "", header)
+      section = header
+      binding = ""
+    }
+    section == kv_section && /^[[:space:]]*binding[[:space:]]*=[[:space:]]*"TOKENS"[[:space:]]*$/ { binding = "TOKENS" }
+    section == kv_section && /^[[:space:]]*binding[[:space:]]*=[[:space:]]*"RATE_LIMIT"[[:space:]]*$/ { binding = "RATE_LIMIT" }
+    section == kv_section && /^[[:space:]]*binding[[:space:]]*=[[:space:]]*"IP_CACHE"[[:space:]]*$/ { binding = "IP_CACHE" }
     binding != "" && /^[[:space:]]*id[[:space:]]*=[[:space:]]*"/ {
       if (binding == "TOKENS") sub(/id[[:space:]]*=[[:space:]]*".*"/, "id = \"" tokens_id "\"");
       else if (binding == "RATE_LIMIT") sub(/id[[:space:]]*=[[:space:]]*".*"/, "id = \"" ratelimit_id "\"");

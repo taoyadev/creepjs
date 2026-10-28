@@ -311,7 +311,7 @@ export function BrowserComparison({ result }: BrowserComparisonProps) {
         <h3 className="text-xl font-bold">
           Recommended Browsers & Configurations
         </h3>
-        <div className="grid gap-4">
+        <div className="grid grid-cols-1 gap-4">
           {browserProfiles.map((browser) => (
             <Card
               key={browser.name}

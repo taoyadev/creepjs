@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { MobileNav } from '@/components/MobileNav';
+import { MobileNav, navItems } from '@/components/MobileNav';
 
 interface HeaderProps {
   currentPage?:
@@ -48,56 +48,28 @@ export function Header({ currentPage }: HeaderProps) {
           CreepJS
         </Link>
 
-        {/* Desktop Navigation */}
+        {/* Desktop Navigation. Each item is one link styled as a button: a
+            button nested in a link was two tab stops and invalid markup. */}
         <div className="hidden items-center gap-2 md:flex">
-          <Link href="/">
-            <Button
-              variant={currentPage === 'home' ? 'default' : 'ghost'}
-              size="sm"
-            >
-              Home
-            </Button>
-          </Link>
-          <Link href="/checker">
-            <Button
-              variant={currentPage === 'checker' ? 'default' : 'ghost'}
-              size="sm"
-            >
-              Checker
-            </Button>
-          </Link>
-          <Link href="/ip">
-            <Button
-              variant={currentPage === 'ip' ? 'default' : 'ghost'}
-              size="sm"
-            >
-              IP Risk
-            </Button>
-          </Link>
-          <Link href="/fingerprint">
-            <Button
-              variant={currentPage === 'fingerprint' ? 'default' : 'ghost'}
-              size="sm"
-            >
-              Signals
-            </Button>
-          </Link>
-          <Link href="/docs">
-            <Button
-              variant={currentPage === 'docs' ? 'default' : 'ghost'}
-              size="sm"
-            >
-              Docs
-            </Button>
-          </Link>
-          <Link href="/playground">
-            <Button
-              variant={currentPage === 'playground' ? 'default' : 'ghost'}
-              size="sm"
-            >
-              Playground
-            </Button>
-          </Link>
+          {navItems.map((item) => {
+            const isActive = currentPage === item.page;
+
+            return (
+              <Button
+                key={item.href}
+                asChild
+                variant={isActive ? 'default' : 'ghost'}
+                size="sm"
+              >
+                <Link
+                  href={item.href}
+                  aria-current={isActive ? 'page' : undefined}
+                >
+                  {item.label}
+                </Link>
+              </Button>
+            );
+          })}
           <ThemeToggle />
         </div>
 

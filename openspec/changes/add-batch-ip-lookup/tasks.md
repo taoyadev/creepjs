@@ -40,7 +40,9 @@
 
 - [x] 5.1 Run targeted API/web tests, typecheck, lint, and production builds on
       OpenClaw.
-- [ ] 5.2 Verify desktop/mobile, light/dark, keyboard, success, mixed-error,
+- [x] 5.2 Verify desktop/mobile, light/dark, keyboard, success, mixed-error,
       over-limit, invalid-token, upstream-abort, and CSV flows in a managed preview.
+      Verified on Pages preview 39bf0ee8 (2026-10-27); success, mixed-error and
+      upstream-abort used injected /v1/ip/batch responses; evidence in PR #8.
 - [ ] 5.3 Deploy API before web, run production smoke checks, then update the
       launch tracker only with captured evidence.

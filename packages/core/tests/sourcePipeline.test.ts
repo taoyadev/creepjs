@@ -51,12 +51,12 @@ describe('runSources', () => {
 
     const components = await runSources(registry, { idleDelay: 0 });
 
-    expect(components.success.status).toBe('success');
-    expect(components.success.value).toBe(42);
-    expect(typeof components.success.duration).toBe('number');
+    expect(components.success!.status).toBe('success');
+    expect(components.success!.value).toBe(42);
+    expect(typeof components.success!.duration).toBe('number');
 
-    expect(components.failure.status).toBe('error');
-    expect(components.failure.error).toContain('boom');
+    expect(components.failure!.status).toBe('error');
+    expect(components.failure!.error).toContain('boom');
   });
 
   it('records a source that never settles as an error and finishes the run', async () => {
@@ -71,9 +71,9 @@ describe('runSources', () => {
       sourceTimeout: 20,
     });
 
-    expect(components.stalled.status).toBe('error');
-    expect(components.stalled.error).toBe('stalled timed out after 20ms');
-    expect(components.healthy.status).toBe('success');
+    expect(components.stalled!.status).toBe('error');
+    expect(components.stalled!.error).toBe('stalled timed out after 20ms');
+    expect(components.healthy!.status).toBe('success');
   });
 
   it('emits start and finish progress events for each source', async () => {

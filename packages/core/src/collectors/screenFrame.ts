@@ -70,39 +70,26 @@ const watchScreenFrame = () => {
  * Measures the screen frame (visual viewport margins) and attempts to cache
  * a non-zero reading for environments that temporarily zero these values.
  */
-export async function collectScreenFrameFingerprint(): Promise<
+export function collectScreenFrameFingerprint(): Promise<
   ScreenFrameFingerprint | undefined
 > {
   if (typeof window === 'undefined' || typeof window.screen === 'undefined') {
-    return undefined;
+    return Promise.resolve(undefined);
   }
 
   watchScreenFrame();
 
-  let frame = readFrame();
+  const frame = readFrame();
 
-  if (isZeroFrame(frame)) {
-    if (screenFrameBackup) {
-      return { ...screenFrameBackup };
-    }
-
-    if (
-      typeof document !== 'undefined' &&
-      document.fullscreenElement &&
-      document.exitFullscreen
-    ) {
-      try {
-        await document.exitFullscreen();
-      } catch (error) {
-        void error;
-      }
-      frame = readFrame();
-    }
+  // A fullscreen page reads as a zero frame. That reading is kept as is:
+  // leaving fullscreen to measure would kick the visitor out of it.
+  if (isZeroFrame(frame) && screenFrameBackup) {
+    return Promise.resolve({ ...screenFrameBackup });
   }
 
   if (!isZeroFrame(frame)) {
     screenFrameBackup = frame;
   }
 
-  return frame;
+  return Promise.resolve(frame);
 }

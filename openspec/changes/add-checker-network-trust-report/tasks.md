@@ -25,5 +25,6 @@
       build/lint/typecheck/tests on OpenClaw.
 - [x] 4.2 Assert the checker export still contains one H1 and the Trust anchor
       is represented in the client bundle/source.
-- [ ] 4.3 Verify full, geo-only, and blocked `/my-ip` states on a Cloudflare
+- [x] 4.3 Verify full, geo-only, and blocked `/my-ip` states on a Cloudflare
       Pages preview.
+      Verified on Pages preview 39bf0ee8 (2026-10-27); evidence in PR #8.

@@ -2,7 +2,8 @@
 
 ## Purpose
 
-TBD - created by archiving change refactor-fingerprint-playground-boundaries. Update Purpose after archive.
+Each `/fingerprint/[type]` page explains one browser signal with reviewed,
+statically rendered content and offers a bounded live check of that signal.
 
 ## Requirements
 

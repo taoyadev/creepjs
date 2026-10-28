@@ -103,5 +103,6 @@ export const rateLimitMiddleware = createMiddleware<Env>(async (c, next) => {
   }
 
   c.set('quotaUsed', reservation.count);
+  c.set('quotaReservation', reservation);
   await next();
 });

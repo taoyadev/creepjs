@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { bodyLimit } from 'hono/body-limit';
 import { zValidator } from '@hono/zod-validator';
 import type { FingerprintData } from '@creepjs/core';
 import { computeFingerprintId } from '@creepjs/core';
@@ -11,8 +12,21 @@ import { logEvent, runAfterResponse } from '../utils/logging';
 
 const app = new Hono<Env>();
 
+/**
+ * A full browser payload is roughly 20-50 KB: the canvas data URL (a
+ * 200x50 PNG), the speech voice list (~180 entries on macOS) and the
+ * measurement arrays dominate. 128 KiB leaves 2.5x headroom over the top of
+ * that range while refusing oversized bodies before auth or quota run.
+ */
+const FINGERPRINT_BODY_LIMIT_BYTES = 128 * 1024;
+
 app.post(
   '/',
+  bodyLimit({
+    maxSize: FINGERPRINT_BODY_LIMIT_BYTES,
+    onError: (c) =>
+      c.json({ error: 'Request body exceeds the 128 KiB limit' }, 413),
+  }),
   authMiddleware,
   rateLimitMiddleware,
   zValidator('json', FingerprintRequestSchema),
