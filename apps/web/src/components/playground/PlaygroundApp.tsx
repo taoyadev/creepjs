@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { collectFingerprint, type FingerprintResult } from '@creepjs/core';
+import { useState } from 'react';
+import type { FingerprintResult } from '@creepjs/core';
 import { toast } from 'sonner';
 
 import { trackEvent } from '@/lib/analytics';
@@ -36,23 +36,30 @@ export function PlaygroundApp() {
   const [fingerprint, setFingerprint] = useState<FingerprintResult | null>(
     null
   );
-  const [fingerprintLoading, setFingerprintLoading] = useState(true);
+  const [fingerprintLoading, setFingerprintLoading] = useState(false);
+  const [fingerprintFailed, setFingerprintFailed] = useState(false);
 
-  useEffect(() => {
-    const loadFingerprint = async () => {
-      setFingerprintLoading(true);
-      try {
-        const result = await collectFingerprint();
-        setFingerprint(result);
-      } catch (error) {
-        console.error('Failed to collect fingerprint:', error);
-      } finally {
-        setFingerprintLoading(false);
-      }
-    };
-
-    void loadFingerprint();
-  }, []);
+  /**
+   * Collect on the first run, not on page load: the collectors load on demand
+   * and the WebRTC check (a public STUN request) only runs when asked.
+   */
+  const loadFingerprint = async (): Promise<FingerprintResult | null> => {
+    if (fingerprint) return fingerprint;
+    setFingerprintLoading(true);
+    setFingerprintFailed(false);
+    try {
+      const { collectFingerprint } = await import('@creepjs/core');
+      const result = await collectFingerprint();
+      setFingerprint(result);
+      return result;
+    } catch (error) {
+      console.error('Failed to collect fingerprint:', error);
+      setFingerprintFailed(true);
+      return null;
+    } finally {
+      setFingerprintLoading(false);
+    }
+  };
 
   const generateToken = async () => {
     setActiveRequest('token');
@@ -104,18 +111,20 @@ export function PlaygroundApp() {
   };
 
   const testFingerprintApi = async () => {
-    if (!fingerprint) {
+    setActiveRequest('fingerprint');
+
+    const collected = await loadFingerprint();
+    if (!collected) {
+      setActiveRequest(null);
       setResponse({
-        body: 'Error: No fingerprint data available',
+        body: 'Error: Fingerprint collection failed in this browser',
         tone: 'error',
       });
       toast.error('No fingerprint available', {
-        description: 'Please wait for fingerprint collection to complete.',
+        description: 'A privacy setting or unsupported API blocked collection.',
       });
       return;
     }
-
-    setActiveRequest('fingerprint');
 
     try {
       const result = await fetch(`${API_URL}/v1/fingerprint`, {
@@ -124,7 +133,7 @@ export function PlaygroundApp() {
           'Content-Type': 'application/json',
           'X-API-Token': apiToken,
         },
-        body: JSON.stringify(fingerprint),
+        body: JSON.stringify(collected),
       });
       const data = (await result.json()) as unknown;
 
@@ -188,10 +197,10 @@ export function PlaygroundApp() {
           <EndpointRunner
             fingerprintId={fingerprint?.fingerprintId}
             fingerprintLoading={fingerprintLoading}
-            fingerprintFailed={!fingerprintLoading && !fingerprint}
+            fingerprintFailed={fingerprintFailed}
             busy={busy}
             running={activeRequest === 'fingerprint'}
-            canRun={Boolean(apiToken && fingerprint)}
+            canRun={Boolean(apiToken)}
             onRun={testFingerprintApi}
           />
           <ResponseViewer response={response} loading={busy} />

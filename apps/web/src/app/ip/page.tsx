@@ -160,7 +160,8 @@ export default function IpRiskPage() {
         Icon: Signal,
         badge: 'Awaiting lookup',
         title: 'Ready to check',
-        className: 'border-slate-500/30 bg-slate-500/10 text-slate-200',
+        className:
+          'border-slate-500/30 bg-slate-500/10 text-slate-800 dark:text-slate-200',
       };
     }
 
@@ -169,7 +170,8 @@ export default function IpRiskPage() {
         Icon: ShieldAlert,
         badge: 'High risk',
         title: 'High-risk network signal',
-        className: 'border-red-500/40 bg-red-500/10 text-red-200',
+        className:
+          'border-red-500/40 bg-red-500/10 text-red-800 dark:text-red-200',
       };
     }
 
@@ -177,7 +179,8 @@ export default function IpRiskPage() {
       Icon: ShieldCheck,
       badge: 'Low risk',
       title: 'No elevated network risk',
-      className: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-200',
+      className:
+        'border-emerald-500/40 bg-emerald-500/10 text-emerald-800 dark:text-emerald-200',
     };
   }, [result]);
 
@@ -293,12 +296,12 @@ export default function IpRiskPage() {
             <div className="bg-background/80 flex h-14 w-14 items-center justify-center rounded-md">
               <ToneIcon className="h-7 w-7" />
             </div>
+            {/* The tone colour, not the muted grey, so the label and summary
+                clear 4.5:1 on the tinted light-mode background. */}
             <div className="space-y-1">
-              <div className="text-muted-foreground text-sm font-medium uppercase">
-                {tone.badge}
-              </div>
+              <div className="text-sm font-medium uppercase">{tone.badge}</div>
               <h2 className="text-2xl font-semibold">{tone.title}</h2>
-              <p className="text-muted-foreground text-sm">
+              <p className="text-sm">
                 {result
                   ? `${result.data.ip} scored ${display(score?.risk_score)} risk with verdict ${display(score?.verdict).toLowerCase()}.`
                   : 'Enter an IP address to retrieve risk, routing, and network ownership signals.'}

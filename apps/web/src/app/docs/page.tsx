@@ -83,7 +83,11 @@ export default function DocsPage() {
           </TabsList>
 
           {/* Introduction Tab */}
-          <TabsContent value="introduction" className="space-y-6">
+          <TabsContent
+            value="introduction"
+            forceMount
+            className="space-y-6 data-[state=inactive]:hidden"
+          >
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -276,7 +280,11 @@ export default function DocsPage() {
           </TabsContent>
 
           {/* Quick Start Tab */}
-          <TabsContent value="quickstart" className="space-y-6">
+          <TabsContent
+            value="quickstart"
+            forceMount
+            className="space-y-6 data-[state=inactive]:hidden"
+          >
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -448,7 +456,11 @@ if (result.cached) {
           </TabsContent>
 
           {/* API Reference Tab */}
-          <TabsContent value="api" className="space-y-6">
+          <TabsContent
+            value="api"
+            forceMount
+            className="space-y-6 data-[state=inactive]:hidden"
+          >
             <Card>
               <CardHeader>
                 <CardTitle>Authentication</CardTitle>
@@ -599,7 +611,11 @@ X-API-Token: cfp_your_token_here`}
           </TabsContent>
 
           {/* Collectors Tab */}
-          <TabsContent value="collectors" className="space-y-6">
+          <TabsContent
+            value="collectors"
+            forceMount
+            className="space-y-6 data-[state=inactive]:hidden"
+          >
             <Card>
               <CardHeader>
                 <CardTitle>Fingerprint Collectors</CardTitle>
@@ -828,7 +844,11 @@ X-API-Token: cfp_your_token_here`}
           </TabsContent>
 
           {/* FAQ Tab */}
-          <TabsContent value="faq" className="space-y-6">
+          <TabsContent
+            value="faq"
+            forceMount
+            className="space-y-6 data-[state=inactive]:hidden"
+          >
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
