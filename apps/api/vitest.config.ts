@@ -1,6 +1,7 @@
-import { defineWorkersConfig } from '@cloudflare/vitest-pool-workers/config';
+import { cloudflareTest } from '@cloudflare/vitest-plugin';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { defineConfig } from 'vitest/config';
 
 const configDir = path.dirname(fileURLToPath(import.meta.url));
 
@@ -8,12 +9,10 @@ const configDir = path.dirname(fileURLToPath(import.meta.url));
 // global config directory can fail (e.g. EPERM). Redirect logs into the workspace.
 process.env.WRANGLER_LOG_PATH ??= path.join(configDir, '.wrangler', 'logs');
 
-export default defineWorkersConfig({
-  test: {
-    poolOptions: {
-      workers: {
-        wrangler: { configPath: './wrangler.toml' },
-      },
-    },
-  },
+export default defineConfig({
+  plugins: [
+    cloudflareTest({
+      wrangler: { configPath: './wrangler.toml' },
+    }),
+  ],
 });

@@ -690,7 +690,7 @@ wrangler rollback --message "Rollback to stable version"
 - [ ] Update dependencies: `pnpm update`
 - [ ] Run security audit: `pnpm audit`
 - [ ] Review and rotate API tokens
-- [ ] Backup KV data: `wrangler kv:bulk get`
+- [ ] Backup KV data: `wrangler kv bulk get`
 - [ ] Review analytics and optimize
 
 ### Updating Dependencies

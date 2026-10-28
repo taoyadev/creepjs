@@ -74,7 +74,7 @@
 # KV Storage:
 # - `wrangler dev` uses local KV storage (persisted in .wrangler/state)
 # - Data is not shared with production
-# - Use `wrangler kv:key put` for manual testing
+# - Use `wrangler kv key put` for manual testing
 #
 # Testing:
 # - API runs on http://localhost:8787 by default

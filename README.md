@@ -318,7 +318,7 @@ cd apps/api
 npx wrangler login
 
 # Create KV namespace
-npx wrangler kv:namespace create CREEPJS_TOKENS
+npx wrangler kv namespace create CREEPJS_TOKENS
 
 # Deploy
 npx wrangler deploy

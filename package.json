@@ -19,7 +19,7 @@
     "@eslint/js": "^9.14.0",
     "@next/eslint-plugin-next": "^15.1.5",
     "@turbo/gen": "^2.11.10",
-    "@vitest/coverage-v8": "^2.1.8",
+    "@vitest/coverage-v8": "^4.1.12",
     "eslint": "^9.18.0",
     "globals": "^15.12.0",
     "prettier": "^3.4.2",
@@ -35,7 +35,6 @@
   "packageManager": "pnpm@9.15.4",
   "pnpm": {
     "overrides": {
-      "@cloudflare/vitest-pool-workers>wrangler": "3.114.17",
       "@humanfs/node@<0.16.8": "^0.16.8",
       "ajv@>=6.0.0 <6.14.0": "^6.14.0",
       "brace-expansion@>=1.0.0 <1.1.21": "^1.1.21",

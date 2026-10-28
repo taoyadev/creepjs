@@ -21,15 +21,15 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
-    "@cloudflare/vitest-pool-workers": "^0.5.28",
+    "@cloudflare/vitest-plugin": "^1.4.9",
     "@cloudflare/workers-types": "^4.20250117.0",
     "@types/node": "^22.10.2",
     "@typescript-eslint/eslint-plugin": "^8.18.2",
     "@typescript-eslint/parser": "^8.18.2",
     "eslint": "^9.18.0",
     "typescript": "^5.7.2",
-    "vitest": "^2.1.8",
-    "wrangler": "^3.114.17"
+    "vitest": "^4.1.12",
+    "wrangler": "^4.154.0"
   },
   "license": "MIT"
 }
