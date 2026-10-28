@@ -353,7 +353,6 @@ const result = await CreepJS.getFingerprint({
 
 console.log('Fingerprint ID:', result.fingerprintId);
 console.log('Coverage:', result.confidence);
-console.log('Uniqueness:', result.uniqueness);
 console.log('Timestamp:', result.timestamp);
 
 // Check if result was cached
@@ -433,12 +432,15 @@ if (result.cached) {
                           <code>cacheTtl</code>
                         </td>
                         <td className="text-muted-foreground p-2">number</td>
-                        <td className="text-muted-foreground p-2">3600</td>
-                        <td className="p-2">Cache time-to-live in seconds</td>
+                        <td className="text-muted-foreground p-2">86400</td>
+                        <td className="p-2">
+                          Cache time-to-live in seconds (max 7 days; 0 turns
+                          caching off)
+                        </td>
                       </tr>
                       <tr className="border-b">
                         <td className="p-2">
-                          <code>timeout</code>
+                          <code>timeoutMs</code>
                         </td>
                         <td className="text-muted-foreground p-2">number</td>
                         <td className="text-muted-foreground p-2">10000</td>

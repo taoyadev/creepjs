@@ -84,6 +84,27 @@ describe('new collectors', () => {
     expect(frame?.left).not.toBeUndefined();
   });
 
+  it('screen frame never takes the page out of fullscreen', async () => {
+    const exitFullscreen = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(document, 'fullscreenElement', {
+      configurable: true,
+      get: () => document.body,
+    });
+    Object.defineProperty(document, 'exitFullscreen', {
+      configurable: true,
+      value: exitFullscreen,
+    });
+
+    try {
+      const frame = await collectScreenFrameFingerprint();
+      expect(frame).toBeDefined();
+      expect(exitFullscreen).not.toHaveBeenCalled();
+    } finally {
+      Reflect.deleteProperty(document, 'fullscreenElement');
+      Reflect.deleteProperty(document, 'exitFullscreen');
+    }
+  });
+
   it('navigator parity collectors return structured data', () => {
     expect(collectLanguages()).toBeDefined();
     expect(typeof collectCookiesEnabled()).toBe('boolean');
