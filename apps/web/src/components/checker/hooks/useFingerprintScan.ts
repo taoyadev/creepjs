@@ -1,12 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  collectFingerprint,
-  getCollectorLabel,
-  type CollectorProgressEvent,
-  type FingerprintResult,
-} from '@creepjs/core';
+import { collectFingerprint, type FingerprintResult } from '@creepjs/core';
 import { trackEvent } from '@/lib/analytics';
 import {
   fetchBaseline,
@@ -16,40 +11,11 @@ import type {
   CollectionProgress,
   FingerprintScanStatus,
 } from '@/components/checker/types';
-
-interface ScanProgressState extends CollectionProgress {
-  completedCollectors: readonly string[];
-}
-
-export const INITIAL_SCAN_PROGRESS: ScanProgressState = {
-  current: 0,
-  total: 1,
-  currentCollector: 'Initializing...',
-  completedCollectors: [],
-};
-
-export function reduceScanProgress(
-  state: ScanProgressState,
-  event: CollectorProgressEvent
-): ScanProgressState {
-  const total = Math.max(event.total, 1);
-  if (event.phase === 'start') {
-    return {
-      ...state,
-      total,
-      currentCollector: getCollectorLabel(event.name),
-    };
-  }
-
-  const completed = new Set(state.completedCollectors);
-  completed.add(event.name);
-  return {
-    current: Math.min(completed.size, total),
-    total,
-    currentCollector: `${getCollectorLabel(event.name)} complete`,
-    completedCollectors: [...completed],
-  };
-}
+import {
+  INITIAL_SCAN_PROGRESS,
+  reduceScanProgress,
+  type ScanProgressState,
+} from '@/components/checker/scanProgressState';
 
 function scheduleIdle(callback: () => void) {
   if (typeof window.requestIdleCallback === 'function') {

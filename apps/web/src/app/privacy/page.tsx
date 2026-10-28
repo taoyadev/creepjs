@@ -89,7 +89,17 @@ export default function PrivacyPage() {
                 <p>
                   <strong>In the browser:</strong> fingerprint components are
                   computed locally to generate a fingerprint ID and to render
-                  the on-page report.
+                  the on-page report. A scan runs when you start it (the checker
+                  starts one on load); its WebRTC check contacts Google&apos;s
+                  public STUN servers (stun.l.google.com), which see your IP
+                  address the same way any website does.
+                </p>
+                <p>
+                  <strong>Checker history:</strong> the checker keeps your last
+                  50 scans in this browser&apos;s localStorage so you can
+                  compare them. They never leave your device, WebRTC addresses
+                  and media device labels are removed before saving, and
+                  &ldquo;Clear All&rdquo; deletes them.
                 </p>
                 <p>
                   <strong>On the API:</strong> the API is designed to be

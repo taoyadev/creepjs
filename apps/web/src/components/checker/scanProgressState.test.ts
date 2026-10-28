@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { CollectorProgressEvent } from '@creepjs/core';
-import {
-  INITIAL_SCAN_PROGRESS,
-  reduceScanProgress,
-} from './useFingerprintScan';
+import { INITIAL_SCAN_PROGRESS, reduceScanProgress } from './scanProgressState';
 
 function event(
   name: CollectorProgressEvent['name'],

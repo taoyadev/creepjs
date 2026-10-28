@@ -1,12 +1,18 @@
 import type { FingerprintResult } from '@creepjs/core';
 import {
+  formatBaselineInsight,
+  getBaselineEstimate,
+  type BaselineResponse,
+} from '@/lib/uniqueness-baseline';
+import {
   DataRow,
   FingerprintCollectorCard,
 } from '@/components/FingerprintCollectorCard';
 
 export function renderGraphicsCollectorCard(
   key: string,
-  fingerprint: FingerprintResult
+  fingerprint: FingerprintResult,
+  baseline?: BaselineResponse | null
 ) {
   switch (key) {
     case 'canvas':
@@ -18,6 +24,11 @@ export function renderGraphicsCollectorCard(
           title="Canvas 2d"
           hash={fingerprint.data.canvas.hash}
           timing={fingerprint.timings.canvas}
+          insight={formatBaselineInsight(
+            getBaselineEstimate(baseline, 'canvas'),
+            baseline?.kAnonThreshold,
+            baseline?.totalSamples
+          )}
         >
           {fingerprint.data.canvas.dataURL && (
             <div className="space-y-2">
@@ -42,6 +53,11 @@ export function renderGraphicsCollectorCard(
           title="WebGL"
           hash={fingerprint.data.webgl.version}
           timing={fingerprint.timings.webgl}
+          insight={formatBaselineInsight(
+            getBaselineEstimate(baseline, 'webgl'),
+            baseline?.kAnonThreshold,
+            baseline?.totalSamples
+          )}
         >
           <DataRow label="Vendor" value={fingerprint.data.webgl.vendor} />
           <DataRow label="Renderer" value={fingerprint.data.webgl.renderer} />
@@ -57,6 +73,11 @@ export function renderGraphicsCollectorCard(
               value={fingerprint.data.webgl.unmaskedRenderer}
             />
           )}
+          <DataRow label="Version" value={fingerprint.data.webgl.version} />
+          <DataRow
+            label="GLSL Version"
+            value={fingerprint.data.webgl.shadingLanguageVersion}
+          />
         </FingerprintCollectorCard>
       );
     case 'svg':
@@ -73,6 +94,10 @@ export function renderGraphicsCollectorCard(
             label="Supported"
             value={fingerprint.data.svg.supported ? 'Yes' : 'No'}
           />
+          <div className="text-muted-foreground mt-2 text-sm">SVG Data:</div>
+          <code className="break-all text-xs">
+            {fingerprint.data.svg.data.slice(0, 10).join(', ')}...
+          </code>
         </FingerprintCollectorCard>
       );
     case 'css':
@@ -93,10 +118,10 @@ export function renderGraphicsCollectorCard(
             <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
               {Object.entries(fingerprint.data.css.styles)
                 .slice(0, 20)
-                .map(([name, value]) => (
-                  <div key={name} className="flex justify-between">
+                .map(([key, value]) => (
+                  <div key={key} className="flex justify-between">
                     <span className="text-muted-foreground truncate">
-                      {name}:
+                      {key}:
                     </span>
                     <code className="truncate">{value}</code>
                   </div>
@@ -119,7 +144,8 @@ export function renderGraphicsCollectorCard(
             Measurement Data:
           </div>
           <code className="break-all text-xs">
-            {fingerprint.data.textMetrics.data.slice(0, 8).join(', ')}...
+            {fingerprint.data.textMetrics.data.slice(0, 8).join(', ')}
+            ...
           </code>
         </FingerprintCollectorCard>
       );

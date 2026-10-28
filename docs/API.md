@@ -643,7 +643,7 @@ const client = new CreepJS({
   token: 'cfp_your_token_here',
   endpoint: 'https://api.creepjs.org/v1/fingerprint', // Custom endpoint
   cache: true, // Enable caching (default)
-  cacheTtl: 3600_000, // Cache TTL (milliseconds)
+  cacheTtl: 3600, // Cache TTL in seconds
   timeoutMs: 10000,
 });
 
@@ -658,7 +658,7 @@ const ip = await client.getIpIntelligence('8.8.8.8');
 | `token`         | string  | -                                        | API Token (required)                       |
 | `endpoint`      | string  | `https://api.creepjs.org/v1/fingerprint` | Fingerprint API endpoint                   |
 | `cache`         | boolean | `true`                                   | Enable LocalStorage caching                |
-| `cacheTtl`      | number  | `86400000`                               | Cache TTL (milliseconds)                   |
+| `cacheTtl`      | number  | `86400`                                  | Cache TTL in seconds (max 7 days; 0 = off) |
 | `timeoutMs`     | number  | `10000`                                  | Request timeout in milliseconds            |
 | `fullBundleUrl` | string  | sibling `sdk.full.js`                    | Override URL for the full collector bundle |
 

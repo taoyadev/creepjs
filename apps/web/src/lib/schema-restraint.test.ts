@@ -31,4 +31,18 @@ describe('structured-data restraint', () => {
     expect(schemaUses.some(({ type }) => type === 'HowTo')).toBe(false);
     expect(schemaUses.some(({ type }) => type === 'Dataset')).toBe(false);
   });
+
+  it('emits only site-wide schema from the root layout', () => {
+    const source = readFileSync(
+      path.join(process.cwd(), 'src', 'app', 'layout.tsx'),
+      'utf8'
+    );
+    const builders = [...source.matchAll(/structuredData\.(\w+)\(/g)].map(
+      (match) => match[1]
+    );
+
+    // Pages emit their own WebApplication/WebPage; a root copy would make
+    // every tool page describe itself twice.
+    expect(builders).toEqual(['organization', 'website']);
+  });
 });

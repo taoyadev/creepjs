@@ -102,6 +102,143 @@ describe('CreepJS SDK', () => {
     expect(fetch).toHaveBeenCalledTimes(1);
   });
 
+  it('keeps WebRTC addresses and device labels out of the cache', async () => {
+    const storage = new Map<string, string>();
+    vi.stubGlobal('localStorage', {
+      getItem: (key: string) => storage.get(key) ?? null,
+      setItem: (key: string, value: string) => storage.set(key, value),
+      removeItem: (key: string) => storage.delete(key),
+    });
+    vi.stubGlobal('__CREEPJS_CORE__', {
+      collectFingerprint: vi.fn().mockResolvedValue({
+        ...mockFingerprint,
+        data: {
+          ...mockFingerprint.data,
+          webrtc: {
+            hash: 'webrtc-hash',
+            candidates: {
+              local: ['192.168.1.20'],
+              public: ['203.0.113.7'],
+              ipv4: ['192.168.1.20', '203.0.113.7'],
+              ipv6: ['2001:db8::1'],
+            },
+          },
+          media: {
+            deviceCount: { audioInput: 0, audioOutput: 0, videoInput: 1 },
+            devices: [
+              { kind: 'videoinput', label: 'FaceTime HD', groupId: 'g-1' },
+            ],
+          },
+        },
+      }),
+    });
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            fingerprintId: 'fp_123',
+            timestamp: 1700000000000,
+          }),
+          { status: 200 }
+        )
+      )
+    );
+
+    const fresh = await new CreepJS({
+      token: 'cfp_test_token',
+    }).getFingerprint();
+    const [stored] = [...storage.values()];
+
+    expect(fresh.data.webrtc?.candidates.public).toEqual(['203.0.113.7']);
+    for (const secret of [
+      '192.168.1.20',
+      '203.0.113.7',
+      '2001:db8::1',
+      'FaceTime',
+      'g-1',
+    ]) {
+      expect(stored).not.toContain(secret);
+    }
+    expect(stored).toContain('webrtc-hash');
+    expect(stored).toContain('videoinput');
+  });
+
+  describe('cacheTtl', () => {
+    const stubCacheAndApi = () => {
+      const storage = new Map<string, string>();
+      vi.stubGlobal('localStorage', {
+        getItem: (key: string) => storage.get(key) ?? null,
+        setItem: (key: string, value: string) => storage.set(key, value),
+        removeItem: (key: string) => storage.delete(key),
+      });
+      vi.stubGlobal('__CREEPJS_CORE__', {
+        collectFingerprint: vi.fn().mockResolvedValue(mockFingerprint),
+      });
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockImplementation(() =>
+          Promise.resolve(
+            new Response(
+              JSON.stringify({
+                fingerprintId: 'fp_123',
+                timestamp: 1700000000000,
+                confidence: 0.9,
+                coverage: mockFingerprint.coverage,
+              }),
+              { status: 200 }
+            )
+          )
+        )
+      );
+      return storage;
+    };
+
+    const SECOND = 1000;
+    const DAY = 24 * 60 * 60 * SECOND;
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('is in seconds, as documented', async () => {
+      vi.useFakeTimers({ toFake: ['Date'], now: 1_800_000_000_000 });
+      stubCacheAndApi();
+      const sdk = new CreepJS({ token: 'cfp_test_token', cacheTtl: 3600 });
+
+      await sdk.getFingerprint();
+      vi.setSystemTime(Date.now() + 10 * SECOND);
+      expect((await sdk.getFingerprint()).cached).toBe(true);
+
+      vi.setSystemTime(Date.now() + 3600 * SECOND);
+      expect((await sdk.getFingerprint()).cached).toBe(false);
+      expect(fetch).toHaveBeenCalledTimes(2);
+    });
+
+    it('caps a lifetime written in milliseconds at seven days', async () => {
+      vi.useFakeTimers({ toFake: ['Date'], now: 1_800_000_000_000 });
+      stubCacheAndApi();
+      const sdk = new CreepJS({ token: 'cfp_test_token', cacheTtl: 3_600_000 });
+
+      await sdk.getFingerprint();
+      vi.setSystemTime(Date.now() + 6 * DAY);
+      expect((await sdk.getFingerprint()).cached).toBe(true);
+
+      vi.setSystemTime(Date.now() + 1 * DAY + SECOND);
+      expect((await sdk.getFingerprint()).cached).toBe(false);
+    });
+
+    it('turns caching off at 0', async () => {
+      const storage = stubCacheAndApi();
+      const sdk = new CreepJS({ token: 'cfp_test_token', cacheTtl: 0 });
+
+      await sdk.getFingerprint();
+      expect((await sdk.getFingerprint()).cached).toBe(false);
+      expect(fetch).toHaveBeenCalledTimes(2);
+      expect(storage.size).toBe(0);
+    });
+  });
+
   it('treats a throwing localStorage getter as no cache', async () => {
     // Chrome with site data blocked, or a sandboxed iframe: merely reading
     // the global throws, which `typeof localStorage` does not guard against.

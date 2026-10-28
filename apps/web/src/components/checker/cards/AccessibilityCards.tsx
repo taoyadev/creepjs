@@ -82,33 +82,6 @@ export function renderAccessibilityCollectorCard(
           )}
         </FingerprintCollectorCard>
       );
-    case 'domBlockers':
-      if (!fingerprint.data.domBlockers) return null;
-      return (
-        <FingerprintCollectorCard
-          key={key}
-          techniqueKey={key}
-          title="Privacy / Ad Blockers"
-          timing={fingerprint.timings.domBlockers}
-        >
-          {fingerprint.data.domBlockers.detected.length === 0 ? (
-            <div className="text-muted-foreground text-sm">
-              No DOM blocker signatures detected.
-            </div>
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              {fingerprint.data.domBlockers.detected.map((blocker) => (
-                <span
-                  key={blocker}
-                  className="bg-muted rounded-full px-3 py-1 text-xs font-medium"
-                >
-                  {blocker}
-                </span>
-              ))}
-            </div>
-          )}
-        </FingerprintCollectorCard>
-      );
     case 'audioBaseLatency':
       if (!fingerprint.data.audioBaseLatency) return null;
       return (
@@ -126,6 +99,12 @@ export function renderAccessibilityCollectorCard(
             <DataRow
               label="Base Latency"
               value={`${fingerprint.data.audioBaseLatency.baseLatency.toFixed(4)}s`}
+            />
+          )}
+          {fingerprint.data.audioBaseLatency.outputLatency !== undefined && (
+            <DataRow
+              label="Output Latency"
+              value={`${fingerprint.data.audioBaseLatency.outputLatency.toFixed(4)}s`}
             />
           )}
           {fingerprint.data.audioBaseLatency.sampleRate && (

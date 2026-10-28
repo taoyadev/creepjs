@@ -1,6 +1,7 @@
 import typescript from '@rollup/plugin-typescript';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
+import terser from '@rollup/plugin-terser';
 
 const plugins = [
   resolve({ browser: true }),
@@ -8,6 +9,8 @@ const plugins = [
   typescript({
     tsconfig: './tsconfig.json',
   }),
+  // Default options: tuned compress passes measured larger after gzip.
+  terser(),
 ];
 
 export default [
