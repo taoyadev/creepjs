@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { SITE_CONFIG, generateMetadata, structuredData } from '@/lib/metadata';
 import { StructuredData } from '@/components/StructuredData';
-import { SeoInternalLinks } from '@/components/SeoInternalLinks';
 
 export const metadata: Metadata = generateMetadata({
   title: 'Documentation - API & Integration Guide',
@@ -33,11 +32,6 @@ export default function DocsLayout({
         ]}
       />
       {children}
-      <SeoInternalLinks
-        currentPath="/docs"
-        title="Documentation paths and live tools"
-        description="Move from the API reference to live tools, individual fingerprint signals, and the browser fingerprinting guide."
-      />
     </>
   );
 }

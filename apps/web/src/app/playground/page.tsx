@@ -14,16 +14,15 @@ import {
 export default function PlaygroundPage() {
   return (
     <div className="from-background to-secondary min-h-screen bg-gradient-to-b">
-      <div className="container mx-auto max-w-7xl space-y-8 px-4 py-8 md:py-12">
+      <div className="container mx-auto max-w-7xl space-y-5 px-4 py-6 md:py-8">
         <header className="max-w-3xl space-y-3">
           <p className="text-primary text-sm font-semibold">Developer tools</p>
           <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
             API Playground
           </h1>
           <p className="text-muted-foreground text-base leading-7 md:text-lg">
-            Generate an in-memory API token, inspect your browser fingerprint,
-            and run the authenticated fingerprint endpoint without setting up a
-            local backend.
+            Use a token to collect and submit a fingerprint. Inspect the
+            response, HTTP status, and recovery steps in one workspace.
           </p>
         </header>
 

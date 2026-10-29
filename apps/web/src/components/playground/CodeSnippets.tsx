@@ -24,93 +24,71 @@ export type SnippetLanguage = 'javascript' | 'python' | 'curl' | 'go';
 export function buildCodeExamples(
   apiToken: string
 ): Record<SnippetLanguage, string> {
-  const token = apiToken || 'YOUR_API_TOKEN';
-
+  const token = JSON.stringify(apiToken || 'YOUR_API_TOKEN');
+  const shellToken = (apiToken || 'YOUR_API_TOKEN').replace(/'/g, "'\\''");
   return {
-    javascript: `const response = await fetch('${API_URL}/v1/fingerprint', {
+    javascript: `// Load https://creepjs.org/sdk.full.js in your page first.
+
+// Run after the visitor agrees to collection.
+const fingerprint = await CreepJSFull.collectFingerprint();
+const response = await fetch('${API_URL}/v1/fingerprint', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
-    'X-API-Token': '${token}'
+    'X-API-Token': ${token}
   },
-  body: JSON.stringify({
-    fingerprintId: 'abc123...',
-    data: {},
-    timestamp: Date.now(),
-    confidence: 0.95
-  })
+  body: JSON.stringify(fingerprint),
+  signal: AbortSignal.timeout(15000)
 });
-
 const result = await response.json();
-console.log(result);`,
+if (!response.ok) throw new Error(result.error || 'Request failed');
+console.log(result.fingerprintId);`,
     python: `import json
-import time
-
+from pathlib import Path
 import requests
 
-api_url = '${API_URL}/v1/fingerprint'
-api_token: str = '${token}'
-payload = {
-    'fingerprintId': 'abc123...',
-    'data': {},
-    'timestamp': int(time.time() * 1000),
-    'confidence': 0.95,
-}
-
+# Save a real browser-collected payload as fingerprint.json first.
+payload = json.loads(Path('fingerprint.json').read_text())
 response = requests.post(
-    api_url,
-    headers={
-        'Content-Type': 'application/json',
-        'X-API-Token': api_token,
-    },
+    '${API_URL}/v1/fingerprint',
+    headers={'X-API-Token': ${token}},
     json=payload,
     timeout=15,
 )
 response.raise_for_status()
-print(json.dumps(response.json(), indent=2))`,
-    curl: `curl -X POST '${API_URL}/v1/fingerprint' \\
+print(response.json()['fingerprintId'])`,
+    curl: `# Save a real browser-collected payload as fingerprint.json first.
+curl --fail-with-body --max-time 15 '${API_URL}/v1/fingerprint' \\
   -H 'Content-Type: application/json' \\
-  -H 'X-API-Token: ${token}' \\
-  -d '{
-    "fingerprintId": "abc123...",
-    "data": {},
-    "timestamp": 1234567890000,
-    "confidence": 0.95
-  }'`,
+  -H 'X-API-Token: ${shellToken}' \\
+  --data-binary @fingerprint.json`,
     go: `package main
 
 import (
     "bytes"
-    "encoding/json"
     "fmt"
     "io"
     "net/http"
+    "os"
     "time"
 )
 
 func main() {
-    payload := map[string]any{
-        "fingerprintId": "abc123...",
-        "data": map[string]any{},
-        "timestamp": time.Now().UnixMilli(),
-        "confidence": 0.95,
-    }
-    body, _ := json.Marshal(payload)
-    request, _ := http.NewRequest(
-        "POST",
-        "${API_URL}/v1/fingerprint",
-        bytes.NewBuffer(body),
-    )
-    request.Header.Set("Content-Type", "application/json")
-    request.Header.Set("X-API-Token", "${token}")
-
-    response, err := http.DefaultClient.Do(request)
-    if err != nil {
-        panic(err)
-    }
-    defer response.Body.Close()
-    responseBody, _ := io.ReadAll(response.Body)
-    fmt.Println(string(responseBody))
+    // Save a real browser-collected payload as fingerprint.json first.
+    payload, err := os.ReadFile("fingerprint.json")
+    if err != nil { panic(err) }
+    req, err := http.NewRequest("POST", "${API_URL}/v1/fingerprint", bytes.NewReader(payload))
+    if err != nil { panic(err) }
+    req.Header.Set("Content-Type", "application/json")
+    req.Header.Set("X-API-Token", ${token})
+    client := &http.Client{Timeout: 15 * time.Second}
+    res, err := client.Do(req)
+    if err != nil { panic(err) }
+    defer res.Body.Close()
+    body, err := io.ReadAll(res.Body)
+    if err != nil { panic(err) }
+    if res.StatusCode >= 400 { panic(fmt.Sprintf("HTTP %d: %s", res.StatusCode, body)) }
+    fmt.Println(string(body))
 }`,
   };
 }
@@ -128,7 +106,8 @@ export function CodeSnippets({ apiToken }: { apiToken: string }) {
           Code examples
         </CardTitle>
         <CardDescription>
-          Copy plain, dependency-free request examples using the current token.
+          Use a real collected payload. Browser JavaScript requires sdk.full.js;
+          Python uses requests. Other examples read fingerprint.json.
         </CardDescription>
       </CardHeader>
       <CardContent className="min-w-0 space-y-4">

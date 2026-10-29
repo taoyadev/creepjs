@@ -4,22 +4,24 @@
 
 ## What CreepJS reports
 
-CreepJS runs the Media Devices collector in the current browser. It inspects the browser surface represented by this hardware signal and reports the observed value or availability state, collection timing, and any collector error. The live result is local browser evidence, not a population estimate.
+Enumerates media devices and returns counts by kind plus browser-exposed labels and grouping hints. It does not request camera or microphone access.
 
 ## How to interpret it
 
-Use Media Devices as one observation alongside other signals. Different browsers, devices, settings, and permissions may return different values. An unsupported or blocked API may return no value. A single signal does not identify a person.
+Check whether audio input, output, and video counts match what this browser is permitted to list. Inspect JSON for the exposed device kinds.
 
 ## Limits
 
-This reference makes no uniqueness, match-rate, or fraud-probability claim. Results can change after browser, operating-system, hardware, permission, privacy-setting, or driver changes. Treat unavailable data as unavailable, not as evidence of safety or risk.
+An empty label or zero count can reflect permissions or browser policy. Do not grant access solely to improve this diagnostic. A single signal does not identify a person.
 
 ## Test the signal
+
+Keep the live result for comparison, change one relevant setting, then run again in the same tab. Compare the fields before interpreting a changed signature.
 
 - Live signal page: https://creepjs.org/fingerprint/media-devices
 - Full checker: https://creepjs.org/checker
 - Category: Hardware
 
-Reviewed: 2026-07-28.
+Reviewed: 2026-10-29.
 
 <!-- llms-safe:end -->

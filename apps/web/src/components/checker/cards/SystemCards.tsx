@@ -163,7 +163,12 @@ export function renderSystemCollectorCard(
           <div className="text-muted-foreground mb-2 text-sm">
             Detected Fonts ({fingerprint.data.fonts.count}):
           </div>
-          <div className="flex max-h-48 flex-wrap gap-2 overflow-y-auto">
+          <div
+            className="flex max-h-48 flex-wrap gap-2 overflow-y-auto"
+            tabIndex={0}
+            role="group"
+            aria-label="Detected fonts"
+          >
             {fingerprint.data.fonts.available.map((font) => (
               <span key={font} className="bg-muted rounded px-2 py-1 text-xs">
                 {font}

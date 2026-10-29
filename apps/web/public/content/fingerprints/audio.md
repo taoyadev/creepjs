@@ -4,22 +4,24 @@
 
 ## What CreepJS reports
 
-CreepJS runs the Audio Fingerprint collector in the current browser. It inspects the browser surface represented by this audio signal and reports the observed value or availability state, collection timing, and any collector error. The live result is local browser evidence, not a population estimate.
+Renders an offline audio graph and returns a numeric sample summary with its derived signature. This does not request microphone access.
 
 ## How to interpret it
 
-Use Audio Fingerprint as one observation alongside other signals. Different browsers, devices, settings, and permissions may return different values. An unsupported or blocked API may return no value. A single signal does not identify a person.
+Compare the numeric sum and signature across reruns. Inspect changes after a browser update or audio privacy setting change.
 
 ## Limits
 
-This reference makes no uniqueness, match-rate, or fraud-probability claim. Results can change after browser, operating-system, hardware, permission, privacy-setting, or driver changes. Treat unavailable data as unavailable, not as evidence of safety or risk.
+The result reflects the browser audio implementation. It is not a recording, a hearing test, or an audio-device identity. A single signal does not identify a person.
 
 ## Test the signal
+
+Keep the live result for comparison, change one relevant setting, then run again in the same tab. Compare the fields before interpreting a changed signature.
 
 - Live signal page: https://creepjs.org/fingerprint/audio
 - Full checker: https://creepjs.org/checker
 - Category: Audio
 
-Reviewed: 2026-07-28.
+Reviewed: 2026-10-29.
 
 <!-- llms-safe:end -->

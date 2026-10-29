@@ -4,22 +4,24 @@
 
 ## What CreepJS reports
 
-CreepJS runs the Lies Detection collector in the current browser. It inspects the browser surface represented by this privacy signal and reports the observed value or availability state, collection timing, and any collector error. The live result is local browser evidence, not a population estimate.
+After you start the check, collects a full browser snapshot and applies consistency heuristics, returning named flags, a count, and a heuristic trust score.
 
 ## How to interpret it
 
-Use Lies Detection as one observation alongside other signals. Different browsers, devices, settings, and permissions may return different values. An unsupported or blocked API may return no value. A single signal does not identify a person.
+Inspect the named inconsistencies and compare their underlying values. Change one setting and rerun before attributing a mismatch to a cause.
 
 ## Limits
 
-This reference makes no uniqueness, match-rate, or fraud-probability claim. Results can change after browser, operating-system, hardware, permission, privacy-setting, or driver changes. Treat unavailable data as unavailable, not as evidence of safety or risk.
+The full scan includes a Google STUN request. The trust score is a heuristic, not a calibrated fraud probability; privacy tools and browser differences can produce mismatches. A single signal does not identify a person.
 
 ## Test the signal
+
+Keep the live result for comparison, change one relevant setting, then run again in the same tab. Compare the fields before interpreting a changed signature.
 
 - Live signal page: https://creepjs.org/fingerprint/lies
 - Full checker: https://creepjs.org/checker
 - Category: Privacy
 
-Reviewed: 2026-07-28.
+Reviewed: 2026-10-29.
 
 <!-- llms-safe:end -->

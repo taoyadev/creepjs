@@ -21,7 +21,8 @@ describe('playground code snippets', () => {
       expect(example).toContain(`${SITE_CONFIG.apiUrl}/v1/fingerprint`);
       expect(example).toContain('YOUR_API_TOKEN');
     }
-    expect(examples.python).toContain('import time');
+    expect(examples.python).toContain("Path('fingerprint.json')");
+    expect(examples.javascript).toContain('collectFingerprint()');
   });
 
   it('uses the in-memory token without adding a highlighter', () => {

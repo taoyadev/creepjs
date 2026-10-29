@@ -10,7 +10,6 @@ const SECTIONS = [
   { id: 'signals', label: 'Signals' },
   { id: 'how-it-works', label: 'Method' },
   { id: 'privacy', label: 'Privacy' },
-  { id: 'faq', label: 'FAQ' },
 ] as const;
 
 export function CheckerSectionNav() {

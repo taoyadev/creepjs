@@ -116,13 +116,20 @@ export async function lookupPublicIp(
   const value = rawValue.trim();
   if (!isValidIpLiteral(value)) throw new IpInputError();
 
-  return fetchJson<PublicIpLookupResult>(
+  const result = await fetchJson<PublicIpLookupResult>(
     `/v1/ip/public/${encodeURIComponent(value)}`,
     {
       headers: { Accept: 'application/json' },
       signal,
     }
   );
+  if (
+    typeof result?.data?.ip !== 'string' ||
+    !isValidIpLiteral(result.data.ip)
+  ) {
+    throw new ApiError('The lookup returned no usable address data.', 502);
+  }
+  return result;
 }
 
 /**

@@ -1,60 +1,39 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
-import {
-  AlertCircle,
-  CheckCircle,
-  Copy,
-  Globe2,
-  Link2,
-  Loader2,
-  Network,
-  ShieldAlert,
-  ShieldCheck,
-  Signal,
-} from 'lucide-react';
-import { toast } from 'sonner';
+import Link from 'next/link';
+import { Globe2, Loader2, ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { cn } from '@/lib/utils';
+import { CopyButton } from '@/components/CopyButton';
 import { trackEvent } from '@/lib/analytics';
 import { IpBatchWorkspace } from '@/components/ip/IpBatchWorkspace';
 import { ApiError, fetchJson } from '@/lib/api-client';
+import { assessIpResult } from '@/lib/ip-result';
 import {
   IpInputError,
+  isValidIpLiteral,
   lookupPublicIp,
   publicIpLookupErrorMessage,
   type PublicIpLookupResult,
 } from '@/lib/public-ip-lookup';
 
-function display(value: unknown, fallback = 'Unknown') {
+function display(value: unknown) {
   if (typeof value === 'string' && value.trim()) return value;
   if (typeof value === 'number' && Number.isFinite(value)) return String(value);
-  if (typeof value === 'boolean') return value ? 'Yes' : 'No';
-  return fallback;
-}
-
-function resetTime(reset: number | null | undefined) {
-  return reset ? new Date(reset * 1000).toLocaleString() : 'Unknown';
+  if (typeof value === 'boolean') return value ? 'Detected' : 'Not flagged';
+  return 'Not returned';
 }
 
 function Metric({ name, value }: { name: string; value: unknown }) {
   return (
-    <div className="flex items-start justify-between gap-4 border-b pb-2 last:border-0 last:pb-0">
-      <span className="text-muted-foreground">{name}</span>
-      <span className="max-w-[60%] break-words text-right font-medium">
+    <div className="grid grid-cols-2 gap-4 border-b py-2.5 last:border-0">
+      <dt className="text-muted-foreground">{name}</dt>
+      <dd className="break-words text-right font-medium [overflow-wrap:anywhere]">
         {display(value)}
-      </span>
+      </dd>
     </div>
   );
 }
@@ -63,417 +42,509 @@ export default function IpRiskPage() {
   const [ip, setIp] = useState('');
   const [result, setResult] = useState<PublicIpLookupResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [invalid, setInvalid] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [detectingIp, setDetectingIp] = useState(true);
+  const [detecting, setDetecting] = useState(true);
+  const [detectionFailed, setDetectionFailed] = useState(false);
+  const [shareUrl, setShareUrl] = useState('');
+  const [checkedAt, setCheckedAt] = useState('');
+  const request = useRef<AbortController | null>(null);
+  const detection = useRef<AbortController | null>(null);
+  const edited = useRef(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const resultHeadingRef = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    if (result) resultHeadingRef.current?.focus();
+  }, [result]);
 
-  // Core lookup, keyed on an explicit target so it can be driven from the form,
-  // a shareable `?q=` link on load, or a retry — without a stale-closure read of
-  // `ip`. On success it writes `?q=<ip>` to the address bar so the result is
-  // linkable. `useCallback([])` keeps it stable for the mount effect's deps.
-  const performLookup = useCallback(async (rawTarget: string) => {
-    const target = rawTarget.trim();
+  const detectIp = useCallback(async () => {
+    detection.current?.abort();
+    const controller = new AbortController();
+    detection.current = controller;
+    setDetecting(true);
+    setDetectionFailed(false);
+    try {
+      const response = await fetchJson<{ ip?: string }>('/my-ip', {
+        signal: controller.signal,
+        timeoutMs: 8000,
+      });
+      if (controller.signal.aborted) return;
+      if (!response.ip || !isValidIpLiteral(response.ip))
+        throw new Error('No address');
+      if (!edited.current) setIp(response.ip);
+    } catch {
+      if (!controller.signal.aborted) setDetectionFailed(true);
+    } finally {
+      if (!controller.signal.aborted) setDetecting(false);
+    }
+  }, []);
+
+  const performLookup = useCallback(async (raw: string) => {
+    request.current?.abort();
+    const controller = new AbortController();
+    request.current = controller;
+    detection.current?.abort();
+    setDetecting(false);
+    edited.current = true;
     setError(null);
-
-    if (!target) {
-      setError('Enter a valid IPv4 or IPv6 address.');
+    setInvalid(false);
+    setResult(null);
+    setLoading(false);
+    const target = raw.trim();
+    setIp(target);
+    if (!isValidIpLiteral(target)) {
+      setInvalid(true);
+      setError(
+        target
+          ? 'Enter one IPv4 or IPv6 address. URLs, hostnames, ports, and ranges are not accepted.'
+          : 'Enter an IP address, choose an example, or use your own IP.'
+      );
+      inputRef.current?.focus();
       return;
     }
-
-    setIp(target);
     setLoading(true);
     try {
-      const data = await lookupPublicIp(target);
-      setResult(data);
-      if (typeof window !== 'undefined') {
-        const url = new URL(window.location.href);
-        url.searchParams.set('q', target);
-        window.history.replaceState(
-          null,
-          '',
-          `${url.pathname}${url.search}${url.hash}`
-        );
-      }
-      toast.success('IP risk lookup complete');
+      const next = await lookupPublicIp(target, controller.signal);
+      if (controller.signal.aborted) return;
+      setResult(next);
+      setCheckedAt(new Date().toLocaleTimeString());
+      const url = new URL(window.location.href);
+      url.searchParams.set('q', target);
+      window.history.replaceState(
+        null,
+        '',
+        `${url.pathname}${url.search}${url.hash}`
+      );
+      const share = new URL(url);
+      share.hash = '';
+      setShareUrl(share.href);
       trackEvent('tool_run', {
         tool: 'ip_lookup',
         surface: 'ip',
         outcome: 'success',
         status: '200',
       });
-    } catch (lookupError) {
-      setResult(null);
-      setError(publicIpLookupErrorMessage(lookupError));
+    } catch (cause) {
+      if (controller.signal.aborted) return;
+      setInvalid(
+        cause instanceof IpInputError ||
+          (cause instanceof ApiError && cause.status === 400)
+      );
+      setError(publicIpLookupErrorMessage(cause));
       trackEvent('tool_run', {
         tool: 'ip_lookup',
         surface: 'ip',
         outcome: 'error',
-        status: String(
-          lookupError instanceof IpInputError
-            ? 400
-            : lookupError instanceof ApiError
-              ? lookupError.status
-              : 0
-        ),
+        status: String(cause instanceof ApiError ? cause.status : 0),
       });
     } finally {
-      setLoading(false);
+      if (!controller.signal.aborted) setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
-
-    async function loadCurrentIp() {
-      setDetectingIp(true);
-      try {
-        const data = await fetchJson<{ ip?: string }>('/my-ip');
-        if (!cancelled && data.ip) setIp(data.ip);
-      } catch {
-        if (!cancelled) setError('Enter an IP address to run a risk lookup.');
-      } finally {
-        if (!cancelled) setDetectingIp(false);
-      }
-    }
-
-    // A shareable `?q=<ip>` link runs that lookup on load; otherwise detect
-    // the visitor's own IP.
-    const shared =
-      typeof window !== 'undefined'
-        ? new URLSearchParams(window.location.search).get('q')?.trim()
-        : null;
-
-    if (shared) {
-      setDetectingIp(false);
-      void performLookup(shared);
-    } else {
-      void loadCurrentIp();
-    }
-
+    const shared = new URLSearchParams(window.location.search).get('q')?.trim();
+    if (shared) void performLookup(shared);
+    else void detectIp();
     return () => {
-      cancelled = true;
+      request.current?.abort();
+      detection.current?.abort();
     };
-  }, [performLookup]);
+  }, [detectIp, performLookup]);
 
-  const tone = useMemo(() => {
-    if (!result) {
-      return {
-        Icon: Signal,
-        badge: 'Awaiting lookup',
-        title: 'Ready to check',
-        className:
-          'border-slate-500/30 bg-slate-500/10 text-slate-800 dark:text-slate-200',
-      };
-    }
-
-    if (result.highRisk) {
-      return {
-        Icon: ShieldAlert,
-        badge: 'High risk',
-        title: 'High-risk network signal',
-        className:
-          'border-red-500/40 bg-red-500/10 text-red-800 dark:text-red-200',
-      };
-    }
-
-    return {
-      Icon: ShieldCheck,
-      badge: 'Low risk',
-      title: 'No elevated network risk',
-      className:
-        'border-emerald-500/40 bg-emerald-500/10 text-emerald-800 dark:text-emerald-200',
-    };
-  }, [result]);
-
-  const runLookup = (event?: FormEvent<HTMLFormElement>) => {
-    event?.preventDefault();
-    void performLookup(ip);
+  const submit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!loading) void performLookup(ip);
   };
-
-  const copyResult = async () => {
-    if (!result) return;
-    await navigator.clipboard.writeText(JSON.stringify(result, null, 2));
-    toast.success('Result copied');
-    trackEvent('button_clicked', {
-      label: 'copy_ip_result',
-      section: 'ip-checker',
-    });
+  const preset = (value: string) => {
+    edited.current = true;
+    setIp(value);
+    setInvalid(false);
+    setError(null);
+    inputRef.current?.focus();
   };
-
-  const copyShareLink = async () => {
-    if (!result || typeof window === 'undefined') return;
-    const shareUrl = `${window.location.origin}/ip?q=${encodeURIComponent(result.data.ip)}`;
-    await navigator.clipboard.writeText(shareUrl);
-    toast.success('Shareable link copied');
-    trackEvent('button_clicked', {
-      label: 'copy_ip_share_link',
-      section: 'ip-checker',
-    });
-  };
-
-  const ToneIcon = tone.Icon;
-  const location = result?.data.location;
-  const network = result?.data.network;
-  const routing = result?.data.routing;
-  const score = result?.data.score;
-  const classification = result?.data.classification;
+  const assessment = result ? assessIpResult(result) : null;
+  const { location, network, routing, score, classification } =
+    result?.data ?? {};
   const signals = result?.data.evidence?.signals ?? [];
 
   return (
-    <div className="bg-background min-h-screen">
-      <section className="bg-muted/30 border-b">
-        <div className="container mx-auto grid gap-8 px-4 py-10 lg:grid-cols-[minmax(0,1fr)_420px] lg:py-14">
-          <div className="max-w-3xl space-y-5">
-            <Badge variant="outline" className="w-fit">
-              <Globe2 className="h-4 w-4 text-emerald-500" />
-              Free IP intelligence — no signup
-            </Badge>
-            <div className="space-y-3">
-              <h1 className="text-3xl font-semibold md:text-5xl">
-                IP Risk Checker
-              </h1>
-              <p className="text-muted-foreground text-base leading-7 md:text-lg">
-                Look up geolocation, ASN, routing, proxy, VPN, Tor, datacenter,
-                and risk signals for any IP address — free, no token required.
-                Just enter an IP and check.
-              </p>
-            </div>
-          </div>
-
-          <Card className="self-start">
-            <CardHeader>
-              <CardTitle className="text-xl">Run a lookup</CardTitle>
-              <CardDescription>
-                Free — no token needed. Limited to {30} lookups/day per visitor.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form
-                onSubmit={(event) => void runLookup(event)}
-                className="space-y-4"
-              >
-                <div className="space-y-2">
-                  <label htmlFor="ip-address" className="text-sm font-medium">
-                    IP address
-                  </label>
-                  <Input
-                    id="ip-address"
-                    value={ip}
-                    onChange={(event) => setIp(event.target.value)}
-                    className="font-mono"
-                    placeholder={
-                      detectingIp ? 'Detecting your IP...' : '8.8.8.8'
-                    }
-                    autoComplete="off"
-                  />
-                </div>
-
-                {error && (
-                  <Alert variant="destructive">
-                    <AlertDescription className="flex items-start gap-2">
-                      <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" />
-                      <span>{error}</span>
-                    </AlertDescription>
-                  </Alert>
-                )}
-
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <ShieldCheck className="mr-2 h-4 w-4" />
-                  )}
-                  {loading ? 'Checking...' : 'Check IP Risk'}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-
-      <section className="container mx-auto space-y-6 px-4 py-8">
-        <Card className={cn('border-2', tone.className)}>
-          <CardContent className="grid gap-6 p-6 md:grid-cols-[auto_minmax(0,1fr)_auto] md:items-center">
-            <div className="bg-background/80 flex h-14 w-14 items-center justify-center rounded-md">
-              <ToneIcon className="h-7 w-7" />
-            </div>
-            {/* The tone colour, not the muted grey, so the label and summary
-                clear 4.5:1 on the tinted light-mode background. */}
-            <div className="space-y-1">
-              <div className="text-sm font-medium uppercase">{tone.badge}</div>
-              <h2 className="text-2xl font-semibold">{tone.title}</h2>
-              <p className="text-sm">
-                {result
-                  ? `${result.data.ip} scored ${display(score?.risk_score)} risk with verdict ${display(score?.verdict).toLowerCase()}.`
-                  : 'Enter an IP address to retrieve risk, routing, and network ownership signals.'}
-              </p>
-            </div>
-            <div className="flex flex-col gap-2 sm:flex-row md:flex-col lg:flex-row">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => void copyShareLink()}
-                disabled={!result}
-              >
-                <Link2 className="mr-2 h-4 w-4" />
-                Copy link
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => void copyResult()}
-                disabled={!result}
-              >
-                <Copy className="mr-2 h-4 w-4" />
-                Copy JSON
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="grid gap-6 lg:grid-cols-3">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Globe2 className="h-5 w-5 text-emerald-500" />
-                Geo
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              <Metric
-                name="Country"
-                value={location?.country ?? location?.country_code}
-              />
-              <Metric name="City" value={location?.city} />
-              <Metric name="Region" value={location?.region} />
-              <Metric name="Timezone" value={location?.timezone} />
-              <Metric
-                name="Coordinates"
-                value={
-                  location?.latitude && location.longitude
-                    ? `${location.latitude}, ${location.longitude}`
-                    : undefined
-                }
-              />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Network className="h-5 w-5 text-blue-500" />
-                Network
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              <Metric name="ASN" value={network?.asn ?? routing?.origin_asn} />
-              <Metric
-                name="Organization"
-                value={network?.org ?? network?.owner}
-              />
-              <Metric name="Category" value={network?.category} />
-              <Metric name="Service role" value={network?.service_role} />
-              <Metric name="Prefix" value={routing?.prefix} />
-              <Metric name="RPKI" value={routing?.rpki_status} />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <ShieldAlert className="h-5 w-5 text-amber-500" />
-                Risk
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              <Metric name="Risk score" value={score?.risk_score} />
-              <Metric name="IP score" value={score?.ip_score} />
-              <Metric name="Band" value={score?.band} />
-              <Metric name="Verdict" value={score?.verdict} />
-              <Metric
-                name="Threat level"
-                value={classification?.threat_level}
-              />
-              <Metric name="Proxy" value={classification?.is_proxy} />
-              <Metric name="VPN" value={classification?.is_vpn} />
-              <Metric name="Tor" value={classification?.is_tor} />
-              <Metric name="Datacenter" value={classification?.is_datacenter} />
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Evidence Signals</CardTitle>
-              <CardDescription>
-                Empty evidence usually means the IP has no notable negative
-                indicators.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {signals.length > 0 ? (
-                <div className="space-y-3">
-                  {signals.map((signal, index) => (
-                    <div
-                      key={`${signal.category ?? 'signal'}-${index}`}
-                      className="bg-muted/30 rounded-md border p-4"
-                    >
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-medium">
-                          {display(signal.label, 'Signal')}
-                        </span>
-                        <span className="bg-background text-muted-foreground rounded-md px-2 py-1 text-xs">
-                          {display(signal.severity)}
-                        </span>
-                        <span className="bg-background text-muted-foreground rounded-md px-2 py-1 text-xs">
-                          {display(signal.confidence)}
-                        </span>
-                      </div>
-                      {signal.description && (
-                        <p className="text-muted-foreground mt-2 text-sm">
-                          {signal.description}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="bg-muted/30 text-muted-foreground rounded-md border p-6 text-sm">
-                  <CheckCircle className="mb-3 h-6 w-6 text-emerald-500" />
-                  No evidence signals returned yet.
-                </div>
+    <div className="container mx-auto max-w-6xl space-y-6 px-4 py-7 md:px-8 md:py-10">
+      <header className="max-w-3xl space-y-2">
+        <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
+          IP Risk Checker
+        </h1>
+        <p className="text-muted-foreground leading-7">
+          Check one address for proxy, VPN, Tor, location, and network evidence.
+          Free, no token required; up to 30 public lookups per day per visitor.
+        </p>
+      </header>
+      <section aria-label="Single IP lookup" className="space-y-4">
+        <form
+          onSubmit={submit}
+          className="bg-card space-y-3 rounded-xl border p-4 sm:p-5"
+        >
+          <label htmlFor="ip-address" className="block text-sm font-semibold">
+            IP address
+          </label>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Input
+              ref={inputRef}
+              id="ip-address"
+              value={ip}
+              onChange={(event) => {
+                edited.current = true;
+                setIp(event.target.value);
+                setInvalid(false);
+                setError(null);
+              }}
+              placeholder={
+                detecting
+                  ? 'Detecting your IP… or enter an address'
+                  : '8.8.8.8 or 2606:4700:4700::1111'
+              }
+              autoComplete="off"
+              autoCapitalize="none"
+              spellCheck={false}
+              maxLength={45}
+              className="min-w-0 flex-1 font-mono"
+              aria-invalid={invalid || undefined}
+              aria-describedby={invalid ? 'ip-help ip-error' : 'ip-help'}
+            />
+            <Button
+              type="submit"
+              disabled={loading}
+              className="min-h-11 sm:w-40"
+            >
+              {loading && (
+                <Loader2
+                  className="mr-2 h-4 w-4 animate-spin"
+                  aria-hidden="true"
+                />
               )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Lookup Metadata</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              <Metric name="Cache hit" value={result?.cached} />
-              <Metric name="Tier" value={result?.rateLimit.tier} />
-              <Metric name="Daily limit" value={result?.rateLimit.limit} />
-              <Metric
-                name="Remaining today"
-                value={result?.rateLimit.remaining}
-              />
-              <Metric
-                name="Resets"
-                value={resetTime(result?.rateLimit.reset)}
-              />
-              <div className="text-muted-foreground rounded-md border border-blue-500/20 bg-blue-500/10 p-3 text-xs">
-                Free public lookups are rate-limited per visitor. Developers
-                needing higher limits can call{' '}
-                <code className="font-mono">GET /v1/ip/:ip</code> with a CreepJS
-                API token. The paid upstream key stays on the Worker.
-              </div>
-            </CardContent>
-          </Card>
+              {loading ? 'Checking…' : 'Check IP Risk'}
+            </Button>
+            {loading && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  request.current?.abort();
+                  setLoading(false);
+                  setError(
+                    'Lookup cancelled. Your input is kept; submit again when ready.'
+                  );
+                }}
+              >
+                Cancel
+              </Button>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={detecting || loading}
+              onClick={() => {
+                edited.current = false;
+                void detectIp();
+              }}
+            >
+              {detecting ? 'Detecting your IP…' : 'Use my IP'}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              disabled={loading}
+              onClick={() => preset('8.8.8.8')}
+            >
+              Example IPv4
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              disabled={loading}
+              onClick={() => preset('2606:4700:4700::1111')}
+            >
+              Example IPv6
+            </Button>
+          </div>
+          <p id="ip-help" className="text-muted-foreground text-xs leading-5">
+            Use an address, not a website URL or range. Examples are public DNS
+            addresses, not sample results. A successful lookup adds the address
+            to this page’s URL; sharing the link shares that address.
+          </p>
+          {detectionFailed && (
+            <p className="text-muted-foreground text-sm" role="status">
+              Your IP could not be detected. You can still enter an address or
+              choose an example.
+            </p>
+          )}
+          {error && (
+            <p
+              id="ip-error"
+              role="alert"
+              className="text-destructive rounded-lg border border-current p-3 text-sm"
+            >
+              {error}
+            </p>
+          )}
+        </form>
+        <div role="status" aria-live="polite" className="text-sm font-medium">
+          {loading
+            ? `Checking ${ip.trim()}… Results will appear below. You can cancel this request.`
+            : error
+              ? invalid
+                ? 'The address needs correction.'
+                : 'The lookup did not complete. Your input is kept for retry.'
+              : result && assessment
+                ? `${assessment.badge}: ${assessment.title}. Report for ${result.data.ip}.`
+                : 'Ready. Results include a qualified verdict, evidence, and missing data.'}
         </div>
-
-        <IpBatchWorkspace />
+        {result && assessment && (
+          <>
+            <section
+              aria-labelledby="ip-verdict"
+              className={`space-y-3 rounded-xl border p-5 ${assessment.elevated ? 'border-amber-600/40 bg-amber-500/5' : 'bg-muted/30'}`}
+            >
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="text-muted-foreground text-xs">
+                  {assessment.badge} · Checked {checkedAt}
+                  {result.cached ? ' · Cached provider result' : ''}
+                </p>
+                <code className="break-all text-sm font-semibold">
+                  {result.data.ip}
+                </code>
+              </div>
+              <h2
+                id="ip-verdict"
+                ref={resultHeadingRef}
+                tabIndex={-1}
+                className="text-xl font-bold"
+              >
+                {assessment.title}
+              </h2>
+              <p className="text-sm leading-6">{assessment.explanation}</p>
+              {score?.risk_score != null && (
+                <p className="font-semibold">
+                  Risk score: {display(score.risk_score)}
+                  {score.band ? ` · ${score.band}` : ''}
+                  {score.verdict ? ` · ${score.verdict}` : ''}
+                </p>
+              )}
+              {assessment.missing.length > 0 && (
+                <p className="text-sm">
+                  <strong>Not returned:</strong> {assessment.missing.join('; ')}
+                  . These fields remain unknown.
+                </p>
+              )}
+              <div className="flex flex-wrap gap-2">
+                <CopyButton
+                  value={shareUrl}
+                  label="Copy link"
+                  variant="outline"
+                />
+                <CopyButton
+                  value={JSON.stringify(result, null, 2)}
+                  label="Copy JSON"
+                  variant="outline"
+                />
+              </div>
+              {ip.trim() !== result.data.ip && (
+                <p className="text-sm font-medium">
+                  The input has changed. This report still describes{' '}
+                  {result.data.ip}; run a lookup to check the new address.
+                </p>
+              )}
+            </section>
+            <div className="grid min-w-0 gap-4 md:grid-cols-3">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg">
+                    Proxy &amp; risk signals
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <dl className="text-sm">
+                    <Metric name="Proxy" value={classification?.is_proxy} />
+                    <Metric name="VPN" value={classification?.is_vpn} />
+                    <Metric name="Tor" value={classification?.is_tor} />
+                    <Metric
+                      name="Datacenter"
+                      value={classification?.is_datacenter}
+                    />
+                    <Metric
+                      name="Threat level"
+                      value={classification?.threat_level}
+                    />
+                    <Metric
+                      name="Provider action"
+                      value={score?.recommended_action}
+                    />
+                  </dl>
+                  <p className="text-muted-foreground mt-3 text-xs leading-5">
+                    “Not flagged” means this provider returned false. “Not
+                    returned” means unknown. Neither establishes a trusted
+                    connection.
+                  </p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg">
+                    Network &amp; routing
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <dl className="text-sm">
+                    <Metric
+                      name="ASN"
+                      value={network?.asn ?? routing?.origin_asn}
+                    />
+                    <Metric
+                      name="Organization"
+                      value={network?.org ?? network?.owner}
+                    />
+                    <Metric
+                      name="Category"
+                      value={network?.category ?? classification?.usage_type}
+                    />
+                    <Metric name="Service role" value={network?.service_role} />
+                    <Metric name="Prefix" value={routing?.prefix} />
+                    <Metric name="RPKI" value={routing?.rpki_status} />
+                  </dl>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg">
+                    Approximate location
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <dl className="text-sm">
+                    <Metric
+                      name="Country"
+                      value={location?.country ?? location?.country_code}
+                    />
+                    <Metric name="City" value={location?.city} />
+                    <Metric name="Region" value={location?.region} />
+                    <Metric name="Timezone" value={location?.timezone} />
+                    <Metric
+                      name="Coordinates"
+                      value={
+                        typeof location?.latitude === 'number' &&
+                        typeof location.longitude === 'number'
+                          ? `${location.latitude}, ${location.longitude}`
+                          : undefined
+                      }
+                    />
+                  </dl>
+                  <p className="text-muted-foreground mt-3 text-xs leading-5">
+                    Network location is approximate and cannot locate a person
+                    or a household.
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg">Returned evidence</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {signals.length ? (
+                  <ul className="space-y-3">
+                    {signals.map((signal, index) => (
+                      <li
+                        key={index}
+                        className="bg-muted/40 space-y-2 rounded-lg p-3"
+                      >
+                        <p className="flex flex-wrap items-center gap-2 text-sm font-semibold">
+                          <ShieldAlert className="h-4 w-4" aria-hidden="true" />
+                          {signal.label ?? 'Evidence signal'}
+                          <span className="text-muted-foreground font-normal">
+                            {[
+                              signal.severity,
+                              signal.confidence &&
+                                `${signal.confidence} confidence`,
+                            ]
+                              .filter(Boolean)
+                              .join(' · ')}
+                          </span>
+                        </p>
+                        {signal.description && (
+                          <p className="text-muted-foreground text-sm leading-6">
+                            {signal.description}
+                          </p>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-muted-foreground text-sm leading-6">
+                    The provider returned no evidence rows. This does not
+                    establish that the address is benign. Review the
+                    classification fields and any missing data above.
+                  </p>
+                )}
+                <Link
+                  className="text-primary inline-flex min-h-11 items-center text-sm underline underline-offset-4"
+                  href="/ip-lookup/how-to-tell-if-an-ip-is-a-proxy"
+                >
+                  How to interpret conflicting proxy signals
+                </Link>
+              </CardContent>
+            </Card>
+            <details className="rounded-lg border p-4">
+              <summary className="cursor-pointer text-sm font-semibold">
+                Method, freshness &amp; lookup limits
+              </summary>
+              <div className="text-muted-foreground space-y-3 pt-3 text-sm leading-6">
+                <p>
+                  Intelligence comes from IPbot through the CreepJS API.
+                  Standard responses may be cached for up to 24 hours; high-risk
+                  responses for up to 1 hour. The time above is when this
+                  browser received the result, not when every provider signal
+                  was measured.
+                </p>
+                <p>
+                  Remaining today:{' '}
+                  {result.rateLimit?.remaining ?? 'Not reported'} /{' '}
+                  {result.rateLimit?.limit ?? 'Not reported'}.{' '}
+                  {result.rateLimit?.reset
+                    ? `Resets ${new Date(result.rateLimit.reset * 1000).toLocaleString()}.`
+                    : 'Reset time not returned.'}
+                </p>
+                <p>
+                  The queried IP is used by the API and its provider and may be
+                  cached. IP values and report bodies are excluded from product
+                  analytics.{' '}
+                  <Link href="/privacy" className="underline">
+                    Data handling
+                  </Link>
+                  .
+                </p>
+              </div>
+            </details>
+          </>
+        )}
       </section>
+      <details className="section-anchor rounded-xl border p-4">
+        <summary className="cursor-pointer font-semibold">
+          Check a list of IPs · token required
+        </summary>
+        <div className="pt-4">
+          <IpBatchWorkspace />
+        </div>
+      </details>
+      <p className="text-muted-foreground flex items-center gap-2 text-xs">
+        <Globe2 className="h-4 w-4 shrink-0" aria-hidden="true" />A risk score
+        is a provider signal, not a fraud probability or a decision to block
+        someone.
+      </p>
     </div>
   );
 }

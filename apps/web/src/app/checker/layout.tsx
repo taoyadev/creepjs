@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { SITE_CONFIG, generateMetadata, structuredData } from '@/lib/metadata';
 import { StructuredData } from '@/components/StructuredData';
-import { SeoInternalLinks } from '@/components/SeoInternalLinks';
 
 export const metadata: Metadata = generateMetadata({
   title: 'Fingerprint Checker - Test Your Browser Privacy',
@@ -32,11 +31,6 @@ export default function CheckerLayout({
         ]}
       />
       {children}
-      <SeoInternalLinks
-        currentPath="/checker"
-        title="Keep exploring browser privacy signals"
-        description="After the live checker, compare individual fingerprint collectors, IP risk signals, API docs, and integration examples."
-      />
     </>
   );
 }

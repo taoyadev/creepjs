@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   SIGNAL_CONTENT_END,
+  SIGNAL_CONTENT_REVIEW_DATE,
   SIGNAL_CONTENT_START,
   assertSignalMarkdownRegistryAligned,
   buildLlmsFullText,
@@ -67,7 +68,7 @@ This is not a population estimate.
 - Live signal page: https://creepjs.org/fingerprint/${technique.slug}
 - Category: ${technique.category}
 
-Reviewed: 2026-07-28.
+Reviewed: ${SIGNAL_CONTENT_REVIEW_DATE}.
 
 ${SIGNAL_CONTENT_END}
 `;

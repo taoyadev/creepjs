@@ -4,22 +4,24 @@
 
 ## What CreepJS reports
 
-CreepJS runs the CPU Architecture collector in the current browser. It inspects the browser surface represented by this system signal and reports the observed value or availability state, collection timing, and any collector error. The live result is local browser evidence, not a population estimate.
+Examines a typed-array byte produced by a floating-point NaN operation and returns that numeric observation.
 
 ## How to interpret it
 
-Use CPU Architecture as one observation alongside other signals. Different browsers, devices, settings, and permissions may return different values. An unsupported or blocked API may return no value. A single signal does not identify a person.
+Compare the numeric byte across environments when investigating JavaScript representation differences.
 
 ## Limits
 
-This reference makes no uniqueness, match-rate, or fraud-probability claim. Results can change after browser, operating-system, hardware, permission, privacy-setting, or driver changes. Treat unavailable data as unavailable, not as evidence of safety or risk.
+This is an implementation quirk, not a CPU model or a dependable 32-bit versus 64-bit architecture detector. A single signal does not identify a person.
 
 ## Test the signal
+
+Keep the live result for comparison, change one relevant setting, then run again in the same tab. Compare the fields before interpreting a changed signature.
 
 - Live signal page: https://creepjs.org/fingerprint/architecture
 - Full checker: https://creepjs.org/checker
 - Category: System
 
-Reviewed: 2026-07-28.
+Reviewed: 2026-10-29.
 
 <!-- llms-safe:end -->

@@ -1,21 +1,11 @@
 'use client';
 
-import type { FormEvent } from 'react';
-import { KeyRound, Play } from 'lucide-react';
-
-import { trackEvent } from '@/lib/analytics';
+import { useState, type FormEvent } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 import { CopyButton } from '@/components/CopyButton';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Skeleton } from '@/components/ui/skeleton';
 
 interface TokenRequestCardProps {
   email: string;
@@ -36,28 +26,71 @@ export function TokenRequestCard({
   onTokenChange,
   onSubmit,
 }: TokenRequestCardProps) {
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const [show, setShow] = useState(false);
+  const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    void onSubmit();
+    if (!busy) void onSubmit();
   };
-
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <KeyRound className="h-5 w-5" aria-hidden="true" />
-          1. Request a token
+      <CardHeader className="p-4 pb-2">
+        <CardTitle as="h2" className="text-base">
+          1. Add an API token
         </CardTitle>
-        <CardDescription>
-          Enter an email address, then use the returned token in this session.
-        </CardDescription>
       </CardHeader>
-      <CardContent>
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          <div>
+      <CardContent className="space-y-3 p-4 pt-0">
+        <label htmlFor="playground-token" className="sr-only">
+          API token
+        </label>
+        <div className="flex min-w-0 gap-2">
+          <Input
+            id="playground-token"
+            type={show ? 'text' : 'password'}
+            value={token}
+            onChange={(event) => onTokenChange(event.target.value)}
+            disabled={busy}
+            className="min-w-0 flex-1 font-mono"
+            placeholder="Paste your token"
+            autoComplete="off"
+            spellCheck={false}
+            aria-describedby="playground-token-help"
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            aria-label={show ? 'Hide token' : 'Show token'}
+            aria-pressed={show}
+            onClick={() => setShow(!show)}
+          >
+            {show ? (
+              <EyeOff className="h-4 w-4" aria-hidden="true" />
+            ) : (
+              <Eye className="h-4 w-4" aria-hidden="true" />
+            )}
+          </Button>
+          <CopyButton
+            value={token.trim()}
+            variant="outline"
+            disabled={!token.trim()}
+            ariaLabel="Copy API token"
+            successMessage="API token copied"
+          />
+        </div>
+        <p
+          id="playground-token-help"
+          className="text-muted-foreground text-xs leading-5"
+        >
+          Kept in this tab’s memory only. Reload to clear it.
+        </p>
+        <details>
+          <summary className="cursor-pointer text-sm font-medium">
+            Need a token? Request one
+          </summary>
+          <form onSubmit={submit} className="space-y-3 border-t pt-3">
             <label
               htmlFor="playground-email"
-              className="mb-2 block text-sm font-medium"
+              className="block text-sm font-medium"
             >
               Email address
             </label>
@@ -66,67 +99,30 @@ export function TokenRequestCard({
               type="email"
               value={email}
               onChange={(event) => onEmailChange(event.target.value)}
-              placeholder="your@email.com"
+              placeholder="you@example.com"
               autoComplete="email"
               required
+              maxLength={254}
+              disabled={busy}
+              aria-describedby="token-request-help"
             />
-          </div>
-
-          <Button type="submit" disabled={busy || !email} className="w-full">
-            <Play className="mr-2 h-4 w-4" aria-hidden="true" />
-            {requesting ? 'Generating…' : 'Generate token'}
-          </Button>
-
-          <div>
-            <label
-              htmlFor="playground-token"
-              className="mb-2 block text-sm font-medium"
+            <p
+              id="token-request-help"
+              className="text-muted-foreground text-xs leading-5"
             >
-              API token
-            </label>
-            {requesting && !token ? (
-              <Skeleton className="h-10 w-full" />
-            ) : (
-              <div className="flex min-w-0 gap-2">
-                <Input
-                  id="playground-token"
-                  type="text"
-                  value={token}
-                  onChange={(event) => onTokenChange(event.target.value)}
-                  className="min-w-0 flex-1 font-mono"
-                  placeholder="cfp_..."
-                  autoComplete="off"
-                  spellCheck={false}
-                />
-                <CopyButton
-                  value={token}
-                  variant="outline"
-                  size="icon"
-                  disabled={!token}
-                  ariaLabel="Copy API token"
-                  successMessage="API token copied"
-                  onCopied={() =>
-                    trackEvent('button_clicked', {
-                      label: 'copy_api_token',
-                      section: 'playground',
-                    })
-                  }
-                />
-              </div>
-            )}
-          </div>
-
-          {token && !requesting && (
-            <Badge
-              variant="secondary"
-              className="justify-start whitespace-normal px-3 py-2 text-xs"
-              role="status"
-              aria-live="polite"
+              The API stores this address with the token. The token is returned
+              here, not emailed. Tokens for the same inbox share the daily
+              allowance.
+            </p>
+            <Button
+              type="submit"
+              disabled={busy || !email.trim()}
+              className="w-full"
             >
-              Token ready for the fingerprint request and code examples.
-            </Badge>
-          )}
-        </form>
+              {requesting ? 'Requesting token…' : 'Generate token'}
+            </Button>
+          </form>
+        </details>
       </CardContent>
     </Card>
   );

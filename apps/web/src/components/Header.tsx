@@ -17,7 +17,10 @@ interface HeaderProps {
 
 export function Header({ currentPage }: HeaderProps) {
   return (
-    <nav className="bg-background/95 sticky top-0 z-50 border-b backdrop-blur">
+    <nav
+      aria-label="Main navigation"
+      className="bg-background/95 sticky top-0 z-50 border-b backdrop-blur"
+    >
       <div className="container mx-auto flex h-16 min-w-0 items-center justify-between px-4">
         <Link
           href="/"
@@ -34,6 +37,7 @@ export function Header({ currentPage }: HeaderProps) {
             strokeLinecap="round"
             strokeLinejoin="round"
             className="h-5 w-5 text-blue-500"
+            aria-hidden="true"
           >
             <path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"></path>
             <path d="M14 13.12c0 2.38 0 6.38-1 8.88"></path>

@@ -18,6 +18,30 @@ github() {
   "$HOME/.codex/bin/github-token-run" --user taoyadev -- gh "$@"
 }
 
+# Only idempotent metadata queries may be replayed after a transport failure.
+github_read() {
+  case "$1 $2" in
+    'pr view'|'run list'|'api repos/taoyadev/creepjs/git/ref/heads/main') ;;
+    *) echo 'Refusing to retry a GitHub mutation.' >&2; return 2 ;;
+  esac
+  if [[ "$1" == api && ( "$#" -ne 4 || "$3" != --jq || "$4" != .object.sha ) ]]; then
+    echo 'Refusing API options that could change the request method.' >&2
+    return 2
+  fi
+  local attempt result status
+  for attempt in 1 2 3; do
+    if result=$(github "$@"); then
+      printf '%s\n' "$result"
+      return 0
+    else
+      status=$?
+    fi
+    [[ "$attempt" -eq 3 ]] && return "$status"
+    echo 'GitHub metadata query failed; retrying the read.' >&2
+    sleep 2
+  done
+}
+
 cd "$(git rev-parse --show-toplevel)"
 if [[ -n "$(git status --porcelain)" ]]; then
   echo 'Commit the release tree before publishing.' >&2
@@ -26,12 +50,12 @@ fi
 
 head_sha=$(git rev-parse HEAD)
 branch=$(git branch --show-current)
-main_sha=$(github api "repos/$repo/git/ref/heads/main" --jq .object.sha)
+main_sha=$(github_read api "repos/$repo/git/ref/heads/main" --jq .object.sha)
 started_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 
 if [[ "$head_sha" != "$main_sha" ]]; then
   read -r pr_number pr_head pr_base pr_state < <(
-    github pr view "$branch" --repo "$repo" \
+    github_read pr view "$branch" --repo "$repo" \
       --json number,headRefOid,baseRefName,state \
       --jq '[.number,.headRefOid,.baseRefName,.state] | join(" ")'
   )
@@ -42,7 +66,7 @@ if [[ "$head_sha" != "$main_sha" ]]; then
   echo "Waiting for the required check on $head_sha."
   required_result=
   for attempt in {1..60}; do
-    required_result=$(github pr view "$pr_number" --repo "$repo" \
+    required_result=$(github_read pr view "$pr_number" --repo "$repo" \
       --json statusCheckRollup \
       --jq '.statusCheckRollup[] | select(.name == "All Checks Passed") | .conclusion')
     [[ "$required_result" == SUCCESS ]] && break
@@ -58,7 +82,7 @@ if [[ "$head_sha" != "$main_sha" ]]; then
   fi
   # Branch protection enforces the required checks. Never use an admin bypass.
   github pr merge "$pr_number" --repo "$repo" --merge --match-head-commit "$head_sha"
-  release_sha=$(github pr view "$pr_number" --repo "$repo" --json mergeCommit --jq .mergeCommit.oid)
+  release_sha=$(github_read pr view "$pr_number" --repo "$repo" --json mergeCommit --jq .mergeCommit.oid)
   release_event=push
 else
   release_sha=$head_sha
@@ -72,7 +96,7 @@ run_ids=()
 for workflow in "${workflows[@]}"; do
   run_id=
   for attempt in {1..20}; do
-    run_id=$(github run list --repo "$repo" --workflow "$workflow" \
+    run_id=$(github_read run list --repo "$repo" --workflow "$workflow" \
       --branch main --commit "$release_sha" --event "$release_event" --limit 10 \
       --json databaseId,createdAt \
       --jq "[.[] | select(.createdAt >= \"$started_at\")] | .[0].databaseId // empty")

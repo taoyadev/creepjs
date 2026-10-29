@@ -29,19 +29,48 @@ export default function TermsPage() {
         ]}
       />
       <div className="from-background to-secondary min-h-screen bg-gradient-to-b">
-        <div className="container mx-auto max-w-4xl px-4 py-16 md:py-24">
+        <div className="container mx-auto max-w-4xl px-4 py-7 md:py-10">
           <header className="mb-10 space-y-3">
-            <h1 className="text-4xl font-bold md:text-5xl">Terms of Use</h1>
+            <h1 className="text-3xl font-bold md:text-4xl">Terms of Use</h1>
             <p className="text-muted-foreground text-lg leading-relaxed">
               These terms govern access to the CreepJS website, API, SDK, and
               educational tooling.
             </p>
           </header>
 
+          <nav
+            aria-label="Terms sections"
+            className="mb-6 flex flex-wrap gap-2"
+          >
+            <a
+              href="#responsible-use"
+              className="hover:bg-muted inline-flex min-h-11 items-center rounded-md border px-3 text-sm"
+            >
+              Responsible use
+            </a>
+            <a
+              href="#privacy"
+              className="hover:bg-muted inline-flex min-h-11 items-center rounded-md border px-3 text-sm"
+            >
+              Privacy
+            </a>
+            <a
+              href="#warranty"
+              className="hover:bg-muted inline-flex min-h-11 items-center rounded-md border px-3 text-sm"
+            >
+              Warranty
+            </a>
+            <a
+              href="#contact"
+              className="hover:bg-muted inline-flex min-h-11 items-center rounded-md border px-3 text-sm"
+            >
+              Contact
+            </a>
+          </nav>
           <div className="space-y-6">
-            <Card>
+            <Card id="responsible-use" className="section-anchor">
               <CardHeader>
-                <CardTitle>Responsible Use</CardTitle>
+                <CardTitle as="h2">Responsible Use</CardTitle>
               </CardHeader>
               <CardContent className="text-muted-foreground space-y-3 leading-relaxed">
                 <p>
@@ -62,9 +91,9 @@ export default function TermsPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card id="privacy" className="section-anchor">
               <CardHeader>
-                <CardTitle>Privacy and Compliance</CardTitle>
+                <CardTitle as="h2">Privacy and Compliance</CardTitle>
               </CardHeader>
               <CardContent className="text-muted-foreground space-y-3 leading-relaxed">
                 <p>
@@ -83,9 +112,9 @@ export default function TermsPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card id="warranty" className="section-anchor">
               <CardHeader>
-                <CardTitle>No Warranty</CardTitle>
+                <CardTitle as="h2">No Warranty</CardTitle>
               </CardHeader>
               <CardContent className="text-muted-foreground space-y-3 leading-relaxed">
                 <p>
@@ -101,9 +130,9 @@ export default function TermsPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card id="contact" className="section-anchor">
               <CardHeader>
-                <CardTitle>Contact</CardTitle>
+                <CardTitle as="h2">Contact</CardTitle>
               </CardHeader>
               <CardContent className="text-muted-foreground space-y-2 leading-relaxed">
                 <p>

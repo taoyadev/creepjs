@@ -29,9 +29,9 @@ export default function PrivacyPage() {
         ]}
       />
       <div className="from-background to-secondary min-h-screen bg-gradient-to-b">
-        <div className="container mx-auto max-w-4xl px-4 py-16 md:py-24">
+        <div className="container mx-auto max-w-4xl px-4 py-7 md:py-10">
           <header className="mb-10 space-y-3">
-            <h1 className="text-4xl font-bold md:text-5xl">Privacy Policy</h1>
+            <h1 className="text-3xl font-bold md:text-4xl">Privacy Policy</h1>
             <p className="text-muted-foreground text-lg leading-relaxed">
               CreepJS is an educational, privacy-first fingerprinting platform.
               This page explains what data is processed, what is stored, and how
@@ -49,10 +49,39 @@ export default function PrivacyPage() {
             </p>
           </header>
 
+          <nav
+            aria-label="Privacy policy sections"
+            className="mb-6 flex flex-wrap gap-2"
+          >
+            <a
+              href="#purpose"
+              className="hover:bg-muted inline-flex min-h-11 items-center rounded-md border px-3 text-sm"
+            >
+              What this site does
+            </a>
+            <a
+              href="#data"
+              className="hover:bg-muted inline-flex min-h-11 items-center rounded-md border px-3 text-sm"
+            >
+              Data & retention
+            </a>
+            <a
+              href="#analytics"
+              className="hover:bg-muted inline-flex min-h-11 items-center rounded-md border px-3 text-sm"
+            >
+              Analytics
+            </a>
+            <a
+              href="#choices"
+              className="hover:bg-muted inline-flex min-h-11 items-center rounded-md border px-3 text-sm"
+            >
+              Your choices
+            </a>
+          </nav>
           <div className="space-y-6">
-            <Card>
+            <Card id="purpose" className="section-anchor">
               <CardHeader>
-                <CardTitle>What CreepJS Does</CardTitle>
+                <CardTitle as="h2">What CreepJS Does</CardTitle>
               </CardHeader>
               <CardContent className="text-muted-foreground space-y-3 leading-relaxed">
                 <p>
@@ -74,16 +103,12 @@ export default function PrivacyPage() {
                   </Link>{' '}
                   define the project&apos;s responsible-use boundaries.
                 </p>
-                <p>
-                  For reviewer-level storage traceability in the repository, see
-                  the data traceability matrix in `docs/SECURITY.md`.
-                </p>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card id="data" className="section-anchor">
               <CardHeader>
-                <CardTitle>Data Collected & Stored</CardTitle>
+                <CardTitle as="h2">Data Collected & Stored</CardTitle>
               </CardHeader>
               <CardContent className="text-muted-foreground space-y-3 leading-relaxed">
                 <p>
@@ -126,15 +151,22 @@ export default function PrivacyPage() {
                   </li>
                 </ul>
                 <p>
+                  <strong>Optional population comparison:</strong> the checker
+                  sends a Canvas hash, WebGL renderer, timezone, font count, and
+                  screen tuple only when you activate “Compare with population.”
+                  Small matching groups remain suppressed. This is separate from
+                  submitting a full report in the API playground.
+                </p>
+                <p>
                   CreepJS does not intentionally store raw fingerprint component
                   payloads long-term.
                 </p>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card id="analytics" className="section-anchor">
               <CardHeader>
-                <CardTitle>Analytics</CardTitle>
+                <CardTitle as="h2">Analytics</CardTitle>
               </CardHeader>
               <CardContent className="text-muted-foreground space-y-3 leading-relaxed">
                 <p>
@@ -183,15 +215,26 @@ export default function PrivacyPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card id="choices" className="section-anchor">
               <CardHeader>
-                <CardTitle>Your Choices</CardTitle>
+                <CardTitle as="h2">Your Choices</CardTitle>
               </CardHeader>
               <CardContent className="text-muted-foreground space-y-3 leading-relaxed">
                 <p>
-                  If you do not want to be fingerprinted, you can close the site
-                  or use privacy-focused browsers and settings that reduce
-                  fingerprintability.
+                  The homepage and fingerprinting guide wait for you to start a
+                  full scan; the checker starts on load. Individual signal
+                  checks run automatically unless they need the external WebRTC
+                  network check. You can read documentation and policies without
+                  starting a full scan.
+                </p>
+                <p>
+                  To remove stored checker scans, open{' '}
+                  <Link href="/checker#history" className="underline">
+                    local scan history
+                  </Link>{' '}
+                  and choose “Clear All.” The playground keeps tokens only in
+                  this tab’s memory; reload it to clear a token. Copying or
+                  sharing an IP report link shares the queried address.
                 </p>
                 <p>
                   Signals like Do Not Track and Global Privacy Control are part

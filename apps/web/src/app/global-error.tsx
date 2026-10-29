@@ -25,8 +25,9 @@ export default function GlobalError({
             Something went wrong
           </h1>
           <p className="text-muted-foreground mx-auto mt-4 max-w-xl">
-            CreepJS could not start in this browser. Everything runs locally, so
-            retrying usually fixes it.
+            CreepJS could not finish loading. Retry, or reload the page if the
+            problem continues. A previously submitted API request may still have
+            been processed.
           </p>
           <div className="mt-8 flex items-center justify-center gap-4">
             <button

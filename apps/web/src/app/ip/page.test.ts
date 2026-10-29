@@ -1,34 +1,57 @@
-import { readFileSync } from 'node:fs';
-import path from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { assessIpResult } from '@/lib/ip-result';
+import type {
+  IpIntelligenceData,
+  PublicIpLookupResult,
+} from '@/lib/public-ip-lookup';
 
-const source = readFileSync(
-  path.join(process.cwd(), 'src', 'app', 'ip', 'page.tsx'),
-  'utf8'
-);
+function result(
+  data: Partial<IpIntelligenceData>,
+  highRisk = false
+): PublicIpLookupResult {
+  return {
+    data: { ip: '8.8.8.8', ...data },
+    cached: false,
+    highRisk,
+    rateLimit: { limit: 30, remaining: 29, reset: null, tier: 'public' },
+  };
+}
 
-describe('/ip risk banner contrast', () => {
-  it('pairs a dark light-mode tone with a light dark-mode tone', () => {
-    const tones = [
-      ...source.matchAll(/className:\s*'[^'\n]*bg-(\w+)-500\/10 ([^'\n]+)'/g),
-    ].map((match) => ({ hue: match[1], text: match[2] }));
-
-    expect(tones.map(({ hue }) => hue)).toEqual(['slate', 'red', 'emerald']);
-    // -200 text on a 10% tint of white is ~1.1–1.3:1; -800 clears WCAG AA.
-    for (const { hue, text } of tones) {
-      expect(text).toBe(`text-${hue}-800 dark:text-${hue}-200`);
-    }
-  });
-
-  it('sets the banner text in the tone colour, not the muted grey', () => {
-    // Muted grey on the light tints measured 4.2–4.3:1 in the browser.
-    const start = source.indexOf(
-      "<Card className={cn('border-2', tone.className)}>"
+describe('IP report interpretation', () => {
+  it('never calls missing risk data low risk', () => {
+    const assessment = assessIpResult(
+      result({ location: { country_code: 'US' } })
     );
-    const banner = source.slice(start, source.indexOf('</Card>', start));
-
-    expect(start).toBeGreaterThan(-1);
-    expect(banner).toContain('{tone.badge}');
-    expect(banner).not.toContain('text-muted-foreground');
+    expect(assessment.state).toBe('partial');
+    expect(assessment.title).toBe('Risk data unavailable');
+    expect(assessment.explanation).toContain('unknown');
+    expect(assessment.missing).toContain('Risk score');
+  });
+  it('treats a valid zero score and explicit false flags as returned data', () => {
+    const assessment = assessIpResult(
+      result({
+        score: { risk_score: 0 },
+        classification: { is_proxy: false, is_vpn: false, is_tor: false },
+        network: { asn: 'AS15169' },
+        location: { country_code: 'US' },
+      })
+    );
+    expect(assessment.state).toBe('success');
+    expect(assessment.title).toBe('No elevated network risk');
+    expect(assessment.explanation).toContain('not proof of safety');
+    expect(assessment.missing).toEqual([]);
+  });
+  it('keeps positive proxy evidence visible even when a score is low', () => {
+    const assessment = assessIpResult(
+      result({ score: { risk_score: 0 }, classification: { is_proxy: true } })
+    );
+    expect(assessment.elevated).toBe(true);
+    expect(assessment.title).toBe('Proxy-related signals found');
+    expect(assessment.state).toBe('partial');
+  });
+  it('labels an address-only response as no result', () => {
+    const assessment = assessIpResult(result({}));
+    expect(assessment.state).toBe('no-result');
+    expect(assessment.title).toBe('No intelligence returned');
   });
 });

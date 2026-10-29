@@ -114,7 +114,12 @@ export function renderGraphicsCollectorCard(
           <div className="text-muted-foreground mb-1 text-sm">
             Computed Styles:
           </div>
-          <div className="max-h-48 overflow-y-auto">
+          <div
+            className="max-h-48 overflow-y-auto"
+            tabIndex={0}
+            role="group"
+            aria-label="WebGL parameters"
+          >
             <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
               {Object.entries(fingerprint.data.css.styles)
                 .slice(0, 20)

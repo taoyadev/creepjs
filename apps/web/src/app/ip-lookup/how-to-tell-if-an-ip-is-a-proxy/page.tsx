@@ -1,15 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import {
-  ArrowRight,
-  Database,
-  ExternalLink,
-  Network,
-  ShieldCheck,
-  TriangleAlert,
-} from 'lucide-react';
+import { ArrowRight, ExternalLink, TriangleAlert } from 'lucide-react';
 import { CompactIpLookup } from '@/components/CompactIpLookup';
-import { SeoInternalLinks } from '@/components/SeoInternalLinks';
 import { StructuredData } from '@/components/StructuredData';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -67,10 +59,10 @@ export default function IpProxyPilotPage() {
 
       <div>
         <section className="bg-muted/30 border-b">
-          <div className="container mx-auto px-4 py-10 lg:py-16">
+          <div className="container mx-auto px-4 py-6 lg:py-8">
             <nav
               aria-label="Breadcrumb"
-              className="text-muted-foreground mb-8 text-sm"
+              className="text-muted-foreground mb-4 text-sm"
             >
               <ol className="flex flex-wrap items-center gap-2">
                 <li>
@@ -91,18 +83,16 @@ export default function IpProxyPilotPage() {
               </ol>
             </nav>
 
-            <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-start">
-              <div className="max-w-3xl space-y-6">
+            <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-start">
+              <div className="max-w-3xl space-y-3">
                 <Badge variant="outline">IP lookup guide + live tool</Badge>
                 <div className="space-y-4">
-                  <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">
+                  <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">
                     How to Tell If an IP Is a Proxy
                   </h1>
-                  <p className="text-muted-foreground text-lg leading-8">
-                    Check the address first, then read the proxy, VPN, Tor,
-                    datacenter, network, risk, and evidence fields together.
-                    CreepJS keeps the live result separate from interpretation
-                    so conflicting signals remain visible.
+                  <p className="text-muted-foreground text-sm leading-6">
+                    Check an address for proxy, VPN, Tor, and network evidence.
+                    Missing fields stay unknown. No token required.
                   </p>
                 </div>
               </div>
@@ -162,41 +152,6 @@ export default function IpProxyPilotPage() {
           </section>
 
           <section
-            aria-labelledby="decision-heading"
-            className="grid gap-8 lg:grid-cols-3"
-          >
-            <div>
-              <ShieldCheck className="text-primary mb-4 h-7 w-7" />
-              <h2 id="decision-heading" className="text-xl font-semibold">
-                Start with direct flags
-              </h2>
-              <p className="text-muted-foreground mt-3 leading-7">
-                Proxy, VPN, and Tor booleans answer the narrow classification
-                question. Their absence means “not flagged by the current data,”
-                not “known to be a normal household connection.”
-              </p>
-            </div>
-            <div>
-              <Network className="text-primary mb-4 h-7 w-7" />
-              <h2 className="text-xl font-semibold">Check network context</h2>
-              <p className="text-muted-foreground mt-3 leading-7">
-                Compare the ASN, organization, usage type, datacenter status,
-                announced prefix, and routing details. This context can explain
-                why a direct flag exists or why the result is ambiguous.
-              </p>
-            </div>
-            <div>
-              <Database className="text-primary mb-4 h-7 w-7" />
-              <h2 className="text-xl font-semibold">Inspect the evidence</h2>
-              <p className="text-muted-foreground mt-3 leading-7">
-                Evidence rows expose the labels, severity, and confidence
-                returned for the address. Prefer those concrete inputs over a
-                single score when signals disagree.
-              </p>
-            </div>
-          </section>
-
-          <section
             aria-labelledby="limits-heading"
             className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-6 md:p-8"
           >
@@ -242,7 +197,7 @@ export default function IpProxyPilotPage() {
                 <h2 id="next-step-heading" className="text-2xl font-semibold">
                   Need the complete network report?
                 </h2>
-                <p className="text-primary-foreground/80 mt-2">
+                <p className="text-primary-foreground mt-2">
                   Open the full checker for geolocation, ASN, routing, risk,
                   evidence, share links, and batch tools.
                 </p>
@@ -258,12 +213,6 @@ export default function IpProxyPilotPage() {
           </section>
         </article>
       </div>
-
-      <SeoInternalLinks
-        currentPath={IP_PROXY_PILOT_PATH}
-        title="Continue your privacy and network review"
-        description="Move from proxy-oriented evidence to the full IP report, browser fingerprint checker, or implementation documentation."
-      />
     </>
   );
 }

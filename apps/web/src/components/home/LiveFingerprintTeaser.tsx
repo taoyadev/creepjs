@@ -13,6 +13,7 @@ import {
   reduceScanProgress,
 } from '@/components/checker/scanProgressState';
 import { trackEvent } from '@/lib/analytics';
+import { signalJson } from '@/lib/signal-result';
 
 type TeaserStatus = 'idle' | 'loading' | 'ready' | 'error';
 
@@ -82,7 +83,7 @@ export function LiveFingerprintTeaser() {
             <p className="text-primary mb-1 text-xs font-semibold uppercase tracking-wider">
               Browser evidence
             </p>
-            <CardTitle className="flex items-center gap-2 text-xl">
+            <CardTitle as="h2" className="flex items-center gap-2 text-xl">
               <Fingerprint className="h-5 w-5" aria-hidden="true" />
               Live fingerprint
             </CardTitle>
@@ -104,10 +105,10 @@ export function LiveFingerprintTeaser() {
         {status === 'idle' && (
           <div className="space-y-4">
             <p className="text-muted-foreground text-sm leading-6">
-              Run about 60 browser checks locally and see the identifier this
-              browser produces. The results stay on this page. One check,
-              WebRTC, contacts a public STUN server to see which network
-              addresses your browser exposes.
+              Run browser checks locally and see the identifier this browser
+              produces. The results stay on this page. One check, WebRTC,
+              contacts a public STUN server to see which network addresses your
+              browser exposes.
             </p>
             <Button type="button" onClick={() => void scan()}>
               <Play className="mr-2 h-4 w-4" aria-hidden="true" />
@@ -160,6 +161,15 @@ export function LiveFingerprintTeaser() {
 
         {status === 'ready' && result && (
           <div className="animate-fade-in-up space-y-5">
+            <p role="status" className="text-sm font-semibold">
+              {result.coverage.successful === 0
+                ? 'No usable collector values returned'
+                : result.coverage.failed || result.coverage.skipped
+                  ? 'Scan finished with partial coverage'
+                  : 'Scan complete'}{' '}
+              · {result.coverage.successful} returned, {result.coverage.failed}{' '}
+              failed, {result.coverage.skipped} unavailable
+            </p>
             <div>
               <p className="text-muted-foreground text-xs">Diagnostic ID</p>
               <div className="mt-2 flex items-center gap-2">
@@ -195,6 +205,46 @@ export function LiveFingerprintTeaser() {
               Coverage measures completed collectors; it is not a uniqueness
               score.
             </p>
+            <dl className="space-y-2 text-sm">
+              {[
+                ['Browser platform', result.data.navigator?.platform],
+                [
+                  'Graphics renderer',
+                  result.data.webgl?.unmaskedRenderer ??
+                    result.data.webgl?.renderer,
+                ],
+                ['Timezone', result.data.timezone?.timezone],
+              ].map(([label, value]) => (
+                <div
+                  key={label}
+                  className="grid grid-cols-[0.7fr_1.3fr] gap-3 border-t pt-2"
+                >
+                  <dt className="text-muted-foreground">{label}</dt>
+                  <dd className="min-w-0 break-words [overflow-wrap:anywhere]">
+                    {value || 'Not returned'}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+            <details className="rounded-lg border">
+              <summary className="cursor-pointer px-3 py-2 text-sm font-medium">
+                Inspect all collected values
+              </summary>
+              <pre
+                className="bg-muted max-h-64 max-w-full overflow-auto p-3 text-xs"
+                tabIndex={0}
+                aria-label="Homepage collected values"
+              >
+                <code>{signalJson(result.data)}</code>
+              </pre>
+              <div className="p-2">
+                <CopyButton
+                  value={signalJson(result.data)}
+                  label="Copy collector JSON"
+                  variant="outline"
+                />
+              </div>
+            </details>
           </div>
         )}
 

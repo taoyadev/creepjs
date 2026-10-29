@@ -4,22 +4,24 @@
 
 ## What CreepJS reports
 
-CreepJS runs the Service Worker Fingerprint collector in the current browser. It inspects the browser surface represented by this network signal and reports the observed value or availability state, collection timing, and any collector error. The live result is local browser evidence, not a population estimate.
+Checks service worker support, the current controller and registration, exposed worker features, and available notification or push permission states.
 
 ## How to interpret it
 
-Use Service Worker Fingerprint as one observation alongside other signals. Different browsers, devices, settings, and permissions may return different values. An unsupported or blocked API may return no value. A single signal does not identify a person.
+Compare supported, controller, and ready separately. A supported API can have no active controller on this page.
 
 ## Limits
 
-This reference makes no uniqueness, match-rate, or fraud-probability claim. Results can change after browser, operating-system, hardware, permission, privacy-setting, or driver changes. Treat unavailable data as unavailable, not as evidence of safety or risk.
+This collector does not request notification permission or register a new worker. Registration and permission state are specific to this site. A single signal does not identify a person.
 
 ## Test the signal
+
+Keep the live result for comparison, change one relevant setting, then run again in the same tab. Compare the fields before interpreting a changed signature.
 
 - Live signal page: https://creepjs.org/fingerprint/service-worker
 - Full checker: https://creepjs.org/checker
 - Category: Network
 
-Reviewed: 2026-07-28.
+Reviewed: 2026-10-29.
 
 <!-- llms-safe:end -->

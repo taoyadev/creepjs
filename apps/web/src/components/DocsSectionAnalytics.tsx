@@ -22,9 +22,7 @@ export function DocsSectionAnalytics({
       const target = event.target;
       if (!(target instanceof HTMLElement)) return;
 
-      const trigger = target.closest<HTMLElement>(
-        '[role="tab"][data-docs-tab]'
-      );
+      const trigger = target.closest<HTMLElement>('[data-docs-tab]');
       const section = trigger?.dataset.docsTab;
       if (!section) return;
 

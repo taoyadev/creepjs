@@ -63,12 +63,17 @@ export function renderSecurityCollectorCard(
                   <div className="text-muted-foreground mb-1 text-xs">
                     Inconsistencies Detected:
                   </div>
-                  <div className="max-h-32 space-y-1 overflow-y-auto">
+                  <div
+                    className="max-h-32 space-y-1 overflow-y-auto"
+                    tabIndex={0}
+                    role="group"
+                    aria-label="Consistency warnings"
+                  >
                     {fingerprint.data.lies.inconsistencies.map(
                       (inconsistency, i) => (
                         <div
                           key={i}
-                          className="text-xs text-yellow-600 dark:text-yellow-400"
+                          className="text-xs text-yellow-800 dark:text-yellow-400"
                         >
                           • {inconsistency}
                         </div>
@@ -77,7 +82,7 @@ export function renderSecurityCollectorCard(
                   </div>
                 </>
               ) : (
-                <div className="text-xs text-green-600 dark:text-green-400">
+                <div className="text-xs text-green-800 dark:text-green-400">
                   ✓ No inconsistencies detected
                 </div>
               )}
@@ -151,7 +156,7 @@ export function renderSecurityCollectorCard(
                 )}
                 {fingerprint.data.resistance.totalDetections === 0 && (
                   <div className="flex items-center gap-2">
-                    <RiskBadge level="low" label="No Automation Detected" />
+                    <RiskBadge level="low" label="No Automation Flags" />
                   </div>
                 )}
               </div>
@@ -161,7 +166,12 @@ export function renderSecurityCollectorCard(
             <div className="text-muted-foreground mb-1 text-sm">
               All Detections:
             </div>
-            <div className="grid max-h-48 grid-cols-2 gap-1 overflow-y-auto text-xs">
+            <div
+              className="grid max-h-48 grid-cols-2 gap-1 overflow-y-auto text-xs"
+              tabIndex={0}
+              role="group"
+              aria-label="Resistance detection flags"
+            >
               {Object.entries(fingerprint.data.resistance.detections).map(
                 ([key, value]) => (
                   <div key={key} className="flex justify-between">
@@ -169,11 +179,11 @@ export function renderSecurityCollectorCard(
                     <span
                       className={
                         value
-                          ? 'text-yellow-600 dark:text-yellow-400'
-                          : 'text-green-600 dark:text-green-400'
+                          ? 'text-yellow-800 dark:text-yellow-400'
+                          : 'text-green-800 dark:text-green-400'
                       }
                     >
-                      {value ? 'Detected' : 'Clear'}
+                      {value ? 'Detected' : 'Not flagged'}
                     </span>
                   </div>
                 )

@@ -11,8 +11,9 @@ describe('root layout rendering boundary', () => {
 
     expect(source).not.toContain('<Suspense');
     expect(source).toMatch(
-      /<main className="flex-1">\s*\{children\}\s*<\/main>/
+      /<main[^>]*id="main-content"[^>]*>[\s\S]*?\{children\}\s*<\/main>/
     );
+    expect(source).toContain('href="#main-content"');
   });
 
   it('leaves the root layout as the only <main> landmark', () => {

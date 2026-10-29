@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { SITE_CONFIG, generateMetadata, structuredData } from '@/lib/metadata';
 import { StructuredData } from '@/components/StructuredData';
-import { SeoInternalLinks } from '@/components/SeoInternalLinks';
 
 export const metadata: Metadata = generateMetadata({
   title: 'Free IP Risk Checker - Proxy, VPN, ASN & Geo Lookup',
@@ -43,11 +42,6 @@ export default function IpLayout({ children }: { children: React.ReactNode }) {
           </p>
         </div>
       </section>
-      <SeoInternalLinks
-        currentPath="/ip"
-        title="Related privacy and fingerprinting tools"
-        description="Connect IP reputation analysis with browser fingerprint checks, signal explainers, and API integration references."
-      />
     </>
   );
 }

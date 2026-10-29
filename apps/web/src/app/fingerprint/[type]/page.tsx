@@ -4,19 +4,7 @@ import Link from 'next/link';
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { BookOpen, Terminal } from 'lucide-react';
-
-import { CopyButton } from '@/components/CopyButton';
-import { SeoInternalLinks } from '@/components/SeoInternalLinks';
 import { StructuredData } from '@/components/StructuredData';
-import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
 import { readVettedSignalMarkdown } from '@/lib/fingerprint-markdown';
 import {
   SITE_CONFIG,
@@ -84,15 +72,6 @@ export default async function FingerprintPage({
   }
 
   const markdown = readVettedSignalMarkdown(technique);
-  const apiExample = `fetch('${SITE_CONFIG.apiUrl}/v1/fingerprint', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'X-API-Token': 'YOUR_API_TOKEN'
-  },
-  body: JSON.stringify(fingerprint)
-});`;
-
   return (
     <>
       <StructuredData
@@ -122,119 +101,85 @@ export default async function FingerprintPage({
         ]}
       />
 
-      <div className="from-background to-secondary min-h-screen bg-gradient-to-b">
-        <div className="container mx-auto max-w-6xl px-4 py-8">
-          <header className="mb-8 max-w-3xl">
-            <p className="text-muted-foreground mb-2 text-sm">
-              {technique.category}
-            </p>
-            <h1 className="mb-3 text-4xl font-bold">{technique.name}</h1>
-            <p className="text-muted-foreground text-lg">
-              {technique.description}
-            </p>
-          </header>
-
-          <div className="grid gap-6 lg:grid-cols-3">
-            <div className="min-w-0 space-y-6 lg:col-span-2">
-              <FingerprintPlayground
-                type={technique.slug}
-                name={technique.name}
-              />
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Terminal className="h-5 w-5" aria-hidden="true" />
-                    API integration
-                  </CardTitle>
-                  <CardDescription>
-                    Send a complete collected fingerprint to the authenticated
-                    API endpoint.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="relative min-w-0">
-                    <pre
-                      className="bg-muted max-w-full overflow-x-auto rounded p-4 pr-28 text-xs"
-                      tabIndex={0}
-                    >
-                      <code>{apiExample}</code>
-                    </pre>
-                    <CopyButton
-                      value={apiExample}
-                      variant="outline"
-                      size="sm"
-                      className="absolute right-2 top-2"
-                      ariaLabel="Copy API example"
-                      successMessage="API example copied"
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            <aside className="min-w-0 space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <BookOpen className="h-5 w-5" aria-hidden="true" />
-                    Continue testing
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <Button asChild className="w-full">
-                    <Link href="/checker">Run the full checker</Link>
-                  </Button>
-                  <Button asChild variant="outline" className="w-full">
-                    <Link href="/playground">Open the API playground</Link>
-                  </Button>
-                  <Button asChild variant="outline" className="w-full">
-                    <Link href="/fingerprint">Browse all signals</Link>
-                  </Button>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Related signals</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-2">
-                    {FINGERPRINT_TECHNIQUES.filter(
-                      ({ slug }) => slug !== technique.slug
-                    )
-                      .slice(0, 10)
-                      .map((related) => (
-                        <Button
-                          key={related.slug}
-                          asChild
-                          variant="outline"
-                          size="sm"
-                        >
-                          <Link href={`/fingerprint/${related.slug}`}>
-                            {related.name}
-                          </Link>
-                        </Button>
-                      ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </aside>
+      <div className="container mx-auto max-w-6xl space-y-5 px-4 py-6 md:px-8 md:py-8">
+        <header className="space-y-2">
+          <nav
+            aria-label="Breadcrumb"
+            className="text-muted-foreground flex flex-wrap gap-2 text-sm"
+          >
+            <Link href="/fingerprint" className="underline underline-offset-4">
+              All signals
+            </Link>
+            <span aria-hidden="true">/</span>
+            <span>{technique.category}</span>
+          </nav>
+          <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
+            {technique.name}
+          </h1>
+          <p className="text-muted-foreground max-w-3xl text-sm leading-6">
+            {technique.description}
+          </p>
+        </header>
+        <div className="grid min-w-0 items-start gap-5 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
+          <div className="min-w-0 space-y-4">
+            <FingerprintPlayground
+              key={technique.slug}
+              type={technique.slug}
+              name={technique.name}
+            />
+            <nav
+              aria-label="Continue testing"
+              className="flex flex-wrap gap-x-5 gap-y-2 text-sm"
+            >
+              <Link
+                href="/checker"
+                className="text-primary inline-flex min-h-11 items-center underline underline-offset-4"
+              >
+                Run the full checker
+              </Link>
+              <Link
+                href="/playground"
+                className="text-primary inline-flex min-h-11 items-center underline underline-offset-4"
+              >
+                Test the API
+              </Link>
+              <Link
+                href="/docs"
+                className="text-primary inline-flex min-h-11 items-center underline underline-offset-4"
+              >
+                Integration docs
+              </Link>
+            </nav>
           </div>
-
-          <article className="prose prose-slate dark:prose-invert bg-background mt-8 max-w-none rounded-lg border p-6 sm:p-8">
+          <article className="prose prose-sm prose-slate dark:prose-invert prose-headings:scroll-mt-24 prose-h2:mb-2 prose-h2:mt-5 prose-h2:text-base prose-p:leading-6 prose-a:break-words first:prose-h2:mt-0 min-w-0 max-w-none rounded-xl border p-5">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>
               {markdown}
             </ReactMarkdown>
           </article>
         </div>
+        <nav aria-label="Related signals" className="space-y-3 border-t py-5">
+          <h2 className="text-lg font-semibold">
+            Compare related {technique.category.toLowerCase()} signals
+          </h2>
+          <div className="flex flex-wrap gap-3">
+            {FINGERPRINT_TECHNIQUES.filter(
+              (item) =>
+                item.slug !== technique.slug &&
+                item.category === technique.category
+            )
+              .slice(0, 5)
+              .map((item) => (
+                <Link
+                  key={item.slug}
+                  href={`/fingerprint/${item.slug}`}
+                  className="text-primary inline-flex min-h-11 items-center rounded-md border px-3 text-sm"
+                >
+                  {item.name}
+                </Link>
+              ))}
+          </div>
+        </nav>
       </div>
-
-      <SeoInternalLinks
-        currentPath={`/fingerprint/${technique.slug}`}
-        title="Compare related fingerprint signals"
-        description="Move from this collector to the CreepJS signal index, live checker, API docs, and other high-value fingerprinting explainers."
-      />
     </>
   );
 }

@@ -14,7 +14,7 @@ function sourceFiles(root: string): string[] {
 }
 
 describe('structured-data restraint', () => {
-  it('keeps the one visible guide FAQ and adds no HowTo or Dataset schema', () => {
+  it('adds no FAQ, HowTo, or Dataset schema to the task pages', () => {
     const appRoot = path.join(process.cwd(), 'src', 'app');
     const schemaUses = sourceFiles(appRoot).flatMap((file) => {
       const source = readFileSync(file, 'utf8');
@@ -27,7 +27,7 @@ describe('structured-data restraint', () => {
       schemaUses
         .filter(({ type }) => type === 'FAQPage')
         .map(({ file }) => path.relative(appRoot, file))
-    ).toEqual(['guide/what-is-browser-fingerprinting/page.tsx']);
+    ).toEqual([]);
     expect(schemaUses.some(({ type }) => type === 'HowTo')).toBe(false);
     expect(schemaUses.some(({ type }) => type === 'Dataset')).toBe(false);
   });

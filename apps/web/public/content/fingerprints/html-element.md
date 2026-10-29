@@ -4,22 +4,24 @@
 
 ## What CreepJS reports
 
-CreepJS runs the HTML Element Features collector in the current browser. It inspects the browser surface represented by this browser signal and reports the observed value or availability state, collection timing, and any collector error. The live result is local browser evidence, not a population estimate.
+Inspects HTML element properties, methods, and support for shadow DOM and custom elements.
 
 ## How to interpret it
 
-Use HTML Element Features as one observation alongside other signals. Different browsers, devices, settings, and permissions may return different values. An unsupported or blocked API may return no value. A single signal does not identify a person.
+Use the feature flags to understand available DOM capabilities. Inspect JSON to see which properties or methods contributed.
 
 ## Limits
 
-This reference makes no uniqueness, match-rate, or fraud-probability claim. Results can change after browser, operating-system, hardware, permission, privacy-setting, or driver changes. Treat unavailable data as unavailable, not as evidence of safety or risk.
+Feature presence is not proof that a feature works in every context. Browser extensions and version changes may alter the exposed surface. A single signal does not identify a person.
 
 ## Test the signal
+
+Keep the live result for comparison, change one relevant setting, then run again in the same tab. Compare the fields before interpreting a changed signature.
 
 - Live signal page: https://creepjs.org/fingerprint/html-element
 - Full checker: https://creepjs.org/checker
 - Category: Browser
 
-Reviewed: 2026-07-28.
+Reviewed: 2026-10-29.
 
 <!-- llms-safe:end -->

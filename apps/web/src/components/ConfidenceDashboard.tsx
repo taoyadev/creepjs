@@ -178,7 +178,13 @@ export function ConfidenceDashboard({
         );
   const attemptedCollectors = coverage.successful + coverage.failed;
   const avgPerCollector =
-    attemptedCollectors > 0 ? (totalTime || 0) / attemptedCollectors : 0;
+    attemptedCollectors > 0
+      ? collectorEntries.reduce(
+          (sum, [, component]) =>
+            sum + (component.status === 'skipped' ? 0 : component.duration),
+          0
+        ) / attemptedCollectors
+      : 0;
   const totalCollectors =
     coverage.successful + coverage.failed + coverage.skipped;
 
@@ -327,28 +333,30 @@ export function ConfidenceDashboard({
                   Avg per Attempted
                 </div>
               </div>
-              <div className="bg-muted/50 col-span-2 space-y-1 rounded-lg p-4">
-                <div className="text-primary text-2xl font-bold">
-                  {baselineProgress.warming
-                    ? `${baselineProgress.sampleCount}/${baselineProgress.threshold}`
-                    : baselineSummary?.rarityPercent !== null &&
-                        baselineSummary?.rarityPercent !== undefined
-                      ? `${baselineSummary.rarityPercent}%`
-                      : '—'}
+              {baseline && (
+                <div className="bg-muted/50 col-span-2 space-y-1 rounded-lg p-4">
+                  <div className="text-primary text-2xl font-bold">
+                    {baselineProgress.warming
+                      ? `${baselineProgress.sampleCount}/${baselineProgress.threshold}`
+                      : baselineSummary?.rarityPercent !== null &&
+                          baselineSummary?.rarityPercent !== undefined
+                        ? `${baselineSummary.rarityPercent}%`
+                        : '—'}
+                  </div>
+                  <div className="text-muted-foreground text-sm">
+                    {baselineProgress.warming
+                      ? 'Baseline warming up'
+                      : 'Population Rarity'}
+                  </div>
+                  <div className="text-muted-foreground text-xs">
+                    {baselineProgress.warming
+                      ? `Population rarity stays hidden until ${baselineProgress.threshold} anonymous samples are available.`
+                      : baselineSummary
+                        ? `Blended from ${baselineSummary.availableComponents} baseline-backed signals across ${baselineSummary.sampleCount} samples.`
+                        : 'Awaiting baseline response from the API.'}
+                  </div>
                 </div>
-                <div className="text-muted-foreground text-sm">
-                  {baselineProgress.warming
-                    ? 'Baseline warming up'
-                    : 'Population Rarity'}
-                </div>
-                <div className="text-muted-foreground text-xs">
-                  {baselineProgress.warming
-                    ? `Population rarity stays hidden until ${baselineProgress.threshold} anonymous samples are available.`
-                    : baselineSummary
-                      ? `Blended from ${baselineSummary.availableComponents} baseline-backed signals across ${baselineSummary.sampleCount} samples.`
-                      : 'Awaiting baseline response from the API.'}
-                </div>
-              </div>
+              )}
             </div>
           </div>
         </CardContent>
@@ -432,7 +440,7 @@ export function ConfidenceDashboard({
                           collector.status === 'success'
                             ? 'text-green-700 dark:text-green-300'
                             : collector.status === 'error'
-                              ? 'text-red-500'
+                              ? 'text-red-700 dark:text-red-400'
                               : 'text-muted-foreground'
                         }`}
                       >

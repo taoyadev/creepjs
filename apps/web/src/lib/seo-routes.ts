@@ -30,7 +30,7 @@ export interface FingerprintTechnique {
   category: string;
 }
 
-export const LAST_SEO_UPDATE = new Date('2026-06-13');
+export const LAST_SEO_UPDATE = new Date('2026-10-29');
 
 export const IP_PROXY_PILOT_PATH = '/ip-lookup/how-to-tell-if-an-ip-is-a-proxy';
 
@@ -42,7 +42,7 @@ export const IP_PROXY_PILOT_ROUTE = {
   section: 'ip-lookup',
   changeFrequency: 'monthly',
   priority: 0.78,
-  lastModified: new Date('2026-07-28'),
+  lastModified: new Date('2026-10-29'),
 } as const satisfies SeoRoute;
 
 export const STATIC_SEO_ROUTES = [
@@ -54,7 +54,7 @@ export const STATIC_SEO_ROUTES = [
     section: 'core',
     changeFrequency: 'weekly',
     priority: 1,
-    lastModified: new Date('2026-07-28'),
+    lastModified: new Date('2026-10-29'),
   },
   {
     path: '/checker',
@@ -128,7 +128,7 @@ export const STATIC_SEO_ROUTES = [
     section: 'legal',
     changeFrequency: 'yearly',
     priority: 0.5,
-    lastModified: new Date('2026-07-26'),
+    lastModified: new Date('2026-10-29'),
   },
 ] as const satisfies readonly SeoRoute[];
 
