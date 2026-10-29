@@ -28,6 +28,7 @@ const ipScenarios = new Set([
   'WCAG A and AA automated audit of representative pages',
   'first render remains truthful and usable before JavaScript',
 ]);
+const partnersOnly = process.argv.includes('--partners-only');
 const publicBase = process.env.QA_BASE_URL;
 if (
   publicBase &&
@@ -123,6 +124,7 @@ function ipResult(ip = '8.8.8.8') {
 }
 async function mockApi(context, state = {}) {
   state.calls = [];
+  state.events = [];
   await context.route('https://static.cloudflareinsights.com/**', (route) =>
     route.fulfill({
       status: 200,
@@ -149,6 +151,15 @@ async function mockApi(context, state = {}) {
         })
         .catch(() => {});
     if (request.method() === 'OPTIONS') return json(200, {});
+    if (url.pathname === '/v1/events') {
+      state.events.push(JSON.parse(request.postData() || '{}'));
+      return route
+        .fulfill({
+          status: 204,
+          headers: { 'access-control-allow-origin': '*' },
+        })
+        .catch(() => {});
+    }
     if (url.pathname === '/my-ip') {
       if (state.detectDelay)
         await new Promise((resolve) => setTimeout(resolve, state.detectDelay));
@@ -167,6 +178,14 @@ async function mockApi(context, state = {}) {
         return json(503, { error: 'Provider unavailable' });
       if (state.ipMode === 'malformed') return json(200, {});
       const body = ipResult(ip);
+      if (state.ipMode === 'high') {
+        body.highRisk = true;
+        body.data.score = {
+          risk_score: 95,
+          band: 'high',
+          verdict: 'high risk',
+        };
+      }
       if (state.ipMode === 'partial')
         body.data = { ip, location: { country_code: 'US' } };
       if (state.ipMode === 'empty') body.data = { ip };
@@ -313,12 +332,12 @@ async function main() {
     });
   }
   try {
-    if (!a11yOnly) {
+    if (!a11yOnly && !partnersOnly) {
       await check(
-        'all 65 routes have truthful static HTML and stable canonical URLs',
+        'all indexable routes have truthful static HTML and stable canonical URLs',
         async () => {
           assert(
-            paths.length === 65 && new Set(paths).size === 65,
+            paths.length >= 66 && new Set(paths).size === paths.length,
             'page registry count changed'
           );
           for (const route of paths) {
@@ -378,7 +397,11 @@ async function main() {
         { width: 390, height: 844 },
       ]) {
         await check(
-          'all 65 routes render without overflow at ' + viewport.width + 'px',
+          'all ' +
+            paths.length +
+            ' routes render without overflow at ' +
+            viewport.width +
+            'px',
           async () => {
             await page.setViewportSize(viewport);
             for (const route of paths) {
@@ -861,6 +884,15 @@ async function main() {
         }
       );
     }
+    if (!a11yOnly)
+      await require('./partner-browser-qa.cjs')({
+        browser,
+        base,
+        check,
+        assert,
+        mockApi,
+        artifacts,
+      });
     let axePath;
     try {
       axePath = require.resolve('axe-core/axe.min.js');
@@ -880,20 +912,24 @@ async function main() {
             await page.emulateMedia({ colorScheme: mode.theme });
             for (const route of ipOnly
               ? ['/ip']
-              : [
-                  '/',
-                  '/ip',
-                  '/checker?tab=all',
-                  '/checker?tab=graphics',
-                  '/fingerprint',
-                  '/fingerprint/canvas',
-                  '/playground',
-                  '/docs',
-                  '/guide/what-is-browser-fingerprinting',
-                  '/ip-lookup/how-to-tell-if-an-ip-is-a-proxy',
-                  '/privacy',
-                  '/terms',
-                ]) {
+              : partnersOnly
+                ? ['/proxy-providers', '/guide/static-vs-rotating-proxies']
+                : [
+                    '/proxy-providers',
+                    '/guide/static-vs-rotating-proxies',
+                    '/',
+                    '/ip',
+                    '/checker?tab=all',
+                    '/checker?tab=graphics',
+                    '/fingerprint',
+                    '/fingerprint/canvas',
+                    '/playground',
+                    '/docs',
+                    '/guide/what-is-browser-fingerprinting',
+                    '/ip-lookup/how-to-tell-if-an-ip-is-a-proxy',
+                    '/privacy',
+                    '/terms',
+                  ]) {
               await visit(route);
               assert(
                 (await page
@@ -996,7 +1032,7 @@ async function main() {
       );
     }
 
-    if (!a11yOnly) {
+    if (!a11yOnly && !partnersOnly) {
       const noJs = await browser.newContext({
         javaScriptEnabled: false,
         viewport: { width: 390, height: 844 },

@@ -221,6 +221,22 @@ jobs:
           console.log('✅ Fingerprint endpoint check passed!');
           NODE
 
+      - name: Health check - Partner event contract
+        if: steps.health-check-root.outputs.status == 'success'
+        run: |
+          response_file="$RUNNER_TEMP/partner-event-smoke.txt"
+          status_code=$(curl -sS --max-time 20 \
+            -o "$response_file" -w "%{http_code}" \
+            https://creepjs-api.difft.workers.dev/v1/events \
+            -X POST -H "Origin: https://creepjs.org" \
+            -H "Content-Type: text/plain" \
+            -d '{"name":"partner_impression","path":"/proxy-providers","props":{"label":"release-validation","section":"partner-directory"}}')
+          if [ "$status_code" != "204" ] || [ -s "$response_file" ]; then
+            echo "::error::Partner event contract returned $status_code; expected an empty 204"
+            exit 1
+          fi
+          echo "Partner event accepted; this is not a storage-persistence check."
+
       - name: Health check - Batch endpoint contract
         if: steps.health-check-root.outputs.status == 'success'
         run: |

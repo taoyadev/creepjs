@@ -132,6 +132,14 @@ describe('trackEvent', () => {
     const { trackEvent } = await import('./analytics');
 
     trackEvent('docs_viewed', { section: 'api' });
+    trackEvent('partner_impression', {
+      label: 'test-provider',
+      section: 'partner-directory',
+    });
+    trackEvent('link_clicked', {
+      label: 'test-provider',
+      section: 'partner-directory',
+    });
 
     expect(sendBeacon).not.toHaveBeenCalled();
     expect(fetchMock).not.toHaveBeenCalled();
@@ -144,9 +152,56 @@ describe('trackEvent', () => {
     const { trackEvent } = await import('./analytics');
 
     trackEvent('docs_viewed', { section: 'api' });
+    trackEvent('partner_impression', {
+      label: 'test-provider',
+      section: 'partner-directory',
+    });
+    trackEvent('link_clicked', {
+      label: 'test-provider',
+      section: 'partner-directory',
+    });
 
     expect(sendBeacon).not.toHaveBeenCalled();
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('sends only partner dimensions and strips IP query and fragment', async () => {
+    const sendBeacon = vi.fn().mockReturnValue(true);
+    stubBrowser({ sendBeacon, pathname: '/ip?q=203.0.113.7#secret' });
+    const { trackEvent } = await import('./analytics');
+    trackEvent('partner_impression', {
+      label: 'test-provider',
+      section: 'partner-ip-result',
+      ...({
+        ip: '203.0.113.7',
+        fingerprintId: 'test-fingerprint',
+        risk: 99,
+        coupon: 'TEST',
+        url: 'https://provider.test',
+      } as object),
+    });
+    const [, blob] = sendBeacon.mock.calls[0] as [string, Blob];
+    expect(await blobJson(blob)).toEqual({
+      name: 'partner_impression',
+      path: '/ip',
+      props: { label: 'test-provider', section: 'partner-ip-result' },
+    });
+  });
+
+  it('keeps partner tracking best-effort when transport fails', async () => {
+    const fetchMock = stubBrowser({
+      sendBeacon: vi.fn().mockReturnValue(false),
+    });
+    fetchMock.mockRejectedValue(new Error('offline'));
+    const { trackEvent } = await import('./analytics');
+    expect(() =>
+      trackEvent('link_clicked', {
+        label: 'test-provider',
+        section: 'partner-guide',
+      })
+    ).not.toThrow();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    await Promise.resolve();
   });
 
   it('does nothing on the server', async () => {

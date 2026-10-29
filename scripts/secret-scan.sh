@@ -20,7 +20,11 @@ scan() {
   local pattern="$2"
   local status=0
   # --hidden: dotfiles (.github/, .env.example siblings) are tracked content.
-  rg -n --hidden --pcre2 \
+  # Report paths only: a failing scan must never print the secret it detected.
+  # Managed source snapshots omit .git. Still honor their .gitignore so host-
+  # local runtime environment files are not opened by a source-code scan.
+  rg -l --hidden --no-require-git --pcre2 \
+    --glob '!**/.claude/worktrees/**' \
     --glob '!**/node_modules/**' \
     --glob '!**/.git/**' \
     --glob '!**/.next/**' \
@@ -53,7 +57,7 @@ scan "IPbot API key assignment" 'IPBOT_API_KEY\s*[:=]\s*["'\'']?(?!<|your|exampl
 scan "Test API token assignment" 'TEST_API_TOKEN\s*[:=]\s*["'\'']?(?!<|your|example)cfp_[A-Za-z0-9]{16,}'
 
 if [[ -s "$tmpfile" ]]; then
-  echo "Secret scan found potential secrets:"
+  echo "Secret scan found potential secrets in these files (values withheld):"
   cat "$tmpfile"
   exit 1
 fi

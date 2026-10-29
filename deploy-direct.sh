@@ -87,13 +87,12 @@ if [[ "$head_sha" != "$main_sha" ]]; then
 else
   release_sha=$head_sha
   release_event=workflow_dispatch
-  for workflow in "${workflows[@]}"; do
-    github workflow run "$workflow" --repo "$repo" --ref main
-  done
 fi
 
-run_ids=()
 for workflow in "${workflows[@]}"; do
+  if [[ "$release_event" == workflow_dispatch ]]; then
+    github workflow run "$workflow" --repo "$repo" --ref main
+  fi
   run_id=
   for attempt in {1..20}; do
     run_id=$(github_read run list --repo "$repo" --workflow "$workflow" \
@@ -107,11 +106,7 @@ for workflow in "${workflows[@]}"; do
     echo "No $workflow run found for $release_sha; inspect Actions before retrying." >&2
     exit 1
   fi
-  run_ids+=("$run_id")
   echo "$workflow: https://github.com/$repo/actions/runs/$run_id"
-done
-
-for run_id in "${run_ids[@]}"; do
   github run watch "$run_id" --repo "$repo" --exit-status --interval 15
 done
 echo "Production workflows passed for $release_sha."

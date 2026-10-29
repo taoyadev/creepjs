@@ -385,6 +385,7 @@ const respectPrivacy = () => {
 ❌ **Not Allowed**:
 
 - User tracking without consent
+- Using IP lookups, fingerprint reports, or risk scores to target partner promotions; partner links must use reviewed static URLs and suppress referrers
 - Privacy invasion
 - Discrimination
 - Spam or harassment

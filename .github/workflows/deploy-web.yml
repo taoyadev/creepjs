@@ -169,6 +169,7 @@ jobs:
     permissions:
       contents: read
       deployments: write
+      actions: read
     # Only deploy on push to main or manual workflow dispatch
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
 
@@ -179,6 +180,14 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Require the matching API release before publishing Web
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_RELEASE_BASE_SHA: ${{ github.event.before }}
+        run: node scripts/wait-for-api-release.cjs
 
       # wrangler-action needs pnpm available to install/run wrangler.
       - name: Setup pnpm
