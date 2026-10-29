@@ -170,18 +170,22 @@ export default function PrivacyPage() {
               </CardHeader>
               <CardContent className="text-muted-foreground space-y-3 leading-relaxed">
                 <p>
-                  Page views are counted by Cloudflare Web Analytics, which is
-                  cookie-less and does not identify visitors.
+                  When enabled, Cloudflare Web Analytics provides aggregate
+                  page-view metrics without analytics cookies. Cloudflare
+                  hosting security can separately set a{' '}
+                  <code>cf_clearance</code> cookie for automated-traffic checks.
                 </p>
                 <p>
-                  Product events are sent to our own API and stored in
-                  Cloudflare Workers Analytics Engine, which keeps them for
-                  three months. They count tool runs (checker scans, IP risk
-                  lookups, playground API requests), API token requests, docs
-                  section views, fingerprint-ID copies, and clicks on a few
-                  tracked buttons and links.
+                  Product events are sent to our own API. Event storage is
+                  currently disabled for this deployment, so valid event
+                  payloads are discarded. When event storage is enabled,
+                  Cloudflare Workers Analytics Engine retains aggregate events
+                  for up to three months. Events describe tool runs (checker
+                  scans, IP risk lookups, playground API requests), API token
+                  requests, docs section views, fingerprint-ID copies, and
+                  clicks on a few tracked buttons and links.
                 </p>
-                <p>Each stored event contains only:</p>
+                <p>The event format permits only:</p>
                 <ul className="list-disc space-y-2 pl-6">
                   <li>the event name;</li>
                   <li>
