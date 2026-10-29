@@ -11,7 +11,7 @@ import type {
 describe('IP lookup first render', () => {
   it('does not accept input before its change handlers can preserve ownership', () => {
     const html = renderToStaticMarkup(createElement(IpRiskPage));
-    const input = html.match(/<input[^>]*id="ip-address"[^>]*>/)?.[0];
+    const input = /<input[^>]*id="ip-address"[^>]*>/.exec(html)?.[0];
     expect(input).toContain('disabled=""');
     expect(html).toContain('Preparing lookup controls');
     expect(html).not.toContain('Ready. Results include');
