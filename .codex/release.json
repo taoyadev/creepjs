@@ -30,7 +30,7 @@
         "--project",
         "creepjs-web-release",
         "--cmd",
-        "node scripts/task-first-browser-qa.cjs"
+        "NODE_PATH=\"$HOME/node_modules:${NODE_PATH:-}\" node scripts/task-first-browser-qa.cjs"
       ]
     }
   ],
@@ -51,7 +51,7 @@
         "--project",
         "creepjs-web-release",
         "--cmd",
-        "QA_BASE_URL=https://creepjs.org QA_ALLOW_PRODUCTION=1 node scripts/task-first-browser-qa.cjs"
+        "NODE_PATH=\"$HOME/node_modules:${NODE_PATH:-}\" QA_BASE_URL=https://creepjs.org QA_ALLOW_PRODUCTION=1 node scripts/task-first-browser-qa.cjs"
       ]
     }
   ]
