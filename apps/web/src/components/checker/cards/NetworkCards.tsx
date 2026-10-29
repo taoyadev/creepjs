@@ -152,7 +152,12 @@ export function renderNetworkCollectorCard(
           <div className="text-muted-foreground mt-2 text-sm">
             Supported MIME Types:
           </div>
-          <div className="max-h-32 space-y-1 overflow-y-auto text-xs">
+          <div
+            className="max-h-32 space-y-1 overflow-y-auto text-xs"
+            tabIndex={0}
+            role="group"
+            aria-label="Supported MIME types"
+          >
             {fingerprint.data.mimeTypes.types.map((type, i) => (
               <div key={i}>
                 {type.type} - {type.description}
@@ -210,7 +215,12 @@ export function renderNetworkCollectorCard(
           <div className="text-muted-foreground mt-2 text-sm">
             Media Queries:
           </div>
-          <div className="grid max-h-32 grid-cols-2 gap-1 overflow-y-auto text-xs">
+          <div
+            className="grid max-h-32 grid-cols-2 gap-1 overflow-y-auto text-xs"
+            tabIndex={0}
+            role="group"
+            aria-label="CSS media query results"
+          >
             {Object.entries(fingerprint.data.cssMedia.mediaQueryMatches).map(
               ([key, value]) => (
                 <div key={key} className="flex justify-between">

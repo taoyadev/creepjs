@@ -53,4 +53,20 @@ describe('ResponseViewer', () => {
     expect(html).toContain('aria-live="assertive"');
     expect(html).toContain('Error: unavailable');
   });
+
+  it('distinguishes partial responses from complete success', () => {
+    const html = renderToStaticMarkup(
+      <ResponseViewer
+        loading={false}
+        response={{
+          body: '{"fingerprintId":"partial"}',
+          tone: 'partial',
+          hint: 'Expected report fields are missing.',
+        }}
+      />
+    );
+    expect(html).toContain('The request returned a partial result.');
+    expect(html).toContain('Expected report fields are missing.');
+    expect(html).not.toContain('The request completed successfully.');
+  });
 });

@@ -1,5 +1,5 @@
 import type { FingerprintResult } from '@creepjs/core';
-import { SITE_CONFIG } from '@/lib/metadata';
+import { fetchJson } from '@/lib/api-client';
 
 export type BaselineComponent =
   | 'canvas'
@@ -79,15 +79,16 @@ export function buildBaselineQuery(result: FingerprintResult) {
 }
 
 export async function fetchBaseline(
-  result: FingerprintResult
+  result: FingerprintResult,
+  signal?: AbortSignal
 ): Promise<BaselineResponse | null> {
   const query = buildBaselineQuery(result);
   if (!query) return null;
 
-  const res = await fetch(`${SITE_CONFIG.apiUrl}/v1/stats/uniqueness?${query}`);
-  if (!res.ok) return null;
-
-  return (await res.json()) as BaselineResponse;
+  return fetchJson<BaselineResponse>(`/v1/stats/uniqueness?${query}`, {
+    signal,
+    timeoutMs: 8000,
+  });
 }
 
 export function labelForBaselineComponent(component: BaselineComponent) {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import Link from 'next/link';
 import {
@@ -12,7 +12,6 @@ import {
   ShieldAlert,
 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -37,6 +36,13 @@ function yesNo(value: boolean | undefined): string {
 
 function resultHeading(result: PublicIpLookupResult): string {
   const classification = result.data.classification;
+  const flags = [
+    classification?.is_proxy,
+    classification?.is_vpn,
+    classification?.is_tor,
+  ];
+  if (flags.every((flag) => flag === undefined))
+    return 'Proxy classification unavailable';
   if (
     classification?.is_proxy ||
     classification?.is_vpn ||
@@ -47,6 +53,8 @@ function resultHeading(result: PublicIpLookupResult): string {
   if (classification?.is_datacenter) {
     return 'No proxy flag; datacenter signals found';
   }
+  if (flags.some((flag) => flag === undefined))
+    return 'Partial proxy classification';
   return 'No proxy flag returned';
 }
 
@@ -56,16 +64,28 @@ export function CompactIpLookup() {
   const [error, setError] = useState<string | null>(null);
   const [inputInvalid, setInputInvalid] = useState(false);
   const [loading, setLoading] = useState(false);
+  const request = useRef<AbortController | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const resultHeadingRef = useRef<HTMLHeadingElement>(null);
+  useEffect(() => () => request.current?.abort(), []);
+  useEffect(() => {
+    if (result) resultHeadingRef.current?.focus();
+  }, [result]);
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (request.current && !request.current.signal.aborted && loading) return;
+    request.current?.abort();
+    const controller = new AbortController();
+    request.current = controller;
     setError(null);
     setInputInvalid(false);
     setResult(null);
     setLoading(true);
 
     try {
-      const nextResult = await lookupPublicIp(ip);
+      const nextResult = await lookupPublicIp(ip, controller.signal);
+      if (controller.signal.aborted) return;
       setResult(nextResult);
       trackEvent('tool_run', {
         tool: 'ip_lookup',
@@ -74,6 +94,7 @@ export function CompactIpLookup() {
         status: '200',
       });
     } catch (lookupError) {
+      if (controller.signal.aborted) return;
       setError(publicIpLookupErrorMessage(lookupError));
       setInputInvalid(
         lookupError instanceof IpInputError ||
@@ -92,7 +113,7 @@ export function CompactIpLookup() {
         ),
       });
     } finally {
-      setLoading(false);
+      if (!controller.signal.aborted) setLoading(false);
     }
   };
 
@@ -103,10 +124,7 @@ export function CompactIpLookup() {
 
   return (
     <Card className="border-primary/20 shadow-lg">
-      <CardHeader>
-        <Badge variant="outline" className="mb-2 w-fit">
-          Free · no signup
-        </Badge>
+      <CardHeader className="p-4 pb-3">
         <h2 className="text-2xl font-semibold leading-none tracking-tight">
           Check an IP now
         </h2>
@@ -115,7 +133,7 @@ export function CompactIpLookup() {
           and is never sent to analytics.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-5">
+      <CardContent className="space-y-4 p-4 pt-0">
         <form
           onSubmit={(event) => void submit(event)}
           className="space-y-3"
@@ -126,15 +144,20 @@ export function CompactIpLookup() {
               IP address
             </label>
             <Input
+              ref={inputRef}
               id="compact-ip-address"
               value={ip}
               onChange={(event) => {
                 setIp(event.target.value);
                 setInputInvalid(false);
+                setError(null);
+                setResult(null);
               }}
               placeholder="8.8.8.8 or 2001:4860:4860::8888"
               className="font-mono"
               autoComplete="off"
+              autoCapitalize="none"
+              disabled={loading}
               spellCheck={false}
               maxLength={45}
               aria-invalid={inputInvalid || undefined}
@@ -148,6 +171,38 @@ export function CompactIpLookup() {
               Hostnames, URLs, and IP ranges are not accepted.
             </p>
           </div>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={loading}
+              onClick={() => {
+                setIp('8.8.8.8');
+                setResult(null);
+                setError(null);
+                setInputInvalid(false);
+                inputRef.current?.focus();
+              }}
+            >
+              Example IPv4
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={loading}
+              onClick={() => {
+                setIp('2606:4700:4700::1111');
+                setResult(null);
+                setError(null);
+                setInputInvalid(false);
+                inputRef.current?.focus();
+              }}
+            >
+              Example IPv6
+            </Button>
+          </div>
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? (
               <Loader2
@@ -159,9 +214,35 @@ export function CompactIpLookup() {
             )}
             {loading ? 'Checking signals…' : 'Check for proxy signals'}
           </Button>
+          {loading && (
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={() => {
+                request.current?.abort();
+                setLoading(false);
+                setError(
+                  'Lookup cancelled. The address is kept so you can try again.'
+                );
+              }}
+            >
+              Cancel lookup
+            </Button>
+          )}
         </form>
+        {loading && (
+          <p role="status" className="text-muted-foreground text-sm">
+            Checking proxy flags and supporting evidence…
+          </p>
+        )}
 
-        <div aria-live="polite" aria-atomic="true">
+        {result && (
+          <p role="status" className="sr-only">
+            {resultHeading(result)}. Report for {result.data.ip}.
+          </p>
+        )}
+        <div>
           {error && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" aria-hidden="true" />
@@ -172,10 +253,17 @@ export function CompactIpLookup() {
           {result && (
             <div className="bg-muted/30 space-y-4 rounded-lg border p-4">
               <div>
+                <code className="mb-2 block break-all text-sm">
+                  {result.data.ip}
+                </code>
                 <p className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
                   Qualified result
                 </p>
-                <h3 className="mt-1 text-xl font-semibold">
+                <h3
+                  ref={resultHeadingRef}
+                  tabIndex={-1}
+                  className="mt-1 text-xl font-semibold"
+                >
                   {resultHeading(result)}
                 </h3>
                 <p className="text-muted-foreground mt-1 text-sm">
@@ -183,6 +271,13 @@ export function CompactIpLookup() {
                   using the address or why.
                 </p>
               </div>
+              {!classification && (
+                <p className="text-sm">
+                  The provider did not return classification data. Unknown is
+                  not a negative flag; retry later or inspect the available
+                  network fields.
+                </p>
+              )}
 
               <dl className="grid grid-cols-2 gap-3 text-sm">
                 {[
@@ -256,6 +351,12 @@ export function CompactIpLookup() {
                     </p>
                   )}
                 </div>
+              )}
+              {signals.length === 0 && (
+                <p className="text-muted-foreground text-xs leading-5">
+                  No evidence rows were returned. This does not establish that
+                  the address is safe or direct.
+                </p>
               )}
 
               <Button asChild className="w-full">

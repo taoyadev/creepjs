@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import type { FingerprintResult } from '@creepjs/core';
 import { Download, FileJson, FileSpreadsheet, Info } from 'lucide-react';
 import { toast } from 'sonner';
+import { signalJson } from '@/lib/signal-result';
 import type { OwnIpSummary } from '@/lib/own-ip';
 import {
   buildNetworkCsvRows,
@@ -49,7 +50,7 @@ export function ExportReport({ result, ipSummary }: ExportReportProps) {
         lies: result.data.lies,
       };
 
-      const jsonString = JSON.stringify(exportData, null, 2);
+      const jsonString = signalJson(exportData);
       const blob = new Blob([jsonString], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -445,7 +446,7 @@ export function ExportReport({ result, ipSummary }: ExportReportProps) {
         history: history,
       };
 
-      const jsonString = JSON.stringify(exportData, null, 2);
+      const jsonString = signalJson(exportData);
       const blob = new Blob([jsonString], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -553,7 +554,11 @@ export function ExportReport({ result, ipSummary }: ExportReportProps) {
                 <li>All exports are generated locally in your browser</li>
                 <li>No data is sent to any server during export</li>
                 <li>
-                  JSON files contain complete raw data from all collectors
+                  Reports can include network addresses and device hints. Review
+                  a file before sharing it.
+                </li>
+                <li>
+                  JSON files include collector data with image payloads omitted
                 </li>
                 <li>
                   CSV files contain summarized data in spreadsheet-friendly
@@ -571,7 +576,11 @@ export function ExportReport({ result, ipSummary }: ExportReportProps) {
           <div className="space-y-3">
             <h3 className="text-sm font-semibold">JSON Export Structure</h3>
             <div className="bg-muted/50 rounded-lg p-4">
-              <pre className="overflow-x-auto font-mono text-xs">
+              <pre
+                className="overflow-x-auto font-mono text-xs"
+                tabIndex={0}
+                aria-label="JSON export structure"
+              >
                 {`{
   "metadata": {
     "exportDate": "ISO timestamp",

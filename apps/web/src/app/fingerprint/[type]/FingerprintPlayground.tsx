@@ -1,90 +1,23 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { Check, Code, RefreshCw } from 'lucide-react';
-
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Loader2, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
+import { CopyButton } from '@/components/CopyButton';
+import {
+  changedSignalFields,
+  signalFields,
+  signalJson,
+  signalState,
+} from '@/lib/signal-result';
 
 interface FingerprintPlaygroundProps {
   type: string;
   name: string;
 }
-
-interface ScanStep {
-  name: string;
-  status: 'pending' | 'scanning' | 'completed';
-}
-
 type CoreCollectors = typeof import('@creepjs/core');
 type SignalCollector = () => unknown;
-
-const COMMON_SCAN_STEPS = [
-  'Initializing browser APIs',
-  'Collecting data',
-  'Analyzing results',
-  'Generating fingerprint',
-];
-
-const TYPE_SCAN_STEPS: Record<string, string[]> = {
-  canvas: [
-    'Creating canvas context',
-    'Rendering text patterns',
-    'Drawing geometric shapes',
-    'Extracting pixel data',
-    'Hashing canvas output',
-  ],
-  webgl: [
-    'Initializing WebGL context',
-    'Querying GPU vendor',
-    'Testing extensions',
-    'Measuring rendering capabilities',
-    'Analyzing shader precision',
-  ],
-  navigator: [
-    'Reading user agent',
-    'Checking platform info',
-    'Analyzing language preferences',
-    'Testing hardware capabilities',
-    'Collecting system properties',
-  ],
-  audio: [
-    'Creating audio context',
-    'Generating oscillator signals',
-    'Processing audio nodes',
-    'Measuring output characteristics',
-    'Computing audio fingerprint',
-  ],
-  fonts: [
-    'Measuring baseline fonts',
-    'Testing system fonts',
-    'Checking custom fonts',
-    'Analyzing render dimensions',
-    'Building font signature',
-  ],
-  lies: [
-    'Collecting all browser data',
-    'Cross-referencing properties',
-    'Detecting inconsistencies',
-    'Analyzing tampering patterns',
-    'Computing trust score',
-  ],
-  webrtc: [
-    'Creating peer connection',
-    'Gathering ICE candidates',
-    'Inspecting exposed network signals',
-    'Testing connection capabilities',
-    'Summarizing network observations',
-  ],
-  'service-worker': [
-    'Testing service worker support',
-    'Checking feature availability',
-    'Inspecting registration capabilities',
-    'Testing cache support',
-    'Summarizing worker observations',
-  ],
-};
 
 export function getSignalCollector(
   type: string,
@@ -149,7 +82,7 @@ export function getSignalCollector(
     'service-worker': () => collectors.collectServiceWorkerFingerprint(),
     lies: async () => {
       const fingerprint = await collectors.collectFingerprint();
-      return collectors.collectLiesFingerprint(fingerprint.data);
+      return fingerprint.data.lies;
     },
   };
 
@@ -160,169 +93,219 @@ export default function FingerprintPlayground({
   type,
   name,
 }: FingerprintPlaygroundProps) {
-  const [data, setData] = useState<unknown>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [scanSteps, setScanSteps] = useState<ScanStep[]>(() =>
-    (TYPE_SCAN_STEPS[type] ?? COMMON_SCAN_STEPS).map((stepName) => ({
-      name: stepName,
-      status: 'pending',
-    }))
+  const needsNetwork = type === 'webrtc' || type === 'lies';
+  const [status, setStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>(
+    needsNetwork ? 'idle' : 'loading'
   );
-  const [progress, setProgress] = useState(0);
+  const [data, setData] = useState<unknown>(null);
+  const [error, setError] = useState('');
+  const [elapsed, setElapsed] = useState(0);
+  const [phase, setPhase] = useState('Loading collector');
+  const [baseline, setBaseline] = useState<string | null>(null);
+  const run = useRef(0);
+  const busy = useRef(false);
 
   const loadFingerprint = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    setProgress(0);
-
-    const steps = TYPE_SCAN_STEPS[type] ?? COMMON_SCAN_STEPS;
-    setScanSteps(
-      steps.map((stepName) => ({ name: stepName, status: 'pending' }))
-    );
-
+    if (busy.current) return;
+    busy.current = true;
+    const current = ++run.current;
+    const started = performance.now();
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    setStatus('loading');
+    setError('');
+    setPhase('Loading collector');
     try {
-      const collectors = await import('@creepjs/core');
-
-      for (let index = 0; index < steps.length; index += 1) {
-        setScanSteps((current) =>
-          current.map((step, stepIndex) =>
-            stepIndex === index ? { ...step, status: 'scanning' } : step
-          )
-        );
-
-        await new Promise((resolve) => setTimeout(resolve, 150));
-        setProgress(((index + 1) / steps.length) * 100);
-
-        if (index === steps.length - 1) {
+      const result = await Promise.race([
+        (async () => {
+          const collectors = await import('@creepjs/core');
+          if (current !== run.current) return undefined;
+          setPhase('Reading browser signal');
           const collector = getSignalCollector(type, collectors);
-          if (!collector) {
-            throw new Error('Unsupported fingerprint collector');
-          }
-          setData(await collector());
-        }
-
-        setScanSteps((current) =>
-          current.map((step, stepIndex) =>
-            stepIndex === index ? { ...step, status: 'completed' } : step
-          )
-        );
-      }
-    } catch {
-      setError('Failed to collect this signal. Please try again.');
+          if (!collector) throw new Error('Unsupported collector');
+          return collector();
+        })(),
+        new Promise<never>((_, reject) => {
+          timer = setTimeout(() => reject(new Error('timeout')), 15000);
+        }),
+      ]);
+      if (current !== run.current) return;
+      setData(result);
+      setElapsed(Math.round(performance.now() - started));
+      setStatus('ready');
+    } catch (cause) {
+      if (current !== run.current) return;
+      setError(
+        cause instanceof Error && cause.message === 'timeout'
+          ? 'The signal did not finish within 15 seconds. Retry, or use another signal while this browser API is unavailable.'
+          : 'This signal could not be collected. Keep your privacy settings and retry, or inspect another signal.'
+      );
+      setStatus('error');
     } finally {
-      setLoading(false);
-      setProgress(100);
+      clearTimeout(timer);
+      if (current === run.current) busy.current = false;
     }
   }, [type]);
 
   useEffect(() => {
-    void loadFingerprint();
-  }, [loadFingerprint]);
+    busy.current = false;
+    setBaseline(null);
+    if (!needsNetwork) void loadFingerprint();
+    else setStatus('idle');
+    return () => {
+      run.current += 1;
+      busy.current = false;
+    };
+  }, [loadFingerprint, needsNetwork]);
+
+  const state = signalState(data, type);
+  const json = signalJson(data);
+  const fields = signalFields(data);
+  const changes =
+    baseline === null ? null : changedSignalFields(baseline, json);
 
   return (
-    <Card>
-      <CardHeader>
+    <Card aria-labelledby="live-signal-title" aria-busy={status === 'loading'}>
+      <CardHeader className="pb-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <CardTitle className="flex items-center gap-2">
-            <Code className="h-5 w-5" aria-hidden="true" />
+          <CardTitle as="h2" id="live-signal-title">
             Live signal
           </CardTitle>
           <Button
+            type="button"
             variant="outline"
             size="sm"
             onClick={() => void loadFingerprint()}
-            disabled={loading}
+            disabled={status === 'loading'}
           >
-            <RefreshCw
-              className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`}
-              aria-hidden="true"
-            />
-            Refresh
+            {status === 'loading' ? (
+              <Loader2
+                className="mr-2 h-4 w-4 animate-spin"
+                aria-hidden="true"
+              />
+            ) : (
+              <RefreshCw className="mr-2 h-4 w-4" aria-hidden="true" />
+            )}
+            {status === 'idle'
+              ? 'Run signal check'
+              : status === 'error'
+                ? 'Retry signal check'
+                : 'Run again'}
           </Button>
         </div>
+        <p className="text-muted-foreground text-sm">
+          {needsNetwork
+            ? 'Runs only when you ask. This check contacts Google STUN servers, which can observe your IP. Results stay in this tab.'
+            : 'Checks this browser automatically. Results stay in this tab; no account or upload required.'}
+        </p>
       </CardHeader>
-      <CardContent className="min-h-[20rem]">
-        {loading && (
-          <div className="space-y-4 py-4" role="status" aria-live="polite">
-            <div className="space-y-2">
-              <div className="flex justify-between gap-4 text-sm">
-                <span className="text-foreground font-medium">
-                  Analyzing your browser…
-                </span>
-                <span className="text-muted-foreground">
-                  {Math.round(progress)}%
-                </span>
-              </div>
-              <Progress label={`${name} scan progress`} value={progress} />
-            </div>
-
-            <div className="space-y-2">
-              {scanSteps.map((step) => (
-                <div
-                  key={step.name}
-                  className={`flex items-center gap-3 rounded-lg p-2 transition-colors ${
-                    step.status === 'scanning'
-                      ? 'bg-primary/10 text-primary'
-                      : step.status === 'completed'
-                        ? 'text-muted-foreground'
-                        : 'text-muted-foreground/50'
-                  }`}
-                >
-                  <span className="flex h-5 w-5 shrink-0 items-center justify-center">
-                    {step.status === 'completed' && (
-                      <Check
-                        className="h-4 w-4 text-green-600 dark:text-green-400"
-                        aria-hidden="true"
-                      />
-                    )}
-                    {step.status === 'scanning' && (
-                      <span
-                        className="border-primary h-3 w-3 animate-spin rounded-full border-2 border-t-transparent"
-                        aria-hidden="true"
-                      />
-                    )}
-                    {step.status === 'pending' && (
-                      <span
-                        className="bg-muted-foreground/30 h-2 w-2 rounded-full"
-                        aria-hidden="true"
-                      />
-                    )}
-                  </span>
-                  <span
-                    className={`text-sm ${
-                      step.status === 'scanning' ? 'font-medium' : ''
-                    }`}
-                  >
-                    {step.name}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
+      <CardContent className="min-w-0 space-y-4">
+        <p role="status" aria-live="polite" className="text-sm font-medium">
+          {status === 'loading'
+            ? `${phase}…`
+            : status === 'idle'
+              ? 'Ready to inspect this signal.'
+              : status === 'error'
+                ? 'Signal check failed.'
+                : `${state === 'no-result' ? 'Signal unavailable' : state === 'empty' ? 'No items returned' : state === 'partial' ? 'Partial result' : 'Signal collected'} · ${elapsed} ms`}
+        </p>
+        {status === 'idle' && (
+          <p className="text-muted-foreground text-sm">
+            You will receive observed values, API availability, and a copyable
+            JSON result. A single signal cannot identify a person.
+          </p>
         )}
-
-        {error && (
+        {status === 'loading' && (
           <div
-            className="bg-destructive/10 text-destructive rounded-lg p-4 text-sm"
-            role="alert"
-          >
-            {error}
-          </div>
+            aria-hidden="true"
+            className="bg-muted h-24 animate-pulse rounded-lg"
+          />
         )}
-
-        {!loading && !error && (
-          <pre
-            className="bg-muted max-w-full overflow-x-auto rounded-lg p-4 text-xs"
-            tabIndex={0}
-            aria-label={`${name} result`}
-          >
-            <code>
-              {data === undefined
-                ? 'This signal is not available in this browser.'
-                : JSON.stringify(data, null, 2)}
-            </code>
-          </pre>
+        {status === 'error' && (
+          <p role="alert" className="text-destructive text-sm">
+            {error}
+          </p>
+        )}
+        {status === 'ready' && (
+          <>
+            {state !== 'success' && (
+              <p className="bg-muted rounded-lg p-3 text-sm">
+                {state === 'no-result'
+                  ? 'The browser returned no usable signal, or explicitly reported this API as unsupported. This can reflect browser support or privacy settings; it does not establish safety or risk.'
+                  : state === 'empty'
+                    ? 'The browser exposed an empty list. This is a valid observation, not a failed request. Compare the method and limits alongside this result.'
+                    : 'Some values were returned with an error or incomplete status. Use the available fields and inspect the JSON before comparing.'}
+              </p>
+            )}
+            {fields.length > 0 && (
+              <dl className="divide-y text-sm">
+                {fields.slice(0, 8).map(([label, value]) => (
+                  <div
+                    key={label}
+                    className="grid grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] gap-4 py-2.5"
+                  >
+                    <dt className="text-muted-foreground capitalize">
+                      {label}
+                    </dt>
+                    <dd className="break-words font-mono text-xs [overflow-wrap:anywhere]">
+                      {value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            )}
+            {changes !== null && (
+              <p
+                className="bg-primary/5 rounded-lg border p-3 text-sm"
+                role="status"
+              >
+                {changes.length
+                  ? `${changes.length} top-level field${changes.length === 1 ? '' : 's'} changed: ${changes.join(', ')}.`
+                  : 'No values changed from your saved comparison.'}{' '}
+                Timing alone is not part of this comparison.
+              </p>
+            )}
+            <div className="flex flex-wrap gap-2">
+              <CopyButton value={json} label="Copy JSON" variant="outline" />
+              {state !== 'no-result' && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setBaseline(json)}
+                >
+                  Keep for comparison
+                </Button>
+              )}
+              {baseline !== null && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setBaseline(null)}
+                >
+                  Clear comparison
+                </Button>
+              )}
+            </div>
+            <p className="text-muted-foreground text-xs leading-5">
+              Keep a result, change one browser setting, then run again in this
+              tab. Differences show changed observations, not stronger or weaker
+              privacy. Image payloads are omitted from JSON.
+            </p>
+            <details className="rounded-lg border">
+              <summary className="cursor-pointer px-4 py-3 text-sm font-medium">
+                Inspect complete JSON
+                {fields.length > 8 ? ` · ${fields.length} fields` : ''}
+              </summary>
+              <pre
+                className="bg-muted max-h-80 max-w-full overflow-auto p-4 text-xs"
+                tabIndex={0}
+                aria-label={`${name} result`}
+              >
+                <code>{json}</code>
+              </pre>
+            </details>
+          </>
         )}
       </CardContent>
     </Card>

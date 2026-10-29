@@ -122,10 +122,10 @@ export function DataRow({
 }) {
   const riskColorClass = riskLevel
     ? riskLevel === 'high'
-      ? 'text-red-600 dark:text-red-400'
+      ? 'text-red-700 dark:text-red-400'
       : riskLevel === 'medium'
-        ? 'text-yellow-600 dark:text-yellow-400'
-        : 'text-green-600 dark:text-green-400'
+        ? 'text-yellow-800 dark:text-yellow-400'
+        : 'text-green-800 dark:text-green-400'
     : '';
 
   return (
@@ -169,10 +169,10 @@ export function RiskBadge({
 }) {
   const bgColor =
     level === 'high'
-      ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-300 dark:border-red-800'
+      ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400 border-red-300 dark:border-red-800'
       : level === 'medium'
-        ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border-yellow-300 dark:border-yellow-800'
-        : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-300 dark:border-green-800';
+        ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400 border-yellow-300 dark:border-yellow-800'
+        : 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 border-green-300 dark:border-green-800';
 
   return (
     <span

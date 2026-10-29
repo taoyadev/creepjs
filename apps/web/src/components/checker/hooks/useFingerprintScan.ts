@@ -34,6 +34,8 @@ export interface FingerprintScan {
   status: FingerprintScanStatus;
   error: string | null;
   scan: () => Promise<void>;
+  baselineStatus: 'idle' | 'loading' | 'ready' | 'error';
+  compareBaseline: () => Promise<void>;
 }
 
 export function useFingerprintScan(): FingerprintScan {
@@ -47,12 +49,18 @@ export function useFingerprintScan(): FingerprintScan {
   const [status, setStatus] = useState<FingerprintScanStatus>('loading');
   const [error, setError] = useState<string | null>(null);
   const runId = useRef(0);
+  const [baselineStatus, setBaselineStatus] = useState<
+    'idle' | 'loading' | 'ready' | 'error'
+  >('idle');
+  const baselineRequest = useRef<AbortController | null>(null);
 
   const scan = useCallback(async () => {
     const currentRun = ++runId.current;
     setStatus('loading');
     setError(null);
     setBaseline(null);
+    baselineRequest.current?.abort();
+    setBaselineStatus('idle');
     setProgress(INITIAL_SCAN_PROGRESS);
 
     try {
@@ -72,14 +80,6 @@ export function useFingerprintScan(): FingerprintScan {
       }));
       setFingerprint(result);
       setStatus('ready');
-
-      void fetchBaseline(result)
-        .then((response) => {
-          if (runId.current === currentRun) setBaseline(response);
-        })
-        .catch(() => {
-          if (runId.current === currentRun) setBaseline(null);
-        });
 
       trackEvent('tool_run', {
         tool: 'fingerprint_scan',
@@ -101,6 +101,24 @@ export function useFingerprintScan(): FingerprintScan {
     }
   }, []);
 
+  const compareBaseline = useCallback(async () => {
+    if (!fingerprint || status !== 'ready') return;
+    baselineRequest.current?.abort();
+    const controller = new AbortController();
+    baselineRequest.current = controller;
+    const currentRun = runId.current;
+    setBaselineStatus('loading');
+    try {
+      const response = await fetchBaseline(fingerprint, controller.signal);
+      if (controller.signal.aborted || currentRun !== runId.current) return;
+      setBaseline(response);
+      setBaselineStatus(response ? 'ready' : 'error');
+    } catch {
+      if (!controller.signal.aborted && currentRun === runId.current)
+        setBaselineStatus('error');
+    }
+  }, [fingerprint, status]);
+
   useEffect(() => {
     const cancel = scheduleIdle(() => {
       void scan();
@@ -108,6 +126,7 @@ export function useFingerprintScan(): FingerprintScan {
     return () => {
       cancel();
       runId.current += 1;
+      baselineRequest.current?.abort();
     };
   }, [scan]);
 
@@ -118,5 +137,7 @@ export function useFingerprintScan(): FingerprintScan {
     status,
     error,
     scan,
+    baselineStatus,
+    compareBaseline,
   };
 }

@@ -5,6 +5,8 @@
       "name": "validate the committed release on OpenClaw",
       "argv": [
         "openclaw-ops",
+        "--host",
+        "openclaw",
         "test",
         "--dir",
         "{root}",
@@ -17,12 +19,25 @@
         "-lc",
         "set -euo pipefail; pnpm install --frozen-lockfile; pnpm format:check; pnpm build; pnpm typecheck; pnpm lint; NODE_ENV=test pnpm test; pnpm --filter @creepjs/sdk check:size; bash scripts/secret-scan.sh; npx -y @fission-ai/openspec@latest validate --all --strict --no-interactive; pnpm --filter @creepjs/api exec wrangler deploy --dry-run; pnpm audit --audit-level=high"
       ]
+    },
+    {
+      "name": "browser acceptance for the exact release preview",
+      "argv": [
+        "openclaw-ops",
+        "--host",
+        "openclaw",
+        "e2e",
+        "--project",
+        "creepjs",
+        "--cmd",
+        "node scripts/task-first-browser-qa.cjs"
+      ]
     }
   ],
   "deploy": [
     {
-      "name": "publish the exact commit through protected GitHub Actions",
-      "argv": ["./deploy-direct.sh", "all"]
+      "name": "publish the exact web commit through protected GitHub Actions",
+      "argv": ["./deploy-direct.sh", "web"]
     }
   ],
   "verify": [
@@ -30,11 +45,13 @@
       "name": "browser acceptance on the canonical production site",
       "argv": [
         "openclaw-ops",
+        "--host",
+        "openclaw",
         "e2e",
         "--project",
         "creepjs",
         "--cmd",
-        "QA_BASE_URL=https://creepjs.org QA_ALLOW_PRODUCTION=1 node scripts/preview-browser-qa.cjs"
+        "QA_BASE_URL=https://creepjs.org QA_ALLOW_PRODUCTION=1 node scripts/task-first-browser-qa.cjs"
       ]
     }
   ]

@@ -53,6 +53,7 @@ export function FingerprintHistory({
   onCompare,
 }: FingerprintHistoryProps) {
   const [history, setHistory] = useState<HistoryRecord[]>([]);
+  const [storageError, setStorageError] = useState<string | null>(null);
   const [selectedForCompare, setSelectedForCompare] = useState<string[]>([]);
   const [comparing, setComparing] = useState(false);
   const [comparisonFingerprints, setComparisonFingerprints] = useState<
@@ -75,8 +76,10 @@ export function FingerprintHistory({
         records.sort((a, b) => b.timestamp - a.timestamp);
         setHistory(records);
       }
-    } catch (error) {
-      console.error('Failed to load history:', error);
+    } catch {
+      setStorageError(
+        'Saved scans could not be read. This browser may block storage or contain unreadable history. Your current report is still available.'
+      );
     }
   };
 
@@ -98,11 +101,12 @@ export function FingerprintHistory({
         id: `${currentResult.fingerprintId}-${currentResult.timestamp}`,
       };
 
-      // Check if already exists (same fingerprint ID and close timestamp)
+      // Strict-mode replay can save the same scan twice; a new scan with the
+      // same ID still belongs in a comparison, even a few seconds later.
       const exists = historyArray.some(
         (r) =>
           r.fingerprintId === record.fingerprintId &&
-          Math.abs(r.timestamp - record.timestamp) < 5000 // Within 5 seconds
+          r.timestamp === record.timestamp
       );
 
       if (!exists) {
@@ -112,10 +116,13 @@ export function FingerprintHistory({
           historyArray = historyArray.slice(-50);
         }
         localStorage.setItem('creepjs_history', JSON.stringify(historyArray));
+        setStorageError(null);
         loadHistory();
       }
-    } catch (error) {
-      console.error('Failed to save history:', error);
+    } catch {
+      setStorageError(
+        'This scan could not be saved locally. Browser storage may be blocked or full. Keep using the current report, export it, or retry saving.'
+      );
     }
   };
 
@@ -213,10 +220,25 @@ export function FingerprintHistory({
 
   return (
     <div className="space-y-6">
+      {storageError && (
+        <div className="space-y-3 rounded-lg border p-4">
+          <p role="status" className="text-sm">
+            {storageError}
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={saveCurrentToHistory}
+          >
+            Retry saving this scan
+          </Button>
+        </div>
+      )}
       {/* Statistics Card */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle as="h2" className="flex items-center gap-2">
             <History className="h-5 w-5" />
             Fingerprint History
           </CardTitle>
@@ -257,9 +279,9 @@ export function FingerprintHistory({
               <div
                 className={`text-2xl font-bold ${
                   coverageTrend > 0
-                    ? 'text-green-600 dark:text-green-400'
+                    ? 'text-green-800 dark:text-green-400'
                     : coverageTrend < 0
-                      ? 'text-red-600 dark:text-red-400'
+                      ? 'text-red-700 dark:text-red-400'
                       : ''
                 }`}
               >
@@ -384,10 +406,10 @@ export function FingerprintHistory({
                             <div
                               className={`text-lg font-bold ${
                                 record.confidence >= 0.8
-                                  ? 'text-green-600 dark:text-green-400'
+                                  ? 'text-green-800 dark:text-green-400'
                                   : record.confidence >= 0.6
-                                    ? 'text-yellow-600 dark:text-yellow-400'
-                                    : 'text-red-600 dark:text-red-400'
+                                    ? 'text-yellow-800 dark:text-yellow-400'
+                                    : 'text-red-700 dark:text-red-400'
                               }`}
                             >
                               {(record.confidence * 100).toFixed(1)}%

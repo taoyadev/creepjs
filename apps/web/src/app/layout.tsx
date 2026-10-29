@@ -58,12 +58,24 @@ export default function RootLayout({
       <body className={inter.className}>
         <ThemeProvider>
           <div className="flex min-h-screen flex-col">
+            <a href="#main-content" className="skip-link">
+              Skip to main content
+            </a>
             {/* Global Header - Loads First */}
             <DynamicHeader />
 
             {/* App Router preserves route-level loading boundaries. Keep the
                 server-rendered page shell mounted while client islands suspend. */}
-            <main className="flex-1">{children}</main>
+            <main id="main-content" tabIndex={-1} className="min-w-0 flex-1">
+              <noscript>
+                <p className="container mx-auto border-b px-4 py-3 text-sm">
+                  Live checks, filters, and copy controls require JavaScript.
+                  You can still read signal methods, documentation, and
+                  policies.
+                </p>
+              </noscript>
+              {children}
+            </main>
 
             {/* Global Footer - Loads First */}
             <Footer />

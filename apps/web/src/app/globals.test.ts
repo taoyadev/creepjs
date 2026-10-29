@@ -75,4 +75,16 @@ describe.each([
   ])('%s meets WCAG AA 4.5:1', (_case, foreground, background) => {
     expect(contrast(foreground, background)).toBeGreaterThanOrEqual(4.5);
   });
+
+  it('keeps secondary text readable on report, tab, and export surfaces', () => {
+    const foreground = token('muted-foreground');
+    for (const background of [
+      token('background'),
+      token('muted'),
+      over(token('primary'), 0.05, token('background')),
+      over(hslToRgb(217.2, 0.912, 0.598), 0.1, token('background')),
+    ]) {
+      expect(contrast(foreground, background)).toBeGreaterThanOrEqual(4.5);
+    }
+  });
 });

@@ -34,32 +34,34 @@ export function EndpointRunner({
 }: EndpointRunnerProps) {
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+      <CardHeader className="p-4 pb-3">
+        <CardTitle as="h2" className="flex items-center gap-2 text-base">
           <Terminal className="h-5 w-5" aria-hidden="true" />
-          2. Run POST /v1/fingerprint
+          2. Run fingerprint API
         </CardTitle>
         <CardDescription>
-          Collect this browser&apos;s fingerprint locally and submit it with the
-          current token.
+          Sends the complete collected snapshot to the API. Includes a Google
+          STUN network check.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <p className="text-muted-foreground text-sm">
-            Current fingerprint ID
-          </p>
-          {fingerprintLoading ? (
-            <Skeleton className="h-10 w-full" />
-          ) : (
-            <code className="bg-muted block max-w-full break-all rounded p-3 font-mono text-xs">
-              {fingerprintId ??
-                (fingerprintFailed
-                  ? 'Unavailable'
-                  : 'Collected when you run the test')}
-            </code>
-          )}
-        </div>
+      <CardContent className="space-y-3 p-4 pt-0">
+        {(fingerprintId || fingerprintLoading || fingerprintFailed) && (
+          <div className="space-y-2">
+            <p className="text-muted-foreground text-sm">
+              Current fingerprint ID
+            </p>
+            {fingerprintLoading ? (
+              <Skeleton className="h-10 w-full" />
+            ) : (
+              <code className="bg-muted block max-w-full break-all rounded p-3 font-mono text-xs">
+                {fingerprintId ??
+                  (fingerprintFailed
+                    ? 'Unavailable'
+                    : 'Collected when you run the test')}
+              </code>
+            )}
+          </div>
+        )}
 
         {fingerprintFailed && (
           <Alert variant="destructive" role="alert">
@@ -76,12 +78,20 @@ export function EndpointRunner({
           className="w-full"
         >
           <Terminal className="mr-2 h-4 w-4" aria-hidden="true" />
-          {running
-            ? 'Testing…'
-            : fingerprintLoading
-              ? 'Collecting fingerprint…'
-              : 'Test API now'}
+          {fingerprintLoading
+            ? 'Collecting fingerprint…'
+            : running
+              ? 'Waiting for API…'
+              : fingerprintId
+                ? 'Resend collected snapshot'
+                : 'Collect & send request'}
         </Button>
+        {!canRun && (
+          <p className="text-muted-foreground text-xs">
+            Add a token above to enable the request. Nothing is submitted on
+            page load.
+          </p>
+        )}
       </CardContent>
     </Card>
   );

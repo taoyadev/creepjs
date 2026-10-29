@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import {
   ArrowRight,
@@ -12,41 +12,11 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CopyButton } from '@/components/CopyButton';
-import { fetchJson } from '@/lib/api-client';
-import type { OwnIpSummary } from '@/lib/own-ip';
-
-type IpState =
-  | { status: 'loading'; data: null }
-  | { status: 'ready'; data: OwnIpSummary }
-  | { status: 'error'; data: null };
+import { useOwnIp } from '@/components/checker/hooks/useOwnIp';
 
 export function LiveIpCard() {
-  const [state, setState] = useState<IpState>({
-    status: 'loading',
-    data: null,
-  });
-
-  const load = useCallback(async (signal?: AbortSignal) => {
-    setState({ status: 'loading', data: null });
-    try {
-      const data = await fetchJson<OwnIpSummary>('/my-ip', {
-        signal,
-        timeoutMs: 8000,
-      });
-      setState({ status: 'ready', data });
-    } catch (error) {
-      if (signal?.aborted) return;
-      console.warn('Homepage own-IP card unavailable:', error);
-      setState({ status: 'error', data: null });
-    }
-  }, []);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    void load(controller.signal);
-    return () => controller.abort();
-  }, [load]);
-
+  const state = useOwnIp();
+  const load = state.refresh;
   const data = state.data;
   const location = data?.location
     ? [data.location.city, data.location.region, data.location.country_code]
@@ -63,7 +33,7 @@ export function LiveIpCard() {
             <p className="text-primary mb-1 text-xs font-semibold uppercase tracking-wider">
               Network evidence
             </p>
-            <CardTitle className="flex items-center gap-2 text-xl">
+            <CardTitle as="h2" className="flex items-center gap-2 text-xl">
               <Globe2 className="h-5 w-5" aria-hidden="true" />
               Your public IP
             </CardTitle>
@@ -156,8 +126,10 @@ export function LiveIpCard() {
         )}
 
         <Button asChild variant="outline" className="w-full">
-          <Link href="/ip">
-            Open IP risk checker
+          <Link
+            href={data?.ip ? `/ip?q=${encodeURIComponent(data.ip)}` : '/ip'}
+          >
+            {data?.ip ? 'Open report for this IP' : 'Open IP risk checker'}
             <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
           </Link>
         </Button>

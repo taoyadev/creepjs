@@ -21,8 +21,9 @@ export default function Error({
         Something went wrong
       </h1>
       <p className="text-muted-foreground mx-auto mt-4 max-w-xl">
-        An unexpected error occurred while rendering this page. Everything runs
-        in your browser, so retrying usually fixes it.
+        The page could not finish rendering. Try again; if the problem
+        continues, reload the page or return to a working tool. A submitted API
+        request may already have been processed.
       </p>
       <div className="mt-8 flex items-center justify-center gap-4">
         <Button onClick={reset}>Try again</Button>

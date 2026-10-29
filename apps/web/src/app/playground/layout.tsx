@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { SITE_CONFIG, generateMetadata, structuredData } from '@/lib/metadata';
 import { StructuredData } from '@/components/StructuredData';
-import { SeoInternalLinks } from '@/components/SeoInternalLinks';
 
 export const metadata: Metadata = generateMetadata({
   title: 'API Playground - Test Fingerprinting in Real-Time',
@@ -32,11 +31,6 @@ export default function PlaygroundLayout({
         ]}
       />
       {children}
-      <SeoInternalLinks
-        currentPath="/playground"
-        title="Next steps after testing the API"
-        description="Open the docs, compare collector pages, or run live browser and IP risk checks from the same static site."
-      />
     </>
   );
 }

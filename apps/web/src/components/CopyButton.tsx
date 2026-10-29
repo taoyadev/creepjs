@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Check, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button, type ButtonProps } from '@/components/ui/button';
@@ -35,6 +35,8 @@ export function CopyButton({
   disabled,
 }: CopyButtonProps) {
   const [copied, setCopied] = useState(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => () => clearTimeout(timer.current), []);
 
   const copy = async () => {
     try {
@@ -42,9 +44,12 @@ export function CopyButton({
       setCopied(true);
       toast.success(successMessage);
       onCopied?.();
-      setTimeout(() => setCopied(false), 2000);
+      clearTimeout(timer.current);
+      timer.current = setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error('Could not copy to clipboard');
+      toast.error(
+        'Clipboard unavailable. Select the text and copy it manually.'
+      );
     }
   };
 
@@ -62,8 +67,8 @@ export function CopyButton({
         copied ? successMessage : (ariaLabel ?? label ?? 'Copy to clipboard')
       }
     >
-      <Icon className={label ? 'mr-2 h-4 w-4' : 'h-4 w-4'} />
-      {label}
+      <Icon className={label ? 'mr-2 h-4 w-4' : 'h-4 w-4'} aria-hidden="true" />
+      {label && (copied ? 'Copied' : label)}
     </Button>
   );
 }

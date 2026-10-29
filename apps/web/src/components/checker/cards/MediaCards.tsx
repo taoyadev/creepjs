@@ -78,7 +78,12 @@ export function renderMediaCollectorCard(
           <div className="text-muted-foreground mb-1 text-sm">
             Available Voices ({fingerprint.data.voices.count}):
           </div>
-          <div className="max-h-48 space-y-2 overflow-y-auto">
+          <div
+            className="max-h-48 space-y-2 overflow-y-auto"
+            tabIndex={0}
+            role="group"
+            aria-label="Available speech voices"
+          >
             {fingerprint.data.voices.voices.map((voice, i) => (
               <div key={i} className="border-b pb-1 text-xs">
                 <div className="font-medium">{voice.name}</div>

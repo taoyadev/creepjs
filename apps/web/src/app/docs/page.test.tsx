@@ -6,20 +6,25 @@ import DocsPage from './page';
 (globalThis as typeof globalThis & { React: typeof React }).React = React;
 
 describe('/docs prerendered HTML', () => {
-  it('ships every tab panel and hides the inactive ones', () => {
+  it('ships usable task navigation, examples, API limits, and recovery without JS tabs', () => {
     const html = renderToStaticMarkup(<DocsPage />);
-
-    // Text from the API tab, which is not the default tab.
-    expect(html).toContain('All API requests require authentication');
-    const panels = [...html.matchAll(/<div[^>]*role="tabpanel"[^>]*>/g)].map(
-      ([tag]) => tag
-    );
-    expect(panels).toHaveLength(5);
-    expect(
-      panels.filter((tag) => tag.includes('data-state="active"'))
-    ).toHaveLength(1);
-    for (const tag of panels) {
-      expect(tag).toContain('data-[state=inactive]:hidden');
+    expect(html.match(/<h1(?:\s|>)/g)).toHaveLength(1);
+    for (const id of [
+      'quickstart',
+      'api',
+      'collectors',
+      'faq',
+      'introduction',
+    ]) {
+      expect(html).toContain(`href="#${id}"`);
+      expect(html).toContain(`id="${id}"`);
     }
+    expect(html).toContain('Public IP and own-IP lookups do not need a token.');
+    expect(html).toContain('128 KiB');
+    expect(html).toContain('429');
+    expect(html).toContain('npm package is not published yet');
+    expect(html).toContain('cache: false');
+    expect(html).not.toContain('role="tabpanel"');
+    expect(html).not.toContain('All API requests require authentication');
   });
 });

@@ -1,1080 +1,420 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Link from 'next/link';
-import {
-  BookOpen,
-  Code,
-  Shield,
-  Fingerprint,
-  Zap,
-  Globe,
-  Lock,
-  AlertCircle,
-  CheckCircle,
-  Info,
-} from 'lucide-react';
-import { SITE_CONFIG } from '@/lib/metadata';
+import { CopyButton } from '@/components/CopyButton';
 import { DocsSectionAnalytics } from '@/components/DocsSectionAnalytics';
-import { TrackedLink } from '@/components/TrackedLink';
+import { SITE_CONFIG } from '@/lib/metadata';
+
+function Example({ title, code }: { title: string; code: string }) {
+  return (
+    <div className="min-w-0 space-y-2 rounded-xl border p-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h3 className="text-sm font-semibold">{title}</h3>
+        <CopyButton
+          value={code}
+          label="Copy example"
+          variant="outline"
+          ariaLabel={`Copy ${title}`}
+        />
+      </div>
+      <pre
+        className="bg-muted max-h-96 max-w-full overflow-auto rounded-lg p-4 font-mono text-xs"
+        tabIndex={0}
+        aria-label={title}
+      >
+        <code>{code}</code>
+      </pre>
+    </div>
+  );
+}
 
 export default function DocsPage() {
   const apiUrl = SITE_CONFIG.apiUrl;
-  const apiHost = new URL(apiUrl).host;
+  const sdkExample = `<script src="https://creepjs.org/sdk.js"></script>
+<label>API token <input id="token" type="password" autocomplete="off"></label>
+<button id="check" type="button">Collect & submit</button>
+<output id="result" aria-live="polite"></output>
+<script>
+  const button = document.querySelector('#check');
+  const output = document.querySelector('#result');
+  button.addEventListener('click', async () => {
+    const token = document.querySelector('#token').value.trim();
+    if (!token) { output.textContent = 'Enter an API token.'; return; }
+    button.disabled = true;
+    output.textContent = 'Collecting and submitting…';
+    try {
+      // Run only after the visitor agrees to collection and API submission.
+      const client = new CreepJS.CreepJS({ token, cache: false });
+      const result = await client.getFingerprint();
+      output.textContent = 'Diagnostic ID: ' + result.fingerprintId;
+    } catch {
+      output.textContent = 'Request failed. Check the token and connection, then retry.';
+    } finally {
+      button.disabled = false;
+    }
+  });
+</script>`;
+  const localExample = `<script src="https://creepjs.org/sdk.full.js"></script>
+<button id="inspect" type="button">Inspect locally</button>
+<output id="local-result" aria-live="polite"></output>
+<script>
+  const button = document.querySelector('#inspect');
+  const output = document.querySelector('#local-result');
+  button.addEventListener('click', async () => {
+    button.disabled = true;
+    output.textContent = 'Collecting…';
+    try {
+      const result = await CreepJSFull.collectFingerprint();
+      output.textContent = 'Diagnostic ID: ' + result.fingerprintId;
+    } catch {
+      output.textContent = 'Collection failed. Retry or inspect individual signals.';
+    } finally { button.disabled = false; }
+  });
+</script>`;
+  const ipExample = `curl --fail-with-body --max-time 15 '${apiUrl}/v1/ip/8.8.8.8' \\
+  -H 'X-API-Token: YOUR_API_TOKEN'`;
 
   return (
-    <div className="from-background to-secondary min-h-screen bg-gradient-to-b">
-      <div className="container mx-auto max-w-6xl p-4 md:p-8">
-        <DocsSectionAnalytics
-          rootId="docs-tabs-root"
-          defaultSection="introduction"
-        />
-        {/* Page Header */}
-        <div className="mb-8 space-y-4 text-center">
-          <h1 className="text-3xl font-bold md:text-5xl">Documentation</h1>
-          <p className="text-muted-foreground mx-auto max-w-3xl text-lg">
-            Comprehensive guide to browser fingerprinting with CreepJS. Learn
-            how to implement privacy-first device identification, understand
-            fingerprinting techniques, and integrate our API into your
-            applications.
-          </p>
+    <div
+      id="docs-tabs-root"
+      className="container mx-auto max-w-6xl space-y-7 px-4 py-7 md:px-8 md:py-10"
+    >
+      <DocsSectionAnalytics
+        rootId="docs-tabs-root"
+        defaultSection="quickstart"
+      />
+      <header className="max-w-3xl space-y-2">
+        <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
+          Documentation
+        </h1>
+        <p className="text-muted-foreground leading-7">
+          Run a browser check, integrate the SDK, or call the IP API. Start with
+          a working example, then check the data flow and error behavior.
+        </p>
+      </header>
+      <nav aria-label="Documentation sections" className="flex flex-wrap gap-2">
+        {[
+          ['quickstart', 'Quick start'],
+          ['api', 'API reference'],
+          ['collectors', 'Read the output'],
+          ['faq', 'Fix a failed request'],
+          ['introduction', 'Privacy & limits'],
+        ].map(([id, label]) => (
+          <a
+            key={id}
+            href={`#${id}`}
+            data-docs-tab={id}
+            className="hover:bg-muted inline-flex min-h-11 items-center rounded-md border px-3 text-sm font-medium"
+          >
+            {label}
+          </a>
+        ))}
+      </nav>
+      <section
+        id="quickstart"
+        className="section-anchor space-y-4"
+        aria-labelledby="quickstart-title"
+      >
+        <div className="space-y-2">
+          <h2 id="quickstart-title" className="text-xl font-bold">
+            Choose your first result
+          </h2>
+          <div className="grid gap-3 sm:grid-cols-3">
+            {[
+              [
+                '/checker',
+                'Inspect this browser',
+                'Local report; no API token.',
+              ],
+              [
+                '/playground',
+                'Test the API in your browser',
+                'Paste a token and send a snapshot.',
+              ],
+              ['/ip', 'Check an IP address', 'A free single-address lookup.'],
+            ].map(([href, title, detail]) => (
+              <Link
+                key={href}
+                href={href}
+                className="hover:bg-muted/40 space-y-2 rounded-lg border p-4"
+              >
+                <span className="text-primary block text-sm font-semibold">
+                  {title}
+                </span>
+                <span className="text-muted-foreground block text-sm leading-6">
+                  {detail}
+                </span>
+              </Link>
+            ))}
+          </div>
         </div>
-
-        <Tabs
-          defaultValue="introduction"
-          className="space-y-8"
-          id="docs-tabs-root"
+        <p className="text-muted-foreground max-w-3xl text-sm leading-6">
+          For an HTML page, use the hosted SDK below. Its small loader fetches
+          the full collectors when you first run a scan. The npm package is not
+          published yet; a package-install instruction is not required for this
+          example.
+        </p>
+        <Example
+          title="HTML · collect and submit with the SDK"
+          code={sdkExample}
+        />
+        <p className="text-muted-foreground text-sm leading-6">
+          This example transmits the complete collected payload to the API. Full
+          scans include a Google STUN request. Use a test token and collect only
+          after your own disclosure and consent requirements are satisfied.
+          Browser tokens can be inspected by page scripts.
+        </p>
+        <details className="rounded-xl border p-4">
+          <summary className="cursor-pointer font-medium">
+            Need a local report without an API submission?
+          </summary>
+          <div className="space-y-3 pt-4">
+            <p className="text-muted-foreground text-sm leading-6">
+              This version computes a report locally and does not send it to the
+              CreepJS API. Its WebRTC collector still contacts Google STUN
+              servers.
+            </p>
+            <Example title="HTML · local collection only" code={localExample} />
+          </div>
+        </details>
+      </section>
+      <section
+        id="api"
+        className="section-anchor space-y-4 border-t pt-6"
+        aria-labelledby="api-title"
+      >
+        <h2 id="api-title" className="text-xl font-bold">
+          API reference
+        </h2>
+        <p className="text-muted-foreground text-sm leading-6">
+          Base URL: <code className="break-all">{apiUrl}</code>. Authenticated
+          requests use <code>X-API-Token</code>. Public IP and own-IP lookups do
+          not need a token.
+        </p>
+        <div
+          className="max-w-full overflow-x-auto rounded-lg border"
+          tabIndex={0}
+          aria-label="API endpoints"
         >
-          <TabsList className="grid h-auto w-full grid-cols-2 md:grid-cols-5">
-            <TabsTrigger
-              value="introduction"
-              className="text-xs md:text-sm"
-              data-docs-tab="introduction"
-            >
-              Introduction
-            </TabsTrigger>
-            <TabsTrigger
-              value="quickstart"
-              className="text-xs md:text-sm"
-              data-docs-tab="quickstart"
-            >
-              Quick Start
-            </TabsTrigger>
-            <TabsTrigger
-              value="api"
-              className="text-xs md:text-sm"
-              data-docs-tab="api"
-            >
-              API Reference
-            </TabsTrigger>
-            <TabsTrigger
-              value="collectors"
-              className="text-xs md:text-sm"
-              data-docs-tab="collectors"
-            >
-              Collectors
-            </TabsTrigger>
-            <TabsTrigger
-              value="faq"
-              className="text-xs md:text-sm"
-              data-docs-tab="faq"
-            >
-              FAQ
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Introduction Tab */}
-          <TabsContent
-            value="introduction"
-            forceMount
-            className="space-y-6 data-[state=inactive]:hidden"
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BookOpen className="h-5 w-5" />
-                  What is Browser Fingerprinting?
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4 text-sm leading-relaxed md:text-base">
-                <p>
-                  Browser fingerprinting is a technique used to identify and
-                  track web browsers based on their unique characteristics and
-                  configurations. Unlike cookies or local storage, fingerprints
-                  are collected from the browser's inherent properties, making
-                  them more persistent and harder to block.
-                </p>
-                <p>
-                  Every browser has a unique combination of features including
-                  canvas rendering behavior, WebGL capabilities, installed
-                  fonts, screen resolution, audio stack properties, and dozens
-                  of other parameters. By collecting and hashing these
-                  characteristics, we can create a stable identifier that
-                  remains consistent across sessions.
-                </p>
-                <p>
-                  CreepJS is an educational platform that demonstrates advanced
-                  browser fingerprinting techniques. Our API provides developers
-                  with tools to implement device identification for fraud
-                  prevention, security analytics, and user experience
-                  optimization while respecting privacy regulations like GDPR
-                  and CCPA.
-                </p>
-                <p className="text-sm">
-                  For a deeper introduction, read the{' '}
-                  <Link
-                    href="/guide/what-is-browser-fingerprinting"
-                    className="text-primary underline underline-offset-4"
-                  >
-                    complete browser fingerprinting guide
-                  </Link>
-                  .
-                </p>
-                <div className="mt-4 rounded-lg border border-blue-500/20 bg-blue-500/10 p-4">
-                  <div className="flex items-start gap-2">
-                    <Info className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-500" />
-                    <div>
-                      <p className="mb-1 font-semibold text-blue-500">
-                        Educational Purpose
-                      </p>
-                      <p className="text-muted-foreground text-sm">
-                        This platform is designed for educational purposes and
-                        legitimate use cases such as fraud detection, bot
-                        prevention, and security research. Always respect user
-                        privacy and comply with applicable regulations when
-                        implementing fingerprinting.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Fingerprint className="h-5 w-5" />
-                  How CreepJS Works
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4 text-sm leading-relaxed md:text-base">
-                <p>
-                  CreepJS collects over 24 different types of browser
-                  characteristics, each contributing to the overall fingerprint
-                  stability and uniqueness. The process involves three main
-                  stages:
-                </p>
-                <div className="ml-4 space-y-3">
-                  <div>
-                    <h4 className="mb-1 font-semibold">1. Data Collection</h4>
-                    <p className="text-muted-foreground">
-                      Our collector modules run directly in the browser,
-                      gathering data from Canvas API, WebGL, Navigator
-                      properties, Audio Context, Media Devices, CSS rendering,
-                      Math operations, and more. Each collector is optimized to
-                      avoid detection by anti-fingerprinting tools.
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="mb-1 font-semibold">
-                      2. Normalization & Hashing
-                    </h4>
-                    <p className="text-muted-foreground">
-                      Collected data is normalized to handle minor variations
-                      and then hashed using MurmurHash3 algorithm. The hash is
-                      encoded in Base62 format to produce a compact, URL-safe
-                      fingerprint ID that's easy to store and transmit.
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="mb-1 font-semibold">3. Coverage Scoring</h4>
-                    <p className="text-muted-foreground">
-                      Each fingerprint includes a coverage ratio (0-1)
-                      indicating how many collectors finished successfully.
-                      Higher coverage means more browser APIs responded, which
-                      gives the fingerprint better stability (but it is not a
-                      uniqueness metric).
-                    </p>
-                  </div>
-                </div>
-                <p className="mt-4">
-                  The entire fingerprinting process completes in under 500ms on
-                  modern browsers, with minimal impact on page load performance.
-                  All processing happens client-side, and we only transmit the
-                  final hashed fingerprint ID to our API, never raw browser
-                  data.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Globe className="h-5 w-5" />
-                  Use Cases
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3 text-sm md:text-base">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <div className="flex items-start gap-2">
-                      <CheckCircle className="mt-1 h-4 w-4 text-green-500" />
-                      <div>
-                        <p className="font-semibold">Fraud Detection</p>
-                        <p className="text-muted-foreground text-xs">
-                          Identify suspicious accounts and prevent account
-                          takeover attacks
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <CheckCircle className="mt-1 h-4 w-4 text-green-500" />
-                      <div>
-                        <p className="font-semibold">Bot Prevention</p>
-                        <p className="text-muted-foreground text-xs">
-                          Detect automated scrapers and malicious bots
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <CheckCircle className="mt-1 h-4 w-4 text-green-500" />
-                      <div>
-                        <p className="font-semibold">Session Continuity</p>
-                        <p className="text-muted-foreground text-xs">
-                          Maintain user sessions across devices without cookies
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex items-start gap-2">
-                      <CheckCircle className="mt-1 h-4 w-4 text-green-500" />
-                      <div>
-                        <p className="font-semibold">Analytics Enhancement</p>
-                        <p className="text-muted-foreground text-xs">
-                          Accurate visitor tracking for analytics platforms
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <CheckCircle className="mt-1 h-4 w-4 text-green-500" />
-                      <div>
-                        <p className="font-semibold">Security Research</p>
-                        <p className="text-muted-foreground text-xs">
-                          Study browser privacy and anti-tracking mechanisms
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <CheckCircle className="mt-1 h-4 w-4 text-green-500" />
-                      <div>
-                        <p className="font-semibold">Device Intelligence</p>
-                        <p className="text-muted-foreground text-xs">
-                          Understand user device profiles and capabilities
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Quick Start Tab */}
-          <TabsContent
-            value="quickstart"
-            forceMount
-            className="space-y-6 data-[state=inactive]:hidden"
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Zap className="h-5 w-5" />
-                  Installation
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm md:text-base">
-                  Load the CreepJS SDK with a single script tag — no build step
-                  required. An npm package is planned; until it ships, use the
-                  hosted browser bundle below.
-                </p>
-                <div>
-                  <h4 className="mb-2 text-sm font-semibold">
-                    Option 1: Script tag (recommended)
-                  </h4>
-                  <pre className="bg-muted overflow-x-auto rounded-lg p-4 text-xs md:text-sm">
-                    {`<script src="https://creepjs.org/sdk.js"></script>
-<script>
-  const client = new CreepJS.CreepJS({
-    token: 'YOUR_TOKEN',
-    fullBundleUrl: 'https://creepjs.org/sdk.full.js'
-  });
-
-  client.getFingerprint()
-    .then(fp => console.log(fp.fingerprintId));
-</script>`}
-                  </pre>
-                </div>
-                <div>
-                  <h4 className="mb-2 text-sm font-semibold">
-                    Option 2: npm (coming soon)
-                  </h4>
-                  <pre className="bg-muted overflow-x-auto rounded-lg p-4 text-xs md:text-sm">
-                    {`# Not yet published — planned
-npm install @creepjs/sdk`}
-                  </pre>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Code className="h-5 w-5" />
-                  Basic Usage
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm md:text-base">
-                  With the script tag loaded, collect a fingerprint in a few
-                  lines. The bundle exposes a global <code>CreepJS</code>{' '}
-                  namespace. Once the npm package ships, you can instead import{' '}
-                  <code>getFingerprint</code> from the <code>@creepjs/sdk</code>{' '}
-                  module.
-                </p>
-                <pre className="bg-muted overflow-x-auto rounded-lg p-4 text-xs md:text-sm">
-                  {`// Collect fingerprint and send to API
-const result = await CreepJS.getFingerprint({
-  token: 'cfp_your_api_token_here',
-  endpoint: '${apiUrl}', // optional
-  cache: true, // enable localStorage caching
-  cacheTtl: 3600, // cache for 1 hour
-});
-
-console.log('Fingerprint ID:', result.fingerprintId);
-console.log('Coverage:', result.confidence);
-console.log('Timestamp:', result.timestamp);
-
-// Check if result was cached
-if (result.cached) {
-  console.log('Loaded from cache');
-}`}
-                </pre>
-                <div className="mt-4 rounded-lg border border-yellow-500/20 bg-yellow-500/10 p-4">
-                  <div className="flex items-start gap-2">
-                    <AlertCircle className="mt-0.5 h-5 w-5 text-yellow-500" />
-                    <div>
-                      <p className="mb-1 font-semibold text-yellow-500">
-                        API Token Required
-                      </p>
-                      <p className="text-muted-foreground text-sm">
-                        You need an API token to use CreepJS. Visit the{' '}
-                        <Link href="/playground" className="underline">
-                          Playground
-                        </Link>{' '}
-                        to generate a free token (1,000 requests/day). For
-                        higher limits, contact us about Pro or Enterprise plans.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>SDK Options</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="p-2 text-left">Option</th>
-                        <th className="p-2 text-left">Type</th>
-                        <th className="p-2 text-left">Default</th>
-                        <th className="p-2 text-left">Description</th>
-                      </tr>
-                    </thead>
-                    <tbody className="text-xs md:text-sm">
-                      <tr className="border-b">
-                        <td className="p-2">
-                          <code>token</code>
-                        </td>
-                        <td className="text-muted-foreground p-2">string</td>
-                        <td className="text-muted-foreground p-2">required</td>
-                        <td className="p-2">
-                          Your API authentication token (cfp_...)
-                        </td>
-                      </tr>
-                      <tr className="border-b">
-                        <td className="p-2">
-                          <code>endpoint</code>
-                        </td>
-                        <td className="text-muted-foreground p-2">string</td>
-                        <td className="text-muted-foreground p-2">{apiHost}</td>
-                        <td className="p-2">
-                          API base URL (for self-hosted instances)
-                        </td>
-                      </tr>
-                      <tr className="border-b">
-                        <td className="p-2">
-                          <code>cache</code>
-                        </td>
-                        <td className="text-muted-foreground p-2">boolean</td>
-                        <td className="text-muted-foreground p-2">true</td>
-                        <td className="p-2">
-                          Enable localStorage caching of fingerprints
-                        </td>
-                      </tr>
-                      <tr className="border-b">
-                        <td className="p-2">
-                          <code>cacheTtl</code>
-                        </td>
-                        <td className="text-muted-foreground p-2">number</td>
-                        <td className="text-muted-foreground p-2">86400</td>
-                        <td className="p-2">
-                          Cache time-to-live in seconds (max 7 days; 0 turns
-                          caching off)
-                        </td>
-                      </tr>
-                      <tr className="border-b">
-                        <td className="p-2">
-                          <code>timeoutMs</code>
-                        </td>
-                        <td className="text-muted-foreground p-2">number</td>
-                        <td className="text-muted-foreground p-2">10000</td>
-                        <td className="p-2">
-                          API request timeout in milliseconds
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* API Reference Tab */}
-          <TabsContent
-            value="api"
-            forceMount
-            className="space-y-6 data-[state=inactive]:hidden"
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle>Authentication</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm md:text-base">
-                  All API requests require authentication using an API token.
-                  Include your token in the{' '}
-                  <code className="bg-muted rounded px-2 py-1">
-                    X-API-Token
-                  </code>{' '}
-                  header:
-                </p>
-                <pre className="bg-muted overflow-x-auto rounded-lg p-4 text-xs md:text-sm">
-                  {`curl -X POST ${apiUrl}/v1/fingerprint \\
-  -H "Content-Type: application/json" \\
-  -H "X-API-Token: cfp_your_token_here" \\
-  -d '{"fingerprintId": "abc123...", "data": {...}}'`}
-                </pre>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>POST /v1/token</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm md:text-base">
-                  Generate a new API token by providing your email address.
-                </p>
-                <div>
-                  <h4 className="mb-2 font-semibold">Request Body</h4>
-                  <pre className="bg-muted overflow-x-auto rounded-lg p-4 text-xs">
-                    {`{
-  "email": "your@email.com"
-}`}
-                  </pre>
-                </div>
-                <div>
-                  <h4 className="mb-2 font-semibold">Response (200 OK)</h4>
-                  <pre className="bg-muted overflow-x-auto rounded-lg p-4 text-xs">
-                    {`{
-  "token": "cfp_abc123def456...",
-  "expiresAt": "2024-12-31T23:59:59Z",
-  "rateLimit": {
-    "requests": 1000,
-    "period": "day"
-  }
-}`}
-                  </pre>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>POST /v1/fingerprint</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm md:text-base">
-                  Submit fingerprint data for processing and storage.
-                </p>
-                <div>
-                  <h4 className="mb-2 font-semibold">Request Headers</h4>
-                  <pre className="bg-muted overflow-x-auto rounded-lg p-4 text-xs">
-                    {`Content-Type: application/json
-X-API-Token: cfp_your_token_here`}
-                  </pre>
-                </div>
-                <div>
-                  <h4 className="mb-2 font-semibold">Request Body</h4>
-                  <pre className="bg-muted overflow-x-auto rounded-lg p-4 text-xs">
-                    {`{
-  "fingerprintId": "abc123def456",
-  "confidence": 0.95,
-  "timestamp": 1703980800000,
-  "data": {
-    "canvas": { "hash": "...", "dataURL": "..." },
-    "webgl": { "vendor": "...", "renderer": "..." },
-    "navigator": { "userAgent": "...", "platform": "..." },
-    // ... additional collectors
-  }
-}`}
-                  </pre>
-                </div>
-                <div>
-                  <h4 className="mb-2 font-semibold">Response (200 OK)</h4>
-                  <pre className="bg-muted overflow-x-auto rounded-lg p-4 text-xs">
-                    {`{
-  "success": true,
-  "fingerprintId": "abc123def456",
-  "stored": true,
-  "uniqueness": 0.89,
-  "metadata": {
-    "firstSeen": "2024-01-01T00:00:00Z",
-    "lastSeen": "2024-01-10T12:30:00Z",
-    "visitCount": 5
-  }
-}`}
-                  </pre>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Rate Limits & Error Codes</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <h4 className="mb-2 font-semibold">Rate Limits</h4>
-                  <ul className="ml-4 list-inside list-disc space-y-1 text-sm">
-                    <li>
-                      <strong>Free Tier:</strong> 1,000 requests per day
-                    </li>
-                    <li>
-                      <strong>Pro Tier:</strong> 100,000 requests per day
-                    </li>
-                    <li>
-                      <strong>Enterprise:</strong> Unlimited requests with SLA
-                    </li>
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="mb-2 font-semibold">HTTP Status Codes</h4>
-                  <ul className="ml-4 list-inside list-disc space-y-1 text-sm">
-                    <li>
-                      <code>200 OK</code> - Request successful
-                    </li>
-                    <li>
-                      <code>400 Bad Request</code> - Invalid request body or
-                      parameters
-                    </li>
-                    <li>
-                      <code>401 Unauthorized</code> - Missing or invalid API
-                      token
-                    </li>
-                    <li>
-                      <code>429 Too Many Requests</code> - Rate limit exceeded
-                    </li>
-                    <li>
-                      <code>500 Internal Server Error</code> - Server error
-                    </li>
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Collectors Tab */}
-          <TabsContent
-            value="collectors"
-            forceMount
-            className="space-y-6 data-[state=inactive]:hidden"
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle>Fingerprint Collectors</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm leading-relaxed md:text-base">
-                  CreepJS uses 24+ specialized collectors to gather browser
-                  characteristics. Each collector focuses on a specific API or
-                  browser feature, contributing to the overall fingerprint
-                  uniqueness and stability.
-                </p>
-              </CardContent>
-            </Card>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Graphics Collectors</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                  <div>
-                    <h4 className="font-semibold">Canvas 2D</h4>
-                    <p className="text-muted-foreground text-xs">
-                      Renders text and shapes to detect anti-aliasing and
-                      rendering differences across GPUs and drivers.
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold">WebGL</h4>
-                    <p className="text-muted-foreground text-xs">
-                      Collects GPU vendor, renderer, extensions, and rendering
-                      capabilities.
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold">SVG Rendering</h4>
-                    <p className="text-muted-foreground text-xs">
-                      Measures SVG element dimensions to detect vector graphics
-                      rendering variations.
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold">Text Metrics</h4>
-                    <p className="text-muted-foreground text-xs">
-                      Analyzes text measurement APIs for font rendering
-                      differences.
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold">Emoji Rendering</h4>
-                    <p className="text-muted-foreground text-xs">
-                      Uses DOM rect measurements to detect emoji rendering
-                      variations.
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">System Collectors</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                  <div>
-                    <h4 className="font-semibold">Navigator</h4>
-                    <p className="text-muted-foreground text-xs">
-                      Collects user agent, platform, language, hardware
-                      concurrency, and device memory.
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold">Screen</h4>
-                    <p className="text-muted-foreground text-xs">
-                      Captures resolution, color depth, pixel ratio, and
-                      available screen dimensions.
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold">Fonts</h4>
-                    <p className="text-muted-foreground text-xs">
-                      Detects installed system fonts using text measurement
-                      techniques.
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold">Timezone</h4>
-                    <p className="text-muted-foreground text-xs">
-                      Identifies timezone, offset, locale, calendar system, and
-                      currency settings.
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold">Math Precision</h4>
-                    <p className="text-muted-foreground text-xs">
-                      Tests JavaScript Math constants and floating-point
-                      precision.
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Media Collectors</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                  <div>
-                    <h4 className="font-semibold">Audio Context</h4>
-                    <p className="text-muted-foreground text-xs">
-                      Renders a compressed oscillator signal offline and
-                      measures the output, which varies with the audio engine
-                      and CPU.
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold">Media Devices</h4>
-                    <p className="text-muted-foreground text-xs">
-                      Enumerates available cameras, microphones, and speakers.
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold">Speech Voices</h4>
-                    <p className="text-muted-foreground text-xs">
-                      Lists available text-to-speech voices and languages.
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Browser & Network</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                  <div>
-                    <h4 className="font-semibold">CSS Styles</h4>
-                    <p className="text-muted-foreground text-xs">
-                      Computes CSS styles and system font stacks.
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold">HTML Element</h4>
-                    <p className="text-muted-foreground text-xs">
-                      Analyzes HTML element prototype properties and methods.
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold">MIME Types</h4>
-                    <p className="text-muted-foreground text-xs">
-                      Lists browser-supported MIME types for media formats.
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold">WebRTC</h4>
-                    <p className="text-muted-foreground text-xs">
-                      Collects ICE candidates and local IP addresses via WebRTC.
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold">Service Worker</h4>
-                    <p className="text-muted-foreground text-xs">
-                      Detects service worker support and registration status.
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Security & Privacy</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                  <div>
-                    <h4 className="font-semibold">
-                      Anti-Fingerprinting Detection
-                    </h4>
-                    <p className="text-muted-foreground text-xs">
-                      Identifies privacy tools and browser modifications that
-                      block fingerprinting.
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold">Lies Detection</h4>
-                    <p className="text-muted-foreground text-xs">
-                      Detects inconsistencies between reported and actual
-                      browser characteristics.
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold">Console Errors</h4>
-                    <p className="text-muted-foreground text-xs">
-                      Analyzes error stack traces and console API methods.
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">
-                    Additional Collectors
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                  <div>
-                    <h4 className="font-semibold">DOM Rectangle</h4>
-                    <p className="text-muted-foreground text-xs">
-                      Measures DOM element layout precision.
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold">Content Window</h4>
-                    <p className="text-muted-foreground text-xs">
-                      Analyzes iframe contentWindow properties.
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold">CSS Media Queries</h4>
-                    <p className="text-muted-foreground text-xs">
-                      Tests media query support and system preferences.
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+          <table className="w-full min-w-[36rem] text-left text-sm">
+            <caption className="sr-only">
+              Endpoints, inputs, authentication, and returned output
+            </caption>
+            <thead className="bg-muted">
+              <tr>
+                <th scope="col" className="p-3">
+                  Endpoint
+                </th>
+                <th scope="col" className="p-3">
+                  Input &amp; access
+                </th>
+                <th scope="col" className="p-3">
+                  Output &amp; limits
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y">
+              {[
+                [
+                  'POST /v1/token',
+                  'JSON: { email }. No existing token.',
+                  'Token is returned here, not emailed. Issuance limits apply.',
+                ],
+                [
+                  'POST /v1/fingerprint',
+                  'A real collected snapshot; token required.',
+                  'Recalculated ID, data, coverage, timings. Maximum 128 KiB.',
+                ],
+                [
+                  'GET /my-ip',
+                  'No address or token needed.',
+                  'Your public IP, approximate location, and optional risk context.',
+                ],
+                [
+                  'GET /v1/ip/public/:ip',
+                  'One IPv4 or IPv6 literal; no token.',
+                  'IP report. 30 lookups per visitor per day.',
+                ],
+                [
+                  'GET /v1/ip/:ip',
+                  'One IPv4 or IPv6 literal; token required.',
+                  'IP report with daily quota metadata.',
+                ],
+                [
+                  'POST /v1/ip/batch',
+                  'JSON: { ips: [...] }; token required.',
+                  'Up to 50 entries. Per-row outcomes; partial results stay usable.',
+                ],
+              ].map(([endpoint, input, output]) => (
+                <tr key={endpoint}>
+                  <th scope="row" className="p-3 font-mono text-xs font-medium">
+                    {endpoint}
+                  </th>
+                  <td className="p-3 leading-6">{input}</td>
+                  <td className="p-3 leading-6">{output}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="text-muted-foreground text-sm leading-6">
+          Authenticated requests share an allowance of 1,000 requests per day
+          across tokens issued to the same email. Batch responses expose charged
+          and skipped outcomes; use the returned quota fields rather than
+          assuming every row succeeded.
+        </p>
+        <Example title="cURL · authenticated IP lookup" code={ipExample} />
+        <details className="rounded-lg border p-4">
+          <summary className="cursor-pointer font-medium">
+            SDK cache and request options
+          </summary>
+          <dl className="grid gap-4 pt-3 text-sm sm:grid-cols-2">
+            {[
+              [
+                'cache',
+                'Defaults to true. Set false for a new collection and API request.',
+              ],
+              [
+                'cacheTtl',
+                'Seconds, default 86400; capped at 7 days. Zero disables caching.',
+              ],
+              [
+                'timeoutMs',
+                'Bounds the API request. Handle timeout as an uncertain request outcome.',
+              ],
+              [
+                'fullBundleUrl',
+                'Defaults to the sibling sdk.full.js. Set it when self-hosting collector assets.',
+              ],
+            ].map(([name, detail]) => (
+              <div key={name}>
+                <dt className="font-mono font-semibold">{name}</dt>
+                <dd className="text-muted-foreground mt-1 leading-6">
+                  {detail}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </details>
+      </section>
+      <section
+        id="collectors"
+        className="section-anchor max-w-3xl space-y-3 border-t pt-6"
+        aria-labelledby="output-title"
+      >
+        <h2 id="output-title" className="text-xl font-bold">
+          Read the output before making a decision
+        </h2>
+        <dl className="space-y-3 text-sm">
+          {[
+            [
+              'fingerprintId',
+              'A diagnostic ID derived from the submitted components. Changes in environment or available signals can change it.',
+            ],
+            [
+              'data',
+              'The actual observed collector values. Missing APIs and false or zero values must remain distinct.',
+            ],
+            [
+              'coverage / confidence',
+              'Collection completion, not a uniqueness estimate or probability of fraud. Inspect successful, failed, and skipped counts.',
+            ],
+            [
+              'collectors / timings',
+              'Per-collector outcomes and duration. Use these to investigate a partial scan before comparing IDs.',
+            ],
+          ].map(([term, detail]) => (
+            <div key={term}>
+              <dt className="font-mono font-semibold">{term}</dt>
+              <dd className="text-muted-foreground mt-1 leading-6">{detail}</dd>
             </div>
-          </TabsContent>
-
-          {/* FAQ Tab */}
-          <TabsContent
-            value="faq"
-            forceMount
-            className="space-y-6 data-[state=inactive]:hidden"
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Shield className="h-5 w-5" />
-                  Privacy & Security
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <h4 className="mb-2 font-semibold">
-                    Is browser fingerprinting legal?
-                  </h4>
-                  <p className="text-muted-foreground text-sm">
-                    Yes, when used responsibly and in compliance with privacy
-                    regulations like GDPR and CCPA. You must inform users about
-                    data collection practices and provide opt-out mechanisms.
-                    CreepJS is designed for legitimate use cases such as fraud
-                    prevention and security analytics, not for covert tracking.
-                  </p>
-                </div>
-                <div>
-                  <h4 className="mb-2 font-semibold">
-                    What data does CreepJS store?
-                  </h4>
-                  <p className="text-muted-foreground text-sm">
-                    CreepJS only stores hashed fingerprint IDs and metadata
-                    (timestamps, visit counts). We never store raw browser
-                    characteristics or personally identifiable information. All
-                    fingerprint processing happens client-side, and only the
-                    final hash is transmitted to our API.
-                  </p>
-                </div>
-                <div>
-                  <h4 className="mb-2 font-semibold">
-                    Can fingerprinting bypass VPNs or Tor?
-                  </h4>
-                  <p className="text-muted-foreground text-sm">
-                    Fingerprinting works alongside network-based identification,
-                    not as a replacement. While VPNs and Tor can mask IP
-                    addresses, fingerprinting identifies the browser/device
-                    itself. However, privacy-focused browsers like Tor Browser
-                    implement anti-fingerprinting measures that significantly
-                    reduce fingerprint uniqueness.
-                  </p>
-                </div>
-                <div>
-                  <h4 className="mb-2 font-semibold">
-                    How stable are fingerprints over time?
-                  </h4>
-                  <p className="text-muted-foreground text-sm">
-                    Fingerprint stability varies by browser and usage patterns.
-                    In controlled environments, fingerprints can remain stable
-                    for weeks or months. However, browser updates, extension
-                    changes, font installations, or screen resolution changes
-                    may alter the fingerprint. Our confidence scoring helps you
-                    assess fingerprint reliability.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Lock className="h-5 w-5" />
-                  Best Practices
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <h4 className="mb-2 font-semibold">
-                    How should I implement fingerprinting ethically?
-                  </h4>
-                  <p className="text-muted-foreground mb-2 text-sm">
-                    Follow these guidelines for responsible fingerprinting:
-                  </p>
-                  <ul className="text-muted-foreground ml-4 list-inside list-disc space-y-1 text-sm">
-                    <li>Disclose fingerprinting in your privacy policy</li>
-                    <li>Provide clear opt-out mechanisms</li>
-                    <li>
-                      Use fingerprints only for stated purposes (fraud
-                      prevention, analytics)
-                    </li>
-                    <li>
-                      Comply with GDPR, CCPA, and other applicable regulations
-                    </li>
-                    <li>
-                      Implement data retention policies and automatic deletion
-                    </li>
-                    <li>
-                      Never combine fingerprints with PII without explicit
-                      consent
-                    </li>
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="mb-2 font-semibold">
-                    Should I cache fingerprints?
-                  </h4>
-                  <p className="text-muted-foreground text-sm">
-                    Yes, caching improves performance and reduces API calls.
-                    Enable SDK caching with reasonable TTL (1-24 hours). This
-                    allows fingerprints to be reused across page loads without
-                    re-collection, significantly improving user experience.
-                  </p>
-                </div>
-                <div>
-                  <h4 className="mb-2 font-semibold">
-                    How do I handle low-confidence fingerprints?
-                  </h4>
-                  <p className="text-muted-foreground text-sm">
-                    Low confidence scores (below 0.6) indicate limited
-                    distinguishing characteristics were collected. This often
-                    occurs in privacy-focused browsers or with
-                    anti-fingerprinting extensions. Consider combining
-                    fingerprinting with other identification methods (session
-                    cookies, device IDs) for better reliability.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Technical Questions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <h4 className="mb-2 font-semibold">
-                    What browsers are supported?
-                  </h4>
-                  <p className="text-muted-foreground text-sm">
-                    CreepJS works on all modern browsers: Chrome 90+, Firefox
-                    88+, Safari 14+, Edge 90+, Opera 76+. Mobile browsers (iOS
-                    Safari, Chrome Android) are fully supported. Some collectors
-                    may have limited functionality on older browsers.
-                  </p>
-                </div>
-                <div>
-                  <h4 className="mb-2 font-semibold">
-                    What's the performance impact?
-                  </h4>
-                  <p className="text-muted-foreground text-sm">
-                    Fingerprint collection typically completes in 200-500ms on
-                    modern devices, with minimal CPU and memory overhead. All
-                    collection happens asynchronously without blocking the main
-                    thread. Page load performance is not affected when using
-                    proper async loading techniques.
-                  </p>
-                </div>
-                <div>
-                  <h4 className="mb-2 font-semibold">
-                    Can I self-host the API?
-                  </h4>
-                  <p className="text-muted-foreground text-sm">
-                    Yes, CreepJS API is open-source and can be self-hosted.
-                    Check our GitHub repository for deployment instructions.
-                    Self-hosting gives you full control over data storage and
-                    processing, which may be required for compliance in certain
-                    jurisdictions.
-                  </p>
-                </div>
-                <div>
-                  <h4 className="mb-2 font-semibold">
-                    How do I upgrade my rate limit?
-                  </h4>
-                  <p className="text-muted-foreground text-sm">
-                    Contact us at hello@creepjs.org to discuss Pro (100K
-                    req/day) or Enterprise (unlimited) plans. Enterprise plans
-                    include custom SLAs, dedicated support, and advanced
-                    analytics features.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-
-        {/* Footer Links */}
-        <Card className="mt-8">
-          <CardHeader>
-            <CardTitle>Related Resources</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 md:grid-cols-3">
-              <TrackedLink
-                href="/checker"
-                className="hover:border-primary block rounded-lg border p-4 transition-colors"
-                eventLabel="docs_checker_cta"
-                eventSection="docs"
-                eventKind="button"
-              >
-                <div className="mb-1 font-semibold">Fingerprint Checker</div>
-                <div className="text-muted-foreground text-xs">
-                  See your browser's fingerprint in action
-                </div>
-              </TrackedLink>
-              <TrackedLink
-                href="/playground"
-                className="hover:border-primary block rounded-lg border p-4 transition-colors"
-                eventLabel="docs_playground_cta"
-                eventSection="docs"
-                eventKind="button"
-              >
-                <div className="mb-1 font-semibold">API Playground</div>
-                <div className="text-muted-foreground text-xs">
-                  Test the API interactively with code examples
-                </div>
-              </TrackedLink>
-              <a
-                href={SITE_CONFIG.github}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:border-primary block rounded-lg border p-4 transition-colors"
-              >
-                <div className="mb-1 font-semibold">
-                  CreepJS GitHub Repository
-                </div>
-                <div className="text-muted-foreground text-xs">
-                  View source code and contribute
-                </div>
-              </a>
+          ))}
+        </dl>
+        <Link
+          href="/fingerprint"
+          className="text-primary inline-flex min-h-11 items-center text-sm underline underline-offset-4"
+        >
+          Find the method and limits for each signal
+        </Link>
+      </section>
+      <section
+        id="faq"
+        className="section-anchor space-y-4 border-t pt-6"
+        aria-labelledby="recovery-title"
+      >
+        <h2 id="recovery-title" className="text-xl font-bold">
+          Fix a failed request
+        </h2>
+        <dl className="grid gap-4 text-sm sm:grid-cols-2">
+          {[
+            [
+              '400 · invalid input',
+              'Check the returned validation details. IP tools accept address literals, not URLs, hostnames, ports, or ranges.',
+            ],
+            [
+              '401 · token rejected',
+              'Replace the token and retry. Never put the token in a query string.',
+            ],
+            [
+              '413 · payload too large',
+              'The fingerprint endpoint accepts at most 128 KiB. Inspect the actual collected JSON before resubmitting.',
+            ],
+            [
+              '429 · quota reached',
+              'Wait for the returned retry or reset time. Generating more tokens for the same inbox does not increase its allowance.',
+            ],
+            [
+              'Network error or timeout',
+              'Keep inputs and retry manually when ready. A timed-out POST may have been processed; do not replay it automatically.',
+            ],
+            [
+              'Partial or missing data',
+              'Keep available fields, mark missing fields unknown, and retry failed rows or collectors independently. Missing evidence is not proof of safety.',
+            ],
+          ].map(([name, detail]) => (
+            <div key={name} className="rounded-lg border p-4">
+              <dt className="font-semibold">{name}</dt>
+              <dd className="text-muted-foreground mt-2 leading-6">{detail}</dd>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          ))}
+        </dl>
+      </section>
+      <section
+        id="introduction"
+        className="section-anchor max-w-3xl space-y-3 border-t py-6"
+        aria-labelledby="privacy-title"
+      >
+        <h2 id="privacy-title" className="text-xl font-bold">
+          Privacy &amp; interpretation limits
+        </h2>
+        <p className="text-muted-foreground text-sm leading-7">
+          Browser fingerprinting combines observable rendering, environment, and
+          capability signals. It does not prove a person’s identity. Private
+          browsing can isolate stored data while leaving many browser values
+          observable.
+        </p>
+        <p className="text-muted-foreground text-sm leading-7">
+          Local collectors do not require an API token. SDK submission sends the
+          collected payload to the API, which validates it and records coarse
+          aggregate comparison statistics. Token records contain the email and
+          creation time. IP reports may be cached. SDK caching is local to the
+          browser; set cache to false if you do not want it.
+        </p>
+        <p className="text-muted-foreground text-sm leading-7">
+          <Link
+            href="/privacy"
+            className="text-primary underline underline-offset-4"
+          >
+            Read data handling and retention
+          </Link>
+          . Use the{' '}
+          <Link
+            href="/checker"
+            className="text-primary underline underline-offset-4"
+          >
+            checker
+          </Link>{' '}
+          to compare observed settings before drawing a conclusion from a score.
+        </p>
+      </section>
     </div>
   );
 }
