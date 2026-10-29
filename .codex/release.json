@@ -37,10 +37,7 @@
   "deploy": [
     {
       "name": "publish the exact web commit through protected GitHub Actions",
-      "argv": [
-        "./deploy-direct.sh",
-        "web"
-      ]
+      "argv": ["./deploy-direct.sh", "web"]
     }
   ],
   "verify": [
