@@ -1,9 +1,22 @@
 import { describe, expect, it } from 'vitest';
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import IpRiskPage from './page';
 import { assessIpResult } from '@/lib/ip-result';
 import type {
   IpIntelligenceData,
   PublicIpLookupResult,
 } from '@/lib/public-ip-lookup';
+
+describe('IP lookup first render', () => {
+  it('does not accept input before its change handlers can preserve ownership', () => {
+    const html = renderToStaticMarkup(createElement(IpRiskPage));
+    const input = /<input[^>]*id="ip-address"[^>]*>/.exec(html)?.[0];
+    expect(input).toContain('disabled=""');
+    expect(html).toContain('Preparing lookup controls');
+    expect(html).not.toContain('Ready. Results include');
+  });
+});
 
 function result(
   data: Partial<IpIntelligenceData>,

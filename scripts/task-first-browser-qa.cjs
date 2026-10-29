@@ -19,6 +19,15 @@ const results = [];
 const screenshots = [];
 const a11yAudits = [];
 const a11yOnly = process.argv.includes('--a11y-only');
+const ipOnly =
+  process.argv.includes('--ip-only') || process.env.QA_SCOPE === 'ip';
+const ipScenarios = new Set([
+  'IP success, invalid, partial, empty, quota, malformed and recovery states',
+  'IP auto-detection never overwrites typed input; cancellation keeps input',
+  'no browser runtime errors across the changed routes',
+  'WCAG A and AA automated audit of representative pages',
+  'first render remains truthful and usable before JavaScript',
+]);
 const publicBase = process.env.QA_BASE_URL;
 if (
   publicBase &&
@@ -54,6 +63,7 @@ function assert(value, message) {
   if (!value) throw new Error(message);
 }
 async function check(name, action) {
+  if (ipOnly && !ipScenarios.has(name)) return;
   const started = Date.now();
   try {
     await action();
@@ -857,20 +867,22 @@ async function main() {
           ]) {
             await page.setViewportSize({ width: mode.width, height: 900 });
             await page.emulateMedia({ colorScheme: mode.theme });
-            for (const route of [
-              '/',
-              '/ip',
-              '/checker?tab=all',
-              '/checker?tab=graphics',
-              '/fingerprint',
-              '/fingerprint/canvas',
-              '/playground',
-              '/docs',
-              '/guide/what-is-browser-fingerprinting',
-              '/ip-lookup/how-to-tell-if-an-ip-is-a-proxy',
-              '/privacy',
-              '/terms',
-            ]) {
+            for (const route of ipOnly
+              ? ['/ip']
+              : [
+                  '/',
+                  '/ip',
+                  '/checker?tab=all',
+                  '/checker?tab=graphics',
+                  '/fingerprint',
+                  '/fingerprint/canvas',
+                  '/playground',
+                  '/docs',
+                  '/guide/what-is-browser-fingerprinting',
+                  '/ip-lookup/how-to-tell-if-an-ip-is-a-proxy',
+                  '/privacy',
+                  '/terms',
+                ]) {
               await visit(route);
               assert(
                 (await page
@@ -966,16 +978,25 @@ async function main() {
         'first render remains truthful and usable before JavaScript',
         async () => {
           const target = await noJs.newPage();
-          for (const route of [
-            '/',
-            '/ip',
-            '/checker',
-            '/fingerprint/canvas',
-            '/fingerprint/webrtc',
-            '/docs',
-            '/playground',
-          ]) {
+          for (const route of ipOnly
+            ? ['/ip']
+            : [
+                '/',
+                '/ip',
+                '/checker',
+                '/fingerprint/canvas',
+                '/fingerprint/webrtc',
+                '/docs',
+                '/playground',
+              ]) {
             await target.goto(base + route);
+            if (route === '/ip')
+              assert(
+                await target
+                  .getByLabel('IP address', { exact: true })
+                  .isDisabled(),
+                'IP input looks ready before client handlers are attached'
+              );
             assert(
               (await target.locator('h1').count()) === 1,
               route + ': static H1 missing'
@@ -1002,6 +1023,7 @@ async function main() {
       generatedAt: new Date().toISOString(),
       baseUrl: base,
       targetKind: publicBase ? 'production' : 'isolated-preview',
+      scope: ipOnly ? 'ip-regression' : a11yOnly ? 'accessibility' : 'full',
       routeCount: paths.length,
       passed: results.filter((item) => item.status === 'pass').length,
       failed: results.filter((item) => item.status === 'fail').length,
