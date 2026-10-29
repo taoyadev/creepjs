@@ -1014,6 +1014,16 @@ async function main() {
                 '/playground',
               ]) {
             await target.goto(base + route);
+            assert(
+              await target
+                .locator('script[src^="/_next/static/chunks/"]:not([nomodule])')
+                .evaluateAll(
+                  (scripts) =>
+                    scripts.length > 0 &&
+                    scripts.every((script) => script.defer && !script.async)
+                ),
+              route + ': static startup must wait for document parsing'
+            );
             if (route === '/ip')
               assert(
                 await target
