@@ -39,6 +39,7 @@ function Metric({ name, value }: { name: string; value: unknown }) {
 }
 
 export default function IpRiskPage() {
+  const [interactive, setInteractive] = useState(false);
   const [ip, setIp] = useState('');
   const [result, setResult] = useState<PublicIpLookupResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -144,6 +145,7 @@ export default function IpRiskPage() {
 
   useEffect(() => {
     const shared = new URLSearchParams(window.location.search).get('q')?.trim();
+    setInteractive(true);
     if (shared) void performLookup(shared);
     else void detectIp();
     return () => {
@@ -191,6 +193,7 @@ export default function IpRiskPage() {
             <Input
               ref={inputRef}
               id="ip-address"
+              disabled={!interactive}
               value={ip}
               onChange={(event) => {
                 edited.current = true;
@@ -199,9 +202,11 @@ export default function IpRiskPage() {
                 setError(null);
               }}
               placeholder={
-                detecting
-                  ? 'Detecting your IP… or enter an address'
-                  : '8.8.8.8 or 2606:4700:4700::1111'
+                !interactive
+                  ? 'Preparing lookup controls…'
+                  : detecting
+                    ? 'Detecting your IP… or enter an address'
+                    : '8.8.8.8 or 2606:4700:4700::1111'
               }
               autoComplete="off"
               autoCapitalize="none"
@@ -213,7 +218,7 @@ export default function IpRiskPage() {
             />
             <Button
               type="submit"
-              disabled={loading}
+              disabled={!interactive || loading}
               className="min-h-11 sm:w-40"
             >
               {loading && (
@@ -222,7 +227,11 @@ export default function IpRiskPage() {
                   aria-hidden="true"
                 />
               )}
-              {loading ? 'Checking…' : 'Check IP Risk'}
+              {!interactive
+                ? 'Preparing…'
+                : loading
+                  ? 'Checking…'
+                  : 'Check IP Risk'}
             </Button>
             {loading && (
               <Button
@@ -245,7 +254,7 @@ export default function IpRiskPage() {
               type="button"
               variant="outline"
               size="sm"
-              disabled={detecting || loading}
+              disabled={!interactive || detecting || loading}
               onClick={() => {
                 edited.current = false;
                 void detectIp();
@@ -257,7 +266,7 @@ export default function IpRiskPage() {
               type="button"
               variant="ghost"
               size="sm"
-              disabled={loading}
+              disabled={!interactive || loading}
               onClick={() => preset('8.8.8.8')}
             >
               Example IPv4
@@ -266,7 +275,7 @@ export default function IpRiskPage() {
               type="button"
               variant="ghost"
               size="sm"
-              disabled={loading}
+              disabled={!interactive || loading}
               onClick={() => preset('2606:4700:4700::1111')}
             >
               Example IPv6
@@ -294,15 +303,17 @@ export default function IpRiskPage() {
           )}
         </form>
         <div role="status" aria-live="polite" className="text-sm font-medium">
-          {loading
-            ? `Checking ${ip.trim()}… Results will appear below. You can cancel this request.`
-            : error
-              ? invalid
-                ? 'The address needs correction.'
-                : 'The lookup did not complete. Your input is kept for retry.'
-              : result && assessment
-                ? `${assessment.badge}: ${assessment.title}. Report for ${result.data.ip}.`
-                : 'Ready. Results include a qualified verdict, evidence, and missing data.'}
+          {!interactive
+            ? 'Preparing lookup controls…'
+            : loading
+              ? `Checking ${ip.trim()}… Results will appear below. You can cancel this request.`
+              : error
+                ? invalid
+                  ? 'The address needs correction.'
+                  : 'The lookup did not complete. Your input is kept for retry.'
+                : result && assessment
+                  ? `${assessment.badge}: ${assessment.title}. Report for ${result.data.ip}.`
+                  : 'Ready. Results include a qualified verdict, evidence, and missing data.'}
         </div>
         {result && assessment && (
           <>
