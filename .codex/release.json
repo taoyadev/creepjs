@@ -17,7 +17,7 @@
         "--",
         "bash",
         "-lc",
-        "set -euo pipefail; pnpm install --frozen-lockfile; pnpm format:check; pnpm build; pnpm typecheck; pnpm lint; NODE_ENV=test pnpm test; pnpm --filter @creepjs/sdk check:size; bash scripts/secret-scan.sh; npx -y @fission-ai/openspec@latest validate --all --strict --no-interactive; pnpm --filter @creepjs/api exec wrangler deploy --dry-run; pnpm audit --audit-level=high"
+        "set -euo pipefail; bash scripts/test-deploy-read-retry.sh; pnpm install --frozen-lockfile; pnpm format:check; pnpm build; pnpm typecheck; pnpm lint; NODE_ENV=test pnpm test; pnpm --filter @creepjs/sdk check:size; bash scripts/secret-scan.sh; npx -y @fission-ai/openspec@latest validate --all --strict --no-interactive; pnpm --filter @creepjs/api exec wrangler deploy --dry-run; pnpm audit --audit-level=high"
       ]
     },
     {
@@ -37,7 +37,10 @@
   "deploy": [
     {
       "name": "publish the exact web commit through protected GitHub Actions",
-      "argv": ["./deploy-direct.sh", "web"]
+      "argv": [
+        "./deploy-direct.sh",
+        "web"
+      ]
     }
   ],
   "verify": [
