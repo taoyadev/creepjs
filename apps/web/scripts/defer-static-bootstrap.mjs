@@ -14,7 +14,7 @@ const asyncAttribute =
   /\sasync(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+))?(?=\s|>)/i;
 
 export function deferStaticBootstrap(html) {
-  return html.replace(/<script\b[^>]*>/gi, (tag) => {
+  const deferred = html.replace(/<script\b[^>]*>/gi, (tag) => {
     if (
       !bootstrapSource.test(tag) ||
       /\snomodule(?:\s|=|>)/i.test(tag) ||
@@ -27,6 +27,30 @@ export function deferStaticBootstrap(html) {
       ? next
       : next.replace(/>$/, ' defer>');
   });
+  return deferred.replace(
+    /(<head\b[^>]*>)([\s\S]*?)(<\/head>)/i,
+    (_, start, content, end) => {
+      const startup = [];
+      const head = content.replace(
+        /<script\b[^>]*>[\s\S]*?<\/script>/gi,
+        (script) => {
+          const tag = script.slice(0, script.indexOf('>') + 1);
+          if (
+            bootstrapSource.test(tag) &&
+            /\sdefer(?:\s|=|>)/i.test(tag) &&
+            !/\snomodule(?:\s|=|>)/i.test(tag)
+          ) {
+            startup.push(script);
+            return '';
+          }
+          return script;
+        }
+      );
+      // React skips async script resources when matching custom head nodes.
+      // Keep deferred resources after those nodes so their identity is stable.
+      return start + head + startup.join('') + end;
+    }
+  );
 }
 
 async function stabilizeExport(directory) {

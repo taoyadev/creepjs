@@ -7,7 +7,7 @@
     "build": "next build && node scripts/defer-static-bootstrap.mjs",
     "start": "next start",
     "lint": "eslint src --ext .ts,.tsx,.js,.jsx",
-    "test": "vitest run && node --test scripts/defer-static-bootstrap.test.mjs",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf .next node_modules .turbo"
   },

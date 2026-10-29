@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import test from 'node:test';
+import { test } from 'vitest';
 import { deferStaticBootstrap } from './defer-static-bootstrap.mjs';
 
 test('defers framework startup and preserves script source order and attributes', () => {
@@ -33,5 +33,21 @@ test('is idempotent and retains an existing defer attribute', () => {
     result,
     "<script src='/_next/static/chunks/main.js' defer></script>"
   );
+  assert.equal(deferStaticBootstrap(result), result);
+});
+
+test('keeps custom head nodes ahead of non-hoistable deferred startup scripts', () => {
+  const html =
+    '<html><head><script src="/_next/static/chunks/react.js" async></script><script id="theme">applyTheme()</script><script type="application/ld+json">{"name":"CreepJS"}</script><script src="/_next/static/chunks/main.js" async></script></head><body><main>Ready</main><script src="/_next/static/chunks/webpack.js" async></script></body></html>';
+  const result = deferStaticBootstrap(html);
+  assert.ok(result.indexOf('id="theme"') < result.indexOf('chunks/react.js'));
+  assert.ok(
+    result.indexOf('application/ld+json') < result.indexOf('chunks/react.js')
+  );
+  assert.ok(
+    result.indexOf('chunks/react.js') < result.indexOf('chunks/main.js')
+  );
+  assert.ok(result.indexOf('chunks/main.js') < result.indexOf('</head>'));
+  assert.ok(result.indexOf('chunks/webpack.js') > result.indexOf('</head>'));
   assert.equal(deferStaticBootstrap(result), result);
 });
