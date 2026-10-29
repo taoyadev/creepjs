@@ -79,7 +79,7 @@ export function LiveIpCard() {
         )}
 
         {state.status === 'ready' && data && (
-          <div className="animate-fade-in-up space-y-5">
+          <div className="space-y-5">
             <div>
               <p className="text-muted-foreground text-xs">Address</p>
               <div className="mt-2 flex items-center gap-2">

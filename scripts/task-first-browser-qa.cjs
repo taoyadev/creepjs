@@ -850,10 +850,7 @@ async function main() {
               .evaluate((node) => node.classList.contains('dark')),
             'dark theme did not initialize'
           );
-          assert(
-            await target.getByText('reduce', { exact: true }).isVisible(),
-            'reduced-motion preference not reflected in result'
-          );
+          await target.getByText('reduce', { exact: true }).waitFor();
           await target.screenshot({
             path: path.join(artifacts, 'mobile-dark-reduced-motion.png'),
           });
@@ -918,6 +915,8 @@ async function main() {
                   .getByText('Avg per Attempted', { exact: true })
                   .waitFor();
               }
+              if (route === '/')
+                await page.getByText(ownIp.ip, { exact: true }).waitFor();
               if (route === '/ip') {
                 const submit = page.getByRole('button', {
                   name: 'Check IP Risk',

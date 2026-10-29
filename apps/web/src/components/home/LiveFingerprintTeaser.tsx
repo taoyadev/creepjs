@@ -160,7 +160,7 @@ export function LiveFingerprintTeaser() {
         )}
 
         {status === 'ready' && result && (
-          <div className="animate-fade-in-up space-y-5">
+          <div className="space-y-5">
             <p role="status" className="text-sm font-semibold">
               {result.coverage.successful === 0
                 ? 'No usable collector values returned'
