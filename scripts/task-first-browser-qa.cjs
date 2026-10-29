@@ -289,7 +289,9 @@ async function main() {
   await mockApi(context, state);
   page = await context.newPage();
   page.setDefaultTimeout(12000);
-  page.on('pageerror', (error) => runtimeErrors.push(error.message));
+  page.on('pageerror', (error) =>
+    runtimeErrors.push(`${page.url()}: ${error.message}`)
+  );
   async function visit(route) {
     await page.goto(base + route, { waitUntil: 'networkidle' });
   }
@@ -906,6 +908,16 @@ async function main() {
                 await page
                   .getByText('Avg per Attempted', { exact: true })
                   .waitFor();
+              }
+              if (route === '/ip') {
+                const submit = page.getByRole('button', {
+                  name: 'Check IP Risk',
+                  exact: true,
+                });
+                await submit.hover();
+                await submit.evaluate((node) =>
+                  Promise.all(node.getAnimations().map((item) => item.finished))
+                );
               }
               await page.addScriptTag({ path: axePath });
               const result = await page.evaluate(async () =>
