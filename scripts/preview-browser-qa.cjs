@@ -256,6 +256,36 @@ async function run() {
   });
   await installCommonApiMocks(desktop);
 
+  if (isExplicitProduction) {
+    await check(
+      'live API rejects invalid email with the released format',
+      async () => {
+        const page = await desktop.newPage();
+        activePage = page;
+        await page.goto(baseUrl, { waitUntil: 'domcontentloaded' });
+        const result = await page.evaluate(async () => {
+          const response = await fetch('https://api.creepjs.org/v1/token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: 'not-an-email' }),
+          });
+          return { status: response.status, body: await response.json() };
+        });
+        assert(
+          result.status === 400,
+          `invalid email returned ${result.status}`
+        );
+        assert(
+          result.body.error === 'Invalid request body' &&
+            Array.isArray(result.body.details) &&
+            result.body.details.some((issue) => issue.path[0] === 'email'),
+          'production API does not expose the released validation format'
+        );
+        await page.close();
+      }
+    );
+  }
+
   await check(
     'static crawler, llms, mirrors, answers, and schema',
     async () => {

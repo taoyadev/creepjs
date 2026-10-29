@@ -1,4 +1,5 @@
-import { z } from 'zod';
+import type { Context } from 'hono';
+import * as z from 'zod';
 import {
   ANALYTICS_EVENTS,
   isAnalyticsEventName,
@@ -28,12 +29,12 @@ export const FingerprintRequestSchema = z.object({
   timestamp: z.number(),
   confidence: z.number(),
   coverage: CoverageSchema.optional(),
-  collectors: z.record(CollectorSummarySchema).optional(),
-  timings: z.record(z.number()).optional(),
+  collectors: z.record(z.string(), CollectorSummarySchema).optional(),
+  timings: z.record(z.string(), z.number()).optional(),
 });
 
 export const TokenRequestSchema = z.object({
-  email: z.string().email(),
+  email: z.email(),
 });
 
 /**
@@ -54,6 +55,39 @@ export const IpBatchRequestSchema = z.object({
     .max(50, 'A batch can contain at most 50 IP addresses'),
 });
 
+/**
+ * `zValidator` hook that answers a failed parse in the API's
+ * `{ error, details }` format. Without it the validator returns the ZodError
+ * itself, whose JSON form is a zod internal: zod 4 folds the issues into a
+ * string `message`.
+ */
+export const validationErrorHook = (
+  result:
+    | { success: true }
+    | {
+        success: false;
+        error: {
+          issues: ReadonlyArray<{
+            path: readonly PropertyKey[];
+            message: string;
+          }>;
+        };
+      },
+  c: Context
+): Response | undefined => {
+  if (result.success) return undefined;
+  return c.json(
+    {
+      error: 'Invalid request body',
+      details: result.error.issues.map(({ path, message }) => ({
+        path,
+        message,
+      })),
+    },
+    400
+  );
+};
+
 export type FingerprintRequest = z.infer<typeof FingerprintRequestSchema>;
 export type TokenRequest = z.infer<typeof TokenRequestSchema>;
 export type IpBatchRequest = z.infer<typeof IpBatchRequestSchema>;
@@ -68,7 +102,7 @@ export const AnalyticsEventRequestSchema = z
   .object({
     name: z.string(),
     path: z.string().max(2048).optional(),
-    props: z.record(z.unknown()).optional(),
+    props: z.record(z.string(), z.unknown()).optional(),
   })
   .transform((event, ctx) => {
     if (!isAnalyticsEventName(event.name)) {

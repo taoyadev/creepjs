@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as z from 'zod';
 import type { FingerprintData } from '@creepjs/core';
 
 /**
@@ -21,7 +21,7 @@ const WebGLFingerprintSchema = z.object({
   shadingLanguageVersion: z.string(),
   unmaskedVendor: z.string().optional(),
   unmaskedRenderer: z.string().optional(),
-  parameters: z.record(z.unknown()).optional(),
+  parameters: z.record(z.string(), z.unknown()).optional(),
 });
 
 const NavigatorFingerprintSchema = z.object({
@@ -99,7 +99,7 @@ const ApplePayFingerprintSchema = z.object({
 });
 
 const RelativeFormatsSchema = z.object({
-  formats: z.record(z.string()),
+  formats: z.record(z.string(), z.string()),
 });
 
 const TimezoneFingerprintSchema = z.object({
@@ -108,18 +108,18 @@ const TimezoneFingerprintSchema = z.object({
   locale: z.string(),
   calendar: z.string().optional(),
   numberingSystem: z.string().optional(),
-  locales: z.record(z.unknown()).optional(),
+  locales: z.record(z.string(), z.unknown()).optional(),
   currency: z.string().optional(),
   dateTimeFormat: z
     .object({
-      formats: z.record(z.string()),
+      formats: z.record(z.string(), z.string()),
       hourCycle: z.string().optional(),
       timeZoneName: z.string().optional(),
     })
     .optional(),
   numberFormat: z
     .object({
-      formats: z.record(z.string()),
+      formats: z.record(z.string(), z.string()),
       notation: z.string().optional(),
       signDisplay: z.string().optional(),
     })
@@ -129,20 +129,20 @@ const TimezoneFingerprintSchema = z.object({
       sensitivity: z.string().optional(),
       caseFirst: z.string().optional(),
       numeric: z.boolean().optional(),
-      comparisons: z.record(z.number()),
+      comparisons: z.record(z.string(), z.number()),
     })
     .optional(),
   pluralRules: z
     .object({
-      cardinalRules: z.record(z.string()),
-      ordinalRules: z.record(z.string()),
+      cardinalRules: z.record(z.string(), z.string()),
+      ordinalRules: z.record(z.string(), z.string()),
     })
     .optional(),
   displayNames: z
     .object({
-      languages: z.record(z.string()),
-      regions: z.record(z.string()),
-      currencies: z.record(z.string()),
+      languages: z.record(z.string(), z.string()),
+      regions: z.record(z.string(), z.string()),
+      currencies: z.record(z.string(), z.string()),
     })
     .optional(),
   listFormat: RelativeFormatsSchema.optional(),
@@ -206,7 +206,7 @@ const SVGFingerprintSchema = z.object({
 
 const MathFingerprintSchema = z.object({
   hash: z.string(),
-  data: z.record(measurement),
+  data: z.record(z.string(), measurement),
   constants: z.object({
     PI: z.number(),
     E: z.number(),
@@ -221,8 +221,8 @@ const MathFingerprintSchema = z.object({
 
 const CSSFingerprintSchema = z.object({
   hash: z.string(),
-  styles: z.record(z.string()),
-  systemFonts: z.record(z.string()),
+  styles: z.record(z.string(), z.string()),
+  systemFonts: z.record(z.string(), z.string()),
 });
 
 const TextMetricsFingerprintSchema = z.object({
@@ -233,7 +233,7 @@ const TextMetricsFingerprintSchema = z.object({
 const HTMLElementFingerprintSchema = z.object({
   hash: z.string(),
   prototypePropsCount: z.number(),
-  properties: z.record(z.unknown()),
+  properties: z.record(z.string(), z.unknown()),
   methods: z.array(z.string()),
   shadowDOMSupport: z.boolean(),
   customElementsSupport: z.boolean(),
@@ -279,7 +279,7 @@ const PluginFingerprintSchema = z.object({
 });
 
 const ResistanceFingerprintSchema = z.object({
-  detections: z.record(z.boolean()),
+  detections: z.record(z.string(), z.boolean()),
   totalDetections: z.number(),
   privacyToolDetected: z.boolean(),
 });
@@ -287,21 +287,21 @@ const ResistanceFingerprintSchema = z.object({
 const ContentWindowFingerprintSchema = z.object({
   hash: z.string(),
   windowPropsCount: z.number(),
-  properties: z.record(z.boolean()),
-  methods: z.record(z.boolean()),
+  properties: z.record(z.string(), z.boolean()),
+  methods: z.record(z.string(), z.boolean()),
   hasDocument: z.boolean(),
   documentPropsCount: z.number(),
 });
 
 const CSSMediaFingerprintSchema = z.object({
   hash: z.string(),
-  mediaQueryMatches: z.record(z.boolean()),
-  pixelRatioMatches: z.record(z.boolean()),
+  mediaQueryMatches: z.record(z.string(), z.boolean()),
+  pixelRatioMatches: z.record(z.string(), z.boolean()),
   orientation: z.object({
     portrait: z.boolean(),
     landscape: z.boolean(),
   }),
-  screenSizeMatches: z.record(z.boolean()),
+  screenSizeMatches: z.record(z.string(), z.boolean()),
 });
 
 const WebRTCFingerprintSchema = z.object({
@@ -368,7 +368,7 @@ const TouchSupportFingerprintSchema = z.object({
 
 const LiesFingerprintSchema = z.object({
   hash: z.string(),
-  lies: z.record(z.boolean()),
+  lies: z.record(z.string(), z.boolean()),
   liesCount: z.number(),
   trustScore: z.number(),
   inconsistencies: z.array(z.string()),

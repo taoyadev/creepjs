@@ -6,7 +6,10 @@ import { computeFingerprintId } from '@creepjs/core';
 import type { Env } from '../types';
 import { authMiddleware } from '../middleware/auth';
 import { rateLimitMiddleware } from '../middleware/ratelimit';
-import { FingerprintRequestSchema } from '../utils/validation';
+import {
+  FingerprintRequestSchema,
+  validationErrorHook,
+} from '../utils/validation';
 import { recordUniquenessStats } from '../services/uniqueness';
 import { logEvent, runAfterResponse } from '../utils/logging';
 
@@ -29,7 +32,7 @@ app.post(
   }),
   authMiddleware,
   rateLimitMiddleware,
-  zValidator('json', FingerprintRequestSchema),
+  zValidator('json', FingerprintRequestSchema, validationErrorHook),
   async (c) => {
     const data = c.req.valid('json');
 

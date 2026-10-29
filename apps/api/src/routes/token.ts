@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import type { Env, TokenData } from '../types';
-import { TokenRequestSchema } from '../utils/validation';
+import { TokenRequestSchema, validationErrorHook } from '../utils/validation';
 import { sha256Hex } from '../utils/privacy';
 import { normalizeEmailIdentity } from '../utils/email';
 import { intEnv, visitorQuotaKey } from '../utils/counters';
@@ -47,7 +47,13 @@ function generateToken(): string {
   return `cfp_${out}`;
 }
 
-app.post('/', zValidator('json', TokenRequestSchema), async (c) => {
+const validateBody = zValidator(
+  'json',
+  TokenRequestSchema,
+  validationErrorHook
+);
+
+app.post('/', validateBody, async (c) => {
   const { email } = c.req.valid('json');
 
   const ipKey = await visitorQuotaKey(c, 'token-mint:ip');

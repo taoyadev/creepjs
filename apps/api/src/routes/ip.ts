@@ -16,7 +16,7 @@ import {
   type IpbotLookupResult,
   type IpbotResponse,
 } from '../services/ipbot';
-import { IpBatchRequestSchema } from '../utils/validation';
+import { IpBatchRequestSchema, validationErrorHook } from '../utils/validation';
 import { logEvent } from '../utils/logging';
 import { hashIpForLog } from '../utils/privacy';
 import { intEnv, visitorQuotaKey } from '../utils/counters';
@@ -272,7 +272,7 @@ app.post(
   '/batch',
   batchBodyLimit,
   authMiddleware,
-  zValidator('json', IpBatchRequestSchema),
+  zValidator('json', IpBatchRequestSchema, validationErrorHook),
   async (c) => {
     const { ips } = c.req.valid('json');
 

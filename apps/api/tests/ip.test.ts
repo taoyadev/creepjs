@@ -667,17 +667,33 @@ describe('Batch IP intelligence route (POST /v1/ip/batch)', () => {
   });
 
   it.each([
-    { label: 'empty array', ips: [], status: 400 },
+    {
+      label: 'empty array',
+      ips: [],
+      path: ['ips'],
+      message: 'Provide at least one IP address',
+    },
     {
       label: 'more than 50 entries',
       ips: Array.from({ length: 51 }, () => '8.8.8.8'),
-      status: 400,
+      path: ['ips'],
+      message: 'A batch can contain at most 50 IP addresses',
     },
-    { label: 'trimmed-empty entry', ips: ['   '], status: 400 },
-    { label: '46-character entry', ips: ['x'.repeat(46)], status: 400 },
+    {
+      label: 'trimmed-empty entry',
+      ips: ['   '],
+      path: ['ips', 0],
+      message: 'IP entries must not be empty',
+    },
+    {
+      label: '46-character entry',
+      ips: ['x'.repeat(46)],
+      path: ['ips', 0],
+      message: 'IP entries must be at most 45 characters',
+    },
   ])(
     'rejects $label before quota or upstream work',
-    async ({ ips, status }) => {
+    async ({ ips, path, message }) => {
       const env = createTestEnv();
       await seed(env);
       const fetchMock = vi.fn();
@@ -685,7 +701,11 @@ describe('Batch IP intelligence route (POST /v1/ip/batch)', () => {
 
       const res = await batch(env, ips);
 
-      expect(res.status).toBe(status);
+      expect(res.status).toBe(400);
+      expect(await res.json<JsonBody>()).toEqual({
+        error: 'Invalid request body',
+        details: [{ path, message }],
+      });
       expect(await quota(env)).toBe(0);
       expect(fetchMock).not.toHaveBeenCalled();
     }
