@@ -289,6 +289,9 @@ async function main() {
   await mockApi(context, state);
   page = await context.newPage();
   page.setDefaultTimeout(12000);
+  // Canonical HTTP reads already use 30 seconds. Keep transport latency
+  // separate from the shorter control and result assertions.
+  page.setDefaultNavigationTimeout(30000);
   page.on('pageerror', (error) =>
     runtimeErrors.push(`${page.url()}: ${error.message}`)
   );
