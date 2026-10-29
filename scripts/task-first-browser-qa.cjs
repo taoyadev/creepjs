@@ -292,8 +292,22 @@ async function main() {
   page.on('pageerror', (error) =>
     runtimeErrors.push(`${page.url()}: ${error.message}`)
   );
-  async function visit(route) {
-    await page.goto(base + route, { waitUntil: 'networkidle' });
+  async function visit(route, target = page) {
+    // Background edge and telemetry requests do not define tool readiness.
+    // Keep navigation, visible content, bootstrap and layout as explicit gates.
+    await target.goto(base + route, { waitUntil: 'domcontentloaded' });
+    await target.locator('h1').waitFor();
+    await target
+      .locator('nav button[aria-label^="Switch to "]:visible')
+      .waitFor();
+    await target.waitForFunction(() => {
+      const styles = [...document.querySelectorAll('link[rel="stylesheet"]')];
+      return (
+        styles.length > 0 &&
+        styles.every((link) => link.sheet !== null) &&
+        document.fonts.status === 'loaded'
+      );
+    });
   }
   try {
     if (!a11yOnly) {
@@ -829,19 +843,14 @@ async function main() {
           target.on('pageerror', (error) =>
             runtimeErrors.push(`${target.url()}: ${error.message}`)
           );
-          await target.goto(base + '/fingerprint/reduced-motion', {
-            waitUntil: 'networkidle',
-          });
+          await visit('/fingerprint/reduced-motion', target);
           assert(
             await target
               .locator('html')
               .evaluate((node) => node.classList.contains('dark')),
             'dark theme did not initialize'
           );
-          assert(
-            await target.getByText('reduce', { exact: true }).isVisible(),
-            'reduced-motion preference not reflected in result'
-          );
+          await target.getByText('reduce', { exact: true }).waitFor();
           await target.screenshot({
             path: path.join(artifacts, 'mobile-dark-reduced-motion.png'),
           });
@@ -906,6 +915,8 @@ async function main() {
                   .getByText('Avg per Attempted', { exact: true })
                   .waitFor();
               }
+              if (route === '/')
+                await page.getByText(ownIp.ip, { exact: true }).waitFor();
               if (route === '/ip') {
                 const submit = page.getByRole('button', {
                   name: 'Check IP Risk',
@@ -1003,6 +1014,16 @@ async function main() {
                 '/playground',
               ]) {
             await target.goto(base + route);
+            assert(
+              await target
+                .locator('script[src^="/_next/static/chunks/"]:not([nomodule])')
+                .evaluateAll(
+                  (scripts) =>
+                    scripts.length > 0 &&
+                    scripts.every((script) => script.defer && !script.async)
+                ),
+              route + ': static startup must wait for document parsing'
+            );
             if (route === '/ip')
               assert(
                 await target
@@ -1043,6 +1064,7 @@ async function main() {
       baseUrl: base,
       targetKind: publicBase ? 'production' : 'isolated-preview',
       scope: ipOnly ? 'ip-regression' : a11yOnly ? 'accessibility' : 'full',
+      readiness: 'rendered-document-and-controls',
       routeCount: paths.length,
       passed: results.filter((item) => item.status === 'pass').length,
       failed: results.filter((item) => item.status === 'fail').length,
