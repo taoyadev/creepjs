@@ -289,7 +289,9 @@ async function main() {
   await mockApi(context, state);
   page = await context.newPage();
   page.setDefaultTimeout(12000);
-  page.on('pageerror', (error) => runtimeErrors.push(error.message));
+  page.on('pageerror', (error) =>
+    runtimeErrors.push(`${page.url()}: ${error.message}`)
+  );
   async function visit(route) {
     await page.goto(base + route, { waitUntil: 'networkidle' });
   }
@@ -824,6 +826,9 @@ async function main() {
           });
           await mockApi(reduced);
           const target = await reduced.newPage();
+          target.on('pageerror', (error) =>
+            runtimeErrors.push(`${target.url()}: ${error.message}`)
+          );
           await target.goto(base + '/fingerprint/reduced-motion', {
             waitUntil: 'networkidle',
           });
@@ -841,12 +846,6 @@ async function main() {
             path: path.join(artifacts, 'mobile-dark-reduced-motion.png'),
           });
           await reduced.close();
-        }
-      );
-      await check(
-        'no browser runtime errors across the changed routes',
-        async () => {
-          assert(runtimeErrors.length === 0, runtimeErrors.join('\n'));
         }
       );
     }
@@ -907,6 +906,16 @@ async function main() {
                   .getByText('Avg per Attempted', { exact: true })
                   .waitFor();
               }
+              if (route === '/ip') {
+                const submit = page.getByRole('button', {
+                  name: 'Check IP Risk',
+                  exact: true,
+                });
+                await submit.hover();
+                await submit.evaluate((node) =>
+                  Promise.all(node.getAnimations().map((item) => item.finished))
+                );
+              }
               await page.addScriptTag({ path: axePath });
               const result = await page.evaluate(async () =>
                 window.axe.run(document, {
@@ -962,12 +971,16 @@ async function main() {
           }
         }
       );
-    } else
-      results.push({
-        name: 'Automated axe audit',
-        status: 'skipped',
-        error: 'axe-core is not installed in the existing OpenClaw tooling.',
-      });
+    } else {
+      await check(
+        'WCAG A and AA automated audit of representative pages',
+        async () => {
+          throw new Error(
+            'axe-core is unavailable. Configure NODE_PATH for the existing OpenClaw tooling; the required audit cannot be skipped.'
+          );
+        }
+      );
+    }
 
     if (!a11yOnly) {
       const noJs = await browser.newContext({
@@ -1016,6 +1029,12 @@ async function main() {
         }
       );
     }
+    await check(
+      'no browser runtime errors across the changed routes',
+      async () => {
+        assert(runtimeErrors.length === 0, runtimeErrors.join('\n'));
+      }
+    );
   } finally {
     await browser.close();
     if (server) await new Promise((resolve) => server.close(resolve));
@@ -1029,6 +1048,7 @@ async function main() {
       failed: results.filter((item) => item.status === 'fail').length,
       screenshots,
       a11yAudits,
+      runtimeErrors,
       results,
     };
     fs.writeFileSync(
