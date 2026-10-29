@@ -207,8 +207,8 @@ export default function PrivacyPage() {
                     is no visitor or session identifier.
                   </li>
                   <li>
-                    Nothing is sent when Do Not Track or Global Privacy Control
-                    is enabled in your browser.
+                    Product events are not sent when Do Not Track or Global
+                    Privacy Control is enabled in your browser.
                   </li>
                 </ul>
                 <p>
