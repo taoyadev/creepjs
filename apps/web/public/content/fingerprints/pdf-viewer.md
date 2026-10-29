@@ -4,22 +4,24 @@
 
 ## What CreepJS reports
 
-CreepJS runs the PDF Viewer Support collector in the current browser. It inspects the browser surface represented by this browser signal and reports the observed value or availability state, collection timing, and any collector error. The live result is local browser evidence, not a population estimate.
+Reads the browser hint for built-in PDF viewing support.
 
 ## How to interpret it
 
-Use PDF Viewer Support as one observation alongside other signals. Different browsers, devices, settings, and permissions may return different values. An unsupported or blocked API may return no value. A single signal does not identify a person.
+Yes and No are both returned observations. No result means the hint was unavailable, not that viewing a PDF is impossible.
 
 ## Limits
 
-This reference makes no uniqueness, match-rate, or fraud-probability claim. Results can change after browser, operating-system, hardware, permission, privacy-setting, or driver changes. Treat unavailable data as unavailable, not as evidence of safety or risk.
+This does not open a PDF or test a particular document. External viewers and browser policy can affect actual behavior. A single signal does not identify a person.
 
 ## Test the signal
+
+Keep the live result for comparison, change one relevant setting, then run again in the same tab. Compare the fields before interpreting a changed signature.
 
 - Live signal page: https://creepjs.org/fingerprint/pdf-viewer
 - Full checker: https://creepjs.org/checker
 - Category: Browser
 
-Reviewed: 2026-07-28.
+Reviewed: 2026-10-29.
 
 <!-- llms-safe:end -->

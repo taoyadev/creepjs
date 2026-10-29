@@ -4,22 +4,24 @@
 
 ## What CreepJS reports
 
-CreepJS runs the Private Click Measurement collector in the current browser. It inspects the browser surface represented by this privacy signal and reports the observed value or availability state, collection timing, and any collector error. The live result is local browser evidence, not a population estimate.
+Inspects a detached link element for a browser-exposed Private Click Measurement source identifier.
 
 ## How to interpret it
 
-Use Private Click Measurement as one observation alongside other signals. Different browsers, devices, settings, and permissions may return different values. An unsupported or blocked API may return no value. A single signal does not identify a person.
+An unavailable value means this element did not expose a readable identifier. The check does not navigate the link or submit an attribution event.
 
 ## Limits
 
-This reference makes no uniqueness, match-rate, or fraud-probability claim. Results can change after browser, operating-system, hardware, permission, privacy-setting, or driver changes. Treat unavailable data as unavailable, not as evidence of safety or risk.
+Support varies, and absence does not verify that attribution is disabled. The value cannot establish a person or a browser brand. A single signal does not identify a person.
 
 ## Test the signal
+
+Keep the live result for comparison, change one relevant setting, then run again in the same tab. Compare the fields before interpreting a changed signature.
 
 - Live signal page: https://creepjs.org/fingerprint/private-click-measurement
 - Full checker: https://creepjs.org/checker
 - Category: Privacy
 
-Reviewed: 2026-07-28.
+Reviewed: 2026-10-29.
 
 <!-- llms-safe:end -->

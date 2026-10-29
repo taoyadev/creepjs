@@ -4,22 +4,24 @@
 
 ## What CreepJS reports
 
-CreepJS runs the Timezone Information collector in the current browser. It inspects the browser surface represented by this system signal and reports the observed value or availability state, collection timing, and any collector error. The live result is local browser evidence, not a population estimate.
+Reads the resolved timezone and locale, UTC offset, and available Intl date, number, collation, and language formatting behavior.
 
 ## How to interpret it
 
-Use Timezone Information as one observation alongside other signals. Different browsers, devices, settings, and permissions may return different values. An unsupported or blocked API may return no value. A single signal does not identify a person.
+Change one operating-system timezone or browser language setting, then compare the relevant fields. A timezone differs from an IP-derived geographic location.
 
 ## Limits
 
-This reference makes no uniqueness, match-rate, or fraud-probability claim. Results can change after browser, operating-system, hardware, permission, privacy-setting, or driver changes. Treat unavailable data as unavailable, not as evidence of safety or risk.
+Timezone does not reveal a precise location. Seasonal offsets, locale data, and browser support can change parts of the response independently. A single signal does not identify a person.
 
 ## Test the signal
+
+Keep the live result for comparison, change one relevant setting, then run again in the same tab. Compare the fields before interpreting a changed signature.
 
 - Live signal page: https://creepjs.org/fingerprint/timezone
 - Full checker: https://creepjs.org/checker
 - Category: System
 
-Reviewed: 2026-07-28.
+Reviewed: 2026-10-29.
 
 <!-- llms-safe:end -->

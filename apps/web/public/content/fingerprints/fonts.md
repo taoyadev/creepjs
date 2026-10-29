@@ -4,22 +4,24 @@
 
 ## What CreepJS reports
 
-CreepJS runs the Font Detection collector in the current browser. It inspects the browser surface represented by this system signal and reports the observed value or availability state, collection timing, and any collector error. The live result is local browser evidence, not a population estimate.
+Tests a fixed list of font names against browser text measurements and returns the detected names and count.
 
 ## How to interpret it
 
-Use Font Detection as one observation alongside other signals. Different browsers, devices, settings, and permissions may return different values. An unsupported or blocked API may return no value. A single signal does not identify a person.
+Inspect the available list in JSON. Compare before and after a font or browser configuration change while using the same device.
 
 ## Limits
 
-This reference makes no uniqueness, match-rate, or fraud-probability claim. Results can change after browser, operating-system, hardware, permission, privacy-setting, or driver changes. Treat unavailable data as unavailable, not as evidence of safety or risk.
+This is a tested font list, not a complete inventory of installed fonts. Font substitution and privacy restrictions can affect detection. A single signal does not identify a person.
 
 ## Test the signal
+
+Keep the live result for comparison, change one relevant setting, then run again in the same tab. Compare the fields before interpreting a changed signature.
 
 - Live signal page: https://creepjs.org/fingerprint/fonts
 - Full checker: https://creepjs.org/checker
 - Category: System
 
-Reviewed: 2026-07-28.
+Reviewed: 2026-10-29.
 
 <!-- llms-safe:end -->

@@ -5,7 +5,7 @@ import { FINGERPRINT_TECHNIQUES } from './seo-routes';
 
 export const SIGNAL_CONTENT_START = '<!-- llms-safe:start -->';
 export const SIGNAL_CONTENT_END = '<!-- llms-safe:end -->';
-export const SIGNAL_CONTENT_REVIEW_DATE = '2026-07-28';
+export const SIGNAL_CONTENT_REVIEW_DATE = '2026-10-29';
 
 export type FingerprintTechnique = (typeof FINGERPRINT_TECHNIQUES)[number];
 

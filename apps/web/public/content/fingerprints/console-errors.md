@@ -4,22 +4,24 @@
 
 ## What CreepJS reports
 
-CreepJS runs the Console Errors collector in the current browser. It inspects the browser surface represented by this system signal and reports the observed value or availability state, collection timing, and any collector error. The live result is local browser evidence, not a population estimate.
+Examines console methods and generated JavaScript error patterns, stack depth, and error prototype properties.
 
 ## How to interpret it
 
-Use Console Errors as one observation alongside other signals. Different browsers, devices, settings, and permissions may return different values. An unsupported or blocked API may return no value. A single signal does not identify a person.
+Inspect error patterns in JSON when comparing browser engines or instrumentation. These are test-generated errors, not a report of your browsing errors.
 
 ## Limits
 
-This reference makes no uniqueness, match-rate, or fraud-probability claim. Results can change after browser, operating-system, hardware, permission, privacy-setting, or driver changes. Treat unavailable data as unavailable, not as evidence of safety or risk.
+Developer tools, wrappers, and engine versions affect formatting. A difference does not prove tampering or malicious automation. A single signal does not identify a person.
 
 ## Test the signal
+
+Keep the live result for comparison, change one relevant setting, then run again in the same tab. Compare the fields before interpreting a changed signature.
 
 - Live signal page: https://creepjs.org/fingerprint/console-errors
 - Full checker: https://creepjs.org/checker
 - Category: System
 
-Reviewed: 2026-07-28.
+Reviewed: 2026-10-29.
 
 <!-- llms-safe:end -->

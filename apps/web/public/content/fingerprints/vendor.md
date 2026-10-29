@@ -4,22 +4,24 @@
 
 ## What CreepJS reports
 
-CreepJS runs the Browser Vendor collector in the current browser. It inspects the browser surface represented by this browser signal and reports the observed value or availability state, collection timing, and any collector error. The live result is local browser evidence, not a population estimate.
+Reads the navigator.vendor string exposed by the browser.
 
 ## How to interpret it
 
-Use Browser Vendor as one observation alongside other signals. Different browsers, devices, settings, and permissions may return different values. An unsupported or blocked API may return no value. A single signal does not identify a person.
+Inspect the exact string. An empty or missing string means this collector has no vendor text to report.
 
 ## Limits
 
-This reference makes no uniqueness, match-rate, or fraud-probability claim. Results can change after browser, operating-system, hardware, permission, privacy-setting, or driver changes. Treat unavailable data as unavailable, not as evidence of safety or risk.
+The vendor string is a compatibility hint that can be shared, reduced, or overridden. It is not a verified browser brand. A single signal does not identify a person.
 
 ## Test the signal
+
+Keep the live result for comparison, change one relevant setting, then run again in the same tab. Compare the fields before interpreting a changed signature.
 
 - Live signal page: https://creepjs.org/fingerprint/vendor
 - Full checker: https://creepjs.org/checker
 - Category: Browser
 
-Reviewed: 2026-07-28.
+Reviewed: 2026-10-29.
 
 <!-- llms-safe:end -->

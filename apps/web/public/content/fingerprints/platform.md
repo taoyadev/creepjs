@@ -4,22 +4,24 @@
 
 ## What CreepJS reports
 
-CreepJS runs the Platform Detection collector in the current browser. It inspects the browser surface represented by this system signal and reports the observed value or availability state, collection timing, and any collector error. The live result is local browser evidence, not a population estimate.
+Reads the legacy navigator.platform value.
 
 ## How to interpret it
 
-Use Platform Detection as one observation alongside other signals. Different browsers, devices, settings, and permissions may return different values. An unsupported or blocked API may return no value. A single signal does not identify a person.
+Compare the literal value with other browser hints when investigating a mismatch. It is reported data, not verified hardware.
 
 ## Limits
 
-This reference makes no uniqueness, match-rate, or fraud-probability claim. Results can change after browser, operating-system, hardware, permission, privacy-setting, or driver changes. Treat unavailable data as unavailable, not as evidence of safety or risk.
+Compatibility behavior, user-agent reduction, and overrides can return a value different from the actual operating system. A single signal does not identify a person.
 
 ## Test the signal
+
+Keep the live result for comparison, change one relevant setting, then run again in the same tab. Compare the fields before interpreting a changed signature.
 
 - Live signal page: https://creepjs.org/fingerprint/platform
 - Full checker: https://creepjs.org/checker
 - Category: System
 
-Reviewed: 2026-07-28.
+Reviewed: 2026-10-29.
 
 <!-- llms-safe:end -->

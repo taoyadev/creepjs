@@ -4,22 +4,24 @@
 
 ## What CreepJS reports
 
-CreepJS runs the Hardware Concurrency collector in the current browser. It inspects the browser surface represented by this hardware signal and reports the observed value or availability state, collection timing, and any collector error. The live result is local browser evidence, not a population estimate.
+Reads navigator.hardwareConcurrency, the number of logical processors the browser exposes.
 
 ## How to interpret it
 
-Use Hardware Concurrency as one observation alongside other signals. Different browsers, devices, settings, and permissions may return different values. An unsupported or blocked API may return no value. A single signal does not identify a person.
+Compare the returned number with your expected browser configuration. It can be useful when checking whether a privacy setting caps the exposed count.
 
 ## Limits
 
-This reference makes no uniqueness, match-rate, or fraud-probability claim. Results can change after browser, operating-system, hardware, permission, privacy-setting, or driver changes. Treat unavailable data as unavailable, not as evidence of safety or risk.
+Browsers can round or limit this hint. It is not a CPU performance score or a reliable physical-core count. A single signal does not identify a person.
 
 ## Test the signal
+
+Keep the live result for comparison, change one relevant setting, then run again in the same tab. Compare the fields before interpreting a changed signature.
 
 - Live signal page: https://creepjs.org/fingerprint/hardware-concurrency
 - Full checker: https://creepjs.org/checker
 - Category: Hardware
 
-Reviewed: 2026-07-28.
+Reviewed: 2026-10-29.
 
 <!-- llms-safe:end -->

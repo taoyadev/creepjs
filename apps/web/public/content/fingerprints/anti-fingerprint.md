@@ -4,22 +4,24 @@
 
 ## What CreepJS reports
 
-CreepJS runs the Anti-Fingerprinting Detection collector in the current browser. It inspects the browser surface represented by this privacy signal and reports the observed value or availability state, collection timing, and any collector error. The live result is local browser evidence, not a population estimate.
+Runs browser-resistance heuristics and returns individual detection flags, a detection count, and an overall indicator.
 
 ## How to interpret it
 
-Use Anti-Fingerprinting Detection as one observation alongside other signals. Different browsers, devices, settings, and permissions may return different values. An unsupported or blocked API may return no value. A single signal does not identify a person.
+Inspect the named flags before drawing a conclusion. Compare one setting at a time to see which heuristic changed.
 
 ## Limits
 
-This reference makes no uniqueness, match-rate, or fraud-probability claim. Results can change after browser, operating-system, hardware, permission, privacy-setting, or driver changes. Treat unavailable data as unavailable, not as evidence of safety or risk.
+These are heuristics with possible false positives. They cannot prove that a particular extension is installed or that a browser is safe. A single signal does not identify a person.
 
 ## Test the signal
+
+Keep the live result for comparison, change one relevant setting, then run again in the same tab. Compare the fields before interpreting a changed signature.
 
 - Live signal page: https://creepjs.org/fingerprint/anti-fingerprint
 - Full checker: https://creepjs.org/checker
 - Category: Privacy
 
-Reviewed: 2026-07-28.
+Reviewed: 2026-10-29.
 
 <!-- llms-safe:end -->
