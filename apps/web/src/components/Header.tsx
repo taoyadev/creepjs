@@ -2,6 +2,8 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { HAS_PROXY_PROVIDERS } from '@/lib/proxy-providers';
+import { trackEvent } from '@/lib/analytics';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { MobileNav, navItems } from '@/components/MobileNav';
 
@@ -12,6 +14,7 @@ interface HeaderProps {
     | 'fingerprint'
     | 'docs'
     | 'playground'
+    | 'proxy-providers'
     | 'ip';
 }
 
@@ -54,7 +57,13 @@ export function Header({ currentPage }: HeaderProps) {
 
         {/* Desktop Navigation. Each item is one link styled as a button: a
             button nested in a link was two tab stops and invalid markup. */}
-        <div className="hidden items-center gap-2 md:flex">
+        <div
+          className={
+            HAS_PROXY_PROVIDERS
+              ? 'hidden items-center gap-2 xl:flex'
+              : 'hidden items-center gap-2 md:flex'
+          }
+        >
           {navItems.map((item) => {
             const isActive = currentPage === item.page;
 
@@ -67,6 +76,13 @@ export function Header({ currentPage }: HeaderProps) {
               >
                 <Link
                   href={item.href}
+                  onClick={() => {
+                    if (item.page === 'proxy-providers')
+                      trackEvent('link_clicked', {
+                        label: 'proxy-providers',
+                        section: 'navigation',
+                      });
+                  }}
                   aria-current={isActive ? 'page' : undefined}
                 >
                   {item.label}
@@ -78,7 +94,13 @@ export function Header({ currentPage }: HeaderProps) {
         </div>
 
         {/* Mobile Navigation */}
-        <div className="flex items-center gap-2 md:hidden">
+        <div
+          className={
+            HAS_PROXY_PROVIDERS
+              ? 'flex items-center gap-2 xl:hidden'
+              : 'flex items-center gap-2 md:hidden'
+          }
+        >
           <ThemeToggle />
           <MobileNav currentPage={currentPage} />
         </div>

@@ -189,6 +189,31 @@ export default function IpProxyPilotPage() {
           </section>
 
           <section
+            aria-labelledby="proxy-selection-heading"
+            className="space-y-3 border-t pt-6"
+          >
+            <h2 id="proxy-selection-heading" className="text-2xl font-semibold">
+              Choosing a proxy service?
+            </h2>
+            <p className="text-muted-foreground leading-7">
+              After interpreting your result, compare session behavior in the{' '}
+              <Link
+                href="/guide/static-vs-rotating-proxies"
+                className="text-primary underline"
+              >
+                static vs rotating proxy guide
+              </Link>
+              . The{' '}
+              <Link href="/proxy-providers" className="text-primary underline">
+                partner directory
+              </Link>{' '}
+              includes reviewed service information when available, with
+              sources, limitations, and cooperation disclosure. Partnerships do
+              not affect these diagnostic explanations.
+            </p>
+          </section>
+
+          <section
             aria-labelledby="next-step-heading"
             className="bg-primary text-primary-foreground rounded-xl p-6 md:p-10"
           >

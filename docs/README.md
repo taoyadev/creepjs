@@ -22,6 +22,8 @@
 
 ### Product Strategy
 
+- [合作代理商推广](../openspec/changes/add-proxy-partner-promotion/design.md) — [产品边界](./ENDGAME.md)、[接入与对账](./PARTNER_OPERATIONS.md)、[验收记录](./PARTNER_ACCEPTANCE.md)。
+
 - [PRD](./PRD.md) — product positioning, personas, KPIs, and release criteria.
 - [LAUNCH_PLAN](./LAUNCH_PLAN.md) — single source of truth for delivery sequencing and acceptance.
 - [ROADMAP](./ROADMAP.md) — lightweight public summary of phases and priorities.

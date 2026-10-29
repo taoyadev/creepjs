@@ -13,6 +13,7 @@ export function DynamicHeader() {
     | 'fingerprint'
     | 'docs'
     | 'playground'
+    | 'proxy-providers'
     | 'ip'
     | undefined;
 
@@ -26,6 +27,8 @@ export function DynamicHeader() {
     currentPage = 'docs';
   } else if (pathname.startsWith('/playground')) {
     currentPage = 'playground';
+  } else if (pathname === '/proxy-providers') {
+    currentPage = 'proxy-providers';
   } else if (pathname.startsWith('/ip')) {
     currentPage = 'ip';
   }

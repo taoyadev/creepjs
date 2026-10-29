@@ -53,6 +53,12 @@ const postEvent = (
   );
 };
 
+const partnerImpression = {
+  name: 'partner_impression',
+  path: '/ip?q=203.0.113.7#report',
+  props: { label: 'test-provider', section: 'partner-ip-result' },
+};
+
 const toolRun = {
   name: 'tool_run',
   path: '/checker',
@@ -82,6 +88,51 @@ describe('POST /v1/events', () => {
         doubles: [1],
       },
     ]);
+  });
+
+  it('stores partner dimensions in existing columns without sensitive extras', async () => {
+    const { dataset, points } = createDataset();
+    const res = await postEvent(productionEnv({ EVENTS: dataset }), {
+      ...partnerImpression,
+      props: {
+        ...partnerImpression.props,
+        ip: CLIENT_IP,
+        fingerprintId: 'test-fingerprint',
+        url: 'https://example.test',
+        coupon: 'TEST-ONLY',
+      },
+    });
+    expect(res.status).toBe(204);
+    expect(points).toEqual([
+      {
+        indexes: ['partner_impression'],
+        blobs: [
+          'partner_impression',
+          '/ip',
+          '',
+          '',
+          '',
+          '',
+          'partner-ip-result',
+          'test-provider',
+        ],
+        doubles: [1],
+      },
+    ]);
+  });
+
+  it.each([
+    {},
+    { label: 'test-provider' },
+    { label: 'test-provider', section: 'not a slug' },
+  ])('rejects incomplete partner dimensions', async (props) => {
+    const { dataset, points } = createDataset();
+    const res = await postEvent(productionEnv({ EVENTS: dataset }), {
+      ...partnerImpression,
+      props,
+    });
+    expect(res.status).toBe(400);
+    expect(points).toEqual([]);
   });
 
   it('accepts application/json too', async () => {
@@ -222,46 +273,55 @@ describe('POST /v1/events', () => {
     expect(points).toHaveLength(0);
   });
 
-  it('accepts and drops events when the binding is absent', async () => {
-    const res = await postEvent(productionEnv({ EVENTS: undefined }), toolRun);
-    expect(res.status).toBe(204);
-  });
+  it.each([toolRun, partnerImpression])(
+    'accepts without a binding: $name',
+    async (event) => {
+      const res = await postEvent(productionEnv({ EVENTS: undefined }), event);
+      expect(res.status).toBe(204);
+    }
+  );
 
-  it('still answers 204 when the dataset write throws', async () => {
-    const dataset = {
-      writeDataPoint: () => {
-        throw new Error('dataset unavailable');
-      },
-    } as AnalyticsEngineDataset;
-    const res = await postEvent(productionEnv({ EVENTS: dataset }), toolRun);
-    expect(res.status).toBe(204);
-  });
+  it.each([toolRun, partnerImpression])(
+    'isolates failed dataset writes: $name',
+    async (event) => {
+      const dataset = {
+        writeDataPoint: () => {
+          throw new Error('dataset unavailable');
+        },
+      } as AnalyticsEngineDataset;
+      const res = await postEvent(productionEnv({ EVENTS: dataset }), event);
+      expect(res.status).toBe(204);
+    }
+  );
 
-  it('touches no KV namespace or Durable Object', async () => {
-    const forbidden = (binding: string) =>
-      new Proxy(
-        {},
-        {
-          get() {
-            throw new Error(`/v1/events touched ${binding}`);
-          },
-        }
-      );
-    const { dataset, points } = createDataset();
-    const env = productionEnv({
-      EVENTS: dataset,
-      TOKENS: forbidden('TOKENS') as KVNamespace,
-      RATE_LIMIT: forbidden('RATE_LIMIT') as KVNamespace,
-      IP_CACHE: forbidden('IP_CACHE') as KVNamespace,
-      FP_STATS: forbidden('FP_STATS') as KVNamespace,
-      QUOTA: forbidden('QUOTA') as DurableObjectNamespace,
-      STATS: forbidden('STATS') as DurableObjectNamespace,
-    });
+  it.each([toolRun, partnerImpression])(
+    'touches no KV or Durable Object: $name',
+    async (event) => {
+      const forbidden = (binding: string) =>
+        new Proxy(
+          {},
+          {
+            get() {
+              throw new Error(`/v1/events touched ${binding}`);
+            },
+          }
+        );
+      const { dataset, points } = createDataset();
+      const env = productionEnv({
+        EVENTS: dataset,
+        TOKENS: forbidden('TOKENS') as KVNamespace,
+        RATE_LIMIT: forbidden('RATE_LIMIT') as KVNamespace,
+        IP_CACHE: forbidden('IP_CACHE') as KVNamespace,
+        FP_STATS: forbidden('FP_STATS') as KVNamespace,
+        QUOTA: forbidden('QUOTA') as DurableObjectNamespace,
+        STATS: forbidden('STATS') as DurableObjectNamespace,
+      });
 
-    const res = await postEvent(env, toolRun);
-    expect(res.status).toBe(204);
-    expect(points).toHaveLength(1);
-  });
+      const res = await postEvent(env, event);
+      expect(res.status).toBe(204);
+      expect(points).toHaveLength(1);
+    }
+  );
 
   it('answers CORS preflights for the site origin only', async () => {
     const preflight = (origin: string) =>

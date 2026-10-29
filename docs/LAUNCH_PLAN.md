@@ -14,6 +14,8 @@
 
 ---
 
+2026-10-29: [合作代理商推广](../openspec/changes/add-proxy-partner-promotion/design.md) is approved. Implementation and preview evidence are recorded in [PARTNER_ACCEPTANCE](./PARTNER_ACCEPTANCE.md); verified merchant data and production event storage remain separate acceptance conditions.
+
 ## 0. How Codex must work in this repo (read once, obey always)
 
 **Toolchain (do not change):** pnpm@9.15.4 workspaces + Turborepo. Node ≥ 20.9.
@@ -57,7 +59,7 @@ check (Lighthouse CI on the preview, or Playwright) is the gate.
    (`NEXT_PUBLIC_API_URL`). New dynamic pages = `generateStaticParams()` + a
    `"use client"` component for live data.
 2. **Privacy-first is binding** (PRD non-goals). No raw fingerprint payloads
-   stored long-term, no ad/tracking, no selling data. Any new storage of
+   stored long-term, no advertising profiles or detection-based targeting, no selling data. Disclosed static partner recommendations are allowed under [ENDGAME](./ENDGAME.md). Any new storage of
    fingerprint-derived data must be **aggregate/anonymized** and documented in
    `docs/SECURITY.md` + `apps/web/src/app/privacy/page.tsx`.
 3. **No secrets in the repo.** Keys come from Worker secrets (`wrangler secret

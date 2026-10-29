@@ -17,7 +17,7 @@
         "--",
         "bash",
         "-lc",
-        "set -euo pipefail; bash scripts/test-deploy-read-retry.sh; pnpm install --frozen-lockfile; pnpm format:check; pnpm build; pnpm typecheck; pnpm lint; NODE_ENV=test pnpm test; pnpm --filter @creepjs/sdk check:size; bash scripts/secret-scan.sh; npx -y @fission-ai/openspec@latest validate --all --strict --no-interactive; pnpm --filter @creepjs/api exec wrangler deploy --dry-run; pnpm audit --audit-level=high"
+        "set -euo pipefail; bash scripts/test-deploy-read-retry.sh; pnpm install --frozen-lockfile; pnpm format:check; pnpm build; pnpm typecheck; pnpm lint; NODE_ENV=test pnpm test; node --test scripts/wait-for-api-release.test.cjs scripts/secret-scan.test.cjs; pnpm --filter @creepjs/sdk check:size; bash scripts/secret-scan.sh; npx -y @fission-ai/openspec@1.15.0 validate --all --strict --no-interactive; pnpm --filter @creepjs/api exec wrangler deploy --dry-run; pnpm audit --audit-level=high"
       ]
     },
     {
@@ -32,12 +32,25 @@
         "--cmd",
         "NODE_PATH=\"$HOME/node_modules:${NODE_PATH:-}\" node scripts/task-first-browser-qa.cjs"
       ]
+    },
+    {
+      "name": "isolated synthetic partner browser acceptance",
+      "argv": [
+        "openclaw-ops",
+        "--host",
+        "openclaw",
+        "e2e",
+        "--project",
+        "creepjs-web-release",
+        "--cmd",
+        "NODE_PATH=\"$HOME/node_modules:${NODE_PATH:-}\" node scripts/partner-fixture-qa.cjs"
+      ]
     }
   ],
   "deploy": [
     {
-      "name": "publish the exact web commit through protected GitHub Actions",
-      "argv": ["./deploy-direct.sh", "web"]
+      "name": "publish API then Web through protected GitHub Actions",
+      "argv": ["./deploy-direct.sh", "all"]
     }
   ],
   "verify": [

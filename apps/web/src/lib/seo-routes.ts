@@ -1,3 +1,4 @@
+import { HAS_PROXY_PROVIDERS } from './proxy-providers';
 import { SITE_CONFIG } from './metadata';
 
 export type ChangeFrequency =
@@ -84,6 +85,30 @@ export const STATIC_SEO_ROUTES = [
     priority: 0.9,
   },
   IP_PROXY_PILOT_ROUTE,
+  {
+    path: '/guide/static-vs-rotating-proxies',
+    title: 'Static vs rotating proxies',
+    description:
+      'Compare proxy session behavior, network categories, billing units, and evaluation methods.',
+    section: 'guide',
+    changeFrequency: 'monthly',
+    priority: 0.75,
+    lastModified: new Date('2026-10-29'),
+  },
+  ...(HAS_PROXY_PROVIDERS
+    ? [
+        {
+          path: '/proxy-providers',
+          title: 'Proxy providers',
+          description:
+            'Reviewed partner proxy information, limitations, and sources.',
+          section: 'guide',
+          changeFrequency: 'monthly',
+          priority: 0.7,
+          lastModified: new Date('2026-10-29'),
+        } as const,
+      ]
+    : []),
   {
     path: '/docs',
     title: 'Documentation',

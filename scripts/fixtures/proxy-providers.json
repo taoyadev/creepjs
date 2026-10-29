@@ -1,0 +1,78 @@
+[
+  {
+    "id": "qa-provider-one",
+    "status": "active",
+    "name": "QA fixture one — not a real provider",
+    "order": 1,
+    "websiteUrl": "https://partner-one.test",
+    "approvedHosts": ["partner-one.test"],
+    "productTypes": ["Fixture network"],
+    "regions": "Not disclosed",
+    "protocols": "Not disclosed",
+    "sessionPolicy": "Not disclosed",
+    "billing": "Not disclosed",
+    "minimumPurchase": "Not disclosed",
+    "support": "Not disclosed",
+    "bestFor": ["Testing the presentation only"],
+    "limitations": ["Not a real service or offer"],
+    "sources": [
+      { "title": "Fixture source", "url": "https://partner-one.test/docs" }
+    ],
+    "verifiedAt": "2026-10-29",
+    "outboundUrls": {
+      "partner-directory": "https://partner-one.test/plans?channel=directory",
+      "partner-ip-result": "https://partner-one.test/plans?channel=ip",
+      "partner-guide": "https://partner-one.test/plans?channel=guide"
+    }
+  },
+  {
+    "id": "qa-provider-two",
+    "status": "active",
+    "name": "QA fixture two — not a real provider",
+    "order": 2,
+    "websiteUrl": "https://partner-two.test",
+    "approvedHosts": ["partner-two.test"],
+    "productTypes": ["Fixture network"],
+    "regions": "Not disclosed",
+    "protocols": "Not disclosed",
+    "sessionPolicy": "Not disclosed",
+    "billing": "Not disclosed",
+    "minimumPurchase": "Not disclosed",
+    "support": "Not disclosed",
+    "bestFor": ["Testing the presentation only"],
+    "limitations": ["Not a real service or offer"],
+    "sources": [
+      { "title": "Fixture source", "url": "https://partner-two.test/docs" }
+    ],
+    "verifiedAt": "2026-10-29",
+    "outboundUrls": {
+      "partner-directory": "https://partner-two.test/plans?channel=directory",
+      "partner-ip-result": "https://partner-two.test/plans?channel=ip"
+    }
+  },
+  {
+    "id": "qa-provider-three",
+    "status": "active",
+    "name": "QA fixture three — not a real provider",
+    "order": 3,
+    "websiteUrl": "https://partner-three.test",
+    "approvedHosts": ["partner-three.test"],
+    "productTypes": ["Fixture network"],
+    "regions": "Not disclosed",
+    "protocols": "Not disclosed",
+    "sessionPolicy": "Not disclosed",
+    "billing": "Not disclosed",
+    "minimumPurchase": "Not disclosed",
+    "support": "Not disclosed",
+    "bestFor": ["Testing the presentation only"],
+    "limitations": ["Not a real service or offer"],
+    "sources": [
+      { "title": "Fixture source", "url": "https://partner-three.test/docs" }
+    ],
+    "verifiedAt": "2026-10-29",
+    "outboundUrls": {
+      "partner-directory": "https://partner-three.test/plans?channel=directory",
+      "partner-ip-result": "https://partner-three.test/plans?channel=ip"
+    }
+  }
+]

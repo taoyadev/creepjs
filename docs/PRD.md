@@ -19,7 +19,7 @@ CreepJS is an educational, privacy-first browser fingerprinting platform that he
 
 ## Non‑Goals
 
-- Tracking users for advertising.
+- Tracking users for advertising. Disclosed static partner recommendations are allowed, but must not use detection data for targeting or change diagnostic conclusions. See [ENDGAME](./ENDGAME.md).
 - Storing raw fingerprint payloads long-term.
 - Selling fingerprint data.
 

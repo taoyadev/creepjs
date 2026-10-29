@@ -69,6 +69,8 @@ export const ANALYTICS_EVENTS = {
   docs_viewed: { required: ['section'], optional: [] },
   /** A tracked button or button-styled CTA was clicked. */
   button_clicked: { required: ['label'], optional: ['section'] },
+  /** Half a partner card became visible, once per page/provider/placement. */
+  partner_impression: { required: ['label', 'section'], optional: [] },
   /** A tracked text link was clicked. */
   link_clicked: { required: ['label'], optional: ['section'] },
   /** A fingerprint ID was copied. The ID itself is never sent. */

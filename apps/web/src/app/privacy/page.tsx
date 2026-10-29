@@ -183,7 +183,8 @@ export default function PrivacyPage() {
                   for up to three months. Events describe tool runs (checker
                   scans, IP risk lookups, playground API requests), API token
                   requests, docs section views, fingerprint-ID copies, and
-                  clicks on a few tracked buttons and links.
+                  clicks on a few tracked buttons and links, including
+                  partner-card impressions and partner-link activations.
                 </p>
                 <p>The event format permits only:</p>
                 <ul className="list-disc space-y-2 pl-6">
@@ -195,6 +196,8 @@ export default function PrivacyPage() {
                   <li>
                     a few fixed labels: which tool and page section, success or
                     error, and the HTTP status code of the tool&apos;s API call.
+                    Partner events use the provider ID and placement, such as
+                    the IP result or directory.
                   </li>
                 </ul>
                 <ul className="list-disc space-y-2 pl-6">
@@ -215,6 +218,37 @@ export default function PrivacyPage() {
                   If your jurisdiction requires consent for analytics or
                   fingerprinting, you must add that consent layer in your own
                   deployment before enabling those features.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card id="partnerships" className="section-anchor">
+              <CardHeader>
+                <CardTitle as="h2">Partner recommendations</CardTitle>
+              </CardHeader>
+              <CardContent className="text-muted-foreground space-y-3 leading-relaxed">
+                <p>
+                  We may earn a commission from qualifying purchases through
+                  disclosed partner links. Listings use reviewed public
+                  information and a fixed editorial order. IP addresses, risk
+                  scores, and fingerprints do not select providers, change
+                  results, or enter partner links.
+                </p>
+                <p>
+                  Partner impressions and link activations are deduplicated in
+                  memory for each page instance. This does not create cookies, a
+                  visitor ID, or persistent advertising storage. DNT and GPC
+                  suppress these events. Observed clicks are not orders or
+                  unique visitors.
+                </p>
+                <p>
+                  Partner links use a no-referrer policy and only reviewed,
+                  fixed attribution parameters. We do not prefetch merchant
+                  pages or load merchant pixels. Following a link takes you to a
+                  third-party service, which receives an ordinary visit and
+                  applies its own privacy policy. Orders, refunds, and
+                  settlement are confirmed in merchant reports; we do not match
+                  individual visitors across sites.
                 </p>
               </CardContent>
             </Card>

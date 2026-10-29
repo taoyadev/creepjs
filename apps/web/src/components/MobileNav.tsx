@@ -19,6 +19,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
+import { HAS_PROXY_PROVIDERS } from '@/lib/proxy-providers';
+import { trackEvent } from '@/lib/analytics';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
 interface MobileNavProps {
@@ -28,6 +30,7 @@ interface MobileNavProps {
     | 'fingerprint'
     | 'docs'
     | 'playground'
+    | 'proxy-providers'
     | 'ip';
 }
 
@@ -48,6 +51,16 @@ export const navItems = [
     icon: Code,
     page: 'playground',
   },
+  ...(HAS_PROXY_PROVIDERS
+    ? [
+        {
+          href: '/proxy-providers',
+          label: 'Proxy providers',
+          icon: Waypoints,
+          page: 'proxy-providers',
+        } as const,
+      ]
+    : []),
 ] as const;
 
 /**
@@ -59,7 +72,9 @@ export function MobileNav({ currentPage }: MobileNavProps) {
   const [open, setOpen] = useState(false);
 
   React.useEffect(() => {
-    const desktop = window.matchMedia('(min-width: 768px)');
+    const desktop = window.matchMedia(
+      HAS_PROXY_PROVIDERS ? '(min-width: 1280px)' : '(min-width: 768px)'
+    );
     const closeAtDesktop = (event: MediaQueryListEvent) => {
       if (event.matches) setOpen(false);
     };
@@ -74,7 +89,7 @@ export function MobileNav({ currentPage }: MobileNavProps) {
         <Button
           variant="ghost"
           size="icon"
-          className="md:hidden"
+          className={HAS_PROXY_PROVIDERS ? 'xl:hidden' : 'md:hidden'}
           aria-label="Open navigation menu"
         >
           <Menu className="h-5 w-5" />
@@ -100,7 +115,14 @@ export function MobileNav({ currentPage }: MobileNavProps) {
                 <Link
                   href={item.href}
                   aria-current={isActive ? 'page' : undefined}
-                  onClick={() => setOpen(false)}
+                  onClick={() => {
+                    setOpen(false);
+                    if (item.page === 'proxy-providers')
+                      trackEvent('link_clicked', {
+                        label: 'proxy-providers',
+                        section: 'navigation',
+                      });
+                  }}
                 >
                   <Icon aria-hidden="true" className="mr-2 h-4 w-4" />
                   {item.label}
