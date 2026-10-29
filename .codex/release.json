@@ -11,7 +11,7 @@
         "--dir",
         "{root}",
         "--project",
-        "creepjs",
+        "creepjs-web-release",
         "--no-install",
         "--json",
         "--",
@@ -28,7 +28,7 @@
         "openclaw",
         "e2e",
         "--project",
-        "creepjs",
+        "creepjs-web-release",
         "--cmd",
         "node scripts/task-first-browser-qa.cjs"
       ]
@@ -49,7 +49,7 @@
         "openclaw",
         "e2e",
         "--project",
-        "creepjs",
+        "creepjs-web-release",
         "--cmd",
         "QA_BASE_URL=https://creepjs.org QA_ALLOW_PRODUCTION=1 node scripts/task-first-browser-qa.cjs"
       ]
