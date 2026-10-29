@@ -53,6 +53,9 @@ describe('static partner surfaces', () => {
         expect(html.toLowerCase()).toContain('referrerpolicy="no-referrer"');
         expect(html).toContain('Not a real service or offer');
       }
-    }
+    },
+    // Each case imports a fresh server/client module graph from the Elements
+    // workspace. This is a content contract, not an import-latency benchmark.
+    15000
   );
 });
