@@ -26,18 +26,13 @@ export function LiveIpCard() {
   const RiskIcon = data?.risk?.highRisk ? ShieldAlert : ShieldCheck;
 
   return (
-    <Card className="flex min-h-[22rem] flex-col overflow-hidden">
-      <CardHeader className="border-b">
+    <Card className="flex min-h-[22rem] min-w-0 flex-col overflow-hidden rounded-xl shadow-none">
+      <CardHeader className="border-b px-5 py-4">
         <div className="flex items-center justify-between gap-4">
-          <div>
-            <p className="text-primary mb-1 text-xs font-semibold uppercase tracking-wider">
-              Network evidence
-            </p>
-            <CardTitle as="h2" className="flex items-center gap-2 text-xl">
-              <Globe2 className="h-5 w-5" aria-hidden="true" />
-              Your public IP
-            </CardTitle>
-          </div>
+          <CardTitle as="h2" className="flex items-center gap-2 text-lg">
+            <Globe2 className="h-5 w-5" aria-hidden="true" />
+            Your public IP
+          </CardTitle>
           {state.status !== 'loading' && (
             <Button
               type="button"
@@ -51,7 +46,7 @@ export function LiveIpCard() {
           )}
         </div>
       </CardHeader>
-      <CardContent className="flex flex-1 flex-col justify-between gap-6 pt-6">
+      <CardContent className="flex flex-1 flex-col justify-between gap-6 px-5 pb-5 pt-5">
         {state.status === 'loading' && (
           <div
             className="space-y-3"

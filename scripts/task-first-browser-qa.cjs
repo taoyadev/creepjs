@@ -432,7 +432,7 @@ async function main() {
         'core tool controls are reachable in the first mobile viewport',
         async () => {
           for (const [route, selector] of [
-            ['/', 'button:has-text("Run local scan")'],
+            ['/', '#home-scan-title'],
             ['/ip', '#ip-address'],
             ['/ip', 'button:has-text("Check IP Risk")'],
             ['/fingerprint', '#signal-search'],
@@ -533,6 +533,208 @@ async function main() {
                 .isVisible(),
               'network check ran without action'
             );
+          }
+        }
+      );
+      await check(
+        'homepage scans on load, keeps the ID in the first viewport, and retains results through reruns',
+        async () => {
+          const homeId = (target = page) =>
+            target.locator('#home-fingerprint-id');
+          const runAgainReady = (target = page) =>
+            target.waitForFunction(
+              () =>
+                [...document.querySelectorAll('button')].some(
+                  (button) =>
+                    button.textContent.trim() === 'Run again' &&
+                    !button.disabled
+                ),
+              null,
+              { timeout: 30000 }
+            );
+          const blockDigest = () => {
+            Object.defineProperty(SubtleCrypto.prototype, 'digest', {
+              configurable: true,
+              value: () => Promise.reject(new Error('QA blocked digest')),
+            });
+          };
+          // Holds every digest, and so the fingerprint ID, until released, so
+          // the first-render layout can be measured before the result exists.
+          const gateScan = () => {
+            window.__qaShift = 0;
+            window.__qaLongTasks = [];
+            new PerformanceObserver((list) => {
+              for (const entry of list.getEntries())
+                if (!entry.hadRecentInput) window.__qaShift += entry.value;
+            }).observe({ type: 'layout-shift', buffered: true });
+            new PerformanceObserver((list) => {
+              for (const entry of list.getEntries())
+                window.__qaLongTasks.push(entry.duration);
+            }).observe({ type: 'longtask', buffered: true });
+            const digest = SubtleCrypto.prototype.digest;
+            let release;
+            const gate = new Promise((resolve) => (release = resolve));
+            window.__qaReleaseScan = () => release();
+            Object.defineProperty(SubtleCrypto.prototype, 'digest', {
+              configurable: true,
+              value(...args) {
+                return gate.then(() => digest.apply(this, args));
+              },
+            });
+          };
+          const geometry = (target) =>
+            target.evaluate(() => {
+              const section = document.querySelector(
+                'section[aria-labelledby="home-scan-title"]'
+              );
+              const top = section.getBoundingClientRect().top;
+              return {
+                band: Math.round(
+                  section.firstElementChild.getBoundingClientRect().height
+                ),
+                signals: Math.round(
+                  section.querySelector('dl').getBoundingClientRect().top - top
+                ),
+              };
+            });
+          try {
+            for (const viewport of [
+              { width: 1440, height: 900 },
+              { width: 390, height: 844 },
+            ]) {
+              await page.setViewportSize(viewport);
+              const before = state.calls.length;
+              await visit('/');
+              await homeId().waitFor({ timeout: 30000 });
+              const box = await homeId().boundingBox();
+              assert(
+                box && box.y >= 0 && box.y + box.height <= viewport.height,
+                viewport.width + 'px: fingerprint ID outside the first viewport'
+              );
+              assert(
+                /^[0-9A-Za-z]{16,32}$/.test(
+                  (await homeId().textContent()) || ''
+                ),
+                'unexpected fingerprint ID format'
+              );
+              assert(
+                await page
+                  .getByText('Its WebRTC check contacts Google STUN servers', {
+                    exact: false,
+                  })
+                  .isVisible(),
+                'automatic STUN contact is not disclosed beside the scan'
+              );
+              assert(
+                !state.calls
+                  .slice(before)
+                  .some((call) => call.path === '/v1/stats/uniqueness'),
+                'homepage sent a population comparison'
+              );
+              await noOverflow();
+              await runAgainReady();
+              await screenshot('home-result-' + viewport.width);
+            }
+            await page
+              .getByRole('button', { name: 'Run again', exact: true })
+              .click();
+            assert(
+              await homeId().isVisible(),
+              'rerun removed the previous result'
+            );
+            await runAgainReady();
+            const kept = await homeId().textContent();
+            await page.evaluate(blockDigest);
+            await page
+              .getByRole('button', { name: 'Run again', exact: true })
+              .click();
+            await page
+              .getByRole('alert')
+              .filter({ hasText: 'The new scan could not finish.' })
+              .waitFor({ timeout: 30000 });
+            assert(
+              (await homeId().textContent()) === kept,
+              'failed rerun replaced the previous result'
+            );
+            for (const failing of [false, true]) {
+              const isolated = await browser.newContext({
+                viewport: { width: 390, height: 844 },
+                serviceWorkers: 'block',
+              });
+              try {
+                await mockApi(isolated);
+                await isolated.addInitScript(failing ? blockDigest : gateScan);
+                const target = await isolated.newPage();
+                target.on('pageerror', (error) =>
+                  runtimeErrors.push(`${target.url()}: ${error.message}`)
+                );
+                await visit('/', target);
+                if (failing) {
+                  await target
+                    .getByRole('alert')
+                    .filter({ hasText: 'The scan could not finish.' })
+                    .waitFor({ timeout: 30000 });
+                  await runAgainReady(target);
+                  assert(
+                    (await target
+                      .getByText('Not returned', { exact: true })
+                      .count()) === 8,
+                    'failed scan left signals pending'
+                  );
+                  await target.screenshot({
+                    path: path.join(artifacts, 'home-error-390.png'),
+                  });
+                  screenshots.push('home-error-390.png');
+                  continue;
+                }
+                assert(
+                  (await homeId(target).count()) === 0,
+                  'scan finished before the first-render measurement'
+                );
+                const first = await geometry(target);
+                await target.screenshot({
+                  path: path.join(artifacts, 'home-loading-390.png'),
+                });
+                screenshots.push('home-loading-390.png');
+                await target.evaluate(() => window.__qaReleaseScan());
+                await homeId(target).waitFor({ timeout: 30000 });
+                const settled = await geometry(target);
+                const metrics = await target.evaluate(() => ({
+                  layoutShift: window.__qaShift,
+                  longTasks: window.__qaLongTasks.length,
+                  blockingMs: Math.round(
+                    window.__qaLongTasks.reduce(
+                      (sum, duration) => sum + Math.max(0, duration - 50),
+                      0
+                    )
+                  ),
+                }));
+                fs.writeFileSync(
+                  path.join(artifacts, 'home-scan-metrics.json'),
+                  JSON.stringify({ first, settled, ...metrics }, null, 2) + '\n'
+                );
+                assert(
+                  first.band === settled.band &&
+                    first.signals === settled.signals,
+                  'scan result moved the report: ' +
+                    JSON.stringify({ first, settled })
+                );
+                assert(
+                  metrics.layoutShift < 0.1,
+                  'homepage layout shift ' + metrics.layoutShift.toFixed(3)
+                );
+                assert(
+                  await target.evaluate(
+                    () => localStorage.getItem('creepjs_history') === null
+                  ),
+                  'homepage saved scan history'
+                );
+              } finally {
+                await isolated.close();
+              }
+            }
+          } finally {
+            await page.setViewportSize({ width: 390, height: 844 });
           }
         }
       );
@@ -954,8 +1156,13 @@ async function main() {
                   .getByText('Avg per Attempted', { exact: true })
                   .waitFor();
               }
-              if (route === '/')
+              if (route === '/') {
                 await page.getByText(ownIp.ip, { exact: true }).waitFor();
+                await page
+                  .locator('#home-fingerprint-id')
+                  .waitFor({ timeout: 30000 });
+                await screenshot('home-' + mode.width + '-' + mode.theme);
+              }
               if (route === '/ip') {
                 const submit = page.getByRole('button', {
                   name: 'Check IP Risk',
@@ -1069,6 +1276,13 @@ async function main() {
                   .getByLabel('IP address', { exact: true })
                   .isDisabled(),
                 'IP input looks ready before client handlers are attached'
+              );
+            if (route === '/')
+              assert(
+                await target
+                  .getByRole('button', { name: 'Scanning', exact: true })
+                  .isDisabled(),
+                'homepage rerun looks ready before client handlers are attached'
               );
             assert(
               (await target.locator('h1').count()) === 1,

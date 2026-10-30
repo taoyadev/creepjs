@@ -55,7 +55,7 @@ export const STATIC_SEO_ROUTES = [
     section: 'core',
     changeFrequency: 'weekly',
     priority: 1,
-    lastModified: new Date('2026-10-29'),
+    lastModified: new Date('2026-10-30'),
   },
   {
     path: '/checker',
@@ -144,6 +144,7 @@ export const STATIC_SEO_ROUTES = [
     section: 'legal',
     changeFrequency: 'yearly',
     priority: 0.55,
+    lastModified: new Date('2026-10-30'),
   },
   {
     path: '/terms',
