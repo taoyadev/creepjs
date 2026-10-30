@@ -677,9 +677,23 @@ async function main() {
                   await runAgainReady(target);
                   assert(
                     (await target
+                      .locator(
+                        'section[aria-labelledby="home-scan-title"] .animate-pulse'
+                      )
+                      .count()) === 0,
+                    'failed scan still shows loading placeholders'
+                  );
+                  assert(
+                    await target
+                      .getByText('No ID was computed.', { exact: true })
+                      .isVisible(),
+                    'failed scan does not explain the missing ID'
+                  );
+                  assert(
+                    (await target
                       .getByText('Not returned', { exact: true })
-                      .count()) === 8,
-                    'failed scan left signals pending'
+                      .count()) === 0,
+                    'failed scan blamed the browser for missing values'
                   );
                   await target.screenshot({
                     path: path.join(artifacts, 'home-error-390.png'),

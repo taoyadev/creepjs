@@ -76,6 +76,10 @@ export function HomeFingerprintScan() {
               >
                 {result.fingerprintId}
               </code>
+            ) : failed ? (
+              <p className="text-muted-foreground text-sm">
+                No ID was computed.
+              </p>
             ) : (
               <>
                 <span
@@ -172,10 +176,39 @@ export function HomeFingerprintScan() {
 
       <dl aria-busy={scanning} className="bg-border grid gap-px sm:grid-cols-2">
         {SIGNAL_ROWS.map((row) => {
-          const pending = !result && !failed;
-          const value = result ? row.read(result.data) : null;
           const collected =
             scanning && row.collectors.every((key) => completed.has(key));
+          let value: React.ReactNode;
+          if (result) {
+            value = row.read(result.data) ?? (
+              <span className="text-muted-foreground font-normal">
+                Not returned
+              </span>
+            );
+          } else if (failed) {
+            // Nothing was collected, which says nothing about this browser.
+            value = (
+              <>
+                <span
+                  className="text-muted-foreground font-normal"
+                  aria-hidden="true"
+                >
+                  —
+                </span>
+                <span className="sr-only">No value</span>
+              </>
+            );
+          } else {
+            value = (
+              <>
+                <span
+                  className="bg-muted block h-5 w-2/3 animate-pulse rounded"
+                  aria-hidden="true"
+                />
+                <span className="sr-only">Waiting for the scan</span>
+              </>
+            );
+          }
           return (
             <div key={row.key} className="bg-card min-w-0 px-5 py-3 sm:px-6">
               <dt className="text-muted-foreground flex items-center gap-1.5 text-xs">
@@ -188,21 +221,7 @@ export function HomeFingerprintScan() {
                 )}
               </dt>
               <dd className="mt-1 min-h-5 text-sm font-medium leading-5 [overflow-wrap:anywhere]">
-                {pending ? (
-                  <>
-                    <span
-                      className="bg-muted block h-5 w-2/3 animate-pulse rounded"
-                      aria-hidden="true"
-                    />
-                    <span className="sr-only">Waiting for the scan</span>
-                  </>
-                ) : (
-                  (value ?? (
-                    <span className="text-muted-foreground font-normal">
-                      Not returned
-                    </span>
-                  ))
-                )}
+                {value}
               </dd>
             </div>
           );
