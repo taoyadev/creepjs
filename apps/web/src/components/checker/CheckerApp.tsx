@@ -111,15 +111,29 @@ export function CheckerApp() {
   const loading = status === 'loading';
 
   if (!fingerprint) {
+    const pending = status !== 'error';
+    // Hold the report's place while the first scan runs. The report is
+    // several screens tall; without this reservation the explanation sections
+    // below render in the first viewport and jump away when it arrives. After
+    // a failure the page is left at its natural height.
     return (
-      <div className="space-y-4">
+      <div className={pending ? 'min-h-[100svh] space-y-4' : 'space-y-4'}>
         <SharedResultBanner snapshot={snapshot} />
         <ScanProgress
-          status={status === 'error' ? 'error' : 'loading'}
+          status={pending ? 'loading' : 'error'}
           progress={progress}
           error={error}
           onRetry={() => void scan()}
         />
+        {pending && (
+          <div aria-hidden="true" className="space-y-4">
+            <div className="bg-muted h-40 animate-pulse rounded-lg" />
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="bg-muted h-56 animate-pulse rounded-lg" />
+              <div className="bg-muted h-56 animate-pulse rounded-lg" />
+            </div>
+          </div>
+        )}
       </div>
     );
   }
