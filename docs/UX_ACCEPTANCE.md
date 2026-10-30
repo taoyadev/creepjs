@@ -59,18 +59,18 @@ preserved. No populated data migration or URL migration is needed.
 
 ## Page coverage
 
-| Pages           | Task and resulting change                                                                                                                                                                   |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Home            | Local browser scan and own-IP summary immediately below the heading; task links replace repeated marketing sections.                                                                        |
-| Checker         | Automatic scan in the first task region; summary, collector tabs, local history, and export. Refresh retains the last report. Population comparison requires an explicit action.            |
-| IP              | A labelled address input with IPv4/IPv6 examples, protected own-IP detection, local validation, cancellation, qualified verdict, missing fields, evidence, and quota/freshness information. |
-| Signal index    | Search, category selection, investigation presets, result count, and no-match recovery. All signal links are present in static HTML.                                                        |
-| 55 signal pages | Real collection state, readable fields, copyable image-safe JSON, same-tab comparison, and collector-specific reviewed method/limits. WebRTC and full consistency scans require an action.  |
-| API playground  | Memory-only masked token, explicit collection/submission, side-by-side response, HTTP status/timing, empty response handling, and input-preserving recovery.                                |
-| Docs            | Native section links, copyable working hosted-SDK examples, current API boundaries, output interpretation, and error-specific recovery.                                                     |
-| Browser guide   | A working scan and setting-comparison tasks replace generic FAQ and unsupported accuracy claims. Existing article fragments remain usable.                                                  |
-| Proxy guide     | Address presets, explicit unknown classification, a qualified result, and direct continuation to the same address in the full report.                                                       |
-| Privacy / terms | Compact header, section navigation, correct heading levels, and concrete data choices. Responsible-use clauses remain intact.                                                               |
+| Pages           | Task and resulting change                                                                                                                                                                          |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Home            | The local browser scan starts on load and leads the first screen: diagnostic ID, ID glyph, real collector progress, and eight observed signals. The own-IP summary is secondary context beside it. |
+| Checker         | Automatic scan in the first task region; summary, collector tabs, local history, and export. Refresh retains the last report. Population comparison requires an explicit action.                   |
+| IP              | A labelled address input with IPv4/IPv6 examples, protected own-IP detection, local validation, cancellation, qualified verdict, missing fields, evidence, and quota/freshness information.        |
+| Signal index    | Search, category selection, investigation presets, result count, and no-match recovery. All signal links are present in static HTML.                                                               |
+| 55 signal pages | Real collection state, readable fields, copyable image-safe JSON, same-tab comparison, and collector-specific reviewed method/limits. WebRTC and full consistency scans require an action.         |
+| API playground  | Memory-only masked token, explicit collection/submission, side-by-side response, HTTP status/timing, empty response handling, and input-preserving recovery.                                       |
+| Docs            | Native section links, copyable working hosted-SDK examples, current API boundaries, output interpretation, and error-specific recovery.                                                            |
+| Browser guide   | A working scan and setting-comparison tasks replace generic FAQ and unsupported accuracy claims. Existing article fragments remain usable.                                                         |
+| Proxy guide     | Address presets, explicit unknown classification, a qualified result, and direct continuation to the same address in the full report.                                                              |
+| Privacy / terms | Compact header, section navigation, correct heading levels, and concrete data choices. Responsible-use clauses remain intact.                                                                      |
 
 ## State contract
 
@@ -92,9 +92,10 @@ preserved. No populated data migration or URL migration is needed.
 
 ## Privacy and trust boundaries
 
-The homepage full scan is action-driven; the checker still starts on load.
-Full scans include Google STUN traffic. Individual network-sensitive signal
-pages disclose and require that action. Other signal collectors run locally.
+The homepage and the checker start the full scan on load and disclose its
+Google STUN traffic beside the scan; the homepage saves no scan history. The
+guide teaser stays action-driven. Individual network-sensitive signal pages
+disclose and require that action. Other signal collectors run locally.
 Signal comparisons stay in tab memory. Copying/exporting JSON omits image
 payloads. Checker history uses the existing sanitized local history format.
 

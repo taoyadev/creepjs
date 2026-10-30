@@ -1,79 +1,23 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { ArrowRight, Fingerprint, Play, RefreshCw } from 'lucide-react';
-import type { FingerprintResult } from '@creepjs/core';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { CopyButton } from '@/components/CopyButton';
-import {
-  INITIAL_SCAN_PROGRESS,
-  reduceScanProgress,
-} from '@/components/checker/scanProgressState';
+import { useLazyFingerprintScan } from '@/components/home/useLazyFingerprintScan';
 import { trackEvent } from '@/lib/analytics';
 import { signalJson } from '@/lib/signal-result';
 
-type TeaserStatus = 'idle' | 'loading' | 'ready' | 'error';
-
 /**
- * Homepage scan, run only when the visitor asks for it. The collectors load
- * on demand, so they stay out of the homepage bundle, and the WebRTC check
- * (which contacts a public STUN server) never runs on a plain page view.
+ * Guide-page scan, run only when the visitor asks for it. The WebRTC check
+ * (which contacts a public STUN server) never runs on a plain view of the
+ * guide; the homepage starts its own scan automatically instead.
  */
 export function LiveFingerprintTeaser() {
-  const [status, setStatus] = useState<TeaserStatus>('idle');
-  const [result, setResult] = useState<FingerprintResult | null>(null);
-  const [progress, setProgress] = useState(INITIAL_SCAN_PROGRESS);
-  const runId = useRef(0);
-
-  const scan = useCallback(async () => {
-    const currentRun = ++runId.current;
-    setStatus('loading');
-    setProgress(INITIAL_SCAN_PROGRESS);
-    try {
-      const { collectFingerprint } = await import('@creepjs/core');
-      if (runId.current !== currentRun) return;
-      const next = await collectFingerprint({
-        onProgress: (event) => {
-          if (runId.current === currentRun) {
-            setProgress((previous) => reduceScanProgress(previous, event));
-          }
-        },
-      });
-      if (runId.current !== currentRun) return;
-      setProgress((previous) => ({
-        ...previous,
-        current: previous.total,
-        currentCollector: 'Complete',
-      }));
-      setResult(next);
-      setStatus('ready');
-      trackEvent('tool_run', {
-        tool: 'fingerprint_scan',
-        surface: 'home',
-        outcome: 'success',
-      });
-    } catch (error) {
-      if (runId.current !== currentRun) return;
-      console.error('Homepage fingerprint teaser failed:', error);
-      setStatus('error');
-      trackEvent('tool_run', {
-        tool: 'fingerprint_scan',
-        surface: 'home',
-        outcome: 'error',
-      });
-    }
-  }, []);
-
-  useEffect(
-    () => () => {
-      // Drop the result of a scan still running when the card unmounts.
-      runId.current += 1;
-    },
-    []
-  );
+  const { status, result, progress, scan } = useLazyFingerprintScan();
 
   return (
     <Card className="flex min-h-[22rem] flex-col overflow-hidden">

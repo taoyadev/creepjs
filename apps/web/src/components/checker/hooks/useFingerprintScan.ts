@@ -16,16 +16,7 @@ import {
   reduceScanProgress,
   type ScanProgressState,
 } from '@/components/checker/scanProgressState';
-
-function scheduleIdle(callback: () => void) {
-  if (typeof window.requestIdleCallback === 'function') {
-    const idleId = window.requestIdleCallback(callback, { timeout: 1200 });
-    return () => window.cancelIdleCallback(idleId);
-  }
-
-  const timeoutId = window.setTimeout(callback, 180);
-  return () => window.clearTimeout(timeoutId);
-}
+import { scheduleIdle } from '@/lib/schedule-idle';
 
 export interface FingerprintScan {
   fingerprint: FingerprintResult | null;

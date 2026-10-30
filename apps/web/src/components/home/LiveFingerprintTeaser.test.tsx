@@ -36,13 +36,21 @@ describe('LiveFingerprintTeaser', () => {
   });
 
   it.each([
-    ['the homepage teaser', './LiveFingerprintTeaser.tsx'],
+    ['the guide teaser', './LiveFingerprintTeaser.tsx'],
+    ['the homepage scan', './HomeFingerprintScan.tsx'],
+    ['the homepage signal summary', './fingerprint-summary.ts'],
+    ['the ID glyph', './FingerprintGlyph.tsx'],
+    ['the shared scan hook', './useLazyFingerprintScan.ts'],
     ['the playground', '../playground/PlaygroundApp.tsx'],
-  ])('keeps the collectors out of %s until it runs a scan', (_label, path) => {
-    const code = source(path);
+  ])('keeps the collectors out of %s', (_label, path) => {
+    expect(valueImportsFromCore(source(path))).toEqual([]);
+  });
 
-    expect(valueImportsFromCore(code)).toEqual([]);
-    expect(code).toContain("import('@creepjs/core')");
+  it.each([
+    ['the shared scan hook', './useLazyFingerprintScan.ts'],
+    ['the playground', '../playground/PlaygroundApp.tsx'],
+  ])('loads the collectors on demand in %s', (_label, path) => {
+    expect(source(path)).toContain("import('@creepjs/core')");
   });
 
   it('keeps the collectors out of the progress reducer the teaser imports', () => {
