@@ -28,5 +28,7 @@
 
 ## 3. Publication
 
-- [ ] 3.1 Publish only after explicit operator approval, then rerun browser
-      acceptance against https://creepjs.org.
+- [x] 3.1 Publish only after explicit operator approval, then rerun browser
+      acceptance against https://creepjs.org. Published as PR #24, merge
+      commit `50bb344`; canonical acceptance passed 22/22 at
+      `openclaw:~/artifacts/creepjs-web-release/20261030-095817`.
