@@ -1019,6 +1019,60 @@ async function main() {
         }
       );
       await check(
+        'checker report does not shift visible content while the first scan settles',
+        async () => {
+          const measured = [];
+          for (const viewport of [
+            { width: 412, height: 823 },
+            { width: 390, height: 844 },
+            { width: 1440, height: 900 },
+          ]) {
+            const isolated = await browser.newContext({
+              viewport,
+              serviceWorkers: 'block',
+            });
+            try {
+              await mockApi(isolated);
+              await isolated.addInitScript(() => {
+                window.__qaShift = 0;
+                new PerformanceObserver((list) => {
+                  for (const entry of list.getEntries())
+                    if (!entry.hadRecentInput) window.__qaShift += entry.value;
+                }).observe({ type: 'layout-shift', buffered: true });
+              });
+              const target = await isolated.newPage();
+              target.on('pageerror', (error) =>
+                runtimeErrors.push(`${target.url()}: ${error.message}`)
+              );
+              await visit('/checker', target);
+              // Skeleton titles match the real panels; wait for loaded content.
+              await target
+                .getByText('Total Records', { exact: true })
+                .first()
+                .waitFor({ timeout: 30000 });
+              await target
+                .getByRole('button', { name: 'Download JSON', exact: true })
+                .waitFor({ timeout: 30000 });
+              const shift = await target.evaluate(() => window.__qaShift);
+              measured.push({ ...viewport, shift });
+              assert(
+                shift < 0.1,
+                viewport.width +
+                  'px: checker layout shift ' +
+                  shift.toFixed(3) +
+                  ' exceeds 0.1'
+              );
+            } finally {
+              await isolated.close();
+            }
+          }
+          fs.writeFileSync(
+            path.join(artifacts, 'checker-layout-shift.json'),
+            JSON.stringify(measured, null, 2) + '\n'
+          );
+        }
+      );
+      await check(
         'keyboard skip link and mobile navigation return focus',
         async () => {
           await visit('/');

@@ -21,4 +21,25 @@ describe('CheckerApp rendering boundary', () => {
       source.indexOf('<ConfidenceDashboard')
     );
   });
+
+  it('reserves a full viewport for the report before the first scan finishes', () => {
+    const source = readFileSync(
+      path.join(
+        process.cwd(),
+        'src',
+        'components',
+        'checker',
+        'CheckerApp.tsx'
+      ),
+      'utf8'
+    );
+    const pending = source.slice(
+      source.indexOf('if (!fingerprint) {'),
+      source.indexOf('const shareUrl')
+    );
+
+    expect(pending).toContain('min-h-[100svh]');
+    expect(pending).toContain("status !== 'error'");
+    expect(pending).toContain('<ScanProgress');
+  });
 });
