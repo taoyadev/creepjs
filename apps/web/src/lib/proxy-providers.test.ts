@@ -1,3 +1,5 @@
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   providersForPlacement,
@@ -18,6 +20,8 @@ const provider: ActiveProxyProvider = {
   regions: 'Not disclosed',
   protocols: 'Not disclosed',
   sessionPolicy: 'Not disclosed',
+  priceFrom: 'Not disclosed',
+  tagline: 'Fixture tagline',
   billing: 'Not disclosed',
   minimumPurchase: 'Not disclosed',
   support: 'Not disclosed',
@@ -37,6 +41,13 @@ describe('reviewed provider configuration', () => {
       validateProxyProviders([{ id: 'retired-id', status: 'paused' }])
     ).not.toThrow();
     expect(() => validateProxyProviders(PROXY_PROVIDERS)).not.toThrow();
+    // Every published icon is a real self-hosted file.
+    for (const item of PROXY_PROVIDERS)
+      if (item.status === 'active' && item.iconPath)
+        expect(
+          existsSync(join(__dirname, '../../public', item.iconPath)),
+          item.iconPath
+        ).toBe(true);
   });
   it('accepts complete active records and uses only configured placements', () => {
     validateProxyProviders([provider]);

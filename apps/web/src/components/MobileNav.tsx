@@ -19,7 +19,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
-import { HAS_PROXY_PROVIDERS } from '@/lib/proxy-providers';
+import { DIRECTORY_LISTED } from '@/lib/proxy-providers';
 import { trackEvent } from '@/lib/analytics';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
@@ -51,7 +51,7 @@ export const navItems = [
     icon: Code,
     page: 'playground',
   },
-  ...(HAS_PROXY_PROVIDERS
+  ...(DIRECTORY_LISTED
     ? [
         {
           href: '/proxy-providers',
@@ -73,7 +73,7 @@ export function MobileNav({ currentPage }: MobileNavProps) {
 
   React.useEffect(() => {
     const desktop = window.matchMedia(
-      HAS_PROXY_PROVIDERS ? '(min-width: 1280px)' : '(min-width: 768px)'
+      DIRECTORY_LISTED ? '(min-width: 1280px)' : '(min-width: 768px)'
     );
     const closeAtDesktop = (event: MediaQueryListEvent) => {
       if (event.matches) setOpen(false);
@@ -89,7 +89,7 @@ export function MobileNav({ currentPage }: MobileNavProps) {
         <Button
           variant="ghost"
           size="icon"
-          className={HAS_PROXY_PROVIDERS ? 'xl:hidden' : 'md:hidden'}
+          className={DIRECTORY_LISTED ? 'xl:hidden' : 'md:hidden'}
           aria-label="Open navigation menu"
         >
           <Menu className="h-5 w-5" />

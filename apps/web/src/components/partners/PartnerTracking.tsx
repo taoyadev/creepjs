@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useRef } from 'react';
+import { usePathname } from 'next/navigation';
 import { observePartnerImpression } from './partner-observation';
 import type { ReactNode } from 'react';
 import { trackEvent } from '@/lib/analytics';
@@ -13,6 +14,17 @@ export function PartnerTrackingProvider({ children }: { children: ReactNode }) {
   const seen = useRef(new Set<string>());
   return (
     <SeenEvents.Provider value={seen.current}>{children}</SeenEvents.Provider>
+  );
+}
+
+/**
+ * Layout-level variant: the root layout survives client navigations, so the
+ * dedupe set is reset per pathname to keep "once per page" semantics.
+ */
+export function RouteTrackingProvider({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+  return (
+    <PartnerTrackingProvider key={pathname}>{children}</PartnerTrackingProvider>
   );
 }
 

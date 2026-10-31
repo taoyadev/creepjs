@@ -34,13 +34,14 @@ describe('static partner surfaces', () => {
       const html = renderToStaticMarkup(<Page />);
       expect((html.match(/data-partner-outbound=/g) ?? []).length).toBe(count);
       expect(html.includes('No verified partner listings')).toBe(count === 0);
-      expect(metadata.robots).toMatchObject({ index: count > 0 });
+      // The directory is unlisted regardless of catalog size.
+      expect(metadata.robots).toMatchObject({ index: false });
       expect(navItems.some((item) => item.href === '/proxy-providers')).toBe(
-        count > 0
+        false
       );
       expect(
         INDEXABLE_ROUTES.some((route) => route.path === '/proxy-providers')
-      ).toBe(count > 0);
+      ).toBe(false);
       const recommendations = renderToStaticMarkup(
         <IpPartnerRecommendations />
       );
