@@ -6,14 +6,14 @@ import {
 import { PartnerTrackingProvider } from '@/components/partners/PartnerTracking';
 import { StructuredData } from '@/components/StructuredData';
 import { generateMetadata, structuredData } from '@/lib/metadata';
-import { HAS_PROXY_PROVIDERS } from '@/lib/proxy-providers';
+import { DIRECTORY_LISTED, HAS_PROXY_PROVIDERS } from '@/lib/proxy-providers';
 
 export const metadata = generateMetadata({
   title: 'Proxy providers',
   description:
     'Compare reviewed partner proxy services by use case, session behavior, billing unit, and limitations.',
   path: '/proxy-providers',
-  noIndex: !HAS_PROXY_PROVIDERS,
+  noIndex: !DIRECTORY_LISTED,
 });
 
 export default function ProxyProvidersPage() {
@@ -38,6 +38,25 @@ export default function ProxyProvidersPage() {
           </p>
           <PartnerDisclosure />
         </header>
+        <section aria-labelledby="providers-heading" className="space-y-4">
+          <h2 id="providers-heading" className="text-xl font-semibold">
+            Partner information
+          </h2>
+          {HAS_PROXY_PROVIDERS ? (
+            <PartnerCards placement="partner-directory" />
+          ) : (
+            <div className="space-y-3 rounded-xl border p-5">
+              <p className="font-medium">
+                No verified partner listings are available yet.
+              </p>
+              <p className="text-muted-foreground text-sm leading-6">
+                You can still use the IP checker and selection guide. Listings
+                will appear after their public details and partnership links
+                have been reviewed.
+              </p>
+            </div>
+          )}
+        </section>
         <section
           aria-labelledby="selection-heading"
           className="space-y-3 border-t pt-6"
@@ -59,25 +78,6 @@ export default function ProxyProvidersPage() {
               uses, support, and refund terms with the provider.
             </li>
           </ul>
-        </section>
-        <section aria-labelledby="providers-heading" className="space-y-4">
-          <h2 id="providers-heading" className="text-xl font-semibold">
-            Partner information
-          </h2>
-          {HAS_PROXY_PROVIDERS ? (
-            <PartnerCards placement="partner-directory" />
-          ) : (
-            <div className="space-y-3 rounded-xl border p-5">
-              <p className="font-medium">
-                No verified partner listings are available yet.
-              </p>
-              <p className="text-muted-foreground text-sm leading-6">
-                You can still use the IP checker and selection guide. Listings
-                will appear after their public details and partnership links
-                have been reviewed.
-              </p>
-            </div>
-          )}
         </section>
         <section
           className="max-w-3xl space-y-3 border-t pt-6"

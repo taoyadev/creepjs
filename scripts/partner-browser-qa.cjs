@@ -23,6 +23,9 @@ module.exports = async function partnerChecks({
   const hasProviders = fs
     .readFileSync(path.resolve('apps/web/out/proxy-providers.html'), 'utf8')
     .includes('data-partner-id=');
+  // Operator decision 2026-10-31: sponsors live in the sidebar rails; the
+  // directory stays reachable but unlisted (no navigation, noindex).
+  const listed = false;
   const evidence = [];
   const until = async (condition) => {
     for (let i = 0; i < 100; i++) {
@@ -133,7 +136,7 @@ module.exports = async function partnerChecks({
               .locator('meta[name="robots"]')
               .getAttribute('content');
             assert(
-              robots.includes('noindex') === !count,
+              robots.includes('noindex') === !listed,
               'directory index state'
             );
             const sitemap = await (
@@ -141,7 +144,7 @@ module.exports = async function partnerChecks({
             ).text();
             assert(
               sitemap.includes('https://creepjs.org/proxy-providers') ===
-                Boolean(count),
+                listed,
               'directory sitemap state'
             );
           }
@@ -194,9 +197,9 @@ module.exports = async function partnerChecks({
               const navLink = target.locator(
                 'nav[aria-label="Main navigation"] a[href="/proxy-providers"]'
               );
-              const mobile = width < (hasProviders ? 1280 : 768);
+              const mobile = width < (listed ? 1280 : 768);
               assert(
-                (await navLink.count()) === (hasProviders ? 1 : 0),
+                (await navLink.count()) === (listed ? 1 : 0),
                 'directory navigation visibility'
               );
               if (mobile) {
@@ -204,7 +207,7 @@ module.exports = async function partnerChecks({
                   name: 'Open navigation menu',
                 });
                 await trigger.click();
-                if (hasProviders && route === directory)
+                if (listed && route === directory)
                   assert(
                     (await target
                       .getByRole('dialog')
@@ -219,7 +222,7 @@ module.exports = async function partnerChecks({
                   ),
                   'focus did not return'
                 );
-              } else if (hasProviders && route === directory)
+              } else if (listed && route === directory)
                 assert(
                   (await navLink.getAttribute('aria-current')) === 'page',
                   'desktop active item'

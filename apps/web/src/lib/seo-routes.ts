@@ -1,4 +1,4 @@
-import { HAS_PROXY_PROVIDERS } from './proxy-providers';
+import { DIRECTORY_LISTED } from './proxy-providers';
 import { SITE_CONFIG } from './metadata';
 
 export type ChangeFrequency =
@@ -95,7 +95,7 @@ export const STATIC_SEO_ROUTES = [
     priority: 0.75,
     lastModified: new Date('2026-10-29'),
   },
-  ...(HAS_PROXY_PROVIDERS
+  ...(DIRECTORY_LISTED
     ? [
         {
           path: '/proxy-providers',

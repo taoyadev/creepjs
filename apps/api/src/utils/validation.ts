@@ -37,6 +37,15 @@ export const TokenRequestSchema = z.object({
   email: z.email(),
 });
 
+/** Advertising inquiry from the site's sponsor dialog. */
+export const SponsorInquirySchema = z.strictObject({
+  email: z.email().max(254),
+  website: z
+    .url({ protocol: /^https?$/ })
+    .max(200)
+    .optional(),
+});
+
 /**
  * Batch IP lookup body. Only the envelope is validated here (an array of
  * 1–50 strings); each address is validated per-item in the route so a single

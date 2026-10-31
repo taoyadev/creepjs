@@ -15,6 +15,8 @@ import type { Env } from '../types';
  *   visitor's browser.
  * - /v1/events records the site's own product analytics → locked to the same
  *   site origin, which the route also enforces on the request itself.
+ * - /v1/sponsor-inquiries stores advertiser emails from the site's dialog →
+ *   site origin, enforced on the request as well.
  */
 export const siteOrigin = (env: Env['Bindings']): string => {
   const rawOrigin = env.CORS_ORIGIN?.trim();
@@ -23,7 +25,7 @@ export const siteOrigin = (env: Env['Bindings']): string => {
 };
 
 const isSiteOnlyRoute = (path: string): boolean =>
-  ['/v1/token', '/v1/events'].some(
+  ['/v1/token', '/v1/events', '/v1/sponsor-inquiries'].some(
     (route) => path === route || path.startsWith(`${route}/`)
   );
 

@@ -243,6 +243,13 @@ export default function PrivacyPage() {
                   unique visitors.
                 </p>
                 <p>
+                  If you ask about advertising through the sidebar form, we
+                  store the email address and optional website you enter for up
+                  to 180 days and use them only to reply. The request is
+                  rate-limited with a hashed network address that expires within
+                  a day.
+                </p>
+                <p>
                   Partner links use a no-referrer policy and only reviewed,
                   fixed attribution parameters. We do not prefetch merchant
                   pages or load merchant pixels. Following a link takes you to a

@@ -16,6 +16,12 @@ export type Env = {
      * tests, where /v1/events accepts and drops events.
      */
     EVENTS?: AnalyticsEngineDataset;
+    /**
+     * Advertiser emails from the sidebar dialog; see
+     * routes/sponsor-inquiries.ts. Absent until the namespace is created, in
+     * which case the route answers 503.
+     */
+    SPONSOR_INQUIRIES?: KVNamespace;
     ENVIRONMENT: string;
     CORS_ORIGIN: string;
     RATE_LIMIT_PER_DAY: string;

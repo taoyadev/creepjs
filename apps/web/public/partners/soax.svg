@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96" fill="none"><metadata><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/"><rdf:Description><dc:creator>RealFaviconGenerator</dc:creator><dc:source>https://realfavicongenerator.net</dc:source></rdf:Description></rdf:RDF></metadata><g filter="url(#filter0_i_1937_32)">
+<rect width="96" height="96" rx="24" fill="#111214"></rect>
+<rect width="96" height="96" rx="24" fill="url(#paint0_linear_1937_32)" fill-opacity="0.1"></rect>
+<rect x="0.1125" y="0.1125" width="95.775" height="95.775" rx="23.8875" stroke="#0A0D12" stroke-opacity="0.12" stroke-width="0.225"></rect>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M38.2644 37.5402C38.2644 41.8512 42.1106 43.0656 50.7646 44.0979C66.5697 45.7371 73 49.9269 73 58.4276C73 67.6565 65.428 73 49.8029 73H47.1586C30.0913 73 23 65.653 23 56.4846H36.4015C36.8221 61.9491 41.6298 64.3779 48.8412 64.6206C56.2931 64.3779 58.8774 62.2529 58.8774 59.0348C58.8774 54.7843 54.9112 53.509 45.2958 52.1734C30.7524 50.2304 24.1418 46.5874 24.1418 37.9046C24.1418 30.4362 29.25 24 45.5361 24C45.7164 24 45.9568 24 46.1371 24C46.3174 24 46.5578 24 46.7379 24C47.2188 24 47.6394 24 48.1203 24C65.1277 24 71.9182 31.772 72.0387 39.1796H58.2766C57.8559 35.5365 54.1299 32.6828 46.4978 32.3791C40.4879 32.622 38.2644 34.6257 38.2644 37.5402Z" fill="white"></path>
+</g><defs>
+<filter id="filter0_i_1937_32" x="0" y="0" width="96" height="96" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"></feFlood>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"></feBlend>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"></feColorMatrix>
+<feOffset dy="-0.5"></feOffset>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"></feComposite>
+<feColorMatrix type="matrix" values="0 0 0 0 0.0392157 0 0 0 0 0.0509804 0 0 0 0 0.0705882 0 0 0 0.08 0"></feColorMatrix>
+<feBlend mode="normal" in2="shape" result="effect1_innerShadow_1937_32"></feBlend>
+</filter>
+<linearGradient id="paint0_linear_1937_32" x1="48" y1="0" x2="48" y2="96" gradientUnits="userSpaceOnUse">
+<stop stop-color="white"></stop>
+<stop offset="1" stop-color="#0A0D12"></stop>
+</linearGradient>
+</defs></svg>

@@ -9,6 +9,7 @@ import myipRoutes from './routes/myip';
 import ipRoutes from './routes/ip';
 import statsRoutes from './routes/stats';
 import eventsRoutes from './routes/events';
+import sponsorInquiryRoutes from './routes/sponsor-inquiries';
 
 const app = new Hono<Env>();
 const API_VERSION = '1.0.0';
@@ -45,6 +46,7 @@ app.route('/v1/token', tokenRoutes);
 app.route('/v1/ip', ipRoutes);
 app.route('/v1/stats', statsRoutes);
 app.route('/v1/events', eventsRoutes);
+app.route('/v1/sponsor-inquiries', sponsorInquiryRoutes);
 app.route('/my-ip', myipRoutes);
 
 // 404 handler

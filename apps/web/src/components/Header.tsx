@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { HAS_PROXY_PROVIDERS } from '@/lib/proxy-providers';
+import { DIRECTORY_LISTED } from '@/lib/proxy-providers';
 import { trackEvent } from '@/lib/analytics';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { MobileNav, navItems } from '@/components/MobileNav';
@@ -59,7 +59,7 @@ export function Header({ currentPage }: HeaderProps) {
             button nested in a link was two tab stops and invalid markup. */}
         <div
           className={
-            HAS_PROXY_PROVIDERS
+            DIRECTORY_LISTED
               ? 'hidden items-center gap-2 xl:flex'
               : 'hidden items-center gap-2 md:flex'
           }
@@ -96,7 +96,7 @@ export function Header({ currentPage }: HeaderProps) {
         {/* Mobile Navigation */}
         <div
           className={
-            HAS_PROXY_PROVIDERS
+            DIRECTORY_LISTED
               ? 'flex items-center gap-2 xl:hidden'
               : 'flex items-center gap-2 md:hidden'
           }

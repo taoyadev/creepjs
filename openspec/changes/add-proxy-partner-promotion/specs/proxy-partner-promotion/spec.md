@@ -96,3 +96,43 @@ Desktop and mobile navigation SHALL share the provider entry and correct current
 - **WHEN** a build contains verified active providers
 - **THEN** the directory and guide have stable canonical paths and valid internal links
 - **AND** pre-existing public paths and API contracts remain unchanged
+
+### Requirement: Desktop sponsor rails SHALL stay symmetric, labeled and secondary to page content
+
+At viewports of 1440 pixels and wider, every page SHALL show symmetric sponsor rails with at most eight slots, filled by providers with a `partner-sidebar` link in operator order and ending with one "Advertise here" button. Rails SHALL be labeled Sponsored and follow the main content in the DOM.
+
+#### Scenario: Disclosed links
+
+- **WHEN** a provider appears in a rail
+- **THEN** its link uses `rel="sponsored noopener noreferrer"` and a no-referrer policy
+
+#### Scenario: Seven or more providers
+
+- **WHEN** seven or more providers have a sidebar link
+- **THEN** each rail shows four slots, the first seven providers in order and the advertise button last on the right
+
+#### Scenario: Fewer providers
+
+- **WHEN** five providers have a sidebar link
+- **THEN** each rail shows three slots and the advertise button stays last
+
+#### Scenario: Mobile viewport
+
+- **WHEN** a visitor uses a viewport narrower than 1440 pixels
+- **THEN** no rail is visible and no sidebar impression is recorded
+
+### Requirement: Advertising inquiries SHALL collect only an email and an optional website
+
+The advertise button SHALL open a dialog that asks for an email and an optional HTTP(S) website, without invented traffic or prices. `POST /v1/sponsor-inquiries` SHALL accept the site origin only, validate strictly, rate-limit per visitor and globally, and store inquiries in the dedicated `SPONSOR_INQUIRIES` namespace for 180 days.
+
+#### Scenario: Valid inquiry
+
+- **WHEN** a visitor submits a valid email from the site
+- **THEN** the API stores the email, optional website and timestamp and answers 202
+- **AND** the dialog confirms that a reply will follow by email
+
+#### Scenario: Storage not provisioned
+
+- **WHEN** the namespace is absent
+- **THEN** the API answers 503 without storing anything
+- **AND** the dialog shows the contact email as an alternative

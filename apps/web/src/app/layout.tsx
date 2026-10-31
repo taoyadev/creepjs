@@ -10,6 +10,7 @@ import { PWARegister } from '@/components/PWARegister';
 import { Footer } from '@/components/Footer';
 import { DynamicHeader } from '@/components/DynamicHeader';
 import { ThemeScript } from '@/components/ThemeScript';
+import { SponsorRail } from '@/components/partners/SponsorRails';
 
 // Self-hosted Inter (variable, latin subset): no build-time or runtime
 // dependency on Google Fonts — privacy-first and deterministic builds.
@@ -64,18 +65,23 @@ export default function RootLayout({
             {/* Global Header - Loads First */}
             <DynamicHeader />
 
-            {/* App Router preserves route-level loading boundaries. Keep the
-                server-rendered page shell mounted while client islands suspend. */}
-            <main id="main-content" tabIndex={-1} className="min-w-0 flex-1">
-              <noscript>
-                <p className="container mx-auto border-b px-4 py-3 text-sm">
-                  Live checks, filters, and copy controls require JavaScript.
-                  You can still read signal methods, documentation, and
-                  policies.
-                </p>
-              </noscript>
-              {children}
-            </main>
+            {/* Sponsor rails only appear at 1440px+, beside the page. */}
+            <div className="flex min-w-0 flex-1 min-[1440px]:gap-6 min-[1440px]:px-4">
+              {/* App Router preserves route-level loading boundaries. Keep the
+                  server-rendered page shell mounted while client islands suspend. */}
+              <main id="main-content" tabIndex={-1} className="min-w-0 flex-1">
+                <noscript>
+                  <p className="container mx-auto border-b px-4 py-3 text-sm">
+                    Live checks, filters, and copy controls require JavaScript.
+                    You can still read signal methods, documentation, and
+                    policies.
+                  </p>
+                </noscript>
+                {children}
+              </main>
+              <SponsorRail side="left" />
+              <SponsorRail side="right" />
+            </div>
 
             {/* Global Footer - Loads First */}
             <Footer />
