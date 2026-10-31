@@ -85,9 +85,6 @@ export function SponsorRail({ side }: { side: 'left' | 'right' }) {
       }`}
     >
       <div className="sticky top-20 space-y-2 py-6">
-        <p className="text-muted-foreground px-1 text-[11px] font-medium uppercase tracking-wider">
-          Sponsored
-        </p>
         <RouteTrackingProvider>
           {slots.map((slot) =>
             slot === 'advertise' ? (

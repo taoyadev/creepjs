@@ -99,7 +99,7 @@ Desktop and mobile navigation SHALL share the provider entry and correct current
 
 ### Requirement: Desktop sponsor rails SHALL stay symmetric, labeled and secondary to page content
 
-At viewports of 1440 pixels and wider, every page SHALL show symmetric sponsor rails with at most eight slots, filled by providers with a `partner-sidebar` link in operator order and ending with one "Advertise here" button. Rails SHALL be labeled Sponsored and follow the main content in the DOM.
+At viewports of 1440 pixels and wider, every page SHALL show symmetric sponsor rails with at most eight slots, filled by providers with a `partner-sidebar` link in operator order and ending with one "Advertise here" button. Rails SHALL follow the main content in the DOM; per the operator's 2026-10-31 decision they carry no visible heading, and each link announces "(sponsored)" to assistive technology.
 
 #### Scenario: Disclosed links
 
