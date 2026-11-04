@@ -80,7 +80,5 @@
 ## 侧边赞助位与广告留资（2026-10-31）
 
 - [x] 8.1 桌面 1440px+ 左右对称侧栏，最多 8 位，末位为 Advertise here
-- [x] 8.2 `POST /v1/sponsor-inquiries` 与独立可选 KV 绑定，未绑定返回 503
-- [x] 8.3 隐私政策补充留资说明
-- [ ] 8.4 创建 `SPONSOR_INQUIRIES` 命名空间并绑定（需授权）
-- [ ] 8.5 生产发布与 canonical 验收（需授权；Bright Data 需 PR 书面批准）
+- [x] 8.2 广告弹窗改为直接展示联系邮箱（2026-10-31 用户决定，移除表单与接口）
+- [x] 8.5 生产发布与 canonical 验收（PR #27）；Bright Data PR 书面批准仍待补
