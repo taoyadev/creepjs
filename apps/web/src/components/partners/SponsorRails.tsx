@@ -31,7 +31,8 @@ function SponsorSlot({ provider }: { provider: ActiveProxyProvider }) {
       <a
         href={provider.outboundUrls['partner-sidebar']}
         data-partner-outbound="true"
-        rel="sponsored noopener noreferrer"
+        target="_blank"
+        rel="sponsored nofollow noopener noreferrer"
         referrerPolicy="no-referrer"
         className="bg-muted/70 hover:bg-muted border-border/60 hover:border-primary/60 focus-visible:ring-ring group flex min-h-[5.25rem] flex-col justify-center gap-1.5 rounded-xl border p-3 shadow-sm transition-[background-color,border-color,box-shadow,transform] hover:-translate-y-px hover:shadow-md focus-visible:outline-none focus-visible:ring-2 motion-reduce:hover:translate-y-0"
       >

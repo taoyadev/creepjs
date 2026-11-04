@@ -49,11 +49,12 @@ describe('sponsor rails', () => {
       providers
     );
     expect(
-      (html.match(/rel="sponsored noopener noreferrer"/g) ?? []).length
+      (html.match(/rel="sponsored nofollow noopener noreferrer"/g) ?? []).length
     ).toBe(providers);
     expect((html.match(/aria-label="Advertise here"/g) ?? []).length).toBe(1);
     expect(html).toContain('data-partner-placement="partner-sidebar"');
     expect(html).toContain('aria-label="Sponsors"');
+    expect((html.match(/target="_blank"/g) ?? []).length).toBe(providers);
     expect(html).toContain('aria-label="More sponsors"');
   });
 });
