@@ -42,6 +42,9 @@ describe('fingerprint signal pages', () => {
       expect(html).toContain(
         `https://creepjs.org/fingerprint/${technique.slug}`
       );
+      expect(html).toContain(
+        `href="/fingerprint?category=${encodeURIComponent(technique.category)}"`
+      );
     }
   });
 

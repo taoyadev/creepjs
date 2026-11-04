@@ -72,6 +72,11 @@ export default async function FingerprintPage({
   }
 
   const markdown = readVettedSignalMarkdown(technique);
+  const related = FINGERPRINT_TECHNIQUES.filter(
+    (item) =>
+      item.slug !== technique.slug && item.category === technique.category
+  );
+  const categoryHref = `/fingerprint?category=${encodeURIComponent(technique.category)}`;
   return (
     <>
       <StructuredData
@@ -111,7 +116,9 @@ export default async function FingerprintPage({
               All signals
             </Link>
             <span aria-hidden="true">/</span>
-            <span>{technique.category}</span>
+            <Link href={categoryHref} className="underline underline-offset-4">
+              {technique.category}
+            </Link>
           </nav>
           <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
             {technique.name}
@@ -162,21 +169,24 @@ export default async function FingerprintPage({
             Compare related {technique.category.toLowerCase()} signals
           </h2>
           <div className="flex flex-wrap gap-3">
-            {FINGERPRINT_TECHNIQUES.filter(
-              (item) =>
-                item.slug !== technique.slug &&
-                item.category === technique.category
-            )
-              .slice(0, 5)
-              .map((item) => (
-                <Link
-                  key={item.slug}
-                  href={`/fingerprint/${item.slug}`}
-                  className="text-primary inline-flex min-h-11 items-center rounded-md border px-3 text-sm"
-                >
-                  {item.name}
-                </Link>
-              ))}
+            {related.slice(0, 5).map((item) => (
+              <Link
+                key={item.slug}
+                href={`/fingerprint/${item.slug}`}
+                className="text-primary inline-flex min-h-11 items-center rounded-md border px-3 text-sm"
+              >
+                {item.name}
+              </Link>
+            ))}
+            {related.length > 5 && (
+              <Link
+                href={categoryHref}
+                className="text-primary inline-flex min-h-11 items-center px-1 text-sm underline underline-offset-4"
+              >
+                All {related.length + 1} {technique.category.toLowerCase()}{' '}
+                signals
+              </Link>
+            )}
           </div>
         </nav>
       </div>

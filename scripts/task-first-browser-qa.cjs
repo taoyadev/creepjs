@@ -6,7 +6,13 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const http = require('node:http');
-const { chromium } = require('playwright');
+// QA_BROWSER=webkit runs the same scenarios in Safari's engine.
+const browserName = process.env.QA_BROWSER || 'chromium';
+if (!['chromium', 'webkit'].includes(browserName))
+  throw new Error('QA_BROWSER must be chromium or webkit.');
+const engine = require('playwright')[browserName];
+// Like Safari's default setting, WebKit's Tab skips links; Option+Tab does not.
+const tabKey = browserName === 'webkit' ? 'Alt+Tab' : 'Tab';
 
 if (!process.env.OPENCLAW_ARTIFACT_DIR) {
   throw new Error(
@@ -293,7 +299,7 @@ async function main() {
   if (server)
     await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
   const base = publicBase || 'http://127.0.0.1:' + server.address().port;
-  const browser = await chromium
+  const browser = await engine
     .launch({ headless: true })
     .catch(async (error) => {
       if (server) await new Promise((resolve) => server.close(resolve));
@@ -476,6 +482,59 @@ async function main() {
               .evaluate((element) => element === document.activeElement),
             'keyboard cannot reach category select'
           );
+        }
+      );
+      await check(
+        'signal filters survive Back and category links open a filtered list',
+        async () => {
+          await visit('/fingerprint');
+          await page.getByLabel('Find a signal').fill('motion');
+          await page
+            .locator('main a[href="/fingerprint/reduced-motion"]')
+            .click();
+          await page.waitForURL((url) =>
+            url.pathname.endsWith('/reduced-motion')
+          );
+          await page.goBack();
+          await page.waitForFunction(
+            () => document.querySelector('#signal-search')?.value === 'motion'
+          );
+          assert(
+            new URL(page.url()).searchParams.get('q') === 'motion',
+            'search filter missing from the URL after Back'
+          );
+          await visit('/fingerprint/canvas');
+          await page
+            .getByRole('navigation', { name: 'Breadcrumb' })
+            .getByRole('link', { name: 'Graphics', exact: true })
+            .click();
+          await page.waitForFunction(
+            () =>
+              document.querySelector('#signal-category')?.value === 'Graphics'
+          );
+          assert(
+            (await page
+              .locator('main section[aria-label$=" signals"]')
+              .count()) === 1,
+            'category link did not filter the list'
+          );
+        }
+      );
+      await check(
+        'a link to saved checker scans lands on them once the scan finishes',
+        async () => {
+          await visit('/checker#history');
+          await page.locator('#history').waitFor({ timeout: 30000 });
+          await page.waitForFunction(() => {
+            const box = document
+              .getElementById('history')
+              ?.getBoundingClientRect();
+            return box && box.top < window.innerHeight && box.bottom > 0;
+          });
+          await page
+            .getByRole('navigation', { name: 'Checker sections' })
+            .getByRole('link', { name: 'Saved scans' })
+            .waitFor();
         }
       );
       await check(
@@ -899,6 +958,65 @@ async function main() {
         }
       );
       await check(
+        'the docs batch link opens the collapsed batch tool on the IP checker',
+        async () => {
+          await visit('/docs');
+          await page
+            .getByRole('link', { name: 'batch lookup on the IP checker' })
+            .click();
+          await page.waitForURL((url) => url.pathname.endsWith('/ip'));
+          await page.getByLabel('IP addresses').waitFor({ state: 'visible' });
+          await page.waitForFunction(() => {
+            const box = document
+              .getElementById('batch')
+              ?.getBoundingClientRect();
+            return box && box.top < window.innerHeight && box.bottom > 0;
+          });
+        }
+      );
+      await check(
+        'content pages complete their task: guide scan, section links and 404 recovery',
+        async () => {
+          await visit('/guide/what-is-browser-fingerprinting');
+          await page.getByRole('button', { name: 'Run local scan' }).click();
+          await page
+            .getByText('Diagnostic ID', { exact: true })
+            .first()
+            .waitFor({ timeout: 30000 });
+          for (const [route, name] of [
+            ['/docs', 'Documentation sections'],
+            ['/privacy', 'Privacy policy sections'],
+            ['/terms', 'Terms sections'],
+          ]) {
+            await visit(route);
+            const links = page
+              .getByRole('navigation', { name, exact: true })
+              .getByRole('link');
+            const count = await links.count();
+            assert(count > 0, route + ': section navigation missing');
+            for (let index = 0; index < count; index += 1) {
+              const id = (await links.nth(index).getAttribute('href')).slice(1);
+              await links.nth(index).click();
+              await page.waitForFunction((target) => {
+                const box = document
+                  .getElementById(target)
+                  ?.getBoundingClientRect();
+                return box && box.top < window.innerHeight && box.bottom > 0;
+              }, id);
+            }
+          }
+          await page.goto(base + '/no-such-page', {
+            waitUntil: 'domcontentloaded',
+          });
+          await page.getByRole('heading', { name: 'Page not found' }).waitFor();
+          for (const href of ['/checker', '/ip', '/fingerprint', '/docs'])
+            assert(
+              (await page.locator(`main a[href="${href}"]`).count()) > 0,
+              '404 page lost its link to ' + href
+            );
+        }
+      );
+      await check(
         'playground completes a real collection with mocked HTTP, bounded errors and memory-only token',
         async () => {
           await visit('/playground');
@@ -1076,7 +1194,7 @@ async function main() {
         'keyboard skip link and mobile navigation return focus',
         async () => {
           await visit('/');
-          await page.keyboard.press('Tab');
+          await page.keyboard.press(tabKey);
           assert(
             await page
               .getByText('Skip to main content', { exact: true })
@@ -1383,6 +1501,7 @@ async function main() {
     const report = {
       generatedAt: new Date().toISOString(),
       baseUrl: base,
+      browser: browserName,
       targetKind: publicBase ? 'production' : 'isolated-preview',
       scope: ipOnly ? 'ip-regression' : a11yOnly ? 'accessibility' : 'full',
       readiness: 'rendered-document-and-controls',

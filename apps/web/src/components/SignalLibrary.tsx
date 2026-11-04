@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,45 @@ export function SignalLibrary({
     () => [...new Set(techniques.map((item) => item.category))].sort(),
     [techniques]
   );
+  // Keep filters in the URL so Back from a signal page restores them and a
+  // filtered list can be shared. The static HTML always shows every signal.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const requested = params.get('category');
+    setQuery(params.get('q')?.slice(0, 100) ?? '');
+    if (requested && categories.includes(requested)) setCategory(requested);
+  }, [categories]);
+  // Write the URL once typing pauses: Safari throws after about 100 history
+  // updates in a short window, and Next.js adds one of its own per update.
+  const urlWrite = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const pendingWrite = useRef<(() => void) | null>(null);
+  useEffect(() => () => clearTimeout(urlWrite.current), []);
+  // Opening a signal must not drop a write still waiting for the pause.
+  const flushUrl = () => {
+    clearTimeout(urlWrite.current);
+    pendingWrite.current?.();
+  };
+  const applyFilters = (nextQuery: string, nextCategory: string) => {
+    setQuery(nextQuery);
+    setCategory(nextCategory);
+    clearTimeout(urlWrite.current);
+    const write = () => {
+      pendingWrite.current = null;
+      const params = new URLSearchParams(window.location.search);
+      if (nextQuery.trim()) params.set('q', nextQuery.trim());
+      else params.delete('q');
+      if (nextCategory !== 'all') params.set('category', nextCategory);
+      else params.delete('category');
+      const search = params.toString();
+      window.history.replaceState(
+        null,
+        '',
+        `${window.location.pathname}${search ? `?${search}` : ''}${window.location.hash}`
+      );
+    };
+    pendingWrite.current = write;
+    urlWrite.current = setTimeout(write, 300);
+  };
   const needle = query.trim().toLowerCase();
   const visible = techniques.filter(
     (item) =>
@@ -38,7 +77,7 @@ export function SignalLibrary({
               type="search"
               placeholder="Try canvas, fonts, storage, or motion"
               value={query}
-              onChange={(event) => setQuery(event.target.value)}
+              onChange={(event) => applyFilters(event.target.value, category)}
               aria-describedby="signal-count"
               autoComplete="off"
             />
@@ -51,7 +90,7 @@ export function SignalLibrary({
               id="signal-category"
               className="bg-background border-input h-11 w-full rounded-md border px-3 text-base md:text-sm"
               value={category}
-              onChange={(event) => setCategory(event.target.value)}
+              onChange={(event) => applyFilters(query, event.target.value)}
             >
               <option value="all">All categories</option>
               {categories.map((value) => (
@@ -76,10 +115,7 @@ export function SignalLibrary({
               size="sm"
               variant={category === value ? 'secondary' : 'outline'}
               aria-pressed={category === value}
-              onClick={() => {
-                setCategory(value);
-                setQuery('');
-              }}
+              onClick={() => applyFilters('', value)}
             >
               {label}
             </Button>
@@ -89,10 +125,7 @@ export function SignalLibrary({
               type="button"
               size="sm"
               variant="ghost"
-              onClick={() => {
-                setQuery('');
-                setCategory('all');
-              }}
+              onClick={() => applyFilters('', 'all')}
             >
               Clear filters
             </Button>
@@ -118,10 +151,7 @@ export function SignalLibrary({
           <Button
             type="button"
             variant="outline"
-            onClick={() => {
-              setQuery('');
-              setCategory('all');
-            }}
+            onClick={() => applyFilters('', 'all')}
           >
             Show all signals
           </Button>
@@ -148,6 +178,7 @@ export function SignalLibrary({
                     <li key={item.slug}>
                       <Link
                         href={`/fingerprint/${item.slug}`}
+                        onClick={flushUrl}
                         className="hover:bg-muted/50 block h-full space-y-2 rounded-lg border p-4"
                       >
                         <h3 className="text-primary text-sm font-semibold">

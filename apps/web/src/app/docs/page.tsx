@@ -259,7 +259,15 @@ export default function DocsPage() {
           Authenticated requests share an allowance of 1,000 requests per day
           across tokens issued to the same email. Batch responses expose charged
           and skipped outcomes; use the returned quota fields rather than
-          assuming every row succeeded.
+          assuming every row succeeded. To check a list without writing code,
+          use the{' '}
+          <Link
+            href="/ip#batch"
+            className="text-primary underline underline-offset-4"
+          >
+            batch lookup on the IP checker
+          </Link>
+          .
         </p>
         <Example title="cURL · authenticated IP lookup" code={ipExample} />
         <details className="rounded-lg border p-4">

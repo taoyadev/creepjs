@@ -13,6 +13,8 @@ module.exports = async function partnerChecks({
   const guide = '/guide/static-vs-rotating-proxies';
   const fixture = process.env.QA_PARTNER_FIXTURE === '1';
   const runtimeErrors = [];
+  // Like Safari's default setting, WebKit's Tab skips links; Option+Tab does not.
+  const tabKey = browser.browserType().name() === 'webkit' ? 'Alt+Tab' : 'Tab';
   const createContext = async (options) => {
     const context = await browser.newContext(options);
     context.on('page', (target) =>
@@ -227,7 +229,7 @@ module.exports = async function partnerChecks({
                   (await navLink.getAttribute('aria-current')) === 'page',
                   'desktop active item'
                 );
-              await target.keyboard.press('Tab');
+              await target.keyboard.press(tabKey);
               assert(
                 await target.evaluate(() => {
                   const style = getComputedStyle(document.activeElement);

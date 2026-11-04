@@ -78,7 +78,7 @@ export function LiveFingerprintTeaser() {
                 </span>
               </div>
               <Progress
-                label="Homepage fingerprint collection progress"
+                label="Fingerprint collection progress"
                 value={progress.current}
                 max={progress.total}
               />
@@ -122,7 +122,7 @@ export function LiveFingerprintTeaser() {
                 </code>
                 <CopyButton
                   value={result.fingerprintId}
-                  ariaLabel="Copy homepage fingerprint ID"
+                  ariaLabel="Copy fingerprint ID"
                   successMessage="Fingerprint ID copied"
                   onCopied={() =>
                     trackEvent('fingerprint_copied', { surface: 'home' })
@@ -177,7 +177,7 @@ export function LiveFingerprintTeaser() {
               <pre
                 className="bg-muted max-h-64 max-w-full overflow-auto p-3 text-xs"
                 tabIndex={0}
-                aria-label="Homepage collected values"
+                aria-label="Collected values"
               >
                 <code>{signalJson(result.data)}</code>
               </pre>

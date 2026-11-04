@@ -72,6 +72,12 @@ export default function PrivacyPage() {
               Analytics
             </a>
             <a
+              href="#partnerships"
+              className="hover:bg-muted inline-flex min-h-11 items-center rounded-md border px-3 text-sm"
+            >
+              Partner recommendations
+            </a>
+            <a
               href="#choices"
               className="hover:bg-muted inline-flex min-h-11 items-center rounded-md border px-3 text-sm"
             >
@@ -260,11 +266,11 @@ export default function PrivacyPage() {
               </CardHeader>
               <CardContent className="text-muted-foreground space-y-3 leading-relaxed">
                 <p>
-                  The homepage and fingerprinting guide wait for you to start a
-                  full scan; the checker starts on load. Individual signal
-                  checks run automatically unless they need the external WebRTC
-                  network check. You can read documentation and policies without
-                  starting a full scan.
+                  The homepage and the checker start a full scan on load; the
+                  fingerprinting guide waits for you to start one. Individual
+                  signal checks run automatically unless they need the external
+                  WebRTC network check. You can read documentation and policies
+                  without starting a full scan.
                 </p>
                 <p>
                   To remove stored checker scans, open{' '}

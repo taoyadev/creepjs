@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 const SECTIONS = [
   { id: 'scan', label: 'Live scan' },
   { id: 'trust', label: 'Trust report' },
+  { id: 'history', label: 'Saved scans' },
   { id: 'what-does-the-checker-report', label: 'Report' },
   { id: 'signals', label: 'Signals' },
   { id: 'how-it-works', label: 'Method' },
@@ -18,10 +19,7 @@ export function CheckerSectionNav() {
   );
 
   useEffect(() => {
-    const elements = SECTIONS.map(({ id }) =>
-      document.getElementById(id)
-    ).filter((element): element is HTMLElement => element !== null);
-    if (elements.length === 0 || !('IntersectionObserver' in window)) return;
+    if (!('IntersectionObserver' in window)) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -38,8 +36,31 @@ export function CheckerSectionNav() {
       }
     );
 
-    elements.forEach((element) => observer.observe(element));
-    return () => observer.disconnect();
+    const observed = new WeakSet<Element>();
+    let found = 0;
+    const observeAvailable = () => {
+      for (const { id } of SECTIONS) {
+        const element = document.getElementById(id);
+        if (element && !observed.has(element)) {
+          observed.add(element);
+          observer.observe(element);
+          found += 1;
+        }
+      }
+      if (found === SECTIONS.length) additions.disconnect();
+    };
+    // The trust report and saved scans render only after the first scan
+    // finishes, so pick them up when they enter the DOM.
+    const additions = new MutationObserver(observeAvailable);
+    additions.observe(document.getElementById('scan') ?? document.body, {
+      childList: true,
+      subtree: true,
+    });
+    observeAvailable();
+    return () => {
+      additions.disconnect();
+      observer.disconnect();
+    };
   }, []);
 
   return (
