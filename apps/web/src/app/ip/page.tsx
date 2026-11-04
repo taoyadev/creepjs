@@ -56,9 +56,20 @@ export default function IpRiskPage() {
   const edited = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const resultHeadingRef = useRef<HTMLHeadingElement>(null);
+  const batchRef = useRef<HTMLDetailsElement>(null);
   useEffect(() => {
     if (result) resultHeadingRef.current?.focus();
   }, [result]);
+  useEffect(() => {
+    // A link from another page reaches /ip#batch by client-side navigation,
+    // which scrolls with script and leaves the batch <details> closed.
+    const details = batchRef.current;
+    if (window.location.hash !== '#batch' || !details || details.open) return;
+    details.open = true;
+    // Jump instantly, as the checker does for its deep links: in WebKit a
+    // smooth scroll started here left the page at the footer.
+    document.getElementById('batch')?.scrollIntoView({ behavior: 'instant' });
+  }, []);
 
   const detectIp = useCallback(async () => {
     detection.current?.abort();
@@ -555,7 +566,10 @@ export default function IpRiskPage() {
           )}
         </section>
         {result && !loading && !error && <IpPartnerRecommendations />}
-        <details className="section-anchor rounded-xl border p-4">
+        <details
+          ref={batchRef}
+          className="section-anchor rounded-xl border p-4"
+        >
           <summary className="cursor-pointer font-semibold">
             Check a list of IPs · token required
           </summary>

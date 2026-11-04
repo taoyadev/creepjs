@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CopyButton } from '@/components/CopyButton';
@@ -20,6 +20,19 @@ import {
   renderCollectorCard,
   tabCollectors,
 } from '@/components/checker/cards/renderCollectorCard';
+
+// Input that means the visitor is scrolling on their own, which cancels a
+// pending jump to a deep-linked report section.
+const FORGET_EVENTS = ['wheel', 'touchmove', 'keydown'] as const;
+const SCROLL_KEYS = new Set([
+  'ArrowUp',
+  'ArrowDown',
+  'PageUp',
+  'PageDown',
+  'Home',
+  'End',
+  ' ',
+]);
 
 const PanelSkeleton = ({ title }: { title: string }) => (
   <Card>
@@ -109,6 +122,37 @@ export function CheckerApp() {
   const ownIp = useOwnIp();
   const [analysisOpen, setAnalysisOpen] = useState(false);
   const loading = status === 'loading';
+  // Report sections such as #history and #trust mount only after the first
+  // scan, so a link to one has nothing to scroll to while the scan runs.
+  // Remember the target and jump there when the report appears, unless the
+  // visitor has started scrolling in the meantime.
+  const pendingAnchor = useRef<string | null>(null);
+  useEffect(() => {
+    const remember = () => {
+      const id = window.location.hash.slice(1);
+      pendingAnchor.current = id && !document.getElementById(id) ? id : null;
+    };
+    const forget = (event: Event) => {
+      if (event instanceof KeyboardEvent && !SCROLL_KEYS.has(event.key)) return;
+      pendingAnchor.current = null;
+    };
+    remember();
+    window.addEventListener('hashchange', remember);
+    for (const name of FORGET_EVENTS)
+      window.addEventListener(name, forget, { passive: true });
+    return () => {
+      window.removeEventListener('hashchange', remember);
+      for (const name of FORGET_EVENTS)
+        window.removeEventListener(name, forget);
+    };
+  }, []);
+  useEffect(() => {
+    const id = fingerprint ? pendingAnchor.current : null;
+    const target = id ? document.getElementById(id) : null;
+    if (!target) return;
+    pendingAnchor.current = null;
+    target.scrollIntoView({ behavior: 'instant' });
+  }, [fingerprint]);
 
   if (!fingerprint) {
     const pending = status !== 'error';
