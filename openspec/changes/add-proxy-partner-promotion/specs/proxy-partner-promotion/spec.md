@@ -121,18 +121,12 @@ At viewports of 1440 pixels and wider, every page SHALL show symmetric sponsor r
 - **WHEN** a visitor uses a viewport narrower than 1440 pixels
 - **THEN** no rail is visible and no sidebar impression is recorded
 
-### Requirement: Advertising inquiries SHALL collect only an email and an optional website
+### Requirement: Advertising inquiries SHALL go to the published contact email
 
-The advertise button SHALL open a dialog that asks for an email and an optional HTTP(S) website, without invented traffic or prices. `POST /v1/sponsor-inquiries` SHALL accept the site origin only, validate strictly, rate-limit per visitor and globally, and store inquiries in the dedicated `SPONSOR_INQUIRIES` namespace for 180 days.
+The advertise button SHALL open a dialog that describes the slot without invented traffic or prices and shows the contact email with a mailto link and a copy control. The site SHALL NOT collect advertiser data in a form.
 
-#### Scenario: Valid inquiry
+#### Scenario: Advertiser opens the dialog
 
-- **WHEN** a visitor submits a valid email from the site
-- **THEN** the API stores the email, optional website and timestamp and answers 202
-- **AND** the dialog confirms that a reply will follow by email
-
-#### Scenario: Storage not provisioned
-
-- **WHEN** the namespace is absent
-- **THEN** the API answers 503 without storing anything
-- **AND** the dialog shows the contact email as an alternative
+- **WHEN** a visitor activates "Advertise here"
+- **THEN** the dialog shows hello@creepjs.org with an email link and a copy button
+- **AND** no form or API request is involved

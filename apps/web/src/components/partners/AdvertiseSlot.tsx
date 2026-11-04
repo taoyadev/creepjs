@@ -1,15 +1,7 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
-import {
-  ArrowRight,
-  CheckCircle2,
-  Eye,
-  PanelLeft,
-  Plus,
-  Zap,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Eye, Mail, PanelLeft, Plus, Zap } from 'lucide-react';
+import { buttonVariants } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -18,17 +10,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { ApiError, fetchJson } from '@/lib/api-client';
+import { CopyButton } from '@/components/CopyButton';
 import { trackEvent } from '@/lib/analytics';
 
 const CONTACT_EMAIL = 'hello@creepjs.org';
-
-type State =
-  | { kind: 'idle' }
-  | { kind: 'sending' }
-  | { kind: 'sent'; email: string }
-  | { kind: 'error'; message: string };
+const MAILTO = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(
+  'Advertising on CreepJS'
+)}`;
 
 export function AdvertiseSlot({
   openSpots,
@@ -37,41 +25,6 @@ export function AdvertiseSlot({
   openSpots: number;
   totalSpots: number;
 }) {
-  const [email, setEmail] = useState('');
-  const [website, setWebsite] = useState('');
-  const [state, setState] = useState<State>({ kind: 'idle' });
-
-  const submit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (state.kind === 'sending') return;
-    setState({ kind: 'sending' });
-    try {
-      await fetchJson('/v1/sponsor-inquiries', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: email.trim(),
-          ...(website.trim() ? { website: website.trim() } : {}),
-        }),
-      });
-      trackEvent('button_clicked', {
-        label: 'advertise-submit',
-        section: 'partner-sidebar',
-      });
-      setState({ kind: 'sent', email: email.trim() });
-    } catch (error) {
-      setState({
-        kind: 'error',
-        message:
-          error instanceof ApiError && error.status === 400
-            ? 'Check the email and website.'
-            : error instanceof ApiError && error.status === 429
-              ? error.message
-              : 'We could not send your request.',
-      });
-    }
-  };
-
   const tiles = [
     { icon: Eye, value: 'High-intent', label: 'People checking their IP' },
     { icon: PanelLeft, value: 'Every page', label: 'Desktop sidebar slot' },
@@ -125,93 +78,41 @@ export function AdvertiseSlot({
         <div className="space-y-2">
           <h3 className="text-sm font-semibold">How it works</h3>
           <p className="text-muted-foreground text-sm leading-6">
-            Your name, one line and a link sit in a fixed sidebar slot on
-            desktop pages, labeled Sponsored. Sponsors never change IP or
-            fingerprint results.
+            Your logo, name, one line and a link sit in a fixed sidebar slot on
+            every desktop page. Sponsors never change IP or fingerprint results.
           </p>
         </div>
 
-        {state.kind === 'sent' ? (
-          <p
-            role="status"
-            className="bg-muted/40 flex items-start gap-2 rounded-lg border p-4 text-sm leading-6"
-          >
-            <CheckCircle2
-              className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600"
-              aria-hidden="true"
-            />
-            <span>
-              Thanks. We will email{' '}
-              <span className="font-semibold [overflow-wrap:anywhere]">
-                {state.email}
-              </span>{' '}
-              with pricing and current traffic.
-            </span>
+        <div className="space-y-3">
+          <p className="text-sm">
+            Email us for pricing and current traffic:{' '}
+            <span className="font-semibold">{CONTACT_EMAIL}</span>
           </p>
-        ) : (
-          <form onSubmit={submit} className="space-y-3">
-            <div className="space-y-1.5">
-              <label htmlFor="advertise-email" className="text-sm font-medium">
-                Work email
-              </label>
-              <Input
-                id="advertise-email"
-                type="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                placeholder="you@company.com"
-                autoComplete="email"
-                required
-                maxLength={254}
-                disabled={state.kind === 'sending'}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label
-                htmlFor="advertise-website"
-                className="text-sm font-medium"
-              >
-                Website{' '}
-                <span className="text-muted-foreground">(optional)</span>
-              </label>
-              <Input
-                id="advertise-website"
-                type="url"
-                inputMode="url"
-                value={website}
-                onChange={(event) => setWebsite(event.target.value)}
-                placeholder="https://"
-                autoComplete="url"
-                maxLength={200}
-                disabled={state.kind === 'sending'}
-              />
-            </div>
-            {state.kind === 'error' && (
-              <p role="alert" className="text-destructive text-sm">
-                {state.message} You can also email{' '}
-                <a
-                  href={`mailto:${CONTACT_EMAIL}?subject=Advertising%20on%20CreepJS`}
-                  className="underline underline-offset-4"
-                >
-                  {CONTACT_EMAIL}
-                </a>
-                .
-              </p>
-            )}
-            <Button
-              type="submit"
-              size="lg"
-              className="w-full gap-2 font-semibold"
-              disabled={state.kind === 'sending' || !email.trim()}
+          <div className="flex gap-2">
+            <a
+              href={MAILTO}
+              onClick={() =>
+                trackEvent('button_clicked', {
+                  label: 'advertise-email',
+                  section: 'partner-sidebar',
+                })
+              }
+              className={buttonVariants({
+                size: 'lg',
+                className: 'flex-1 gap-2 font-semibold',
+              })}
             >
-              {state.kind === 'sending' ? 'Sending…' : 'Get pricing'}
-              <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            </Button>
-            <p className="text-muted-foreground text-xs leading-5">
-              We use this address only to reply about advertising.
-            </p>
-          </form>
-        )}
+              <Mail className="h-4 w-4" aria-hidden="true" />
+              Email {CONTACT_EMAIL}
+            </a>
+            <CopyButton
+              value={CONTACT_EMAIL}
+              variant="outline"
+              ariaLabel="Copy email address"
+              successMessage="Email address copied"
+            />
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );
