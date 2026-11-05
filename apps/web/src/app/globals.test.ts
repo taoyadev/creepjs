@@ -88,3 +88,12 @@ describe.each([
     }
   });
 });
+
+describe('collector card rendering', () => {
+  it('skips off-screen cards only where scroll anchoring keeps links on target', () => {
+    const guarded =
+      /@supports \(overflow-anchor: auto\) \{([\s\S]*?)\n {2}\}/.exec(css)?.[1];
+    expect(guarded).toContain('content-visibility: auto');
+    expect(css.split('content-visibility: auto')).toHaveLength(2);
+  });
+});
