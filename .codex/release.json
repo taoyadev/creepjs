@@ -17,7 +17,7 @@
         "--",
         "bash",
         "-lc",
-        "set -euo pipefail; bash scripts/test-deploy-read-retry.sh; pnpm install --frozen-lockfile; pnpm format:check; pnpm build; pnpm typecheck; pnpm lint; NODE_ENV=test pnpm test; node --test scripts/wait-for-api-release.test.cjs scripts/secret-scan.test.cjs; pnpm --filter @creepjs/sdk check:size; bash scripts/secret-scan.sh; npx -y @fission-ai/openspec@1.15.0 validate --all --strict --no-interactive; pnpm --filter @creepjs/api exec wrangler deploy --dry-run; pnpm audit --audit-level=high"
+        "set -euo pipefail; bash scripts/test-deploy-read-retry.sh; pnpm install --frozen-lockfile; pnpm format:check; pnpm build; pnpm typecheck; pnpm lint; NODE_ENV=test pnpm test; node --test scripts/wait-for-api-release.test.cjs scripts/secret-scan.test.cjs scripts/link-prefetch.test.cjs; pnpm --filter @creepjs/sdk check:size; bash scripts/secret-scan.sh; npx -y @fission-ai/openspec@1.15.0 validate --all --strict --no-interactive; pnpm --filter @creepjs/api exec wrangler deploy --dry-run; pnpm audit --audit-level=high"
       ]
     },
     {

@@ -6,6 +6,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const http = require('node:http');
+const { settleBeforeLeaving } = require('./link-prefetch.cjs');
 // QA_BROWSER=webkit runs the same scenarios in Safari's engine.
 const browserName = process.env.QA_BROWSER || 'chromium';
 if (!['chromium', 'webkit'].includes(browserName))
@@ -323,6 +324,7 @@ async function main() {
   async function visit(route, target = page) {
     // Background edge and telemetry requests do not define tool readiness.
     // Keep navigation, visible content, bootstrap and layout as explicit gates.
+    await settleBeforeLeaving(target, base);
     await target.goto(base + route, { waitUntil: 'domcontentloaded' });
     await target.locator('h1').waitFor();
     await target
@@ -876,6 +878,7 @@ async function main() {
         async () => {
           state.detectDelay = 1000;
           state.ipMode = 'success';
+          await settleBeforeLeaving(page, base);
           await page.goto(base + '/ip', { waitUntil: 'domcontentloaded' });
           await page.getByLabel('IP address', { exact: true }).fill('1.1.1.1');
           await page
@@ -1005,6 +1008,7 @@ async function main() {
               }, id);
             }
           }
+          await settleBeforeLeaving(page, base);
           await page.goto(base + '/no-such-page', {
             waitUntil: 'domcontentloaded',
           });
@@ -1082,6 +1086,7 @@ async function main() {
             ].some((value) => value.includes('qa_fixture_token'))
           );
           assert(!persisted, 'token persisted or placed in URL');
+          await settleBeforeLeaving(page, base);
           await page.reload({ waitUntil: 'networkidle' });
           assert(
             (await page
