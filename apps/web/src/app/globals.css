@@ -129,8 +129,16 @@
 @layer utilities {
   .collector-grid > * {
     min-width: 0;
-    content-visibility: auto;
-    contain-intrinsic-size: auto 320px;
+  }
+  /* Off-screen cards render as a 320px placeholder and change height when a
+     scroll passes them. Scroll anchoring keeps in-page links on target
+     through that; Safari has none, so a section link there lands hundreds of
+     pixels past its section. Skip rendering only where anchoring exists. */
+  @supports (overflow-anchor: auto) {
+    .collector-grid > * {
+      content-visibility: auto;
+      contain-intrinsic-size: auto 320px;
+    }
   }
   /* Offset in-page anchors below the sticky header. */
   .section-anchor {
